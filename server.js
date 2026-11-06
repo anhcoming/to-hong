@@ -3,8 +3,11 @@ const fs = require('fs');
 const path = require('path');
 const config = require('./config.json');
 const { db, save, UPLOAD_DIR } = require('./lib/db');
-const { rid, json, send, readJson, readBody, httpError, slugify, str } = require('./lib/util');
+const { rid, json, send, readJson, readBody, httpError, slugify, str, cookies } = require('./lib/util');
 const auth = require('./lib/auth');
+const google = require('./lib/google');
+const adminLib = require('./lib/admin');
+adminLib.applySettings(); // giá, mã giảm giá… sửa trên trang quản trị đè lên config.json
 const cd = require('./lib/carddata');
 const { renderCard, renderNotice, templates, templateList } = require('./lib/render');
 const banks = require('./lib/banks');
@@ -151,12 +154,44 @@ route('GET', '/api/me', async (req, res, ctx) => {
   json(res, 200, { user: auth.publicUser(ctx.user) });
 });
 
+// ---------------- đăng nhập Google ----------------
+const GOOGLE_CB = BASE_URL + '/auth/google/callback';
+const safeNext = (n) => (typeof n === 'string' && n.startsWith('/') && !n.startsWith('//') ? n : '/so-tay');
+function redirect(res, to, cookiesToSet = []) {
+  res.writeHead(302, { Location: to, 'Set-Cookie': cookiesToSet, 'Cache-Control': 'no-store' });
+  res.end();
+}
+route('GET', '/auth/google', async (req, res, ctx) => {
+  if (!google.enabled()) return redirect(res, '/dang-nhap?loi=' + encodeURIComponent('Chưa bật đăng nhập Google'));
+  const state = google.newState();
+  const val = encodeURIComponent(state + '|' + safeNext(ctx.query.get('next')));
+  redirect(res, google.authUrl(state, GOOGLE_CB), [`gst=${val}; HttpOnly; Path=/auth; SameSite=Lax; Max-Age=600` + (BASE_URL.startsWith('https') ? '; Secure' : '')]);
+});
+route('GET', '/auth/google/callback', async (req, res, ctx) => {
+  const clear = 'gst=; HttpOnly; Path=/auth; SameSite=Lax; Max-Age=0';
+  const fail = (msg) => redirect(res, '/dang-nhap?loi=' + encodeURIComponent(msg), [clear]);
+  const [state, next] = decodeURIComponent(cookies(req).gst || '').split('|');
+  if (ctx.query.get('error')) return fail('Bạn đã huỷ đăng nhập Google');
+  if (!state || state !== ctx.query.get('state')) return fail('Phiên đăng nhập Google không hợp lệ, thử lại nhé');
+  try {
+    rateLimit('google:' + ctx.ip, 30, 9e5);
+    const g = await google.exchange(String(ctx.query.get('code') || ''), GOOGLE_CB);
+    const user = auth.googleUser(g);
+    auth.startSession(res, user.id);
+    redirect(res, safeNext(next), [res.getHeader('Set-Cookie'), clear]);
+  } catch (e) {
+    if (e.status === 500 || !e.status) console.error('Google login lỗi:', e);
+    fail(e.status && e.status !== 500 ? e.message : 'Không đăng nhập được bằng Google, thử lại sau nhé');
+  }
+});
+
 route('GET', '/api/meta', async (req, res) => {
   json(res, 200, {
     brand: config.brand, tagline: config.tagline, price: config.price, trialDays: config.trialDays,
     trialGuestLimit: config.trialGuestLimit, banks, templates: templateList(), baseUrl: BASE_URL, support: config.support,
     ledPrice: config.ledPrice, led: ledLib.options(),
     videoPrice: config.videoPrice, video: videoLib.options(),
+    googleLogin: google.enabled(),
   });
 });
 
@@ -402,14 +437,18 @@ route('POST', '/api/admin/orders/:id/confirm', async (req, res, ctx) => {
   const card = db.cards.find((c) => c.id === o.cardId);
   const target = card && PRODUCTS[o.product || 'card'].sub(card);
   if (target) { target.paid = true; target.paidAt = o.paidAt; }
-  save();
+  adminLib.audit(ctx, 'Xác nhận đơn', o.code, `${o.amount}đ`);
   json(res, 200, { ok: true });
 });
+adminLib.routes({ route, needAdmin, PRODUCTS, orderView, cardSummary, BASE_URL });
+
+// Thiệp bị quản trị viên gỡ: khách mở link thấy thông báo (chủ thiệp vẫn xem trước được)
+const BLOCKED_HTML = () => renderNotice('Thiệp tạm thời không khả dụng', 'Thiệp này đang được đội ngũ hỗ trợ kiểm tra. Bạn vui lòng liên hệ cô dâu chú rể nhé.');
 
 // ---------------- API công khai trên trang thiệp ----------------
 function publicCard(slug) {
   const card = db.cards.find((c) => c.slug === slug);
-  if (!card || card.status !== 'published' || cardState(card).expired) throw httpError(404, 'Thiệp không còn nhận phản hồi');
+  if (!card || card.blocked || card.status !== 'published' || cardState(card).expired) throw httpError(404, 'Thiệp không còn nhận phản hồi');
   return card;
 }
 route('POST', '/api/public/:slug/rsvp', async (req, res, ctx) => {
@@ -448,10 +487,11 @@ function html(res, status, body) {
 async function showCard(req, res, ctx) {
   const card = db.cards.find((c) => c.slug === ctx.params.slug);
   if (!card) return html(res, 404, renderNotice('Không tìm thấy thiệp', 'Đường dẫn có thể đã bị đổi hoặc thiệp đã bị xoá.'));
-  const isOwner = canManage(ctx.user, card);
+  const isOwner = canManage(ctx.user, card) || !!(ctx.user && ctx.user.isAdmin); // quản trị viên xem trước được để kiểm tra
   const preview = isOwner && ctx.query.get('preview') === '1';
   const st = cardState(card);
   if (!preview) {
+    if (card.blocked) return html(res, 403, BLOCKED_HTML());
     if (card.status !== 'published') return html(res, 404, renderNotice('Thiệp chưa được phát hành', 'Cô dâu chú rể đang hoàn thiện thiệp, bạn quay lại sau nhé.'));
     if (st.expired) return html(res, 403, renderNotice('Thiệp đang tạm khoá', 'Thời gian dùng thử của thiệp đã hết. Chủ thiệp cần kích hoạt để tiếp tục chia sẻ.'));
   }
@@ -494,6 +534,7 @@ route('GET', '/led/:slug', async (req, res, ctx) => {
   const card = db.cards.find((c) => c.slug === slug);
   const isOwner = canManage(ctx.user, card);
   if (!card || !card.led) return html(res, 404, renderNotice('Không tìm thấy màn hình LED', 'Đường dẫn có thể đã bị đổi. Hãy hỏi lại cô dâu chú rể nhé.'));
+  if (card.blocked && !isOwner) return html(res, 403, BLOCKED_HTML());
   const st = ledLib.state(card.led);
   if (st.expired && !isOwner) return html(res, 403, renderNotice('Màn hình LED đang tạm khoá', 'Thời gian dùng thử đã hết. Chủ thiệp cần kích hoạt để tiếp tục trình chiếu.'));
   html(res, 200, ledLib.renderLed(card, card.led, { preview: isOwner && ctx.query.get('preview') === '1', trial: !st.paid }));
@@ -512,6 +553,7 @@ route('GET', '/video/:slug', async (req, res, ctx) => {
   const card = db.cards.find((c) => c.slug === slug);
   const isOwner = canManage(ctx.user, card);
   if (!card || !card.video) return html(res, 404, renderNotice('Không tìm thấy video', 'Đường dẫn có thể đã bị đổi.'));
+  if (card.blocked && !isOwner) return html(res, 403, BLOCKED_HTML());
   const st = videoLib.state(card.video);
   if (st.expired && !isOwner) return html(res, 403, renderNotice('Video đang tạm khoá', 'Thời gian dùng thử đã hết. Chủ thiệp cần kích hoạt để tiếp tục trình chiếu.'));
   html(res, 200, videoLib.renderVideo(card, card.video, { preview: isOwner && ctx.query.get('preview') === '1', trial: !st.paid }));

@@ -5,56 +5,56 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="robots" content="noindex">
 <title>Quản trị</title>
+<link rel="icon" href="/favicon.svg">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Charm:wght@400;700&amp;family=Fraunces:ital,opsz,wght@0,9..144,400..700;1,9..144,400..700&amp;family=Hanken+Grotesk:wght@400;500;600;700&amp;display=swap">
 <link rel="stylesheet" href="/css/app.css">
 <style>
-.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin:24px 0}
-.stat{padding:16px}
-.stat span{font-size:13px;color:var(--muted)}
-.stat b{display:block;font-size:26px;font-family:var(--serif);margin-top:2px}
+.ahead{display:flex;justify-content:space-between;align-items:flex-end;gap:12px;flex-wrap:wrap;margin:26px 0 6px}
+.ahead h1{font-family:var(--serif);font-weight:600;margin:0;font-size:30px}
+.atabs{position:sticky;top:62px;z-index:20;background:var(--bg);margin-bottom:20px}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px;margin-bottom:18px}
+.kpi{padding:16px}
+.kpi span{font-size:12px;color:var(--muted);display:block}
+.kpi b{display:block;font-family:var(--serif);font-size:26px;line-height:1.2;margin-top:2px}
+.kpi small{font-size:12px;color:var(--muted)}
+.kpi.hot{border-color:var(--warn);background:var(--warn-soft)}
+.charts{display:grid;grid-template-columns:repeat(2,1fr);gap:14px;margin-bottom:18px}
+@media (max-width:860px){.charts{grid-template-columns:1fr}}
+.chart{padding:16px}
+.chart h3{margin:0 0 4px;font-size:15px}
+.chart p{margin:0 0 10px;font-size:13px;color:var(--muted)}
+.chart svg{width:100%;height:170px;display:block}
+.chart .bar{fill:var(--primary);opacity:.85}
+.chart .bar:hover{opacity:1}
+.chart .lbl{font-size:10px;fill:var(--muted)}
+.tools{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px;align-items:center}
+.tools .input{max-width:280px}
+.tools select.input{width:auto}
+.wrapx{overflow-x:auto}
+.tbl td .sub{font-size:12px;color:var(--muted)}
+.tbl tr.off td{opacity:.55}
+.acts{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}
+.prodrow{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--line)}
+.setgrid{display:grid;grid-template-columns:repeat(2,1fr);gap:14px}
+@media (max-width:760px){.setgrid{grid-template-columns:1fr}}
+.coupon{display:grid;grid-template-columns:1fr 1fr 34px;gap:8px;margin-bottom:8px}
+.pw{font-family:ui-monospace,Consolas,monospace;font-size:22px;letter-spacing:.08em;background:#f6efe6;border-radius:10px;padding:12px;text-align:center;margin:12px 0}
 </style>
 </head>
 <body>
 <main class="wrap" style="padding-bottom:60px">
-  <h1 style="font-family:var(--serif);font-weight:600;margin:28px 0 0">Quản trị</h1>
-  <div class="stats" id="stats"></div>
-  <section class="panel" style="padding:18px">
-    <h3 style="margin:0 0 4px">Đơn kích hoạt</h3>
-    <p class="muted" style="margin:0 0 12px;font-size:14px">Kiểm tra app ngân hàng: thấy tiền về với đúng nội dung (mã đơn) thì bấm <b>Xác nhận</b>.</p>
-    <div style="overflow-x:auto" id="orders"></div>
-  </section>
+  <div class="ahead"><div><h1>Quản trị</h1><p class="muted" style="margin:4px 0 0" id="hello"></p></div><button class="btn sm plain" id="reload">↻ Làm mới</button></div>
+  <nav class="tabs atabs" id="tabs">
+    <button class="tab on" data-t="home">Tổng quan</button>
+    <button class="tab" data-t="orders">Đơn hàng <span id="pendBadge"></span></button>
+    <button class="tab" data-t="users">Người dùng</button>
+    <button class="tab" data-t="cards">Thiệp & sản phẩm</button>
+    <button class="tab" data-t="settings">Cài đặt</button>
+    <button class="tab" data-t="audit">Nhật ký</button>
+  </nav>
+  <div id="view"><div class="skeleton" style="height:300px"></div></div>
 </main>
 <script src="/js/common.js"></script>
-<script>
-async function load() {
-  const { stats: s, orders } = await api('/api/admin/overview');
-  $('#stats').innerHTML = [
-    ['Doanh thu', money(s.revenue)], ['Thiệp đã bán', s.paid], ['Người dùng', s.users],
-    ['Thiệp đã tạo', s.cards], ['Đang phát hành', s.published], ['Lượt xác nhận', s.rsvps],
-  ].map(([l, v]) => `<div class="stat panel"><span>${l}</span><b>${v}</b></div>`).join('');
-  $('#orders').innerHTML = orders.length ? `<table class="tbl"><thead><tr><th>Mã</th><th>Thiệp</th><th>Tài khoản</th><th>Số tiền</th><th>Trạng thái</th><th></th></tr></thead><tbody>
-    ${orders.map(o => `<tr>
-      <td><b>${esc(o.code)}</b><br><span class="muted" style="font-size:12px">${fmtDateTime(o.createdAt)}</span></td>
-      <td>${esc(o.card ? o.card.names || o.card.title : '(đã xoá)')}<br><span class="chip ${o.product === 'card' ? 'red' : o.product === 'led' ? 'warn' : 'ok'}">${esc(o.productName)}</span></td>
-      <td>${esc(o.email || '')}</td>
-      <td>${money(o.amount)}${o.coupon ? `<br><span class="chip">${esc(o.coupon)}</span>` : ''}</td>
-      <td>${o.status === 'paid' ? `<span class="chip ok">Đã thanh toán</span>` : o.claimedAt ? `<span class="chip warn">Khách báo đã chuyển · ${fmtDateTime(o.claimedAt)}</span>` : '<span class="chip">Chờ thanh toán</span>'}</td>
-      <td>${o.status === 'paid' ? '' : `<button class="btn sm" data-ok="${o.id}" data-code="${esc(o.code)}" data-amt="${o.amount}">Xác nhận</button>`}</td>
-    </tr>`).join('')}</tbody></table>` : '<p class="empty">Chưa có đơn nào.</p>';
-  $$('[data-ok]').forEach(b => b.onclick = async () => {
-    if (!confirm(`Xác nhận đã nhận ${money(b.dataset.amt)} với nội dung ${b.dataset.code}?`)) return;
-    await api(`/api/admin/orders/${b.dataset.ok}/confirm`, { method: 'POST' });
-    toast('Đã kích hoạt thiệp');
-    load();
-  });
-}
-(async () => {
-  const { user, meta } = await renderTopbar();
-  document.title = 'Quản trị — ' + meta.brand;
-  if (!user) return (location.href = '/dang-nhap?next=/quan-tri');
-  if (!user.isAdmin) { $('main').innerHTML = '<p class="empty">Bạn không có quyền vào trang này.</p>'; return; }
-  load().catch(e => toast(e.message, true));
-})();
-</script>
+<script src="/js/admin.js"></script>
 </body>
 </html>

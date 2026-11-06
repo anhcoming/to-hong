@@ -21,5 +21,9 @@
   "support": {
     "zalo": "0900000000",
     "email": "hotro@example.com"
+  },
+  "google": {
+    "clientId": "",
+    "clientSecret": ""
   }
 }
