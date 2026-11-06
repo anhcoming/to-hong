@@ -10,7 +10,7 @@
   var nav = document.getElementById('nav');
   if (nav) {
     nav.className = 'nav' + (document.body.hasAttribute('data-solid') ? ' always' : '');
-    nav.innerHTML = '<div class="wrap"><a class="logo" href="/">' + LOGO + '<span data-brand>Tơ Hồng</span></a>' +
+    nav.innerHTML = '<div class="wrap"><a class="logo" href="/">' + LOGO + '<span data-brand>Cưới Nha</span></a>' +
       '<nav class="menu">' + MENU.map(function (m) { return '<a href="' + m[0] + '"' + (m[2] === page ? ' class="on"' : '') + '>' + m[1] + '</a>'; }).join('') + '</nav>' +
       '<div class="acts" id="navActs"><a class="btn btn-ghost btn-sm login" href="/dang-nhap">Đăng nhập</a><a class="btn btn-main btn-sm" href="/so-tay">Tạo thiệp</a></div></div>';
     var onScroll = function () { nav.classList.toggle('solid', window.scrollY > 40); };
@@ -22,10 +22,10 @@
   if (foot) {
     foot.className = 'foot';
     foot.innerHTML = '<div class="wrap"><div class="cols">' +
-      '<div><a class="logo" href="/" style="margin-bottom:10px">' + LOGO + '<span data-brand>Tơ Hồng</span></a><p style="margin:0;max-width:340px">Thiệp cưới online, video dạm ngõ, màn hình LED và sổ tay chuẩn bị đám cưới — se duyên bằng một đường link.</p></div>' +
+      '<div><a class="logo" href="/" style="margin-bottom:10px">' + LOGO + '<span data-brand>Cưới Nha</span></a><p style="margin:0;max-width:340px">Thiệp cưới online, video dạm ngõ, màn hình LED và sổ tay chuẩn bị đám cưới — báo tin vui bằng một đường link.</p></div>' +
       '<div><h4>Sản phẩm</h4><a href="/">Thiệp cưới online</a><a href="/video-dam-ngo">Video dạm ngõ, ăn hỏi</a><a href="/man-hinh-led-dam-cuoi">Màn hình LED đám cưới</a><a href="/so-tay-cuoi">Sổ tay cưới miễn phí</a></div>' +
       '<div><h4>Hỗ trợ</h4><a href="/#hoi-dap">Câu hỏi thường gặp</a><a href="/#gia">Bảng giá</a><span style="display:block;margin-bottom:8px">Zalo: <b data-zalo style="color:var(--ink)"></b></span><span data-email></span></div>' +
-      '</div><div class="copy"><span>© ' + new Date().getFullYear() + ' <span data-brand>Tơ Hồng</span></span><span>Làm bằng ♥ tại Việt Nam</span></div></div>';
+      '</div><div class="copy"><span>© ' + new Date().getFullYear() + ' <span data-brand>Cưới Nha</span></span><span>Làm bằng ♥ tại Việt Nam</span></div></div>';
   }
 
   var money = function (n) { return Number(n || 0).toLocaleString('vi-VN') + 'đ'; };

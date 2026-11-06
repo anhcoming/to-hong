@@ -1,13 +1,13 @@
 {
-  "name": "Tơ Hồng — Sổ tay cưới",
+  "name": "Cưới Nha — Sổ tay cưới",
   "short_name": "Sổ tay cưới",
   "description": "Việc cần làm, ngân sách, khách mời và lịch âm cho đám cưới của bạn",
   "lang": "vi",
   "start_url": "/so-tay",
   "scope": "/",
   "display": "standalone",
-  "background_color": "#faf6f1",
-  "theme_color": "#8a2c3d",
+  "background_color": "#fbf6ef",
+  "theme_color": "#b8263b",
   "icons": [
     { "src": "/icons/icon-192.png", "sizes": "192x192", "type": "image/png" },
     { "src": "/icons/icon-512.png", "sizes": "512x512", "type": "image/png" },

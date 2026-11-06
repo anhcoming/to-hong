@@ -1,4 +1,4 @@
-# Tơ Hồng — nền tảng thiệp cưới online
+# Cưới Nha — nền tảng thiệp cưới online
 
 Khách tự tạo thiệp, mời khách bằng link có tên riêng, nhận xác nhận tham dự, lời chúc và mừng cưới qua QR.
 Chạy bằng Node.js 18+, **không cần cài thư viện nào**.
@@ -21,7 +21,7 @@ node test/smoke.js
 
 | Khóa | Ý nghĩa |
 |---|---|
-| `brand`, `tagline` | Tên thương hiệu (tạm đặt "Tơ Hồng" — kiểm tra tên miền và nhãn hiệu trước khi dùng) |
+| `brand`, `tagline` | Tên thương hiệu ("Cưới Nha") và khẩu hiệu |
 | `baseUrl` | Địa chỉ web thật, ví dụ `https://tenmien.vn` (dùng cho link chia sẻ và ảnh xem trước Zalo) |
 | `price` | Giá kích hoạt một thiệp (VNĐ) |
 | `ledPrice` | Giá kích hoạt màn hình LED (VNĐ) — mã giảm giá không áp dụng |

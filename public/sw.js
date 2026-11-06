@@ -1,6 +1,6 @@
 // Service worker cho sổ tay cưới (PWA): mở được khi mạng chập chờn.
 // Trang & file tĩnh: lấy mạng trước, lỗi mạng thì dùng bản đã lưu. API: luôn lấy mạng (dữ liệu dùng chung nhiều người).
-const CACHE = 'to-hong-v1';
+const CACHE = 'cuoi-nha-v1';
 const SHELL = ['/so-tay', '/css/app.css', '/css/planner.css', '/js/common.js', '/js/planner.js', '/js/lunar.js', '/favicon.svg', '/icons/icon-192.png'];
 
 self.addEventListener('install', (e) => {
