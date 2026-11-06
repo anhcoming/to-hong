@@ -2,16 +2,16 @@
 const { esc } = require('../lib/util');
 
 const base = {
-  '--font-title': "'Playfair Display',Georgia,serif",
-  '--font-script': "'Dancing Script',cursive",
-  '--font-body': "'Be Vietnam Pro',system-ui,sans-serif",
+  '--font-title': "'Fraunces',Georgia,serif",
+  '--font-script': "'Charm',cursive",
+  '--font-body': "'Hanken Grotesk',system-ui,sans-serif",
 };
 
 module.exports = {
   id: 'hy',
   name: 'Song Hỷ',
   desc: 'Truyền thống đỏ son – vàng kim, có chữ Hỷ và phong bì mở thiệp',
-  fonts: 'https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;600&family=Dancing+Script:wght@600&family=Playfair+Display:ital,wght@0,500;1,500&display=swap',
+  fonts: 'https://fonts.googleapis.com/css2?family=Charm:wght@400;700&family=Fraunces:ital,opsz,wght@0,9..144,300..700;1,9..144,300..700&family=Hanken+Grotesk:wght@300..700&display=swap',
   palettes: [
     { id: 'do-son', name: 'Đỏ son', swatch: ['#9e1b23', '#d9a441'], vars: { ...base, '--page': '#5c0f14', '--hero-bg': '#9e1b23', '--hero-ink': '#fff3dd', '--bg': '#fff8ef', '--paper': '#ffffff', '--ink': '#3a1d1d', '--muted': '#86605a', '--accent': '#9e1b23', '--accent-ink': '#fff3dd', '--gold': '#d9a441', '--line': '#efd9c2' } },
     { id: 'hong-dao', name: 'Hồng đào', swatch: ['#c2415d', '#e2b65c'], vars: { ...base, '--page': '#7a2236', '--hero-bg': '#c2415d', '--hero-ink': '#fff5ea', '--bg': '#fff6f4', '--paper': '#ffffff', '--ink': '#41212a', '--muted': '#8d6670', '--accent': '#b23552', '--accent-ink': '#fff5ea', '--gold': '#e2b65c', '--line': '#f3d6d9' } },
@@ -76,7 +76,7 @@ module.exports = {
 .tpl-hy .cn.br{bottom:-6px;right:-6px;border-left:0;border-top:0}
 .tpl-hy .hy-char{font-family:"Noto Serif SC","Songti SC","SimSun","Microsoft YaHei",serif;font-size:58px;line-height:1;color:var(--gold);text-shadow:0 2px 12px rgba(0,0,0,.2)}
 .tpl-hy .hy-kicker{margin:14px 0 6px;font-size:12px;letter-spacing:.38em;text-transform:uppercase;color:var(--gold)}
-.tpl-hy .hy-names{margin:0;font-family:var(--font-script);font-weight:600;font-size:50px;line-height:1.08}
+.tpl-hy .hy-names{margin:0;font-family:var(--font-script);font-weight:700;font-size:50px;line-height:1.08}
 .tpl-hy .hy-names span{display:block}
 .tpl-hy .hy-names em{display:block;font-style:normal;font-size:30px;color:var(--gold);margin:2px 0}
 .tpl-hy .hy-photo{width:190px;height:190px;margin:26px auto;border-radius:50%;background:center/cover no-repeat;border:3px solid var(--gold);box-shadow:0 0 0 7px color-mix(in srgb,var(--gold) 22%,transparent),0 14px 30px rgba(0,0,0,.25)}

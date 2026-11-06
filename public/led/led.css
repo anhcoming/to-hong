@@ -1,5 +1,5 @@
 html,body{margin:0;height:100%;background:#000;overflow:hidden}
-body{font-family:'Be Vietnam Pro',system-ui,sans-serif;cursor:none}
+body{font-family:'Hanken Grotesk',system-ui,sans-serif;cursor:none}
 body.active{cursor:default}
 #stage{position:absolute;left:50%;top:50%;overflow:hidden;--text:#fff;--accent:#e8b65a}
 #fx{position:absolute;inset:0;width:100%;height:100%}
@@ -14,27 +14,27 @@ body.active{cursor:default}
 
 .kicker{font-size:38px;font-weight:300;letter-spacing:.42em;text-transform:uppercase;color:var(--accent);padding-left:.42em;margin-bottom:26px!important}
 .hy{font-family:"Noto Serif SC","Songti SC","SimSun","Microsoft YaHei",serif;font-size:104px;line-height:1;color:var(--accent);margin-bottom:26px!important}
-.names{font-family:'Dancing Script',cursive;font-weight:600;font-size:180px;line-height:1.12;white-space:nowrap}
+.names{font-family:'Charm',cursive;font-weight:700;font-size:180px;line-height:1.12;white-space:nowrap}
 .names .amp{color:var(--accent);font-size:.62em;margin:0 .25em}
 #stage.portrait .names span{display:block}
 #stage.portrait .names .amp{margin:.05em 0}
 .sub{font-size:40px;font-weight:300;margin-top:30px!important;letter-spacing:.06em;opacity:.9}
 
 .wd{font-size:44px;font-weight:300;letter-spacing:.3em;text-transform:uppercase;color:var(--accent);padding-left:.3em}
-.bigdate{font-family:'Playfair Display',Georgia,serif;font-size:210px;line-height:1.1;font-weight:500;margin:10px 0!important;white-space:nowrap}
+.bigdate{font-family:'Fraunces',Georgia,serif;font-size:210px;line-height:1.1;font-weight:500;margin:10px 0!important;white-space:nowrap}
 .bigdate i{font-style:normal;color:var(--accent);margin:0 .12em}
 .time{font-size:52px;font-weight:300}
-.lunar{font-family:'Playfair Display',Georgia,serif;font-style:italic;font-size:44px;margin-top:22px!important;opacity:.85}
+.lunar{font-family:'Fraunces',Georgia,serif;font-style:italic;font-size:44px;margin-top:22px!important;opacity:.85}
 
 .fams{display:flex;gap:150px;align-items:flex-start;justify-content:center;margin-top:40px}
 #stage.portrait .fams{flex-direction:column;gap:70px}
 .fam .lb{font-size:36px;letter-spacing:.34em;text-transform:uppercase;color:var(--accent);padding-left:.34em;margin-bottom:18px!important}
-.fam .pp{font-family:'Playfair Display',Georgia,serif;font-size:58px;line-height:1.35;white-space:nowrap}
+.fam .pp{font-family:'Fraunces',Georgia,serif;font-size:58px;line-height:1.35;white-space:nowrap}
 .fam .ad{font-size:30px;opacity:.75;margin-top:10px!important}
-.title{font-family:'Dancing Script',cursive;font-size:110px;color:var(--accent);line-height:1.1}
+.title{font-family:'Charm',cursive;font-weight:700;font-size:110px;color:var(--accent);line-height:1.1}
 
 .photo{width:560px;height:700px;border-radius:280px 280px 24px 24px;background:center/cover no-repeat;border:4px solid var(--accent);box-shadow:0 0 0 14px color-mix(in srgb,var(--accent) 22%,transparent),0 30px 60px rgba(0,0,0,.35);flex:none}
-.photo-names{font-family:'Dancing Script',cursive;font-size:96px;margin-top:40px!important;white-space:nowrap}
+.photo-names{font-family:'Charm',cursive;font-weight:700;font-size:96px;margin-top:40px!important;white-space:nowrap}
 #stage.landscape .s-photo{flex-direction:row;gap:110px}
 #stage.landscape .s-photo .photo{height:740px;width:560px}
 #stage.landscape .s-photo .pn{display:flex;flex-direction:column;align-items:center}
@@ -44,16 +44,16 @@ body.active{cursor:default}
 #stage.narrow .s-photo{gap:80px}
 #stage.narrow .s-photo .photo{width:470px;height:620px}
 
-.msg{font-family:'Playfair Display',Georgia,serif;font-style:italic;font-size:76px;line-height:1.4;max-width:1500px}
+.msg{font-family:'Fraunces',Georgia,serif;font-style:italic;font-size:76px;line-height:1.4;max-width:1500px}
 #stage.portrait .msg{font-size:68px}
-.sign{font-family:'Dancing Script',cursive;font-size:84px;color:var(--accent);margin-top:46px!important;white-space:nowrap}
+.sign{font-family:'Charm',cursive;font-weight:700;font-size:84px;color:var(--accent);margin-top:46px!important;white-space:nowrap}
 
 .wm{position:absolute;right:60px;bottom:52px;font-size:24px;color:var(--text);opacity:.45;letter-spacing:.05em}
 
 .ctl{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);display:flex;gap:8px;padding:8px;border-radius:999px;background:rgba(0,0,0,.55);backdrop-filter:blur(6px);opacity:0;transition:opacity .3s;z-index:5}
 body.active .ctl{opacity:1}
 body.preview .ctl{display:none}
-.ctl button{border:0;border-radius:999px;background:rgba(255,255,255,.14);color:#fff;font:500 15px 'Be Vietnam Pro',sans-serif;width:44px;height:44px;cursor:pointer}
+.ctl button{border:0;border-radius:999px;background:rgba(255,255,255,.14);color:#fff;font:500 15px 'Hanken Grotesk',sans-serif;width:44px;height:44px;cursor:pointer}
 .ctl button.wide{width:auto;padding:0 18px}
 .ctl button:hover{background:rgba(255,255,255,.28)}
 @media (prefers-reduced-motion:reduce){.slide{transition:opacity .6s}}

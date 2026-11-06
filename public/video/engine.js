@@ -6,11 +6,11 @@
   var W = 1920, H = 1080, TAU = Math.PI * 2;
 
   var FONT = {
-    script: function (s) { return '600 ' + s + 'px "Dancing Script", cursive'; },
-    serif: function (s) { return '500 ' + s + 'px "Playfair Display", Georgia, serif'; },
-    italic: function (s) { return 'italic 500 ' + s + 'px "Playfair Display", Georgia, serif'; },
-    sans: function (s) { return '300 ' + s + 'px "Be Vietnam Pro", system-ui, sans-serif'; },
-    caps: function (s) { return '500 ' + s + 'px "Be Vietnam Pro", system-ui, sans-serif'; },
+    script: function (s) { return '700 ' + s + 'px "Charm", cursive'; },
+    serif: function (s) { return '500 ' + s + 'px "Fraunces", Georgia, serif'; },
+    italic: function (s) { return 'italic 400 ' + s + 'px "Fraunces", Georgia, serif'; },
+    sans: function (s) { return '300 ' + s + 'px "Hanken Grotesk", system-ui, sans-serif'; },
+    caps: function (s) { return '500 ' + s + 'px "Hanken Grotesk", system-ui, sans-serif'; },
   };
 
   var THEMES = {
@@ -457,7 +457,7 @@
 
     function ready() {
       if (fontsReady || !document.fonts) return Promise.resolve();
-      return Promise.all(['600 80px "Dancing Script"', '500 80px "Playfair Display"', 'italic 500 80px "Playfair Display"', '300 80px "Be Vietnam Pro"', '500 80px "Be Vietnam Pro"']
+      return Promise.all(['700 80px "Charm"', '500 80px "Fraunces"', 'italic 400 80px "Fraunces"', '300 80px "Hanken Grotesk"', '500 80px "Hanken Grotesk"']
         .map(function (f) { return document.fonts.load(f, 'Đẹp'); })).then(function () { fontsReady = true; }, function () { fontsReady = true; });
     }
     ready();

@@ -2,16 +2,16 @@
 const { esc } = require('../lib/util');
 
 const base = {
-  '--font-title': "'Cormorant Garamond',Georgia,serif",
-  '--font-script': "'Cormorant Garamond',Georgia,serif",
-  '--font-body': "'Be Vietnam Pro',system-ui,sans-serif",
+  '--font-title': "'Newsreader',Georgia,serif",
+  '--font-script': "'Newsreader',Georgia,serif",
+  '--font-body': "'Hanken Grotesk',system-ui,sans-serif",
 };
 
 module.exports = {
   id: 'toigian',
   name: 'Tinh Khôi',
   desc: 'Hiện đại tối giản, ảnh cưới tràn màn hình, chữ thanh mảnh',
-  fonts: 'https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@300;400;600&family=Cormorant+Garamond:ital,wght@0,400;0,500;1,400;1,500&display=swap',
+  fonts: 'https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@300..700&family=Newsreader:ital,opsz,wght@0,6..72,300..600;1,6..72,300..600&display=swap',
   palettes: [
     { id: 'kem', name: 'Kem & nâu', swatch: ['#f6f1ea', '#8b6b4e'], vars: { ...base, '--page': '#e9e1d6', '--bg': '#f8f4ee', '--paper': '#fffdf9', '--ink': '#2e2925', '--muted': '#8a8077', '--accent': '#8b6b4e', '--accent-ink': '#fffdf9', '--gold': '#b89b72', '--line': '#e6ddd1' } },
     { id: 'xanh-xo', name: 'Xanh xô thơm', swatch: ['#f3f5f0', '#5f7461'], vars: { ...base, '--page': '#dfe5dc', '--bg': '#f4f6f1', '--paper': '#ffffff', '--ink': '#263029', '--muted': '#76837a', '--accent': '#5f7461', '--accent-ink': '#ffffff', '--gold': '#9fb09a', '--line': '#dfe5dc' } },
