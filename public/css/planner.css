@@ -39,6 +39,13 @@ body{padding-bottom:calc(76px + env(safe-area-inset-bottom))}
 
 /* việc */
 .phase{margin-bottom:18px}
+.evb{background:#fff;border:1px solid var(--line);border-radius:18px;padding:16px 16px 14px;margin-bottom:16px}
+.evb .task{border-color:#f0e6dc;background:#fffdfa}
+.evh{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;margin-bottom:8px}
+.evh b{font-family:var(--serif);font-size:19px;font-weight:600}
+.evh .muted{font-size:14px}
+.evh .btn{margin-left:6px;vertical-align:middle}
+.evc{font-size:12px;font-weight:700;color:var(--ok);background:var(--ok-soft);padding:3px 10px;border-radius:999px;white-space:nowrap}
 .phase h3{font-size:13px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin:0 0 8px}
 .task{display:flex;gap:12px;align-items:flex-start;padding:12px 14px;background:#fff;border:1px solid var(--line);border-radius:12px;margin-bottom:8px}
 .task .ck{width:24px;height:24px;border-radius:50%;border:2px solid var(--line);background:#fff;flex:none;cursor:pointer;display:grid;place-items:center;color:#fff;font-size:14px;margin-top:1px}
@@ -110,4 +117,7 @@ body{padding-bottom:calc(76px + env(safe-area-inset-bottom))}
 .prod p{margin:0;font-size:13px;color:var(--muted)}
 .prod .btn{margin-top:auto;align-self:flex-start}
 .onb{padding:20px;border:2px dashed var(--gold);background:#fffaf2}
+.grid>*{min-width:0}
+.field input[type=date]{min-width:0}
+@media (max-width:560px){#setup{grid-template-columns:1fr}#setup .btn{width:100%}}
 .member{display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--line)}

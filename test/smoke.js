@@ -240,6 +240,25 @@ async function call(who, method, url, body) {
   assert.ok(r.json.tasks.some((t) => /mâm quả đám hỏi/.test(t.title)), 'đổi sang miền Nam: mâm quả số chẵn');
   assert.ok(!r.json.tasks.some((t) => /tráp ăn hỏi \(số lẻ/.test(t.title)));
   assert.ok(r.json.tasks.some((t) => t.id === custom.id) && r.json.tasks.some((t) => t.id === t1.id && t.done), 'giữ việc tự thêm và việc đã xong');
+  // việc gắn theo từng lễ: ăn hỏi tính hạn theo ngày ăn hỏi
+  r = await call('u', 'GET', '/api/wedding/tasks');
+  const mq = r.json.tasks.find((t) => /mâm quả đám hỏi/.test(t.title));
+  assert.equal(mq.event, 'anhoi');
+  assert.equal(mq.due, null, 'chưa chọn ngày đám hỏi thì chưa có hạn chót');
+  r = await call('u', 'PUT', '/api/wedding', { anhoi: '2026-11-15' });
+  assert.equal(r.json.wedding.eventNames.anhoi, 'Lễ đám hỏi', 'miền Nam gọi là đám hỏi');
+  r = await call('u', 'GET', '/api/wedding/tasks');
+  assert.equal(r.json.tasks.find((t) => t.id === mq.id).due, '2026-10-16', 'trước đám hỏi 30 ngày');
+  assert.ok(r.json.tasks.some((t) => /hoa cưới/.test(t.title)) && r.json.tasks.some((t) => /xe cưới/i.test(t.title)), 'có gợi ý hoa cưới, xe cưới');
+  const xe = r.json.tasks.find((t) => /xe cưới/i.test(t.title));
+  await call('u', 'DELETE', `/api/tasks/${xe.id}`);
+  await call('u', 'POST', '/api/wedding/tasks/reseed');
+  r = await call('u', 'GET', '/api/wedding/tasks');
+  assert.ok(r.json.tasks.some((t) => /xe cưới/i.test(t.title)), 'khôi phục gợi ý đã xoá');
+  assert.ok(r.json.tasks.some((t) => t.id === custom.id), 'khôi phục vẫn giữ việc tự thêm');
+  r = await call('u', 'POST', '/api/wedding/tasks', { title: 'Mua quà cho nhà gái', event: 'anhoi', offset: -5 });
+  assert.equal(r.json.task.due, '2026-11-10');
+
   r = await call('u', 'GET', '/api/wedding/budget');
   assert.ok(r.json.items.length > 10);
   const it = r.json.items[0];

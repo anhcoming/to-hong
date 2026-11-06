@@ -1,9 +1,10 @@
 // Sổ tay cưới: tổng quan, việc cần làm, ngân sách, khách mời, lịch âm.
 const S = { ov: null, tasks: [], budget: null, guests: null, tab: 'home', filter: 'todo', cal: null, sel: null, gq: '', gside: '' };
-const PH = [
-  [-270, 'Trước 9 – 12 tháng'], [-180, 'Trước 6 – 9 tháng'], [-90, 'Trước 3 – 6 tháng'], [-30, 'Trước 1 – 3 tháng'],
-  [-8, 'Trước 1 – 4 tuần'], [0, 'Tuần cưới & ngày cưới'], [Infinity, 'Sau ngày cưới'],
-];
+const EVENTS = ['damngo', 'anhoi', 'cuoi', 'sau'];
+const EV_ICON = { damngo: '🤝', anhoi: '🎁', cuoi: '💍', sau: '🏡' };
+const evName = (e) => S.ov.wedding.eventNames[e] || e;
+const evDate = (e) => { const w = S.ov.wedding; return e === 'damngo' ? w.damngo : e === 'anhoi' ? w.anhoi : w.date; };
+const evField = (e) => (e === 'damngo' ? 'damngo' : e === 'anhoi' ? 'anhoi' : 'date');
 const CTA = {
   card: ['Làm thiệp online', 'sua'], led: ['Tạo màn LED', 'sua-led'], video: ['Làm video', 'sua-video'],
   guests: ['Mở danh sách khách', 'tab:guests'], budget: ['Mở ngân sách', 'tab:budget'],
@@ -24,10 +25,12 @@ function renderHero() {
   const st = S.ov.stats;
   const pct = st.tasks ? Math.round((st.tasksDone / st.tasks) * 100) : 0;
   const d = w.date ? daysTo(w.date) : null;
+  const ah = w.anhoi ? daysTo(w.anhoi) : null;
   $('#hero').innerHTML = `<div class="wrap">
     <div>
       <h1>${esc(names() || 'Sổ tay cưới của bạn')}</h1>
-      <p class="sub">${w.date ? `${dvn(w.date)} · ${esc(Lunar.lunarText(w.date))}` : 'Chưa chọn ngày cưới'} · ${esc(S.ov.regions[w.region])}</p>
+      <p class="sub">💍 ${w.date ? `Cưới ${dvn(w.date)} · ${esc(Lunar.lunarText(w.date))}` : 'Chưa chọn ngày cưới'} · ${esc(S.ov.regions[w.region])}</p>
+      ${w.anhoi ? `<p class="sub" style="margin-top:2px">🎁 ${esc(evName('anhoi'))} ${dvn(w.anhoi)}${ah > 0 ? ` · còn ${ah} ngày` : ah === 0 ? ' · hôm nay!' : ''}</p>` : ''}
       <div class="prog" title="Tiến độ chuẩn bị"><i style="width:${pct}%"></i></div>
       <p class="sub" style="font-size:13px">Đã xong ${st.tasksDone}/${st.tasks} việc (${pct}%)</p>
     </div>
@@ -39,8 +42,9 @@ function renderHero() {
 }
 
 // ---------- tổng quan ----------
+// việc chưa xong, hạn gần nhất trước (việc chưa có hạn để cuối)
 function upcoming() {
-  return S.tasks.filter((t) => !t.done).slice(0, 5);
+  return S.tasks.filter((t) => !t.done).slice().sort((a, b) => (a.due || '9999') .localeCompare(b.due || '9999')).slice(0, 6);
 }
 function taskRow(t) {
   // Việc có hạn trước cả ngày tạo sổ tay (cưới gấp) → "Nên làm sớm", không dọa "Quá hạn"
@@ -54,13 +58,23 @@ function taskRow(t) {
     <div class="body">
       <div class="tt" data-edit="${t.id}">${esc(t.title)}</div>
       <div class="meta">
-        ${t.due ? (soon ? '<span class="soon">Nên làm sớm</span>' : `<span class="${late ? 'late' : ''}">${late ? 'Quá hạn · ' : ''}${dvn(t.due)}</span>`) : `<span>${t.offset < 0 ? Math.round(-t.offset / 30) ? `~${Math.round(-t.offset / 30)} tháng trước cưới` : `${-t.offset} ngày trước cưới` : t.offset === 0 ? 'Ngày cưới' : `${t.offset} ngày sau cưới`}</span>`}
-        <span class="chip">${esc(t.category)}</span>
+        ${t.due ? (soon ? '<span class="soon">Nên làm sớm</span>' : `<span class="${late ? 'late' : ''}">${late ? 'Quá hạn · ' : ''}${dvn(t.due)}</span>`) : `<span>${relText(t)}</span>`}
+        ${S.tab !== 'tasks' ? `<span class="chip">${EV_ICON[t.event] || ''} ${esc(evName(t.event))}</span>` : `<span class="chip">${esc(t.category)}</span>`}
         ${t.assignee ? `<span>👤 ${esc(memberName(t.assignee))}</span>` : ''}
         ${t.note ? '<span>📝</span>' : ''}
       </div>
       ${cta && !t.done ? `<div class="cta"><button class="btn sm soft" data-cta="${t.cta}">${cta[0]} →</button></div>` : ''}
     </div></div>`;
+}
+
+// "trước lễ ăn hỏi 30 ngày" khi lễ chưa có ngày
+function relText(t) {
+  const o = t.offset;
+  const base = t.event === 'sau' ? 'ngày cưới' : evName(t.event).toLowerCase();
+  if (o === 0) return 'Đúng ' + base;
+  const n = Math.abs(o);
+  const span = n >= 60 ? `~${Math.round(n / 30)} tháng` : `${n} ngày`;
+  return `${o < 0 ? 'Trước' : 'Sau'} ${base} ${span}`;
 }
 
 function productBox() {
@@ -79,14 +93,15 @@ function renderHome() {
   const needSetup = !w.couple.groom.name || !w.couple.bride.name || !w.date;
   const budget = w.budgetTotal || st.estimate;
   $('#main').innerHTML = `
-    ${needSetup ? `<section class="sec onb panel"><h2 style="margin:0 0 6px">👋 Bắt đầu sổ tay cưới</h2>
-      <p class="muted" style="margin:0 0 14px">Điền vài thông tin để có lịch việc cần làm đúng ngày, đếm ngược và dùng chung cho thiệp, màn LED, video.</p>
+    ${needSetup ? `<section class="sec onb panel"><h2 style="margin:0 0 6px">👋 Hai bạn cưới khi nào?</h2>
+      <p class="muted" style="margin:0 0 14px">Điền tên và ngày — mình tự soạn sẵn danh sách những việc cần chuẩn bị trước lễ ăn hỏi và ngày cưới (đặt xe, hoa cưới, chụp ảnh cưới, tráp…). Hai bạn sửa, thêm, xoá thoải mái.</p>
       <form id="setup" class="grid g2">
         <label class="field"><span>Tên chú rể</span><input name="g" value="${esc(w.couple.groom.name)}" placeholder="Đức Minh" required></label>
         <label class="field"><span>Tên cô dâu</span><input name="b" value="${esc(w.couple.bride.name)}" placeholder="Thu Hà" required></label>
-        <label class="field"><span>Ngày cưới (có thể đổi sau)</span><input name="d" type="date" value="${esc(w.date)}"></label>
+        <label class="field"><span>💍 Ngày cưới</span><input name="d" type="date" value="${esc(w.date)}"><small>Chưa chốt cũng được, đổi sau</small></label>
+        <label class="field"><span>🎁 Ngày ăn hỏi / đám hỏi</span><input name="a" type="date" value="${esc(w.anhoi)}"><small>Không bắt buộc</small></label>
         <label class="field"><span>Phong tục theo</span><select name="r">${Object.entries(S.ov.regions).map(([k, v]) => `<option value="${k}" ${w.region === k ? 'selected' : ''}>${v}</option>`).join('')}</select></label>
-        <div><button class="btn">Lưu & bắt đầu</button></div>
+        <div style="align-self:end"><button class="btn lg">Soạn danh sách việc →</button></div>
       </form></section>` : ''}
     <section class="sec"><h2>Việc sắp tới <button class="btn sm plain" data-go="tasks">Xem tất cả</button></h2>
       ${upcoming().map(taskRow).join('') || '<p class="empty panel">Bạn đã xong hết việc 🎉</p>'}
@@ -110,52 +125,107 @@ function renderHome() {
   const f = $('#setup');
   if (f) f.onsubmit = async (e) => {
     e.preventDefault();
-    const b = { couple: { groom: { name: f.g.value }, bride: { name: f.b.value } }, date: f.d.value, region: f.r.value };
+    const b = { couple: { groom: { name: f.g.value }, bride: { name: f.b.value } }, date: f.d.value, anhoi: f.a.value, region: f.r.value };
     S.ov = await api('/api/wedding', { method: 'PUT', body: b });
     await loadTasks();
-    toast('Đã lưu — lịch việc đã tính theo ngày cưới');
-    render();
+    toast('Đã soạn danh sách việc — hạn chót tính theo ngày của từng lễ');
+    go('tasks');
   };
 }
 
 // ---------- việc cần làm ----------
+// Danh sách việc chia theo từng lễ: dạm ngõ → ăn hỏi → cưới → sau cưới
 function renderTasks() {
-  const list = S.tasks.filter((t) => S.filter === 'all' || (S.filter === 'todo' ? !t.done : t.done));
-  const groups = PH.map(([max, label], i) => ({ label, items: list.filter((t) => t.offset <= max && (i === 0 || t.offset > PH[i - 1][0])) })).filter((g) => g.items.length);
+  const show = (t) => S.filter === 'all' || (S.filter === 'todo' ? !t.done : t.done);
+  const blocks = EVENTS.map((e) => {
+    const all = S.tasks.filter((t) => t.event === e);
+    if (!all.length) return '';
+    const items = all.filter(show);
+    const done = all.filter((t) => t.done).length;
+    const date = evDate(e);
+    const dl = date ? daysTo(date) : null;
+    return `<section class="evb">
+      <div class="evh">
+        <div><b>${EV_ICON[e]} ${esc(e === 'sau' ? 'Sau ngày cưới' : evName(e))}</b>
+          <span class="muted">${e === 'sau' ? '' : date ? ` · ${dvn(date)}${dl > 0 ? ` · còn ${dl} ngày` : dl === 0 ? ' · hôm nay' : ''}` : ''}</span>
+          ${e !== 'sau' && !date ? `<button class="btn sm soft" data-setdate="${e}">Chọn ngày ${esc(evName(e).toLowerCase())}</button>` : ''}
+        </div>
+        <span class="evc">${done}/${all.length} xong</span>
+      </div>
+      <div class="bar" style="margin:0 0 10px"><i style="width:${all.length ? (done / all.length) * 100 : 0}%;background:var(--ok)"></i></div>
+      ${items.map(taskRow).join('') || `<p class="muted" style="font-size:14px;margin:6px 0 10px">${S.filter === 'todo' ? 'Xong hết rồi 🎉' : 'Chưa có việc nào ở đây.'}</p>`}
+      <button class="btn sm plain" data-addev="${e}">+ Thêm việc cho ${esc(e === 'sau' ? 'sau cưới' : evName(e).toLowerCase())}</button>
+    </section>`;
+  }).join('');
   $('#main').innerHTML = `
     <div class="filters">
       <button data-f="todo" class="${S.filter === 'todo' ? 'on' : ''}">Chưa xong (${S.tasks.filter((t) => !t.done).length})</button>
       <button data-f="done" class="${S.filter === 'done' ? 'on' : ''}">Đã xong (${S.tasks.filter((t) => t.done).length})</button>
       <button data-f="all" class="${S.filter === 'all' ? 'on' : ''}">Tất cả</button>
       <span style="flex:1"></span>
-      <button class="btn sm" id="addTask" style="border-radius:999px">+ Thêm việc</button>
+      <button class="btn sm plain" id="reseed" title="Thêm lại các việc gợi ý đã xoá">↺ Khôi phục gợi ý</button>
     </div>
-    ${!S.ov.wedding.date ? '<p class="panel" style="padding:12px 14px;background:var(--warn-soft);border-color:transparent;font-size:14px">Chọn ngày cưới (nút ⚙ phía trên) để thấy hạn chót cụ thể của từng việc.</p>' : ''}
-    ${groups.map((g) => `<div class="phase"><h3>${g.label}</h3>${g.items.map(taskRow).join('')}</div>`).join('') || '<p class="empty panel">Không có việc nào ở mục này.</p>'}`;
+    <p class="muted" style="font-size:13px;margin:-4px 0 14px">Danh sách soạn sẵn theo phong tục ${esc(S.ov.regions[S.ov.wedding.region])}. Bấm vào tên việc để sửa, xoá hoặc đổi hạn; bấm vòng tròn khi đã xong.</p>
+    ${blocks}`;
 }
 
-function taskModal(t) {
+function dateModal(e) {
+  openModal(`<h2>${EV_ICON[e]} Ngày ${esc(evName(e).toLowerCase())}</h2>
+    <form id="df" style="margin-top:14px"><label class="field"><span>Chọn ngày (dương lịch)</span><input name="d" type="date" required value="${esc(evDate(e))}"></label>
+    <p class="muted" id="dl" style="font-size:13px;margin:-6px 0 14px"></p><button class="btn block">Lưu ngày</button></form>`, (box, close) => {
+    const f = $('#df', box);
+    const show = () => { $('#dl', box).textContent = f.d.value ? Lunar.lunarText(f.d.value) : ''; };
+    f.d.oninput = show; show();
+    f.onsubmit = async (ev) => {
+      ev.preventDefault();
+      S.ov = await api('/api/wedding', { method: 'PUT', body: { [evField(e)]: f.d.value } });
+      close(); await loadTasks(); render(); toast('Đã lưu ngày — hạn chót các việc đã tính lại');
+    };
+  });
+}
+
+function taskModal(t, ev) {
   const isNew = !t;
-  t = t || { title: '', category: 'Khác', offset: -30, note: '', assignee: null };
+  t = t || { title: '', category: 'Khác', offset: ev === 'sau' ? 3 : -7, note: '', assignee: null, event: ev || 'cuoi' };
   const w = S.ov.wedding;
-  const due = w.date ? new Date(new Date(w.date + 'T00:00:00Z').getTime() + t.offset * 864e5).toISOString().slice(0, 10) : '';
+  const base = evDate(t.event);
+  const due = base ? new Date(new Date(base + 'T00:00:00Z').getTime() + t.offset * 864e5).toISOString().slice(0, 10) : '';
   openModal(`<h2>${isNew ? 'Thêm việc' : 'Sửa việc'}</h2>
     <form id="tf" style="margin-top:14px">
-      <label class="field"><span>Việc cần làm</span><input name="title" value="${esc(t.title)}" required maxlength="140"></label>
+      <label class="field"><span>Việc cần làm</span><input name="title" value="${esc(t.title)}" required maxlength="140" placeholder="VD: Đặt bánh cưới"></label>
       <div class="grid2">
+        <label class="field"><span>Chuẩn bị cho</span><select name="event">${EVENTS.map((e) => `<option value="${e}" ${t.event === e ? 'selected' : ''}>${EV_ICON[e]} ${esc(e === 'sau' ? 'Sau ngày cưới' : evName(e))}</option>`).join('')}</select></label>
         <label class="field"><span>Nhóm</span><input name="category" list="tcats" value="${esc(t.category)}" maxlength="40"><datalist id="tcats">${S.ov.taskCats.map((c) => `<option value="${esc(c)}">`).join('')}</datalist></label>
-        ${w.date ? `<label class="field"><span>Hạn chót</span><input name="due" type="date" value="${due}"></label>`
-          : `<label class="field"><span>Số ngày trước cưới</span><input name="before" type="number" value="${-t.offset}"></label>`}
+      </div>
+      <div class="grid2">
+        <label class="field"><span>Hạn chót</span><input name="due" type="date" value="${due}"><small id="dueHint"></small></label>
+        <label class="field"><span>Hoặc: số ngày ${t.offset > 0 ? 'sau' : 'trước'} lễ</span><input name="before" type="number" value="${Math.abs(t.offset)}"></label>
       </div>
       <label class="field"><span>Người phụ trách</span><select name="assignee"><option value="">— Chưa giao —</option>${S.ov.members.map((m) => `<option value="${m.userId}" ${t.assignee === m.userId ? 'selected' : ''}>${esc(m.name || m.email)}</option>`).join('')}</select></label>
       <label class="field"><span>Ghi chú</span><textarea name="note" maxlength="500" rows="3">${esc(t.note)}</textarea></label>
       <div style="display:flex;gap:8px;justify-content:space-between">${isNew ? '<span></span>' : '<button type="button" class="btn danger" id="tdel">Xoá việc</button>'}<button class="btn">Lưu</button></div>
     </form>`, (box, close) => {
-    $('#tf', box).onsubmit = async (e) => {
+    const f = $('#tf', box);
+    // hạn chót ⇄ số ngày trước/sau lễ: sửa ô nào thì ô kia tự tính lại
+    const sign = () => (f.event.value === 'sau' ? 1 : -1);
+    const baseOf = () => evDate(f.event.value);
+    const syncDue = () => {
+      const b = baseOf();
+      f.due.disabled = !b;
+      $('#dueHint', box).textContent = b ? '' : `Chưa có ngày ${f.event.value === 'sau' ? 'cưới' : evName(f.event.value).toLowerCase()} — nhập số ngày bên cạnh`;
+      f.due.value = b ? new Date(new Date(b + 'T00:00:00Z').getTime() + sign() * (+f.before.value || 0) * 864e5).toISOString().slice(0, 10) : '';
+    };
+    f.before.oninput = syncDue;
+    f.event.onchange = syncDue;
+    f.due.oninput = () => {
+      const b = baseOf();
+      if (b && f.due.value) f.before.value = Math.abs(Math.round((new Date(f.due.value + 'T00:00:00Z') - new Date(b + 'T00:00:00Z')) / 864e5));
+    };
+    syncDue();
+    f.onsubmit = async (e) => {
       e.preventDefault();
-      const f = e.target;
-      const offset = f.due ? Math.round((new Date(f.due.value + 'T00:00:00Z') - new Date(w.date + 'T00:00:00Z')) / 864e5) : -(+f.before.value || 0);
-      const body = { title: f.title.value, category: f.category.value, offset: f.due && !f.due.value ? t.offset : offset, note: f.note.value, assignee: f.assignee.value || null };
+      const offset = sign() * Math.abs(+f.before.value || 0);
+      const body = { title: f.title.value, event: f.event.value, category: f.category.value, offset, note: f.note.value, assignee: f.assignee.value || null };
       try {
         if (isNew) await api('/api/wedding/tasks', { method: 'POST', body });
         else await api(`/api/tasks/${t.id}`, { method: 'PUT', body });
@@ -301,7 +371,7 @@ function renderCal() {
     const d = new Date(Date.UTC(y, m - 1, 1 - start + i));
     const iso = d.toISOString().slice(0, 10);
     const l = Lunar.solarToLunar(d.getUTCDate(), d.getUTCMonth() + 1, d.getUTCFullYear());
-    cells.push(`<div class="day ${d.getUTCMonth() !== m - 1 ? 'out' : ''} ${iso === todayIso() ? 'today' : ''} ${iso === w.date ? 'wed' : ''} ${iso === S.sel ? 'sel' : ''} ${d.getUTCDay() === 0 ? 'sun' : ''}" data-day="${iso}">
+    cells.push(`<div class="day ${d.getUTCMonth() !== m - 1 ? 'out' : ''} ${iso === todayIso() ? 'today' : ''} ${iso === w.date || iso === w.anhoi || iso === w.damngo ? 'wed' : ''} ${iso === S.sel ? 'sel' : ''} ${d.getUTCDay() === 0 ? 'sun' : ''}" data-day="${iso}">
       <span class="s">${d.getUTCDate()}</span><span class="l ${l.day === 1 || l.day === 15 ? 'm1' : ''}">${l.day === 1 ? `1/${l.month}${l.leap ? 'N' : ''}` : l.day}</span>${dueSet.has(iso) ? '<i class="dot"></i>' : ''}</div>`);
     if (i === 34 && new Date(Date.UTC(y, m - 1, 1 - start + 35)).getUTCMonth() !== m - 1) break; // bỏ hàng cuối thừa
   }
@@ -315,7 +385,8 @@ function renderCal() {
       <b>${wd}, ${dvn(sel)}</b>
       <p style="margin:4px 0">${esc(Lunar.lunarText(sel))} · ngày ${esc(Lunar.canChiDay(sd, sm, sy))}</p>
       ${tasks.length ? `<p class="muted" style="margin:8px 0 4px;font-size:13px">Hạn chót trong ngày:</p>${tasks.map(taskRow).join('')}` : ''}
-      ${sel !== w.date ? `<button class="btn sm soft" id="setDate" style="margin-top:8px">Chọn làm ngày cưới</button>` : '<p class="chip red" style="margin-top:8px">Ngày cưới của bạn ♥</p>'}
+      ${sel === w.date ? '<p class="chip red" style="margin-top:8px">💍 Ngày cưới của bạn ♥</p>' : sel === w.anhoi ? `<p class="chip warn" style="margin-top:8px">🎁 ${esc(evName('anhoi'))}</p>` : sel === w.damngo ? `<p class="chip warn" style="margin-top:8px">🤝 ${esc(evName('damngo'))}</p>`
+        : `<div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:8px"><button class="btn sm soft" id="setDate" data-f2="date">Chọn làm ngày cưới</button><button class="btn sm plain" id="setDate2" data-f2="anhoi">Chọn làm ngày ${esc(evName('anhoi').toLowerCase())}</button></div>`}
     </div>`;
   }
   $('#main').innerHTML = `
@@ -336,7 +407,9 @@ async function settingsModal() {
       ${p('groom', 'fullName', 'Họ tên chú rể')}${p('bride', 'fullName', 'Họ tên cô dâu')}
       ${p('groom', 'father', 'Bố chú rể', 'Ông …')}${p('bride', 'father', 'Bố cô dâu', 'Ông …')}
       ${p('groom', 'mother', 'Mẹ chú rể', 'Bà …')}${p('bride', 'mother', 'Mẹ cô dâu', 'Bà …')}
-      <label class="field"><span>Ngày cưới</span><input name="date" type="date" value="${esc(w.date)}"></label>
+      <label class="field"><span>💍 Ngày cưới</span><input name="date" type="date" value="${esc(w.date)}"></label>
+      <label class="field"><span>🎁 Ngày ${esc(evName('anhoi').toLowerCase())}</span><input name="anhoi" type="date" value="${esc(w.anhoi)}"></label>
+      <label class="field"><span>🤝 Ngày ${esc(evName('damngo').toLowerCase())}</span><input name="damngo" type="date" value="${esc(w.damngo)}"></label>
       <label class="field"><span>Giờ</span><input name="time" type="time" value="${esc(w.time)}"></label></div>
       <label class="field"><span>Phong tục theo</span><select name="region">${Object.entries(S.ov.regions).map(([k, v]) => `<option value="${k}" ${w.region === k ? 'selected' : ''}>${v}</option>`).join('')}</select>
         <small>Đổi miền sẽ thay các việc mẫu chưa làm bằng việc theo phong tục miền mới (giữ việc bạn tự thêm và việc đã xong).</small></label>
@@ -356,7 +429,7 @@ async function settingsModal() {
       $$('input[name*="."]', f).forEach((i) => { const [k, fld] = i.name.split('.'); couple[k][fld] = i.value; });
       if (f.region.value !== w.region && !confirm('Đổi phong tục sẽ thay các việc mẫu chưa làm. Tiếp tục?')) return;
       try {
-        S.ov = await api('/api/wedding', { method: 'PUT', body: { couple, date: f.date.value, time: f.time.value, region: f.region.value } });
+        S.ov = await api('/api/wedding', { method: 'PUT', body: { couple, date: f.date.value, anhoi: f.anhoi.value, damngo: f.damngo.value, time: f.time.value, region: f.region.value } });
         close(); await reloadAll(); toast('Đã lưu thông tin');
       } catch (err) { toast(err.message, true); }
     };
@@ -412,7 +485,7 @@ function bind() {
   $('#ptabs').onclick = (e) => { const b = e.target.closest('button'); if (b) go(b.dataset.tab); };
   const main = $('#main');
   main.addEventListener('click', async (e) => {
-    const b = e.target.closest('[data-ck],[data-edit],[data-cta],[data-go],[data-f],#addTask,[data-badd],[data-bedit],#gadd,[data-gedit],[data-mv],[data-day],#setDate');
+    const b = e.target.closest('[data-ck],[data-edit],[data-cta],[data-go],[data-f],#addTask,[data-addev],[data-setdate],#reseed,[data-badd],[data-bedit],#gadd,[data-gedit],[data-mv],[data-day],#setDate,#setDate2');
     if (!b) return;
     const d = b.dataset;
     try {
@@ -428,16 +501,25 @@ function bind() {
       else if (d.go) go(d.go);
       else if (d.f) { S.filter = d.f; render(); }
       else if (b.id === 'addTask') taskModal(null);
+      else if (d.addev) taskModal(null, d.addev);
+      else if (d.setdate) dateModal(d.setdate);
+      else if (b.id === 'reseed') {
+        if (!confirm('Thêm lại các việc gợi ý đã xoá? Việc bạn tự thêm và việc đã xong được giữ nguyên.')) return;
+        await api('/api/wedding/tasks/reseed', { method: 'POST' });
+        await reloadAll(); toast('Đã khôi phục danh sách gợi ý');
+      }
       else if (d.badd !== undefined) budgetModal(null, d.badd);
       else if (d.bedit) budgetModal(S.budget.items.find((x) => x.id === d.bedit));
       else if (b.id === 'gadd') guestModal(null);
       else if (d.gedit) guestModal(S.guests.guests.find((x) => x.id === d.gedit));
       else if (d.mv) { S.cal.m += +d.mv; if (S.cal.m < 1) { S.cal.m = 12; S.cal.y--; } if (S.cal.m > 12) { S.cal.m = 1; S.cal.y++; } render(); }
       else if (d.day) { S.sel = d.day; render(); }
-      else if (b.id === 'setDate') {
-        if (!confirm(`Đặt ${dvn(S.sel)} làm ngày cưới? Hạn chót các việc sẽ tính lại theo ngày này.`)) return;
-        S.ov = await api('/api/wedding', { method: 'PUT', body: { date: S.sel } });
-        await loadTasks(); render(); toast('Đã đặt ngày cưới ♥');
+      else if (b.id === 'setDate' || b.id === 'setDate2') {
+        const fld = b.dataset.f2;
+        const label = fld === 'date' ? 'ngày cưới' : 'ngày ' + evName('anhoi').toLowerCase();
+        if (!confirm(`Đặt ${dvn(S.sel)} làm ${label}? Hạn chót các việc sẽ tính lại theo ngày này.`)) return;
+        S.ov = await api('/api/wedding', { method: 'PUT', body: { [fld]: S.sel } });
+        await loadTasks(); render(); toast(`Đã đặt ${label} ♥`);
       }
     } catch (err) { toast(err.message, true); }
   });
