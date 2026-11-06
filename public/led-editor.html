@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Màn hình LED</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;600;700&family=Playfair+Display:wght@600&display=swap">
+<link rel="stylesheet" href="/css/app.css">
+<style>
+body{height:100vh;display:flex;flex-direction:column;overflow:hidden}
+.ebar{display:flex;align-items:center;gap:10px;padding:10px 16px;border-bottom:1px solid var(--line);background:#fff;flex-wrap:wrap}
+.ebar .back{text-decoration:none;color:var(--muted);font-size:20px;padding:4px 8px}
+.ebar h1{margin:0;font-size:17px;flex:1;min-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.saved{font-size:13px;color:var(--muted)}
+.layout{flex:1;display:grid;grid-template-columns:420px minmax(0,1fr);min-height:0}
+.side{overflow:auto;padding:16px 16px 80px;background:var(--bg)}
+.group{padding:16px;margin-bottom:14px}
+.group h3{margin:0 0 12px;font-size:15px}
+.group h3 small{font-weight:400;color:var(--muted);font-size:12px;margin-left:4px}
+.opts{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.opt{border:2px solid var(--line);background:#fff;border-radius:12px;padding:10px;text-align:left;cursor:pointer;font-size:13px}
+.opt b{display:block;font-size:14px}
+.opt span{color:var(--muted)}
+.opt.on{border-color:var(--primary);background:var(--primary-soft)}
+.ratio-ic{display:inline-block;border:2px solid currentColor;border-radius:3px;margin-right:6px;vertical-align:-2px}
+.sws{display:flex;gap:10px;flex-wrap:wrap}
+.sw{width:40px;height:40px;border-radius:50%;border:3px solid #fff;box-shadow:0 0 0 1px var(--line);cursor:pointer;padding:0}
+.sw.on{box-shadow:0 0 0 3px var(--primary)}
+.range{display:grid;grid-template-columns:110px 1fr 44px;align-items:center;gap:10px;margin-bottom:10px;font-size:14px}
+.range input{accent-color:var(--primary);width:100%}
+.range output{text-align:right;color:var(--muted);font-size:13px}
+.checks{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px}
+.stagewrap{background:#1a1416;display:grid;place-items:center;padding:24px;min-height:0;overflow:hidden;position:relative}
+.screen{background:#000;box-shadow:0 20px 60px rgba(0,0,0,.5);border:10px solid #2b2326;border-radius:8px;max-width:100%;max-height:100%}
+.screen iframe{width:100%;height:100%;border:0;display:block}
+.hint{position:absolute;left:24px;bottom:14px;color:#bba;font-size:13px}
+.intro{max-width:520px;margin:60px auto;padding:28px;text-align:center}
+.tips{font-size:14px;margin:0;padding-left:18px;color:var(--muted)}
+.tips li{margin-bottom:6px}
+@media (max-width:900px){.layout{grid-template-columns:1fr;grid-template-rows:42vh 1fr}.stagewrap{order:-1;padding:12px}.side{padding-bottom:40px}}
+</style>
+</head>
+<body>
+<header class="ebar">
+  <a class="back" id="back" href="/thiep-cua-toi" title="Quay lại">←</a>
+  <h1 id="ttl">Màn hình LED</h1>
+  <span id="chip"></span>
+  <span class="saved" id="saved"></span>
+  <span id="acts"></span>
+</header>
+<div class="layout" id="layout" hidden>
+  <div class="side" id="side"></div>
+  <div class="stagewrap" id="stagewrap"><div class="screen" id="screen"><iframe id="frame" title="Xem trước màn LED"></iframe></div><span class="hint">Xem trước · Bấm "Mở trình chiếu" để chạy toàn màn hình</span></div>
+</div>
+<div id="introBox"></div>
+<script src="/js/common.js"></script>
+<script src="/js/pay.js"></script>
+<script src="/js/led-editor.js"></script>
+</body>
+</html>

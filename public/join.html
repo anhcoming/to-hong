@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex">
+<meta name="theme-color" content="#0f0a0c">
+<title>Tham gia sổ tay cưới</title>
+<link rel="icon" href="/favicon.svg">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&family=Dancing+Script:wght@600&family=Playfair+Display:ital,wght@0,600;1,500&display=swap">
+<link rel="stylesheet" href="/css/site.css">
+</head>
+<body data-solid>
+<header id="nav"></header>
+<main class="solo"><div class="box center" id="box"><div class="skeleton" style="height:220px"></div></div></main>
+<script src="/js/common.js"></script>
+<script src="/js/site.js"></script>
+<script>
+const code = location.pathname.split('/').pop();
+(async () => {
+  const me = (await fetch('/api/me').then(r => r.json())).user;
+  let info;
+  try { info = await api('/api/join/' + code, { allow401: true }); }
+  catch (e) { $('#box').innerHTML = `<p style="font-size:40px;margin:0">🔗</p><h1>Link mời không còn hiệu lực</h1><p class="muted">Nhờ người gửi chép lại link mới trong sổ tay nhé.</p><a class="btn btn-main" href="/">Về trang chủ</a>`; return; }
+  const next = encodeURIComponent(location.pathname);
+  $('#box').innerHTML = `
+    <p style="font-size:44px;margin:0">💞</p>
+    <span class="eyebrow">Lời mời cùng chuẩn bị</span>
+    <h1>${info.names ? `Đám cưới <span class="grad">${esc(info.names)}</span>` : 'Sổ tay cưới'}</h1>
+    <p class="muted">${info.date ? 'Ngày cưới ' + info.date.split('-').reverse().join('/') + ' · ' : ''}Bạn được mời cùng xem và sửa sổ tay cưới: việc cần làm, ngân sách, khách mời, thiệp.</p>
+    <div style="display:grid;gap:10px;margin-top:22px">
+    ${info.member ? '<a class="btn btn-main btn-lg" href="/so-tay">Mở sổ tay</a>'
+      : me ? `<button class="btn btn-main btn-lg" id="join">Tham gia với ${esc(me.email)}</button>`
+      : `<a class="btn btn-main btn-lg" href="/dang-nhap?dang-ky=1&next=${next}">Tạo tài khoản để tham gia</a><a class="btn btn-ghost" href="/dang-nhap?next=${next}">Tôi đã có tài khoản</a>`}
+    </div>`;
+  const j = $('#join');
+  if (j) j.onclick = async () => {
+    try { await api('/api/join/' + code, { method: 'POST' }); location.href = '/so-tay'; }
+    catch (e) { toast(e.message, true); }
+  };
+})();
+</script>
+</body>
+</html>

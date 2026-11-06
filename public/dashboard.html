@@ -1,0 +1,140 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Thiệp của tôi</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;600;700&family=Playfair+Display:wght@600&display=swap">
+<link rel="stylesheet" href="/css/app.css">
+<style>
+.head{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;margin:32px 0 20px;flex-wrap:wrap}
+.head h1{font-family:var(--serif);font-weight:600;margin:0;font-size:32px}
+.list{display:grid;gap:14px}
+.item{display:grid;grid-template-columns:120px 1fr;overflow:hidden}
+.thumb{background:linear-gradient(150deg,#e9cfd3,#d7b07a) center/cover;min-height:150px;display:grid;place-items:center;color:#fff;font-size:34px}
+.info{padding:16px 18px;display:flex;flex-direction:column;gap:8px;min-width:0}
+.top{display:flex;justify-content:space-between;gap:10px;align-items:flex-start}
+.top h3{margin:0;font-size:18px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.meta{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+.stats{display:flex;gap:16px;font-size:13px;color:var(--muted);flex-wrap:wrap}
+.stats b{color:var(--ink)}
+.acts{display:flex;gap:6px;flex-wrap:wrap;margin-top:4px}
+.link{font-size:13px;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pick{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:18px 0}
+.pick label{border:2px solid var(--line);border-radius:14px;padding:14px;cursor:pointer;display:grid;gap:4px}
+.pick input{display:none}
+.pick label:has(input:checked){border-color:var(--primary);background:var(--primary-soft)}
+.pick b{font-size:16px}
+.pick span{font-size:13px;color:var(--muted)}
+@media (max-width:560px){.item{grid-template-columns:84px 1fr}.thumb{min-height:120px}}
+</style>
+</head>
+<body>
+<main class="wrap" style="padding-bottom:60px">
+  <div class="head">
+    <div><h1>Thiệp của tôi</h1><p class="muted" style="margin:4px 0 0">Quản lý thiệp, khách mời và phản hồi</p></div>
+    <button class="btn lg" id="newBtn">+ Tạo thiệp mới</button>
+  </div>
+  <div class="list" id="list"><div class="skeleton" style="height:150px"></div></div>
+</main>
+<script src="/js/common.js"></script>
+<script src="/js/pay.js"></script>
+<script>
+let META;
+const tplName = (id) => (META.templates.find(t => t.id === id) || {}).name || id;
+
+function stateChip(c) {
+  if (c.paid) return '<span class="chip ok">● Đã kích hoạt</span>';
+  if (c.status !== 'published') return '<span class="chip">Bản nháp</span>';
+  if (c.expired) return '<span class="chip red">Hết hạn dùng thử</span>';
+  const days = Math.max(0, Math.ceil((c.trialEndsAt - Date.now()) / 864e5));
+  return `<span class="chip warn">Dùng thử · còn ${days} ngày</span>`;
+}
+
+function ledChip(c) {
+  const one = (s, n) => !s.created ? '' : s.paid ? `<span class="chip ok">${n} · đã kích hoạt</span>`
+    : s.expired ? `<span class="chip red">${n} · hết dùng thử</span>` : `<span class="chip warn">${n} · dùng thử</span>`;
+  return one(c.led, 'Màn LED') + one(c.video, 'Video');
+}
+
+async function load() {
+  const { cards } = await api('/api/cards');
+  const el = $('#list');
+  if (!cards.length) {
+    el.innerHTML = `<div class="panel empty"><p style="font-size:40px;margin:0">💌</p><h3 style="color:var(--ink)">Bạn chưa có thiệp nào</h3><p>Tạo thiệp đầu tiên — miễn phí, xem trước ngay khi gõ.</p><button class="btn" onclick="newCard()">Tạo thiệp đầu tiên</button></div>`;
+    return;
+  }
+  el.innerHTML = cards.map(c => `
+    <article class="item panel" data-id="${c.id}">
+      <a class="thumb" href="/sua/${c.id}" style="${c.cover ? `background-image:url('${esc(c.cover)}')` : ''}">${c.cover ? '' : '♥'}</a>
+      <div class="info">
+        <div class="top">
+          <div style="min-width:0"><h3>${esc(c.names || c.title)}</h3><div class="link">${esc(c.title)} · ${esc(tplName(c.template))}${c.date ? ' · ' + c.date.split('-').reverse().join('/') : ''}</div></div>
+          <a class="btn sm" href="/sua/${c.id}">Sửa thiệp</a>
+        </div>
+        <div class="meta">${stateChip(c)}${ledChip(c)}</div>
+        <div class="stats"><span>👁 <b>${c.views}</b> lượt xem</span><span>✉ <b>${c.guests}</b> khách mời</span><span>✓ <b>${c.rsvpYes}</b> người sẽ đến</span><span>♥ <b>${c.wishes}</b> lời chúc</span></div>
+        <div class="acts">
+          ${c.status === 'published' ? `<button class="btn sm soft" data-a="share">Sao chép link</button><a class="btn sm plain" target="_blank" href="${esc(c.url)}">Mở thiệp</a>` : ''}
+          ${!c.paid ? `<button class="btn sm" data-a="pay">Kích hoạt · ${money(META.price)}</button>` : ''}
+          <a class="btn sm plain" href="/sua-led/${c.id}">✨ ${c.led.created ? 'Màn LED' : 'Tạo màn LED'}</a>
+          <a class="btn sm plain" href="/sua-video/${c.id}">🎬 ${c.video.created ? 'Video dạm ngõ' : 'Tạo video dạm ngõ'}</a>
+          <button class="btn sm plain" data-a="dup">Nhân bản</button>
+          <button class="btn sm danger" data-a="del">Xoá</button>
+        </div>
+      </div>
+    </article>`).join('');
+  $$('[data-a]').forEach(b => b.onclick = () => act(b.dataset.a, b.closest('.item').dataset.id, cards.find(c => c.id === b.closest('.item').dataset.id)));
+}
+
+async function act(a, id, c) {
+  try {
+    if (a === 'share') copyText(c.url, 'Đã sao chép link thiệp');
+    if (a === 'pay') openPayModal(id, load);
+    if (a === 'dup') { await api(`/api/cards/${id}/duplicate`, { method: 'POST' }); toast('Đã nhân bản thiệp'); load(); }
+    if (a === 'del') {
+      if (!confirm(`Xoá thiệp "${c.names || c.title}"? Danh sách khách, xác nhận và lời chúc của thiệp này cũng bị xoá và không khôi phục được.`)) return;
+      await api(`/api/cards/${id}`, { method: 'DELETE' });
+      toast('Đã xoá thiệp');
+      load();
+    }
+  } catch (e) { toast(e.message, true); }
+}
+
+async function create(template, palette) {
+  const { card } = await api('/api/cards', { method: 'POST', body: { template, palette } });
+  location.href = '/sua/' + card.id;
+}
+
+window.newCard = function () {
+  openModal(`<h2>Chọn mẫu thiệp</h2><p class="muted" style="margin:0">Bạn có thể đổi mẫu và màu bất cứ lúc nào.</p>
+    <form id="nf"><div class="pick">${META.templates.map((t, i) => `
+      <label><input type="radio" name="t" value="${t.id}" ${i ? '' : 'checked'}>
+        <b>${esc(t.name)}</b><span>${esc(t.desc)}</span>
+        <a href="/demo/${t.id}" target="_blank" style="font-size:13px">Xem thử ↗</a></label>`).join('')}</div>
+      <button class="btn block lg">Bắt đầu tạo thiệp</button></form>`, (box) => {
+    $('#nf', box).onsubmit = (e) => { e.preventDefault(); create(e.target.t.value).catch(err => toast(err.message, true)); };
+  });
+};
+
+(async () => {
+  const { meta, user } = await renderTopbar('cards');
+  META = meta;
+  if (!user) return (location.href = '/dang-nhap?next=' + encodeURIComponent(location.pathname + location.search));
+  document.title = 'Thiệp của tôi — ' + meta.brand;
+  $('#newBtn').onclick = newCard;
+  const q = new URLSearchParams(location.search);
+  if (q.get('tao')) return create(q.get('tao'), q.get('mau'));
+  const want = q.get('tao-led') ? 'sua-led' : q.get('tao-video') ? 'sua-video' : null;
+  if (want) {
+    // từ trang giới thiệu sản phẩm: dùng thiệp gần nhất, chưa có thì tạo thiệp mới
+    const { cards } = await api('/api/cards');
+    if (cards[0]) return (location.href = `/${want}/${cards[0].id}`);
+    const { card } = await api('/api/cards', { method: 'POST', body: { template: 'hy' } });
+    return (location.href = `/${want}/${card.id}`);
+  }
+  load().catch(e => toast(e.message, true));
+})();
+</script>
+</body>
+</html>

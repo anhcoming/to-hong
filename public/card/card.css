@@ -1,0 +1,121 @@
+/* Khung dùng chung cho mọi mẫu thiệp. Mẫu riêng chỉ đè biến màu/font và phần trang bìa. */
+*,*::before,*::after{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%;scroll-behavior:smooth}
+body{margin:0;background:var(--page,#eee);color:var(--ink);font-family:var(--font-body,system-ui,sans-serif);line-height:1.6;font-size:16px}
+body.locked{overflow:hidden}
+img{max-width:100%;display:block}
+button{font:inherit;cursor:pointer}
+a{color:inherit}
+
+.card{max-width:480px;margin:0 auto;background:var(--bg);min-height:100vh;overflow:hidden;position:relative;box-shadow:0 0 40px rgba(0,0,0,.15)}
+
+.sec{padding:56px 24px;text-align:center;position:relative}
+.sec-title{font-family:var(--font-title);font-weight:500;font-size:30px;line-height:1.2;margin:0 0 24px;color:var(--accent)}
+.sec-sub{margin:-18px 0 28px;color:var(--muted);font-size:14px;letter-spacing:.02em}
+
+/* lời mời */
+.fams{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:32px;font-size:14px}
+.fam p{margin:0}
+.fam-label{font-family:var(--font-title);font-size:15px;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);margin-bottom:6px!important}
+.fam-addr{color:var(--muted);font-size:13px;margin-top:4px!important}
+.invite-lead{margin:0;font-size:15px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.guest-name{font-family:var(--font-script);font-size:36px;line-height:1.3;margin:6px 0;color:var(--accent)}
+.invite-to{margin:0 0 28px;color:var(--muted);font-size:14px}
+.couple-full{display:flex;align-items:center;justify-content:center;gap:14px}
+.couple-full .role{margin:0;font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:var(--muted)}
+.couple-full .full{margin:2px 0 0;font-family:var(--font-title);font-size:20px}
+.couple-full .amp{font-family:var(--font-script);font-size:34px;color:var(--gold)}
+.invite-msg{margin:28px auto 0;max-width:340px;font-style:italic;color:var(--muted);font-size:15px}
+
+/* đếm ngược */
+.cd{display:flex;justify-content:center;gap:10px}
+.cd-cell{width:68px;padding:12px 0;border-radius:14px;background:var(--paper);border:1px solid var(--line)}
+.cd-cell b{display:block;font-family:var(--font-title);font-size:28px;font-weight:500;color:var(--accent);line-height:1.1}
+.cd-cell span{font-size:12px;color:var(--muted)}
+
+/* sự kiện */
+.event{background:var(--paper);border:1px solid var(--line);border-radius:18px;padding:24px 20px;margin:0 0 18px}
+.event h3{font-family:var(--font-title);font-weight:500;font-size:22px;margin:0 0 6px;color:var(--accent)}
+.event p{margin:2px 0}
+.ev-time b{font-size:18px}
+.ev-lunar{font-size:13px;color:var(--muted);font-style:italic}
+.ev-place{font-weight:600;margin-top:10px!important}
+.ev-addr{font-size:14px;color:var(--muted)}
+.map{margin:14px 0 4px;border-radius:12px;overflow:hidden;border:1px solid var(--line);aspect-ratio:16/10;background:var(--line)}
+.map iframe{width:100%;height:100%;border:0}
+.ev-actions{display:flex;gap:8px;justify-content:center;margin-top:14px;flex-wrap:wrap}
+
+/* nút */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;padding:11px 20px;border-radius:999px;border:1px solid var(--accent);background:var(--accent);color:var(--accent-ink);text-decoration:none;font-size:14px;font-weight:600;letter-spacing:.02em;transition:transform .15s,opacity .15s}
+.btn:active{transform:scale(.97)}
+.btn.ghost{background:transparent;color:var(--accent)}
+.btn.block{width:100%;padding:14px}
+.btn[disabled]{opacity:.6;pointer-events:none}
+
+/* câu chuyện */
+.s-story p{max-width:380px;margin:0 auto 12px;color:var(--ink)}
+
+/* album */
+.gallery{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.ph{border:0;padding:0;aspect-ratio:3/4;border-radius:10px;background:var(--line) center/cover no-repeat}
+.ph:nth-child(3n+1){grid-column:span 2;aspect-ratio:4/3}
+.lightbox{position:fixed;inset:0;z-index:60;background:rgba(0,0,0,.92);display:grid;place-items:center;padding:16px}
+.lightbox[hidden]{display:none}
+.lightbox img{max-height:90vh;border-radius:6px}
+.lb-close{position:absolute;top:12px;right:12px;width:44px;height:44px;border-radius:50%;border:0;background:rgba(255,255,255,.15);color:#fff;font-size:26px}
+
+/* biểu mẫu */
+.form{display:grid;gap:14px;text-align:left;background:var(--paper);border:1px solid var(--line);border-radius:18px;padding:22px 18px}
+.form label{display:grid;gap:6px;font-size:13px;color:var(--muted)}
+.form input:not([type=radio]),.form select,.form textarea{width:100%;font:inherit;font-size:16px;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:11px 12px;outline:none}
+.form input:focus,.form select:focus,.form textarea:focus{border-color:var(--accent)}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.choice{display:grid;gap:8px}
+.choice label{display:flex;align-items:center;gap:10px;padding:11px 12px;border:1px solid var(--line);border-radius:10px;color:var(--ink);font-size:15px;cursor:pointer;background:var(--bg)}
+.choice input{accent-color:var(--accent);width:18px;height:18px;margin:0}
+.choice label:has(input:checked){border-color:var(--accent)}
+.form-msg{margin:0;min-height:1em;font-size:14px;text-align:center;color:var(--accent)}
+
+/* mừng cưới */
+.gifts{display:grid;gap:16px}
+.gift{background:var(--paper);border:1px solid var(--line);border-radius:18px;padding:22px}
+.gift-who{margin:0 0 12px;font-family:var(--font-title);font-size:19px;color:var(--accent)}
+.gift img{width:180px;height:180px;margin:0 auto 12px;background:#fff;border-radius:12px;padding:8px}
+.gift p{margin:2px 0}
+.gift-bank{font-weight:600}
+.gift-acc{display:flex;justify-content:center;align-items:center;gap:8px;font-size:18px;letter-spacing:.04em}
+.copy{border:1px solid var(--line);background:var(--bg);color:var(--accent);border-radius:999px;font-size:12px;padding:4px 10px}
+.gift-holder{color:var(--muted);font-size:13px}
+
+/* lưu bút */
+.wish-list{display:grid;gap:10px;margin-top:18px;text-align:left;max-height:420px;overflow:auto}
+.wish{background:var(--paper);border:1px solid var(--line);border-radius:14px;padding:12px 14px}
+.wish b{color:var(--accent);font-size:14px}
+.wish p{margin:2px 0 0;font-size:15px;white-space:pre-line;overflow-wrap:anywhere}
+
+/* lời cảm ơn */
+.thanks-big{font-family:var(--font-script);font-size:46px;line-height:1.2;color:var(--accent);margin:0}
+.s-thanks p{margin:4px 0;color:var(--muted)}
+.thanks-names{font-family:var(--font-title);font-size:22px;color:var(--ink)!important;margin-top:18px!important}
+
+.credit{text-align:center;padding:20px 16px 36px;font-size:12px;color:var(--muted)}
+.credit a{text-decoration:none}
+.wm{display:inline-block;padding:8px 14px;border-radius:999px;background:var(--paper);border:1px dashed var(--line)}
+
+/* nút nhạc */
+.music-btn{position:fixed;z-index:40;right:max(14px,calc(50% - 226px));bottom:18px;width:46px;height:46px;border-radius:50%;border:1px solid var(--line);background:var(--paper);color:var(--accent);font-size:20px;box-shadow:0 4px 14px rgba(0,0,0,.18)}
+.music-btn.playing span{display:inline-block;animation:spin 3s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* lớp mở thiệp */
+.opener{position:fixed;inset:0;z-index:50;display:grid;place-items:center;transition:opacity .7s ease,visibility .7s}
+.opener.gone{opacity:0;visibility:hidden}
+.is-preview .opener{display:none}
+
+/* hiện dần khi cuộn */
+.reveal{opacity:0;transform:translateY(24px);transition:opacity .8s ease,transform .8s ease}
+.reveal.in{opacity:1;transform:none}
+@media (prefers-reduced-motion:reduce){.reveal{opacity:1;transform:none;transition:none}html{scroll-behavior:auto}}
+
+.toast{position:fixed;left:50%;bottom:80px;transform:translate(-50%,20px);background:rgba(20,20,20,.9);color:#fff;padding:10px 16px;border-radius:999px;font-size:14px;opacity:0;transition:.3s;pointer-events:none;z-index:70}
+.toast.show{opacity:1;transform:translate(-50%,0)}

@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Sửa thiệp</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;600;700&family=Playfair+Display:wght@600&display=swap">
+<link rel="stylesheet" href="/css/app.css">
+<style>
+body{height:100vh;display:flex;flex-direction:column;overflow:hidden}
+.ebar{display:flex;align-items:center;gap:10px;padding:10px 16px;border-bottom:1px solid var(--line);background:#fff;flex-wrap:wrap}
+.ebar .back{text-decoration:none;color:var(--muted);font-size:20px;padding:4px 8px}
+.ebar h1{margin:0;font-size:17px;flex:1;min-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.saved{font-size:13px;color:var(--muted)}
+.layout{flex:1;display:grid;grid-template-columns:minmax(0,1fr) 440px;min-height:0}
+.side{overflow:auto;background:var(--bg)}
+.side .tabs{position:sticky;top:0;background:var(--bg);z-index:5;padding:0 16px}
+.pane{padding:20px 16px 80px;max-width:720px}
+.pane[hidden]{display:none}
+.group{padding:18px;margin-bottom:16px}
+.group h3{margin:0 0 14px;font-size:16px}
+.group h3 small{font-weight:400;color:var(--muted);font-size:13px;margin-left:6px}
+.prev{background:#e9e2da;display:grid;place-items:center;padding:16px;overflow:auto}
+.phone{width:375px;height:min(760px,calc(100vh - 110px));border-radius:40px;background:#1d1517;padding:10px;box-shadow:0 30px 60px rgba(0,0,0,.2)}
+.phone iframe{width:100%;height:100%;border:0;border-radius:31px;background:#fff}
+.ev{border:1px solid var(--line);border-radius:12px;padding:14px;margin-bottom:12px;background:#fff}
+.ev-h{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
+.photos{display:grid;grid-template-columns:repeat(auto-fill,minmax(96px,1fr));gap:8px}
+.photo{position:relative;aspect-ratio:3/4;border-radius:10px;background:#eee center/cover;border:1px solid var(--line)}
+.photo button{position:absolute;top:4px;right:4px;width:26px;height:26px;border-radius:50%;border:0;background:rgba(0,0,0,.6);color:#fff;cursor:pointer}
+.photo .mv{left:4px;right:auto}
+.drop{display:grid;place-items:center;aspect-ratio:3/4;border:2px dashed var(--line);border-radius:10px;cursor:pointer;color:var(--muted);font-size:13px;text-align:center;padding:6px;background:#fff}
+.drop:hover{border-color:var(--primary);color:var(--primary)}
+.cover-box{display:flex;gap:14px;align-items:center}
+.cover-box .photo{width:110px;flex:none}
+.tplpick{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.tplpick button{border:2px solid var(--line);background:#fff;border-radius:12px;padding:12px;text-align:left;cursor:pointer}
+.tplpick button.on{border-color:var(--primary);background:var(--primary-soft)}
+.pals{display:flex;gap:10px;flex-wrap:wrap}
+.pals button{display:flex;align-items:center;gap:8px;border:2px solid var(--line);background:#fff;border-radius:999px;padding:6px 12px 6px 6px;cursor:pointer;font-size:13px}
+.pals button.on{border-color:var(--primary)}
+.pals i{width:22px;height:22px;border-radius:50%}
+.toggles{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.slug{display:flex;align-items:center;border:1px solid var(--line);border-radius:10px;background:#fff;overflow:hidden}
+.slug span{padding:10px 0 10px 12px;color:var(--muted);font-size:14px;white-space:nowrap}
+.slug input{border:0!important;box-shadow:none!important;padding-left:2px!important}
+.sumrow{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px}
+.sum{flex:1;min-width:110px;padding:14px;text-align:center}
+.sum b{display:block;font-size:24px;font-family:var(--serif)}
+.sum span{font-size:12px;color:var(--muted)}
+.mobile-prev{display:none}
+@media (max-width:960px){
+  .layout{grid-template-columns:1fr}
+  .prev{display:none;position:fixed;inset:0;z-index:60;padding:12px}
+  .prev.show{display:grid}
+  .prev .close{position:fixed;top:12px;right:12px;z-index:61}
+  .phone{width:min(375px,100%);height:calc(100vh - 24px)}
+  .mobile-prev{display:inline-flex}
+}
+@media (min-width:961px){.prev .close{display:none}}
+</style>
+</head>
+<body>
+<header class="ebar">
+  <a class="back" href="/thiep-cua-toi" title="Về danh sách">←</a>
+  <h1 id="ttl">Đang tải…</h1>
+  <span class="saved" id="saved"></span>
+  <a class="btn sm plain" id="ledLink" href="#">✨ Màn LED</a>
+  <a class="btn sm plain" id="videoLink" href="#">🎬 Video</a>
+  <button class="btn sm plain mobile-prev" id="pvBtn">Xem trước</button>
+  <span id="pubArea"></span>
+</header>
+<div class="layout">
+  <div class="side">
+    <nav class="tabs" id="tabs">
+      <button class="tab on" data-tab="info">Thông tin</button>
+      <button class="tab" data-tab="events">Lịch trình</button>
+      <button class="tab" data-tab="media">Ảnh & nhạc</button>
+      <button class="tab" data-tab="gift">Mừng cưới</button>
+      <button class="tab" data-tab="look">Giao diện</button>
+      <button class="tab" data-tab="guests">Khách mời</button>
+      <button class="tab" data-tab="resp">Phản hồi</button>
+    </nav>
+    <div id="panes"></div>
+  </div>
+  <div class="prev" id="prev">
+    <button class="btn sm close" id="pvClose">Đóng xem trước</button>
+    <div class="phone"><iframe id="frame" title="Xem trước thiệp"></iframe></div>
+  </div>
+</div>
+<script src="/js/common.js"></script>
+<script src="/js/pay.js"></script>
+<script src="/js/editor.js"></script>
+</body>
+</html>

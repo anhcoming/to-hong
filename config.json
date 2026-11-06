@@ -1,0 +1,25 @@
+{
+  "brand": "Tơ Hồng",
+  "tagline": "Thiệp cưới online đẹp, gửi qua Zalo trong 5 phút",
+  "port": 3210,
+  "baseUrl": "http://localhost:3210",
+  "price": 129000,
+  "ledPrice": 29000,
+  "videoPrice": 69000,
+  "ffmpegPath": "ffmpeg",
+  "trialDays": 7,
+  "trialGuestLimit": 20,
+  "coupons": {
+    "CHAOMUNG": 30000
+  },
+  "payment": {
+    "bankBin": "970436",
+    "bankName": "Vietcombank",
+    "accountNo": "0000000000",
+    "accountName": "TEN CHU TAI KHOAN"
+  },
+  "support": {
+    "zalo": "0900000000",
+    "email": "hotro@example.com"
+  }
+}

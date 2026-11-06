@@ -1,0 +1,14 @@
+{
+  "name": "to-hong-thiep-cuoi",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Nền tảng thiệp cưới online: tạo thiệp, mời khách, xác nhận tham dự, mừng cưới qua QR",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "test": "node test/smoke.js && node test/migrate.js"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}

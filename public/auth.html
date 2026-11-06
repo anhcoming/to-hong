@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#0f0a0c">
+<title>Đăng nhập — Tơ Hồng</title>
+<link rel="icon" href="/favicon.svg">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&family=Dancing+Script:wght@600&family=Playfair+Display:ital,wght@0,600;1,500&display=swap">
+<link rel="stylesheet" href="/css/site.css">
+</head>
+<body data-solid>
+<header id="nav"></header>
+<main class="solo">
+  <div class="box">
+    <span class="eyebrow">Tơ Hồng</span>
+    <h1 id="title">Chào mừng bạn</h1>
+    <p class="muted" style="margin:0">Sổ tay cưới miễn phí: việc cần làm, ngân sách, khách mời — và thiệp cưới online.</p>
+    <div class="seg"><button data-m="login" class="on">Đăng nhập</button><button data-m="register">Tạo tài khoản</button></div>
+    <form id="f">
+      <label class="field" id="nameF" hidden><span>Tên của bạn</span><input name="name" autocomplete="name" maxlength="80"></label>
+      <label class="field"><span>Email</span><input name="email" type="email" required autocomplete="email"></label>
+      <label class="field"><span>Mật khẩu</span><input name="password" type="password" required minlength="6" autocomplete="current-password"></label>
+      <button class="btn btn-main btn-lg block-btn" id="sub">Đăng nhập</button>
+      <p class="err" id="err"></p>
+    </form>
+  </div>
+</main>
+<script src="/js/common.js"></script>
+<script src="/js/site.js"></script>
+<script>
+let mode = new URLSearchParams(location.search).get('dang-ky') ? 'register' : 'login';
+const next = new URLSearchParams(location.search).get('next') || '/so-tay';
+function setMode(m) {
+  mode = m;
+  $$('.seg button').forEach(b => b.classList.toggle('on', b.dataset.m === m));
+  $('#nameF').hidden = m !== 'register';
+  $('#sub').textContent = m === 'register' ? 'Tạo tài khoản miễn phí' : 'Đăng nhập';
+  $('#title').innerHTML = m === 'register' ? 'Bắt đầu <span class="grad">hành trình</span>' : 'Chào mừng <span class="grad">trở lại</span>';
+  $('[name=password]').autocomplete = m === 'register' ? 'new-password' : 'current-password';
+  $('#err').textContent = '';
+  document.title = (m === 'register' ? 'Tạo tài khoản' : 'Đăng nhập') + ' — ' + (window.META ? META.brand : 'Tơ Hồng');
+}
+$$('.seg button').forEach(b => b.onclick = () => setMode(b.dataset.m));
+setMode(mode);
+$('#f').onsubmit = async (e) => {
+  e.preventDefault();
+  const fd = Object.fromEntries(new FormData(e.target));
+  $('#sub').disabled = true;
+  try {
+    await api('/api/auth/' + mode, { method: 'POST', body: fd, allow401: true });
+    location.href = next.startsWith('/') && !next.startsWith('//') ? next : '/so-tay';
+  } catch (err) {
+    $('#err').textContent = err.message;
+  } finally {
+    $('#sub').disabled = false;
+  }
+};
+</script>
+</body>
+</html>

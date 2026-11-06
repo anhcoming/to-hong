@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Video dạm ngõ</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@300;400;500;600;700&family=Dancing+Script:wght@600&family=Playfair+Display:ital,wght@0,500;0,600;1,500&display=swap">
+<link rel="stylesheet" href="/css/app.css">
+<style>
+body{height:100vh;display:flex;flex-direction:column;overflow:hidden}
+.ebar{display:flex;align-items:center;gap:10px;padding:10px 16px;border-bottom:1px solid var(--line);background:#fff;flex-wrap:wrap}
+.ebar .back{text-decoration:none;color:var(--muted);font-size:20px;padding:4px 8px}
+.ebar h1{margin:0;font-size:17px;flex:1;min-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.saved{font-size:13px;color:var(--muted)}
+.layout{flex:1;display:grid;grid-template-columns:480px minmax(0,1fr);min-height:0}
+.side{overflow:auto;padding:16px 16px 80px;background:var(--bg)}
+.group{padding:16px;margin-bottom:14px}
+.group h3{margin:0 0 12px;font-size:15px;display:flex;justify-content:space-between;align-items:center;gap:8px}
+.group h3 small{font-weight:400;color:var(--muted);font-size:12px}
+.opts{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.opt{border:2px solid var(--line);background:#fff;border-radius:12px;padding:10px;text-align:left;cursor:pointer;font-size:12px}
+.opt b{display:block;font-size:14px;margin-bottom:2px}
+.opt span{color:var(--muted)}
+.opt.on{border-color:var(--primary);background:var(--primary-soft)}
+.opt i{display:block;height:34px;border-radius:6px;margin-bottom:8px}
+.ln{display:grid;grid-template-columns:1fr auto;gap:6px;padding:10px;border:1px solid var(--line);border-radius:10px;background:#fff;margin-bottom:8px}
+.ln input[type=text]{grid-column:1/-1;width:100%;padding:8px 10px;border:1px solid var(--line);border-radius:8px;font-size:15px}
+.ln input[type=text]:focus{outline:none;border-color:var(--primary)}
+.ln .row{display:flex;gap:6px;align-items:center;flex-wrap:wrap;font-size:12px;color:var(--muted)}
+.ln select,.ln input[type=number]{padding:5px 6px;border:1px solid var(--line);border-radius:6px;font-size:13px;background:#fff}
+.ln input[type=number]{width:62px}
+.ln input[type=color]{width:30px;height:28px;border:1px solid var(--line);border-radius:6px;padding:1px;background:#fff}
+.ln .tools{display:flex;gap:4px}
+.ln .tools button{border:1px solid var(--line);background:#fff;border-radius:6px;width:28px;height:28px;cursor:pointer;color:var(--muted)}
+.ln .tools button:hover{color:var(--primary);border-color:var(--primary)}
+.scene{border-left:3px solid var(--gold);padding-left:12px;margin-bottom:18px}
+.scene-h{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;font-weight:600;font-size:14px}
+.tokens{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px}
+.tokens button{border:1px dashed var(--gold);background:#fffaf2;color:#7a5a2a;border-radius:999px;padding:3px 10px;font-size:12px;cursor:pointer}
+.stage{background:#1a1416;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;padding:24px;min-height:0;overflow:hidden}
+#cv{width:100%;max-width:1100px;aspect-ratio:16/9;height:auto;border:8px solid #2b2326;border-radius:8px;box-shadow:0 20px 60px rgba(0,0,0,.5);background:#000}
+.jump{display:flex;gap:8px;flex-wrap:wrap;justify-content:center}
+.jump button{border:1px solid rgba(255,255,255,.2);background:transparent;color:#ddd;border-radius:999px;padding:6px 14px;cursor:pointer;font-size:13px}
+.jump button:hover{background:rgba(255,255,255,.1)}
+.intro{max-width:560px;margin:60px auto;padding:28px;text-align:center}
+.bar{height:10px;border-radius:999px;background:var(--line);overflow:hidden;margin:16px 0 8px}
+.bar i{display:block;height:100%;width:0;background:var(--primary);transition:width .2s}
+@media (max-width:980px){.layout{grid-template-columns:1fr;grid-template-rows:auto 1fr}.stage{order:-1;padding:10px}.side{padding-bottom:40px}}
+</style>
+</head>
+<body>
+<header class="ebar">
+  <a class="back" id="back" href="/thiep-cua-toi" title="Quay lại">←</a>
+  <h1 id="ttl">Video dạm ngõ</h1>
+  <span id="chip"></span>
+  <span class="saved" id="saved"></span>
+  <span id="acts"></span>
+</header>
+<div class="layout" id="layout" hidden>
+  <div class="side" id="side"></div>
+  <div class="stage">
+    <canvas id="cv" width="1920" height="1080"></canvas>
+    <div class="jump" id="jump"></div>
+  </div>
+</div>
+<div id="introBox"></div>
+<script src="/js/common.js"></script>
+<script src="/js/pay.js"></script>
+<script src="/js/lunar.js"></script>
+<script src="/video/engine.js"></script>
+<script src="/js/video-editor.js"></script>
+</body>
+</html>
