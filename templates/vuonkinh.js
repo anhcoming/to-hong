@@ -60,7 +60,6 @@ module.exports = {
   },
 
   cover(ctx) {
-    const p = ctx.dparts;
     const photo = ctx.d.cover || ctx.d.photos[0] || '';
     return `
 <header class="vk-cover">
@@ -71,8 +70,7 @@ module.exports = {
     <div class="vk-glass"></div>
   </div>
   <h1 class="vk-names"><span>${esc(ctx.g)}</span><em>&amp;</em><span>${esc(ctx.b)}</span></h1>
-  ${p ? `<p class="vk-date">${esc(ctx.weekday)} · <b>${p.d}.${p.m}.${p.y}</b>${ctx.timeText ? ` · ${esc(ctx.timeText)}` : ''}</p>
-  <p class="vk-lunar">${esc(ctx.lunar)}</p>` : ''}
+  ${ctx.dateBlock('stack')}
 </header>`;
   },
 
@@ -91,21 +89,15 @@ module.exports = {
 .tpl-vuonkinh .vk-names{position:relative;margin:24px 0 0;font-family:var(--font-script);font-weight:400;font-size:54px;line-height:1;color:var(--ink)}
 .tpl-vuonkinh .vk-names span{display:block}
 .tpl-vuonkinh .vk-names em{display:block;font-style:normal;font-family:var(--font-title);font-size:24px;color:var(--leaf);margin:4px 0}
-.tpl-vuonkinh .vk-date{position:relative;margin:18px 0 0;font-family:var(--font-title);font-size:17px;letter-spacing:.06em;color:var(--ink)}
-.tpl-vuonkinh .vk-date b{font-weight:600;color:var(--accent)}
-.tpl-vuonkinh .vk-lunar{position:relative;margin:2px 0 0;font-family:var(--font-title);font-style:italic;color:var(--muted)}
 .tpl-vuonkinh .vk-title{margin-bottom:26px}
 .tpl-vuonkinh .vk-sub{margin:0;font-family:var(--font-script);font-size:26px;color:var(--leaf);line-height:1.1}
 .tpl-vuonkinh .vk-title .sec-title{margin:0;font-weight:500;font-size:32px;color:var(--ink)}
 .tpl-vuonkinh .vk-div{display:block;width:150px;height:16px;margin:10px auto 0;--gold:var(--leaf)}
 .tpl-vuonkinh .guest-name{font-family:var(--font-script);font-size:44px;color:var(--ink)}
-.tpl-vuonkinh .fam-label,.tpl-vuonkinh .event h3,.tpl-vuonkinh .gift-who{color:var(--accent)}
-.tpl-vuonkinh .event{background:var(--paper);border:1px solid var(--line);border-radius:120px 120px 14px 14px;padding-top:40px;box-shadow:0 10px 24px rgba(40,50,40,.06)}
-.tpl-vuonkinh .event h3{font-size:26px}
+.tpl-vuonkinh .fam-label,.tpl-vuonkinh .gift-who{color:var(--accent)}
 .tpl-vuonkinh .btn{border-radius:999px}
 .tpl-vuonkinh .ph{border-radius:999px 999px 6px 6px;border:4px solid #fff;box-shadow:0 0 0 1px var(--line)}
-.tpl-vuonkinh .cd-cell{background:var(--paper);border-radius:999px 999px 10px 10px}
-.tpl-vuonkinh .s-countdown{background:color-mix(in srgb,var(--leaf) 12%,var(--bg))}
+.tpl-vuonkinh .s-cal{background:color-mix(in srgb,var(--leaf) 12%,var(--bg));--cal-hi:var(--gold)}
 .tpl-vuonkinh .thanks-big{font-family:var(--font-script);font-size:58px;color:var(--ink)}
 
 .vk-opener{overflow:hidden;background:radial-gradient(circle at 20% 15%,color-mix(in srgb,var(--flower) 30%,transparent),transparent 45%),radial-gradient(circle at 85% 90%,color-mix(in srgb,var(--leaf) 28%,transparent),transparent 50%),var(--bg)}

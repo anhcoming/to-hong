@@ -32,7 +32,9 @@ async function call(who, method, url, body) {
   r = await call('x', 'GET', '/demo/hy');
   assert.equal(r.status, 200);
   assert.match(r.text, /Đức Minh/);
-  assert.match(r.text, /Nhằm ngày/);
+  assert.match(r.text, /Bính Ngọ/, 'phải có âm lịch');
+  assert.match(r.text, /class="cal-grid"/, 'phải có lịch tháng');
+  assert.match(r.text, /class="tl"/, 'lịch trình dạng dòng thời gian');
   assert.equal((await call('x', 'GET', '/demo/toigian?palette=dem')).status, 200);
   // mọi mẫu × mọi bảng màu phải dựng được, có nút mở thiệp, nhóm hợp lệ
   const meta = (await call('x', 'GET', '/api/meta')).json;

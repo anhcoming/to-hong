@@ -68,7 +68,6 @@ module.exports = {
   },
 
   cover(ctx) {
-    const p = ctx.dparts;
     const photo = ctx.d.cover || ctx.d.photos[0] || '';
     return `
 <header class="hk-cover">
@@ -79,8 +78,7 @@ module.exports = {
     <div class="hk-photo"${photo ? ` style="background-image:url('${esc(photo)}')"` : ''}></div>
     ${pampas('hk-pampas l')}${pampas('hk-pampas r')}
   </div>
-  ${p ? `<div class="hk-date"><span>${esc(ctx.weekday)}</span><b>${p.d} · ${p.m} · ${p.y}</b><span>${esc(ctx.timeText) || '&nbsp;'}</span></div>
-  <p class="hk-lunar">${esc(ctx.lunar)}</p>` : ''}
+  ${ctx.dateBlock('split')}
 </header>`;
   },
 
@@ -97,24 +95,15 @@ module.exports = {
 .hk-pampas{position:absolute;bottom:-14px;width:110px;pointer-events:none}
 .hk-pampas.l{left:-62px;transform:rotate(-6deg)}
 .hk-pampas.r{right:-62px;transform:scaleX(-1) rotate(-6deg)}
-.tpl-hoakho .hk-date{display:flex;align-items:center;justify-content:center;gap:12px;margin-top:26px;font-family:var(--font-title);color:var(--ink)}
-.tpl-hoakho .hk-date span{min-width:76px;font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:var(--muted)}
-.tpl-hoakho .hk-date b{font-size:24px;font-weight:500;padding:4px 14px;border-left:1px solid var(--c2);border-right:1px solid var(--c2)}
-.tpl-hoakho .hk-lunar{margin:6px 0 0;font-family:var(--font-title);font-style:italic;color:var(--muted)}
 .tpl-hoakho .hk-title{margin-bottom:26px}
 .tpl-hoakho .hk-trb{display:block;width:64px;margin:0 auto 8px}
 .tpl-hoakho .hk-title .sec-title{margin:0;font-weight:400;font-size:30px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink)}
 .tpl-hoakho .hk-sub{margin:2px 0 0;font-family:var(--font-script);font-size:24px;color:var(--c1)}
 .tpl-hoakho .guest-name{font-family:var(--font-script);font-size:44px;color:var(--c1)}
-.tpl-hoakho .event{background:var(--paper);border:0;border-radius:999px 999px 10px 10px;padding-top:44px;box-shadow:0 10px 26px rgba(80,50,30,.08)}
-.tpl-hoakho .event h3{font-size:26px;color:var(--c1)}
 .tpl-hoakho .btn{border-radius:999px;letter-spacing:.08em}
 .tpl-hoakho .ph{border-radius:999px 999px 6px 6px}
-.tpl-hoakho .cd-cell{border-radius:999px 999px 8px 8px;background:var(--paper);border-color:var(--line)}
-.tpl-hoakho .s-countdown,.tpl-hoakho .s-thanks{background:var(--c1);color:var(--accent-ink)}
-.tpl-hoakho .s-countdown .sec-title,.tpl-hoakho .s-thanks .thanks-big,.tpl-hoakho .s-countdown .hk-sub{color:var(--accent-ink)}
-.tpl-hoakho .s-countdown .cd-cell{background:transparent;border-color:color-mix(in srgb,var(--accent-ink) 50%,transparent)}
-.tpl-hoakho .s-countdown .cd-cell b,.tpl-hoakho .s-countdown .cd-cell span{color:var(--accent-ink)}
+.tpl-hoakho .s-cal,.tpl-hoakho .s-thanks{background:var(--c1);color:var(--accent-ink);--cal-hi:var(--gold)}
+.tpl-hoakho .s-cal .sec-title,.tpl-hoakho .s-thanks .thanks-big,.tpl-hoakho .s-cal .hk-sub{color:var(--accent-ink)}
 .tpl-hoakho .thanks-big{font-family:var(--font-script);font-size:56px}
 .tpl-hoakho .s-thanks p,.tpl-hoakho .s-thanks .thanks-names{color:var(--accent-ink)!important}
 

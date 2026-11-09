@@ -66,7 +66,6 @@ module.exports = {
   },
 
   cover(ctx) {
-    const p = ctx.dparts;
     const photo = ctx.d.cover || ctx.d.photos[0] || '';
     return `
 <header class="bs-cover">
@@ -78,8 +77,7 @@ module.exports = {
       <div class="bs-photo"${photo ? ` style="background-image:url('${esc(photo)}')"` : ''}>${photo ? '' : '<span>囍</span>'}</div>
     </div>
     <h1 class="bs-names"><span>${esc(ctx.g)}</span><em>&amp;</em><span>${esc(ctx.b)}</span></h1>
-    ${p ? `<p class="bs-date">${esc(ctx.weekday)} · <b>${p.d}.${p.m}.${p.y}</b>${ctx.timeText ? ` · ${esc(ctx.timeText)}` : ''}</p>
-    <p class="bs-lunar">${esc(ctx.lunar)}</p>` : ''}
+    ${ctx.dateBlock('bloc')}
   </div>
   ${scrollBand('bs-band bot')}
 </header>`;
@@ -98,23 +96,16 @@ module.exports = {
 .tpl-bachsu .bs-names{margin:24px 0 0;font-family:var(--font-script);font-weight:700;font-size:44px;line-height:1.05;color:var(--glaze)}
 .tpl-bachsu .bs-names span{display:block}
 .tpl-bachsu .bs-names em{display:block;font-style:normal;font-weight:500;font-size:26px;color:var(--muted)}
-.tpl-bachsu .bs-date{margin:16px 0 0;font-family:var(--font-title);font-size:15px}
-.tpl-bachsu .bs-date b{font-weight:600;color:var(--glaze)}
-.tpl-bachsu .bs-lunar{margin:2px 0 0;font-family:var(--font-title);font-style:italic;font-size:13px;color:var(--muted)}
 .tpl-bachsu .bs-title{margin-bottom:24px}
 .tpl-bachsu .bs-trim{display:block;width:44px;margin:0 auto 8px}
 .tpl-bachsu .bs-title .sec-title{margin:0;font-weight:500;font-size:26px;color:var(--glaze)}
 .tpl-bachsu .bs-sub{margin:4px 0 0;font-family:var(--font-script);font-size:20px;color:var(--muted)}
 .tpl-bachsu .guest-name{font-family:var(--font-script);font-weight:700;font-size:40px;color:var(--glaze)}
-.tpl-bachsu .event{background:var(--paper);border:2px solid var(--glaze);outline:1px solid var(--glaze);outline-offset:-7px;border-radius:14px}
 .tpl-bachsu .btn{border-radius:999px}
 .tpl-bachsu .ph{border-radius:50%;aspect-ratio:1;border:3px solid var(--paper);box-shadow:0 0 0 2px var(--glaze)}
-.tpl-bachsu .cd-cell{border-radius:50%;aspect-ratio:1;display:grid;place-content:center;background:var(--paper);border:2px solid var(--glaze)}
-.tpl-bachsu .s-countdown,.tpl-bachsu .s-thanks,.tpl-bachsu .credit{background:var(--glaze);color:#fff;opacity:1}
-.tpl-bachsu .s-countdown .sec-title,.tpl-bachsu .s-thanks .thanks-big,.tpl-bachsu .s-countdown .bs-sub{color:#fff}
-.tpl-bachsu .s-countdown .bs-trim{--glaze:#fff}
-.tpl-bachsu .s-countdown .cd-cell{background:transparent;border-color:#fff}
-.tpl-bachsu .s-countdown .cd-cell b,.tpl-bachsu .s-countdown .cd-cell span{color:#fff}
+.tpl-bachsu .s-cal,.tpl-bachsu .s-thanks,.tpl-bachsu .credit{background:var(--glaze);color:#fff;opacity:1;--cal-hi:var(--gold)}
+.tpl-bachsu .s-cal .sec-title,.tpl-bachsu .s-thanks .thanks-big,.tpl-bachsu .s-cal .bs-sub{color:#fff}
+.tpl-bachsu .s-cal .bs-trim{--glaze:#fff}
 .tpl-bachsu .thanks-big{font-family:var(--font-script);font-weight:700;font-size:50px}
 .tpl-bachsu .s-thanks p,.tpl-bachsu .s-thanks .thanks-names{color:#fff!important}
 .tpl-bachsu .credit .wm{background:transparent;border-color:#fff;color:#fff}
@@ -129,5 +120,6 @@ module.exports = {
 .bs-opener .bs-o-names em{display:block;font-style:normal;font-weight:500;font-size:22px;color:var(--muted)}
 .bs-opener .bs-o-to{margin:0 0 18px;font-size:12px;color:var(--muted)}
 .bs-opener .bs-o-to b{display:block;font-family:var(--font-title);font-weight:500;font-size:19px;color:var(--ink)}
+.tpl-bachsu .s-cal{--cal-hi:#fff;--cal-on:var(--glaze)}
 `,
 };

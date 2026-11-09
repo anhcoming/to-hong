@@ -76,15 +76,13 @@ module.exports = {
   },
 
   cover(ctx) {
-    const p = ctx.dparts;
     const photo = ctx.d.cover || ctx.d.photos[0] || '';
     return `
 <header class="cb-cover">
   <p class="cb-k">We're getting married!</p>
   ${couple('cb-couple')}
   <h1 class="cb-names"><span>${esc(ctx.g)}</span><em>♥</em><span>${esc(ctx.b)}</span></h1>
-  ${p ? `<div class="cb-date"><span>${esc(ctx.weekday)}</span><b>${p.d}.${p.m}.${p.y}</b>${ctx.timeText ? `<span>${esc(ctx.timeText)}</span>` : ''}</div>
-  <p class="cb-lunar">${esc(ctx.lunar)}</p>` : ''}
+  ${ctx.dateBlock('bloc')}
   ${photo ? `<div class="cb-polaroid"><i class="cb-tape"></i><div style="background-image:url('${esc(photo)}')"></div><p>Hai đứa mình ♥</p></div>` : ''}
 </header>`;
   },
@@ -100,10 +98,6 @@ module.exports = {
 .tpl-chibi .cb-names{margin:6px 0 0;font-family:var(--font-title);font-weight:800;font-size:38px;line-height:1.05;color:var(--ink)}
 .tpl-chibi .cb-names span{display:block}
 .tpl-chibi .cb-names em{display:block;font-style:normal;font-size:26px;color:var(--accent)}
-.tpl-chibi .cb-date{display:flex;flex-wrap:wrap;justify-content:center;gap:8px;margin-top:16px;font-family:var(--font-title)}
-.tpl-chibi .cb-date span,.tpl-chibi .cb-date b{padding:6px 14px;border-radius:999px;background:#fff;border:2px dashed var(--line);font-weight:600;font-size:15px}
-.tpl-chibi .cb-date b{background:var(--accent);border-color:var(--accent);color:#fff;font-size:18px;font-weight:800}
-.tpl-chibi .cb-lunar{margin:8px 0 0;font-size:13px;color:var(--muted)}
 .tpl-chibi .cb-polaroid{position:relative;width:min(220px,60vw);margin:28px auto 0;padding:10px 10px 4px;background:#fff;box-shadow:0 12px 26px rgba(80,40,50,.18);transform:rotate(3deg)}
 .tpl-chibi .cb-polaroid>div{aspect-ratio:1;background:var(--line) center/cover no-repeat}
 .tpl-chibi .cb-polaroid p{margin:6px 0 2px;font-family:var(--font-script);font-weight:700;font-size:22px;color:var(--accent)}
@@ -113,13 +107,9 @@ module.exports = {
 .tpl-chibi .cb-title .sec-title{margin:0;font-weight:800;font-size:28px;color:var(--ink)}
 .tpl-chibi .cb-sub{margin:0;font-family:var(--font-title);font-weight:500;color:var(--muted)}
 .tpl-chibi .guest-name{font-family:var(--font-title);font-weight:800;font-size:32px;color:var(--accent)}
-.tpl-chibi .event{background:#fff;border:2px dashed var(--line);border-radius:22px}
-.tpl-chibi .event h3{font-family:var(--font-title);font-weight:800}
 .tpl-chibi .btn{border-radius:999px;font-family:var(--font-title);font-weight:700;box-shadow:0 4px 0 color-mix(in srgb,var(--accent) 70%,#000)}
 .tpl-chibi .ph{border-radius:18px;border:6px solid #fff;box-shadow:0 8px 18px rgba(80,40,50,.12)}
 .tpl-chibi .ph:nth-child(odd){transform:rotate(-2deg)}.tpl-chibi .ph:nth-child(even){transform:rotate(2deg)}
-.tpl-chibi .cd-cell{border-radius:18px;background:#fff;border:2px dashed var(--line)}
-.tpl-chibi .cd-cell b{font-family:var(--font-title);font-weight:800}
 .tpl-chibi .form,.tpl-chibi .gift,.tpl-chibi .wish{border-radius:22px}
 .tpl-chibi .thanks-big{font-family:var(--font-title);font-weight:800;font-size:44px;color:var(--accent)}
 

@@ -43,7 +43,6 @@ module.exports = {
   },
 
   cover(ctx) {
-    const p = ctx.dparts;
     const photo = ctx.d.cover || ctx.d.photos[0] || '';
     return `
 <header class="cp-cover">
@@ -55,12 +54,7 @@ module.exports = {
     <div class="cp-silk">
       <h1 class="cp-names"><span>${esc(ctx.g)}</span><em>&amp;</em><span>${esc(ctx.b)}</span></h1>
     </div>
-    ${p ? `
-    <div class="cp-date">
-      <div><small>${esc(ctx.weekday)}</small><b>${p.d}.${p.m}</b><small>${p.y}</small></div>
-    </div>
-    ${ctx.timeText ? `<p class="cp-time">${esc(ctx.timeText)}</p>` : ''}
-    <p class="cp-lunar">${esc(ctx.lunar)}</p>` : ''}
+    ${ctx.dateBlock('bloc')}
   </div>
   ${orn.meander('cp-band bot', { n: 20 })}
 </header>`;
@@ -82,22 +76,13 @@ module.exports = {
 .tpl-cophuc .cp-silk::before{top:5px}.tpl-cophuc .cp-silk::after{bottom:5px}
 .tpl-cophuc .cp-names{margin:0;font-family:var(--font-script);font-weight:700;font-size:38px;line-height:1.1;display:flex;align-items:center;justify-content:center;gap:12px;flex-wrap:wrap}
 .tpl-cophuc .cp-names em{font-style:normal;font-weight:400;font-size:26px;color:color-mix(in srgb,var(--gold) 60%,#fff)}
-.tpl-cophuc .cp-date{margin-top:22px}
-.tpl-cophuc .cp-date div{display:inline-flex;flex-direction:column;align-items:center;padding:10px 26px;border:1px solid var(--gold);outline:1px solid var(--gold);outline-offset:4px;font-family:var(--font-title)}
-.tpl-cophuc .cp-date small{font-size:12px;letter-spacing:.2em;text-transform:uppercase;color:var(--muted)}
-.tpl-cophuc .cp-date b{font-size:34px;font-weight:500;color:var(--silk);line-height:1.2}
-.tpl-cophuc .cp-time{margin:14px 0 0;font-family:var(--font-title)}
-.tpl-cophuc .cp-lunar{margin:2px 0 0;font-family:var(--font-title);font-style:italic;font-size:14px;color:var(--muted)}
 .tpl-cophuc .cp-title{margin-bottom:24px}
 .tpl-cophuc .cp-knot{display:block;width:16px;height:16px;margin:0 auto 12px;border:2px solid var(--silk);transform:rotate(45deg);box-shadow:0 0 0 4px var(--bg),0 0 0 5px var(--gold)}
 .tpl-cophuc .cp-title .sec-title{margin:0;font-weight:500;font-size:26px;letter-spacing:.06em;text-transform:uppercase;color:var(--silk)}
 .tpl-cophuc .cp-sub{margin:4px 0 0;font-family:var(--font-script);font-size:20px;color:var(--muted)}
 .tpl-cophuc .guest-name{font-family:var(--font-script);font-size:38px;color:var(--silk)}
-.tpl-cophuc .event{background:var(--paper);border:1px solid var(--gold);border-radius:0;outline:1px solid var(--gold);outline-offset:-6px}
 .tpl-cophuc .btn{border-radius:2px}
 .tpl-cophuc .ph{border-radius:0;border:4px solid var(--paper);outline:1px solid var(--gold)}
-.tpl-cophuc .cd-cell{border-radius:0;background:var(--paper);border-color:var(--gold)}
-.tpl-cophuc .s-countdown .cd-cell b{color:var(--silk)}
 .tpl-cophuc .thanks-big{font-family:var(--font-script);font-size:50px;color:var(--silk)}
 
 .cp-opener{background:radial-gradient(circle at 50% 40%,var(--paper),var(--page))}

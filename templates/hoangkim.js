@@ -58,7 +58,6 @@ module.exports = {
   },
 
   cover(ctx) {
-    const p = ctx.dparts;
     const photo = ctx.d.cover || ctx.d.photos[0] || '';
     return `
 <header class="hk2-cover">
@@ -67,8 +66,7 @@ module.exports = {
     <p class="hk2-k">Lễ Thành Hôn</p>
     <h1 class="hk2-names hk2-shine"><span>${esc(ctx.g)}</span><em>&amp;</em><span>${esc(ctx.b)}</span></h1>
     ${photo ? `<div class="hk2-photo" style="background-image:url('${esc(photo)}')"></div>` : ''}
-    ${p ? `<p class="hk2-date"><span>${esc(ctx.weekday)}</span><b class="hk2-shine">${p.d}.${p.m}.${p.y}</b>${ctx.timeText ? `<span>${esc(ctx.timeText)}</span>` : ''}</p>
-    <p class="hk2-lunar">${esc(ctx.lunar)}</p>` : ''}
+    ${ctx.dateBlock('stack')}
   </div>
 </header>`;
   },
@@ -87,26 +85,16 @@ module.exports = {
 .tpl-hoangkim .hk2-names span{display:block}
 .tpl-hoangkim .hk2-names em{display:block;font-style:normal;font-family:var(--font-title);font-size:26px;font-style:italic}
 .tpl-hoangkim .hk2-photo{width:210px;aspect-ratio:3/4;margin:22px auto 4px;background:center/cover no-repeat;border:2px solid var(--gold);box-shadow:0 0 0 6px color-mix(in srgb,var(--velvet) 80%,#000),0 0 0 7px var(--gold),0 20px 40px rgba(0,0,0,.4)}
-.tpl-hoangkim .hk2-date{display:flex;flex-direction:column;align-items:center;gap:2px;margin:24px 0 0;font-family:var(--font-title)}
-.tpl-hoangkim .hk2-date span{font-size:13px;letter-spacing:.24em;text-transform:uppercase}
-.tpl-hoangkim .hk2-date b{font-size:34px;font-weight:500;letter-spacing:.08em}
-.tpl-hoangkim .hk2-lunar{margin:6px 0 0;font-family:var(--font-title);font-style:italic;font-size:14px;opacity:.85}
 .tpl-hoangkim .hk2-title{margin-bottom:26px}
 .tpl-hoangkim .hk2-title .sec-title{margin:0;font-family:var(--font-script);font-weight:400;font-size:46px;color:var(--velvet)}
 .tpl-hoangkim .hk2-sub{margin:0;font-size:12px;letter-spacing:.24em;text-transform:uppercase;color:var(--muted)}
 .tpl-hoangkim .hk2-rule{display:flex;align-items:center;justify-content:center;gap:10px;margin-top:10px;color:var(--gold);font-size:10px}
 .tpl-hoangkim .hk2-rule i{width:50px;height:1px;background:var(--gold)}
 .tpl-hoangkim .guest-name{font-family:var(--font-script);font-size:46px;color:var(--velvet)}
-.tpl-hoangkim .event{background:var(--paper);border:1px solid var(--gold);outline:1px solid var(--line);outline-offset:-7px;border-radius:2px}
-.tpl-hoangkim .event h3{font-size:24px;font-style:italic}
 .tpl-hoangkim .btn{border-radius:2px;letter-spacing:.12em;text-transform:uppercase;font-size:12px}
 .tpl-hoangkim .ph{border-radius:2px;border:2px solid var(--gold)}
-.tpl-hoangkim .cd-cell{border-radius:2px;background:var(--paper);border-color:var(--gold)}
-.tpl-hoangkim .s-countdown,.tpl-hoangkim .s-thanks,.tpl-hoangkim .credit{background:radial-gradient(ellipse at 50% 0,color-mix(in srgb,var(--velvet) 80%,#fff 10%),var(--velvet) 70%);color:var(--hero-ink);opacity:1}
-.tpl-hoangkim .s-countdown .sec-title,.tpl-hoangkim .s-thanks .thanks-big{color:var(--gold)}
-.tpl-hoangkim .s-countdown .cd-cell{background:transparent}
-.tpl-hoangkim .s-countdown .cd-cell b{color:var(--hero-ink)}
-.tpl-hoangkim .s-countdown .cd-cell span{color:var(--gold)}
+.tpl-hoangkim .s-cal,.tpl-hoangkim .s-thanks,.tpl-hoangkim .credit{background:radial-gradient(ellipse at 50% 0,color-mix(in srgb,var(--velvet) 80%,#fff 10%),var(--velvet) 70%);color:var(--hero-ink);opacity:1;--cal-hi:var(--gold)}
+.tpl-hoangkim .s-cal .sec-title,.tpl-hoangkim .s-thanks .thanks-big{color:var(--gold)}
 .tpl-hoangkim .thanks-big{font-family:var(--font-script);font-size:56px}
 .tpl-hoangkim .s-thanks p,.tpl-hoangkim .s-thanks .thanks-names{color:var(--hero-ink)!important}
 .tpl-hoangkim .credit .wm{background:transparent;border-color:var(--gold);color:var(--hero-ink)}

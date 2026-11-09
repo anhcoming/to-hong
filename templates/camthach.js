@@ -49,7 +49,6 @@ module.exports = {
   },
 
   cover(ctx) {
-    const p = ctx.dparts;
     const photo = ctx.d.cover || ctx.d.photos[0] || '';
     return `
 <header class="ct-cover">
@@ -58,9 +57,7 @@ module.exports = {
     <p class="ct-k">Save the date</p>
     <h1 class="ct-names"><span>${esc(ctx.g)}</span><em>&amp;</em><span>${esc(ctx.b)}</span></h1>
     ${photo ? `<div class="ct-photo" style="background-image:url('${esc(photo)}')"></div>` : ''}
-    ${p ? `<div class="ct-date"><b>${p.d}</b><i></i><b>${p.m}</b><i></i><b>${p.y.slice(2)}</b></div>
-    <p class="ct-when">${esc(ctx.weekday)}${ctx.timeText ? ` · ${esc(ctx.timeText)}` : ''}</p>
-    <p class="ct-lunar">${esc(ctx.lunar)}</p>` : ''}
+    ${ctx.dateBlock('stack')}
   </div>
 </header>`;
   },
@@ -75,26 +72,16 @@ module.exports = {
 .tpl-camthach .ct-names span{display:block}
 .tpl-camthach .ct-names em{display:block;font-family:var(--font-script);font-style:normal;font-size:40px;color:var(--gold);line-height:1}
 .tpl-camthach .ct-photo{width:min(230px,62vw);aspect-ratio:4/5;margin:24px auto 0;background:center/cover no-repeat;border:1px solid var(--gold);box-shadow:0 0 0 8px color-mix(in srgb,var(--stone) 80%,transparent),0 0 0 9px var(--gold),0 24px 40px rgba(0,0,0,.25)}
-.tpl-camthach .ct-date{display:flex;align-items:center;justify-content:center;gap:14px;margin-top:28px;font-family:var(--font-title)}
-.tpl-camthach .ct-date b{font-size:34px;font-weight:400;line-height:1;color:var(--gold)}
-.tpl-camthach .ct-date i{width:1px;height:30px;background:var(--gold);transform:rotate(20deg)}
-.tpl-camthach .ct-when{margin:12px 0 0;font-size:13px;letter-spacing:.2em;text-transform:uppercase}
-.tpl-camthach .ct-lunar{margin:2px 0 0;font-size:13px;font-style:italic;opacity:.8}
 .tpl-camthach .ct-title{margin-bottom:26px}
 .tpl-camthach .ct-deco{display:block;width:30px;height:30px;margin:0 auto 12px;border:1px solid var(--gold);transform:rotate(45deg);box-shadow:inset 0 0 0 5px var(--bg),inset 0 0 0 6px var(--gold)}
 .tpl-camthach .ct-title .sec-title{margin:0;font-weight:400;font-size:26px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink)}
 .tpl-camthach .ct-sub{margin:4px 0 0;font-family:var(--font-script);font-size:24px;color:var(--gold);filter:brightness(.85)}
 .tpl-camthach .guest-name{font-family:var(--font-script);font-size:44px;color:var(--ink)}
-.tpl-camthach .fam-label,.tpl-camthach .event h3,.tpl-camthach .gift-who{color:var(--accent)}
-.tpl-camthach .event{background:var(--paper);border:1px solid var(--gold);border-radius:0;clip-path:polygon(14px 0,calc(100% - 14px) 0,100% 14px,100% calc(100% - 14px),calc(100% - 14px) 100%,14px 100%,0 calc(100% - 14px),0 14px)}
+.tpl-camthach .fam-label,.tpl-camthach .gift-who{color:var(--accent)}
 .tpl-camthach .btn{border-radius:0;letter-spacing:.14em;text-transform:uppercase;font-size:12px}
 .tpl-camthach .ph{border-radius:0;border:1px solid var(--gold)}
-.tpl-camthach .cd-cell{border-radius:0;background:var(--paper);border-color:var(--gold)}
-.tpl-camthach .s-countdown,.tpl-camthach .s-thanks,.tpl-camthach .credit{background:var(--stone);color:var(--stone-ink);opacity:1}
-.tpl-camthach .s-countdown .sec-title,.tpl-camthach .s-thanks .thanks-big{color:var(--gold)}
-.tpl-camthach .s-countdown .cd-cell{background:transparent}
-.tpl-camthach .s-countdown .cd-cell b{color:var(--stone-ink)}
-.tpl-camthach .s-countdown .cd-cell span{color:var(--gold)}
+.tpl-camthach .s-cal,.tpl-camthach .s-thanks,.tpl-camthach .credit{background:var(--stone);color:var(--stone-ink);opacity:1;--cal-hi:var(--gold)}
+.tpl-camthach .s-cal .sec-title,.tpl-camthach .s-thanks .thanks-big{color:var(--gold)}
 .tpl-camthach .thanks-big{font-family:var(--font-script);font-size:56px}
 .tpl-camthach .s-thanks p,.tpl-camthach .s-thanks .thanks-names{color:var(--stone-ink)!important}
 .tpl-camthach .credit .wm{background:transparent;border-color:var(--gold);color:var(--stone-ink)}

@@ -40,7 +40,6 @@ module.exports = {
   },
 
   cover(ctx) {
-    const p = ctx.dparts;
     const photo = ctx.d.cover || ctx.d.photos[0] || '';
     return `
 <header class="hy-cover">
@@ -50,14 +49,7 @@ module.exports = {
     <p class="hy-kicker">Lễ Thành Hôn</p>
     <h1 class="hy-names"><span>${esc(ctx.g)}</span><em>&amp;</em><span>${esc(ctx.b)}</span></h1>
     <div class="hy-photo${photo ? '' : ' empty'}"${photo ? ` style="background-image:url('${esc(photo)}')"` : ''}>${photo ? '' : '<span>囍</span>'}</div>
-    ${p ? `
-    <div class="hy-date">
-      <span>${esc(ctx.weekday)}</span>
-      <b>${p.d}</b>
-      <span>Tháng ${+p.m} · ${p.y}</span>
-    </div>
-    ${ctx.timeText ? `<p class="hy-time">Vào lúc ${esc(ctx.timeText)}</p>` : ''}
-    <p class="hy-lunar">${esc(ctx.lunar)}</p>` : ''}
+    ${ctx.dateBlock('bloc')}
   </div>
   <a class="hy-down" href="#main-start" aria-label="Xem tiếp">⌄</a>
 </header>
@@ -83,11 +75,6 @@ module.exports = {
 .tpl-hy .hy-photo{width:190px;height:190px;margin:26px auto;border-radius:50%;background:center/cover no-repeat;border:3px solid var(--gold);box-shadow:0 0 0 7px color-mix(in srgb,var(--gold) 22%,transparent),0 14px 30px rgba(0,0,0,.25)}
 .tpl-hy .hy-photo.empty{display:grid;place-items:center;background:color-mix(in srgb,var(--hero-ink) 10%,transparent)}
 .tpl-hy .hy-photo.empty span{font-size:70px;color:var(--gold);font-family:"Noto Serif SC","SimSun",serif}
-.tpl-hy .hy-date{display:flex;align-items:center;gap:14px;font-family:var(--font-title)}
-.tpl-hy .hy-date span{padding:6px 0;border-top:1px solid var(--gold);border-bottom:1px solid var(--gold);font-size:13px;letter-spacing:.12em;text-transform:uppercase;min-width:96px}
-.tpl-hy .hy-date b{font-size:56px;font-weight:500;line-height:1;color:var(--gold)}
-.tpl-hy .hy-time{margin:12px 0 0;font-size:15px}
-.tpl-hy .hy-lunar{margin:4px 0 0;font-size:13px;font-style:italic;opacity:.85}
 .tpl-hy .hy-down{position:absolute;left:50%;bottom:26px;transform:translateX(-50%);color:var(--gold);text-decoration:none;font-size:28px;animation:bob 1.8s ease-in-out infinite}
 @keyframes bob{50%{transform:translate(-50%,6px)}}
 .tpl-hy .hy-title{margin-bottom:24px}
@@ -96,12 +83,9 @@ module.exports = {
 .tpl-hy .hy-orn{display:flex;align-items:center;justify-content:center;gap:10px;color:var(--gold);font-family:"Noto Serif SC","SimSun",serif;font-size:18px;margin-bottom:8px}
 .tpl-hy .hy-orn i{width:44px;height:1px;background:var(--gold)}
 .tpl-hy .s-invite{background:var(--bg)}
-.tpl-hy .s-countdown{background:var(--hero-bg);color:var(--hero-ink)}
-.tpl-hy .s-countdown .sec-title{color:var(--hero-ink)}
-.tpl-hy .s-countdown .sec-sub{color:var(--gold)}
-.tpl-hy .s-countdown .cd-cell{background:transparent;border-color:var(--gold)}
-.tpl-hy .s-countdown .cd-cell b{color:var(--hero-ink)}
-.tpl-hy .s-countdown .cd-cell span{color:var(--gold)}
+.tpl-hy .s-cal{background:var(--hero-bg);color:var(--hero-ink);--cal-hi:var(--gold)}
+.tpl-hy .s-cal .sec-title{color:var(--hero-ink)}
+.tpl-hy .s-cal .sec-sub{color:var(--gold)}
 .tpl-hy .s-thanks{background:var(--hero-bg);color:var(--hero-ink)}
 .tpl-hy .s-thanks .thanks-big{color:var(--gold)}
 .tpl-hy .s-thanks p,.tpl-hy .s-thanks .thanks-names{color:var(--hero-ink)!important}

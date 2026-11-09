@@ -49,7 +49,6 @@ module.exports = {
   },
 
   cover(ctx) {
-    const p = ctx.dparts;
     const photo = ctx.d.cover || ctx.d.photos[0] || '';
     return `
 <header class="lp-cover">
@@ -63,10 +62,7 @@ module.exports = {
     </div>
     <h1 class="lp-names"><span>${esc(ctx.g)}</span><em>&amp;</em><span>${esc(ctx.b)}</span></h1>
     ${photo ? `<div class="lp-photo" style="background-image:url('${esc(photo)}')"></div>` : ''}
-    ${p ? `
-    <div class="lp-date"><span>${esc(ctx.weekday)}</span><b>${p.d}</b><span>${p.m} · ${p.y}</span></div>
-    ${ctx.timeText ? `<p class="lp-time">${esc(ctx.timeText)}</p>` : ''}
-    <p class="lp-lunar">${esc(ctx.lunar)}</p>` : ''}
+    ${ctx.dateBlock('bloc')}
     ${orn.waves('lp-waves')}
   </div>
 </header>`;
@@ -90,25 +86,16 @@ module.exports = {
 .tpl-longphung .lp-names span{display:block}
 .tpl-longphung .lp-names em{display:block;font-family:var(--font-script);font-style:normal;text-transform:none;font-size:30px;color:var(--gold);letter-spacing:0}
 .tpl-longphung .lp-photo{width:180px;height:180px;margin:22px auto 4px;border-radius:50%;background:center/cover no-repeat;border:3px solid var(--gold);box-shadow:0 0 0 6px var(--hero),0 0 0 7px var(--gold),0 16px 30px rgba(0,0,0,.3)}
-.tpl-longphung .lp-date{display:flex;align-items:center;gap:12px;margin-top:22px;font-family:var(--font-title)}
-.tpl-longphung .lp-date span{min-width:88px;padding:5px 0;border-top:1px solid var(--gold);border-bottom:1px solid var(--gold);font-size:12px;letter-spacing:.14em;text-transform:uppercase}
-.tpl-longphung .lp-date b{font-size:52px;font-weight:500;line-height:1;color:var(--gold)}
-.tpl-longphung .lp-time{margin:10px 0 0;font-size:15px}
-.tpl-longphung .lp-lunar{margin:2px 0 0;font-size:13px;font-style:italic;opacity:.85}
 .tpl-longphung .lp-waves{position:absolute;left:0;right:0;bottom:0;width:100%;height:36px;opacity:.7}
 .tpl-longphung .lp-title{margin-bottom:24px}
 .tpl-longphung .lp-tcloud{display:block;width:54px;margin:0 auto 6px}
 .tpl-longphung .lp-title .sec-title{margin:0;letter-spacing:.06em;text-transform:uppercase;font-size:26px}
 .tpl-longphung .lp-sub{margin:6px 0 0;font-family:var(--font-script);font-size:20px;color:var(--gold)}
 .tpl-longphung .guest-name{font-family:var(--font-script);font-size:38px}
-.tpl-longphung .event{border:1px solid var(--gold);outline:1px solid var(--line);outline-offset:-6px;border-radius:4px;background:var(--paper)}
 .tpl-longphung .btn{border-radius:4px}
 .tpl-longphung .ph{border-radius:4px;border:2px solid var(--gold)}
-.tpl-longphung .s-countdown,.tpl-longphung .s-thanks,.tpl-longphung .credit{background:var(--clouds),var(--hero);background-size:120px 120px,160px 160px,auto;color:var(--hero-ink);opacity:1}
-.tpl-longphung .s-countdown .sec-title,.tpl-longphung .s-thanks .thanks-big{color:var(--gold)}
-.tpl-longphung .s-countdown .cd-cell{background:transparent;border-color:var(--gold)}
-.tpl-longphung .s-countdown .cd-cell b{color:var(--hero-ink)}
-.tpl-longphung .s-countdown .cd-cell span{color:var(--gold)}
+.tpl-longphung .s-cal,.tpl-longphung .s-thanks,.tpl-longphung .credit{background:var(--clouds),var(--hero);background-size:120px 120px,160px 160px,auto;color:var(--hero-ink);opacity:1;--cal-hi:var(--gold)}
+.tpl-longphung .s-cal .sec-title,.tpl-longphung .s-thanks .thanks-big{color:var(--gold)}
 .tpl-longphung .thanks-big{font-family:var(--font-script);font-size:50px}
 .tpl-longphung .s-thanks p,.tpl-longphung .s-thanks .thanks-names{color:var(--hero-ink)!important}
 .tpl-longphung .credit .wm{background:transparent;border-color:var(--gold);color:var(--hero-ink)}

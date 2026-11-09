@@ -41,7 +41,6 @@ module.exports = {
   },
 
   cover(ctx) {
-    const p = ctx.dparts;
     const photo = ctx.d.cover || ctx.d.photos[0] || '';
     return `
 <header class="vc-cover">
@@ -55,14 +54,7 @@ module.exports = {
     <p class="vc-script">Trăm năm hạnh phúc</p>
   </div>
   <div class="vc-arch${photo ? '' : ' empty'}"><div${photo ? ` style="background-image:url('${esc(photo)}')"` : ''}>${photo ? '' : '<span>囍</span>'}</div></div>
-  ${p ? `
-  <div class="vc-when">
-    <span>${esc(ctx.weekday)}</span>
-    <b>${p.d}</b>
-    <span>Tháng ${+p.m} · ${p.y}</span>
-  </div>
-  ${ctx.timeText ? `<p class="vc-time">Vào lúc ${esc(ctx.timeText)}</p>` : ''}
-  <p class="vc-lunar">${esc(ctx.lunar)}</p>` : ''}
+  ${ctx.dateBlock('split')}
 </header>`;
   },
 
@@ -79,25 +71,15 @@ module.exports = {
 .tpl-vomcong .vc-arch{position:relative;z-index:1;width:min(300px,78vw);margin:-96px auto 0;padding:7px;background:var(--bg);border-radius:999px 999px 6px 6px;box-shadow:0 0 0 1.5px var(--gold),0 18px 40px rgba(0,0,0,.18)}
 .tpl-vomcong .vc-arch>div{aspect-ratio:3/4;border-radius:999px 999px 2px 2px;background:var(--line) center/cover no-repeat;outline:1px solid var(--gold);outline-offset:-6px;display:grid;place-items:center}
 .tpl-vomcong .vc-arch.empty span{font-family:"Noto Serif SC","SimSun",serif;font-size:80px;color:var(--gold)}
-.tpl-vomcong .vc-when{display:flex;align-items:center;justify-content:center;gap:14px;margin:30px 0 0;font-family:var(--font-title);color:var(--ink)}
-.tpl-vomcong .vc-when span{min-width:96px;padding:6px 0;border-top:1px solid var(--gold);border-bottom:1px solid var(--gold);font-size:12px;letter-spacing:.14em;text-transform:uppercase}
-.tpl-vomcong .vc-when b{font-size:58px;font-weight:400;line-height:1;color:var(--band)}
-.tpl-vomcong .vc-time{margin:12px 0 0;font-size:15px}
-.tpl-vomcong .vc-lunar{margin:2px 0 0;font-style:italic;font-size:13px;color:var(--muted)}
 .tpl-vomcong .vc-title{margin-bottom:26px}
 .tpl-vomcong .vc-title .sec-title{margin:0;font-weight:500}
 .tpl-vomcong .vc-mini{display:block;width:22px;height:30px;margin:0 auto 10px;border:1.5px solid var(--gold);border-radius:999px 999px 2px 2px}
 .tpl-vomcong .vc-sub{margin:6px 0 0;font-family:var(--font-script);font-size:22px;color:var(--gold)}
 .tpl-vomcong .guest-name{font-family:var(--font-script);font-size:40px;color:var(--band)}
-.tpl-vomcong .event{border:1px solid var(--gold);border-radius:120px 120px 8px 8px;padding-top:44px;background:var(--paper)}
-.tpl-vomcong .event h3{font-size:24px}
 .tpl-vomcong .ph{border-radius:999px 999px 4px 4px}
 .tpl-vomcong .btn{border-radius:4px}
-.tpl-vomcong .s-countdown,.tpl-vomcong .s-thanks{background:var(--band);color:var(--band-ink)}
-.tpl-vomcong .s-countdown .sec-title,.tpl-vomcong .s-thanks .thanks-big{color:var(--band-ink)}
-.tpl-vomcong .s-countdown .cd-cell{background:transparent;border-color:var(--gold)}
-.tpl-vomcong .s-countdown .cd-cell b{color:var(--band-ink)}
-.tpl-vomcong .s-countdown .cd-cell span{color:var(--gold)}
+.tpl-vomcong .s-cal,.tpl-vomcong .s-thanks{background:var(--band);color:var(--band-ink);--cal-hi:var(--gold)}
+.tpl-vomcong .s-cal .sec-title,.tpl-vomcong .s-thanks .thanks-big{color:var(--band-ink)}
 .tpl-vomcong .thanks-big{font-family:var(--font-script);font-size:54px}
 .tpl-vomcong .s-thanks p,.tpl-vomcong .s-thanks .thanks-names{color:var(--band-ink)!important}
 .tpl-vomcong .credit{background:var(--band);color:var(--band-ink);opacity:1}

@@ -44,7 +44,6 @@ module.exports = {
   },
 
   cover(ctx) {
-    const p = ctx.dparts;
     const photo = ctx.d.cover || ctx.d.photos[0] || '';
     return `
 <header class="sh-cover">
@@ -55,8 +54,7 @@ module.exports = {
     ${cranes()}
   </div>
   <h1 class="sh-names"><span>${esc(ctx.g)}</span><em>&amp;</em><span>${esc(ctx.b)}</span></h1>
-  ${p ? `<p class="sh-date">${esc(ctx.weekday)} <i></i> ${p.d}.${p.m}.${p.y}${ctx.timeText ? ` <i></i> ${esc(ctx.timeText)}` : ''}</p>
-  <p class="sh-lunar">${esc(ctx.lunar)}</p>` : ''}
+  ${ctx.dateBlock('line')}
   ${orn.waves('sh-waves', { rows: 4 })}
 </header>`;
   },
@@ -74,24 +72,16 @@ module.exports = {
 .tpl-songhac .sh-names{margin:30px 0 0;font-family:var(--font-script);font-weight:400;font-size:46px;line-height:1.1}
 .tpl-songhac .sh-names span{display:block}
 .tpl-songhac .sh-names em{display:block;font-style:normal;font-size:30px;color:var(--gold)}
-.tpl-songhac .sh-date{display:flex;align-items:center;justify-content:center;gap:10px;flex-wrap:wrap;margin:18px 0 0;font-family:var(--font-title);font-size:18px;letter-spacing:.06em}
-.tpl-songhac .sh-date i{width:5px;height:5px;transform:rotate(45deg);background:var(--gold)}
-.tpl-songhac .sh-lunar{margin:4px 0 0;font-family:var(--font-title);font-style:italic;opacity:.85}
 .tpl-songhac .sh-waves{position:absolute;left:0;right:0;bottom:16px;width:100%;height:60px}
 .tpl-songhac .sh-title{margin-bottom:26px}
 .tpl-songhac .sh-title .sec-title{margin:0;font-weight:500;font-size:34px}
 .tpl-songhac .sh-sub{margin:2px 0 0;font-family:var(--font-script);font-size:20px;color:var(--gold)}
 .tpl-songhac .sh-twave{display:block;width:90px;height:18px;margin:10px auto 0}
 .tpl-songhac .guest-name{font-family:var(--font-script);font-size:40px}
-.tpl-songhac .event{border:1px solid var(--line);border-top:3px solid var(--gold);border-radius:6px;background:var(--paper)}
-.tpl-songhac .event h3{font-size:26px}
 .tpl-songhac .btn{border-radius:6px}
 .tpl-songhac .ph{border-radius:50%;aspect-ratio:1}
-.tpl-songhac .s-countdown,.tpl-songhac .s-thanks,.tpl-songhac .credit{background:var(--hero);color:var(--hero-ink);opacity:1}
-.tpl-songhac .s-countdown .sec-title,.tpl-songhac .s-thanks .thanks-big{color:var(--hero-ink)}
-.tpl-songhac .s-countdown .cd-cell{background:transparent;border-color:var(--gold);border-radius:50%;aspect-ratio:1;display:grid;place-content:center}
-.tpl-songhac .s-countdown .cd-cell b{color:var(--hero-ink)}
-.tpl-songhac .s-countdown .cd-cell span{color:var(--gold)}
+.tpl-songhac .s-cal,.tpl-songhac .s-thanks,.tpl-songhac .credit{background:var(--hero);color:var(--hero-ink);opacity:1;--cal-hi:var(--gold)}
+.tpl-songhac .s-cal .sec-title,.tpl-songhac .s-thanks .thanks-big{color:var(--hero-ink)}
 .tpl-songhac .thanks-big{font-family:var(--font-script);font-size:52px}
 .tpl-songhac .s-thanks p,.tpl-songhac .s-thanks .thanks-names{color:var(--hero-ink)!important}
 .tpl-songhac .credit .wm{background:transparent;border-color:var(--gold);color:var(--hero-ink)}

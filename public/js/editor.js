@@ -97,7 +97,7 @@ const panes = {
       ${f('gifts.bride.holder', 'Tên chủ tài khoản', { ph: 'LE THU HA', max: 60 })}
     </section>
     <section class="group panel"><h3>Hiện/ẩn các phần trên thiệp</h3>
-      <div class="toggles">${tg('countdown', 'Đếm ngược')}${tg('gallery', 'Album ảnh')}${tg('rsvp', 'Xác nhận tham dự')}${tg('gift', 'Hộp mừng cưới')}${tg('wishes', 'Sổ lưu bút')}</div>
+      <div class="toggles">${tg('calendar', 'Lịch tháng')}${tg('countdown', 'Đếm ngược')}${tg('gallery', 'Album ảnh')}${tg('rsvp', 'Xác nhận tham dự')}${tg('gift', 'Hộp mừng cưới')}${tg('wishes', 'Sổ lưu bút')}</div>
     </section>`;
   },
 

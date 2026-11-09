@@ -54,7 +54,6 @@ module.exports = {
   },
 
   cover(ctx) {
-    const p = ctx.dparts;
     const photo = ctx.d.cover || ctx.d.photos[0] || '';
     return `
 <header class="ad-cover">
@@ -62,8 +61,7 @@ module.exports = {
   <p class="ad-k">The Wedding of</p>
   ${photo ? `<div class="ad-photo" style="background-image:url('${esc(photo)}')"></div>` : ''}
   <h1 class="ad-names"><span>${esc(ctx.g)}</span><em>&amp;</em><span>${esc(ctx.b)}</span></h1>
-  ${p ? `<p class="ad-date"><span>${esc(ctx.weekday)}</span><b>${p.d} / ${p.m} / ${p.y}</b>${ctx.timeText ? `<span>${esc(ctx.timeText)}</span>` : ''}</p>
-  <p class="ad-lunar">${esc(ctx.lunar)}</p>` : ''}
+  ${ctx.dateBlock('line')}
 </header>`;
   },
 
@@ -86,22 +84,16 @@ module.exports = {
 .tpl-anhdao .ad-names{position:relative;margin:22px 0 0;font-family:var(--font-script);font-weight:400;font-size:56px;line-height:1}
 .tpl-anhdao .ad-names span{display:block}
 .tpl-anhdao .ad-names em{display:block;font-style:normal;font-family:var(--font-title);font-size:22px;color:var(--accent);margin:4px 0}
-.tpl-anhdao .ad-date{position:relative;display:flex;align-items:center;justify-content:center;gap:10px;margin:18px 0 0;font-family:var(--font-title)}
-.tpl-anhdao .ad-date span{font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
-.tpl-anhdao .ad-date b{font-size:20px;font-weight:500;padding:4px 12px;border-radius:999px;background:color-mix(in srgb,var(--petal) 30%,transparent)}
-.tpl-anhdao .ad-lunar{position:relative;margin:6px 0 0;font-family:var(--font-title);font-style:italic;font-size:14px;color:var(--muted)}
 .tpl-anhdao .ad-title{margin-bottom:24px}
 .tpl-anhdao .ad-tflower{display:block;width:30px;margin:0 auto 6px}
 .tpl-anhdao .ad-title .sec-title{margin:0;font-family:var(--font-script);font-weight:400;font-size:44px;color:var(--ink)}
 .tpl-anhdao .ad-sub{margin:0;font-size:12px;letter-spacing:.2em;text-transform:uppercase;color:var(--muted)}
 .tpl-anhdao .guest-name{font-family:var(--font-script);font-size:44px;color:var(--accent)}
-.tpl-anhdao .event{background:var(--paper);border:1px solid var(--line);border-radius:24px}
 .tpl-anhdao .btn{border-radius:999px}
 .tpl-anhdao .ph{border-radius:50%;aspect-ratio:1}
-.tpl-anhdao .cd-cell{border-radius:50%;aspect-ratio:1;display:grid;place-content:center;background:var(--paper)}
-.tpl-anhdao .s-countdown,.tpl-anhdao .s-thanks{background:color-mix(in srgb,var(--petal) 20%,var(--bg))}
+.tpl-anhdao .s-cal,.tpl-anhdao .s-thanks{background:color-mix(in srgb,var(--petal) 20%,var(--bg));--cal-hi:var(--gold)}
 .tpl-anhdao .thanks-big{font-family:var(--font-script);font-size:56px;color:var(--ink)}
-.tpl-anhdao .fam-label,.tpl-anhdao .event h3,.tpl-anhdao .gift-who{color:var(--accent)}
+.tpl-anhdao .fam-label,.tpl-anhdao .gift-who{color:var(--accent)}
 
 .ad-opener{overflow:hidden;background:radial-gradient(circle at 50% 45%,color-mix(in srgb,var(--petal) 22%,var(--bg)),var(--bg) 70%)}
 .ad-opener .ad-o{position:relative;text-align:center;color:var(--ink);width:min(320px,86vw)}
@@ -110,5 +102,6 @@ module.exports = {
 .ad-opener .ad-o-names em{display:block;font-style:normal;font-family:var(--font-title);font-size:20px;color:var(--accent)}
 .ad-opener .ad-o-to{margin:0 0 18px;font-size:12px;color:var(--muted)}
 .ad-opener .ad-o-to b{display:block;font-family:var(--font-title);font-weight:500;font-size:20px;color:var(--ink)}
+.tpl-anhdao .s-cal{--cal-hi:var(--accent)}
 `,
 };

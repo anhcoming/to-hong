@@ -45,7 +45,6 @@ module.exports = {
   },
 
   cover(ctx) {
-    const p = ctx.dparts;
     const photo = ctx.d.cover || ctx.d.photos[0] || '';
     return `
 <header class="tt-cover">
@@ -58,8 +57,7 @@ module.exports = {
     <span class="tt-seal">♥</span>
   </div>
   <h1 class="tt-names"><span>${esc(ctx.g)}</span><em>&amp;</em><span>${esc(ctx.b)}</span></h1>
-  ${p ? `<p class="tt-date"><span>${esc(ctx.weekday)}</span><b>${p.d}.${p.m}.${p.y}</b><span>${esc(ctx.timeText) || 'Ngày vui'}</span></p>
-  <p class="tt-lunar">${esc(ctx.lunar)}</p>` : ''}
+  ${ctx.dateBlock('line')}
 </header>`;
   },
 
@@ -82,10 +80,6 @@ module.exports = {
 .tpl-thutay .tt-names{margin:0;font-family:var(--font-title);font-weight:400;font-size:44px;line-height:1.1;color:var(--accent)}
 .tpl-thutay .tt-names span{display:block}
 .tpl-thutay .tt-names em{display:block;font-family:var(--font-script);font-style:normal;font-size:38px;color:var(--gold);line-height:1;margin:2px 0}
-.tpl-thutay .tt-date{display:flex;align-items:center;justify-content:center;gap:12px;margin:20px 0 0;font-family:var(--font-title);color:var(--ink)}
-.tpl-thutay .tt-date span{font-size:13px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);min-width:78px}
-.tpl-thutay .tt-date b{font-size:24px;font-weight:500;padding:4px 14px;border-left:1px solid var(--gold);border-right:1px solid var(--gold)}
-.tpl-thutay .tt-lunar{margin:8px 0 0;font-family:var(--font-title);font-style:italic;color:var(--muted)}
 .tpl-thutay .tt-title{margin-bottom:26px}
 .tpl-thutay .tt-title .sec-title{margin:0;font-weight:500;font-size:34px}
 .tpl-thutay .tt-sub{margin:0;font-family:var(--font-script);font-size:26px;color:var(--gold);line-height:1.1}
@@ -93,17 +87,12 @@ module.exports = {
 .tpl-thutay .tt-rule::before,.tpl-thutay .tt-rule::after{content:"";width:46px;height:1px;background:var(--gold)}
 .tpl-thutay .guest-name{font-family:var(--font-script);font-size:42px}
 .tpl-thutay .couple-full .full{font-size:22px}
-.tpl-thutay .event{background:var(--paper);border:1px solid var(--line);border-radius:2px;box-shadow:0 8px 20px rgba(60,40,20,.06);outline:1px solid var(--line);outline-offset:-7px}
-.tpl-thutay .event h3{font-size:26px}
 .tpl-thutay .btn{border-radius:2px;letter-spacing:.12em;text-transform:uppercase;font-size:12px}
 .tpl-thutay .ph{border-radius:2px;border:6px solid #fff;box-shadow:0 6px 16px rgba(40,25,15,.15)}
 .tpl-thutay .ph:nth-child(odd){transform:rotate(-1.5deg)}.tpl-thutay .ph:nth-child(even){transform:rotate(1.5deg)}
-.tpl-thutay .cd-cell{border-radius:2px;background:var(--paper)}
-.tpl-thutay .s-countdown,.tpl-thutay .s-thanks{background:var(--accent);color:var(--accent-ink)}
-.tpl-thutay .s-countdown .sec-title,.tpl-thutay .s-thanks .thanks-big{color:var(--accent-ink)}
-.tpl-thutay .s-countdown .cd-cell{background:transparent;border-color:color-mix(in srgb,var(--gold) 70%,transparent)}
-.tpl-thutay .s-countdown .cd-cell b{color:var(--accent-ink)}
-.tpl-thutay .s-countdown .cd-cell span,.tpl-thutay .s-countdown .tt-rule{color:var(--gold)}
+.tpl-thutay .s-cal,.tpl-thutay .s-thanks{background:var(--accent);color:var(--accent-ink);--cal-hi:var(--gold)}
+.tpl-thutay .s-cal .sec-title,.tpl-thutay .s-thanks .thanks-big{color:var(--accent-ink)}
+.tpl-thutay .s-cal .tt-rule{color:var(--gold)}
 .tpl-thutay .thanks-big{font-family:var(--font-script);font-size:56px;font-weight:400}
 .tpl-thutay .s-thanks p,.tpl-thutay .s-thanks .thanks-names{color:var(--accent-ink)!important}
 

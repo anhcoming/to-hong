@@ -66,7 +66,6 @@ module.exports = {
   },
 
   cover(ctx) {
-    const p = ctx.dparts;
     const photo = ctx.d.cover || ctx.d.photos[0] || '';
     return `
 <header class="ld-cover">
@@ -76,8 +75,7 @@ module.exports = {
   <div class="ld-gate">
     <div class="ld-photo"${photo ? ` style="background-image:url('${esc(photo)}')"` : ''}></div>
   </div>
-  ${p ? `<p class="ld-date">${esc(ctx.weekday)} · <b>${p.d}.${p.m}.${p.y}</b>${ctx.timeText ? ` · ${esc(ctx.timeText)}` : ''}</p>
-  <p class="ld-lunar">${esc(ctx.lunar)}</p>` : ''}
+  ${ctx.dateBlock('line')}
   ${castle('ld-castle')}
 </header>`;
   },
@@ -85,30 +83,22 @@ module.exports = {
   css: `
 .ld-stars{position:absolute;left:0;right:0;top:0;width:100%;height:40%;pointer-events:none}
 .ld-castle{position:absolute;left:0;right:0;bottom:-1px;width:100%;height:auto;max-height:44%;pointer-events:none}
-.tpl-laudai .ld-cover{position:relative;min-height:100svh;padding:44px 20px 170px;text-align:center;display:flex;flex-direction:column;align-items:center;justify-content:center;overflow:hidden;color:var(--hero-ink);background:linear-gradient(180deg,var(--sky2) 0%,color-mix(in srgb,var(--sky2) 50%,var(--sky1)) 55%,var(--sky1) 80%)}
+.tpl-laudai .ld-cover{position:relative;min-height:100svh;padding:44px 20px 210px;text-align:center;display:flex;flex-direction:column;align-items:center;justify-content:center;overflow:hidden;color:var(--hero-ink);background:linear-gradient(180deg,var(--sky2) 0%,color-mix(in srgb,var(--sky2) 50%,var(--sky1)) 55%,var(--sky1) 80%)}
 .tpl-laudai .ld-k{position:relative;margin:0;font-family:var(--font-title);font-size:13px;letter-spacing:.4em;text-transform:uppercase;opacity:.9}
 .tpl-laudai .ld-names{position:relative;margin:8px 0 0;font-family:var(--font-script);font-weight:400;font-size:52px;line-height:1.05;text-shadow:0 2px 14px rgba(0,0,0,.25)}
 .tpl-laudai .ld-names span{display:block}
 .tpl-laudai .ld-names em{display:block;font-style:normal;font-family:var(--font-title);font-size:24px;color:var(--gold)}
 .tpl-laudai .ld-gate{position:relative;z-index:1;margin-top:22px;padding:10px;border-radius:999px 999px 0 0;background:repeating-linear-gradient(90deg,rgba(255,255,255,.08) 0 22px,rgba(0,0,0,.06) 22px 24px),color-mix(in srgb,var(--sky1) 60%,#fff);box-shadow:inset 0 0 0 1px rgba(0,0,0,.08),0 20px 40px rgba(0,0,0,.25)}
 .tpl-laudai .ld-photo{width:min(220px,60vw);aspect-ratio:3/4;border-radius:999px 999px 0 0;background:var(--castle) center/cover no-repeat;box-shadow:inset 0 0 0 2px var(--gold)}
-.tpl-laudai .ld-date{position:relative;z-index:1;margin:18px 0 0;font-family:var(--font-title);font-size:18px;color:var(--castle)}
-.tpl-laudai .ld-date b{font-weight:600}
-.tpl-laudai .ld-lunar{position:relative;z-index:1;margin:2px 0 0;font-family:var(--font-title);font-style:italic;color:color-mix(in srgb,var(--castle) 80%,transparent)}
 .tpl-laudai .ld-title{margin-bottom:24px}
 .tpl-laudai .ld-arch{display:block;width:26px;height:34px;margin:0 auto 10px;border:2px solid var(--gold);border-bottom:0;border-radius:999px 999px 0 0}
 .tpl-laudai .ld-title .sec-title{margin:0;font-weight:500;font-size:32px;color:var(--castle)}
 .tpl-laudai .ld-sub{margin:2px 0 0;font-family:var(--font-script);font-size:24px;color:var(--gold);filter:brightness(.85)}
 .tpl-laudai .guest-name{font-family:var(--font-script);font-size:44px;color:var(--castle)}
-.tpl-laudai .event{background:var(--paper);border:1px solid var(--line);border-radius:999px 999px 10px 10px;padding-top:44px}
-.tpl-laudai .event h3{font-size:26px}
 .tpl-laudai .btn{border-radius:999px}
 .tpl-laudai .ph{border-radius:999px 999px 4px 4px}
-.tpl-laudai .s-countdown,.tpl-laudai .s-thanks,.tpl-laudai .credit{background:linear-gradient(180deg,var(--sky2),var(--castle));color:var(--hero-ink);opacity:1}
-.tpl-laudai .s-countdown .sec-title,.tpl-laudai .s-thanks .thanks-big{color:var(--hero-ink)}
-.tpl-laudai .s-countdown .cd-cell{background:rgba(255,255,255,.08);border-color:var(--gold)}
-.tpl-laudai .s-countdown .cd-cell b{color:var(--hero-ink)}
-.tpl-laudai .s-countdown .cd-cell span{color:var(--gold)}
+.tpl-laudai .s-cal,.tpl-laudai .s-thanks,.tpl-laudai .credit{background:linear-gradient(180deg,var(--sky2),var(--castle));color:var(--hero-ink);opacity:1;--cal-hi:var(--gold)}
+.tpl-laudai .s-cal .sec-title,.tpl-laudai .s-thanks .thanks-big{color:var(--hero-ink)}
 .tpl-laudai .thanks-big{font-family:var(--font-script);font-size:56px}
 .tpl-laudai .s-thanks p,.tpl-laudai .s-thanks .thanks-names{color:var(--hero-ink)!important}
 .tpl-laudai .credit .wm{background:transparent;border-color:var(--gold);color:var(--hero-ink)}
@@ -121,5 +111,6 @@ module.exports = {
 .ld-opener .ld-o-to{margin:0 0 18px;font-size:12px}
 .ld-opener .ld-o-to b{display:block;font-family:var(--font-title);font-size:21px;font-weight:500;color:var(--gold)}
 .ld-opener .btn{background:var(--gold);border-color:var(--gold);color:var(--castle);border-radius:999px}
+.tpl-laudai .ld-cover .db{position:relative;z-index:1;color:var(--castle);--db-hi:var(--castle)}
 `,
 };

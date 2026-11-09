@@ -45,7 +45,6 @@ module.exports = {
   },
 
   cover(ctx) {
-    const p = ctx.dparts;
     const photo = ctx.d.cover || ctx.d.photos[0] || '';
     return `
 <header class="lh-cover">
@@ -58,8 +57,7 @@ module.exports = {
     ${pad('')}
     <h1 class="lh-names"><span>${esc(ctx.g)}</span><em>&amp;</em><span>${esc(ctx.b)}</span></h1>
   </div>
-  ${p ? `<p class="lh-date">${esc(ctx.weekday)} · ${p.d} tháng ${+p.m} năm ${p.y}${ctx.timeText ? ` · ${esc(ctx.timeText)}` : ''}</p>
-  <p class="lh-lunar">${esc(ctx.lunar)}</p>` : ''}
+  ${ctx.dateBlock('line')}
   <div class="lh-pond">${ripples('lh-rip')}${pad('lh-mini a')}${pad('lh-mini b')}</div>
 </header>`;
   },
@@ -75,8 +73,6 @@ module.exports = {
 .tpl-lienhoa .lh-names{position:relative;margin:0;padding:40px 0;font-family:var(--font-script);font-weight:700;font-size:44px;line-height:1.05;color:var(--accent)}
 .tpl-lienhoa .lh-names span{display:block}
 .tpl-lienhoa .lh-names em{display:block;font-style:normal;font-weight:500;font-size:26px;color:var(--flower);filter:brightness(.85)}
-.tpl-lienhoa .lh-date{margin:6px 0 0;font-family:var(--font-title);font-size:16px;color:var(--ink)}
-.tpl-lienhoa .lh-lunar{margin:2px 0 0;font-family:var(--font-title);font-style:italic;font-size:14px;color:var(--muted)}
 .tpl-lienhoa .lh-pond{position:absolute;left:0;right:0;bottom:0;height:100px}
 .tpl-lienhoa .lh-rip{position:absolute;left:50%;bottom:10px;width:420px;transform:translateX(-50%)}
 .tpl-lienhoa .lh-mini{position:absolute;width:64px}
@@ -87,11 +83,9 @@ module.exports = {
 .tpl-lienhoa .lh-title .sec-title{margin:0;font-weight:500;font-size:28px;color:var(--accent)}
 .tpl-lienhoa .lh-sub{margin:4px 0 0;font-family:var(--font-script);font-size:20px;color:var(--muted)}
 .tpl-lienhoa .guest-name{font-family:var(--font-script);font-weight:700;font-size:38px}
-.tpl-lienhoa .event{background:var(--paper);border:1px solid var(--line);border-radius:18px}
 .tpl-lienhoa .btn{border-radius:999px}
 .tpl-lienhoa .ph{border-radius:50%;aspect-ratio:3/4}
-.tpl-lienhoa .cd-cell{border-radius:50%;aspect-ratio:1;display:grid;place-content:center;background:var(--paper)}
-.tpl-lienhoa .s-countdown,.tpl-lienhoa .s-thanks{background:var(--water)}
+.tpl-lienhoa .s-cal,.tpl-lienhoa .s-thanks{background:var(--water);--cal-hi:var(--gold)}
 .tpl-lienhoa .thanks-big{font-family:var(--font-script);font-weight:700;font-size:50px;color:var(--accent)}
 
 .lh-opener{background:linear-gradient(180deg,var(--bg),var(--water))}

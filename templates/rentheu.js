@@ -43,7 +43,6 @@ module.exports = {
   },
 
   cover(ctx) {
-    const p = ctx.dparts;
     const photo = ctx.d.cover || ctx.d.photos[0] || '';
     return `
 <header class="rt-cover">
@@ -51,8 +50,7 @@ module.exports = {
   <p class="rt-k">Together with their families</p>
   <h1 class="rt-names"><span>${esc(ctx.g)}</span><em>&amp;</em><span>${esc(ctx.b)}</span></h1>
   ${photo ? `<div class="rt-photo"><div style="background-image:url('${esc(photo)}')"></div></div>` : ''}
-  ${p ? `<p class="rt-date">${esc(ctx.weekday)}<b>${p.d} · ${p.m} · ${p.y}</b>${esc(ctx.timeText)}</p>
-  <p class="rt-lunar">${esc(ctx.lunar)}</p>` : ''}
+  ${ctx.dateBlock('stack')}
   ${orn.lace('rt-lace bot', { n: 12 })}
 </header>`;
   },
@@ -68,9 +66,6 @@ module.exports = {
 .tpl-rentheu .rt-names em{display:block;font-style:normal;font-family:var(--font-title);font-size:24px;opacity:.75;margin:4px 0}
 .tpl-rentheu .rt-photo{margin:26px auto 0;padding:10px;background:var(--lace);border-radius:4px;box-shadow:0 18px 36px rgba(0,0,0,.22)}
 .tpl-rentheu .rt-photo>div{width:min(220px,58vw);aspect-ratio:4/5;background:var(--line) center/cover no-repeat;outline:1px dashed color-mix(in srgb,var(--silk-ink) 25%,transparent);outline-offset:5px}
-.tpl-rentheu .rt-date{display:flex;flex-direction:column;align-items:center;margin:24px 0 0;font-family:var(--font-title);font-size:14px;letter-spacing:.2em;text-transform:uppercase}
-.tpl-rentheu .rt-date b{font-size:28px;font-weight:500;letter-spacing:.1em;margin:2px 0}
-.tpl-rentheu .rt-lunar{margin:4px 0 0;font-family:var(--font-title);font-style:italic;opacity:.8}
 .tpl-rentheu .rt-title{margin-bottom:26px}
 .tpl-rentheu .rt-sub{margin:0;font-family:var(--font-script);font-size:26px;color:var(--accent);line-height:1.1}
 .tpl-rentheu .rt-title .sec-title{margin:0;font-weight:500;font-size:30px;color:var(--ink)}
@@ -78,15 +73,10 @@ module.exports = {
 .tpl-rentheu .rt-bead i{width:6px;height:6px;border-radius:50%;background:var(--gold)}
 .tpl-rentheu .rt-bead i:nth-child(2){width:9px;height:9px;margin-top:-1px}
 .tpl-rentheu .guest-name{font-family:var(--font-script);font-size:44px;color:var(--ink)}
-.tpl-rentheu .event{background:var(--paper);border:1px dashed var(--gold);border-radius:12px;outline:6px solid var(--paper);outline-offset:-1px}
-.tpl-rentheu .event h3{font-size:26px}
 .tpl-rentheu .btn{border-radius:999px}
 .tpl-rentheu .ph{border-radius:4px;border:6px solid #fff;box-shadow:0 0 0 1px var(--line)}
-.tpl-rentheu .cd-cell{border-style:dashed;border-color:var(--gold);background:var(--paper)}
-.tpl-rentheu .s-countdown,.tpl-rentheu .s-thanks,.tpl-rentheu .credit{background:var(--silk);color:var(--silk-ink);opacity:1}
-.tpl-rentheu .s-countdown .sec-title,.tpl-rentheu .s-thanks .thanks-big{color:var(--silk-ink)}
-.tpl-rentheu .s-countdown .cd-cell{background:transparent}
-.tpl-rentheu .s-countdown .cd-cell b{color:var(--silk-ink)}
+.tpl-rentheu .s-cal,.tpl-rentheu .s-thanks,.tpl-rentheu .credit{background:var(--silk);color:var(--silk-ink);opacity:1;--cal-hi:var(--gold)}
+.tpl-rentheu .s-cal .sec-title,.tpl-rentheu .s-thanks .thanks-big{color:var(--silk-ink)}
 .tpl-rentheu .thanks-big{font-family:var(--font-script);font-size:58px}
 .tpl-rentheu .s-thanks p,.tpl-rentheu .s-thanks .thanks-names{color:var(--silk-ink)!important}
 .tpl-rentheu .credit .wm{background:transparent;border-color:var(--gold);color:var(--silk-ink)}

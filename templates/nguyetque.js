@@ -43,7 +43,6 @@ module.exports = {
   },
 
   cover(ctx) {
-    const p = ctx.dparts;
     const photo = ctx.d.cover || ctx.d.photos[0] || '';
     return `
 <header class="nq-cover">
@@ -51,14 +50,7 @@ module.exports = {
     ${wreath(ctx.initials)}
     <p class="nq-k">The Wedding of</p>
     <h1 class="nq-names"><span>${esc(ctx.g)}</span><em>&amp;</em><span>${esc(ctx.b)}</span></h1>
-    ${p ? `
-    <div class="nq-date">
-      <span>${esc(ctx.weekday)}</span>
-      <b>${p.d}</b>
-      <span>${p.m} · ${p.y}</span>
-    </div>
-    ${ctx.timeText ? `<p class="nq-time">${esc(ctx.timeText)}</p>` : ''}
-    <p class="nq-lunar">${esc(ctx.lunar)}</p>` : ''}
+    ${ctx.dateBlock('split')}
   </div>
   ${photo ? `<div class="nq-photo reveal" style="background-image:url('${esc(photo)}')"></div>` : ''}
 </header>`;
@@ -74,23 +66,15 @@ module.exports = {
 .tpl-nguyetque .nq-names{margin:18px 0 8px;font-family:var(--font-script);font-weight:400;font-size:60px;line-height:1;color:var(--ink)}
 .tpl-nguyetque .nq-names span{display:block}
 .tpl-nguyetque .nq-names em{display:block;font-style:normal;font-family:var(--font-title);font-size:26px;color:var(--gold);margin:6px 0}
-.tpl-nguyetque .nq-date{display:flex;align-items:center;justify-content:center;gap:12px;margin-top:26px;font-family:var(--font-title);color:var(--ink)}
-.tpl-nguyetque .nq-date span{min-width:84px;font-size:12px;letter-spacing:.16em;text-transform:uppercase;padding:5px 0;border-top:1px solid var(--gold);border-bottom:1px solid var(--gold)}
-.tpl-nguyetque .nq-date b{font-size:50px;font-weight:400;line-height:1;color:var(--accent)}
-.tpl-nguyetque .nq-time{margin:12px 0 0;font-family:var(--font-title);font-size:15px}
-.tpl-nguyetque .nq-lunar{margin:2px 0 0;font-family:var(--font-title);font-style:italic;font-size:13px;color:var(--muted)}
 .tpl-nguyetque .nq-photo{max-width:320px;aspect-ratio:4/5;margin:34px auto 0;background:var(--line) center/cover no-repeat;border-radius:50%/40%;box-shadow:0 0 0 6px var(--paper),0 0 0 7px var(--gold),0 20px 40px rgba(0,0,0,.14)}
 .tpl-nguyetque .nq-title{margin-bottom:26px}
 .tpl-nguyetque .nq-title .sec-title{margin:0;font-family:var(--font-script);font-weight:400;font-size:44px;color:var(--ink)}
 .tpl-nguyetque .nq-sub{margin:2px 0 0;font-size:12px;letter-spacing:.2em;text-transform:uppercase;color:var(--muted)}
 .tpl-nguyetque .nq-dots{display:block;margin-top:8px;color:var(--gold);font-size:12px}
 .tpl-nguyetque .guest-name{font-family:var(--font-script);font-size:44px;color:var(--ink)}
-.tpl-nguyetque .fam-label,.tpl-nguyetque .event h3,.tpl-nguyetque .gift-who{color:var(--accent)}
-.tpl-nguyetque .event{background:var(--paper);border:1px solid var(--gold);border-radius:8px;outline:1px solid var(--line);outline-offset:-7px}
-.tpl-nguyetque .event h3{font-size:24px}
+.tpl-nguyetque .fam-label,.tpl-nguyetque .gift-who{color:var(--accent)}
 .tpl-nguyetque .btn{border-radius:999px;letter-spacing:.08em}
 .tpl-nguyetque .ph{border-radius:8px}
-.tpl-nguyetque .cd-cell{background:var(--paper);border-color:var(--gold)}
 .tpl-nguyetque .thanks-big{font-family:var(--font-script);font-size:58px;color:var(--ink)}
 
 .nq-opener{background:radial-gradient(circle at 50% 35%,var(--paper),var(--page))}
