@@ -164,6 +164,7 @@ a{color:inherit}
 .music-btn{position:fixed;z-index:40;right:max(14px,calc(50% - 226px));bottom:18px;width:46px;height:46px;border-radius:50%;border:1px solid var(--line);background:var(--paper);color:var(--accent);font-size:20px;box-shadow:0 4px 14px rgba(0,0,0,.18)}
 .music-btn.playing span{display:inline-block;animation:spin 3s linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
+.mb-bars{display:none}
 
 /* lớp mở thiệp */
 .opener{position:fixed;inset:0;z-index:50;display:grid;place-items:center;transition:opacity .7s ease,visibility .7s}

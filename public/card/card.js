@@ -30,11 +30,21 @@
   var opener = $('#opener');
   if (opener && !C.preview) {
     document.body.classList.add('locked');
+    // Mẫu muốn chạy hiệu ứng mở riêng thì đặt data-open-ms trên #opener:
+    // lớp "opening" được gắn ngay, đợi đủ số ms rồi mới mờ dần lớp mở thiệp.
+    var opening = false;
+    var reduce = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
     var open = function () {
-      opener.classList.add('gone');
-      document.body.classList.remove('locked');
+      if (opening) return;
+      opening = true;
       playMusic();
-      setTimeout(function () { opener.remove(); }, 800);
+      var wait = reduce ? 0 : +(opener.getAttribute('data-open-ms') || 0);
+      if (wait) opener.classList.add('opening');
+      setTimeout(function () {
+        opener.classList.add('gone');
+        document.body.classList.remove('locked');
+        setTimeout(function () { opener.remove(); }, 800);
+      }, wait);
     };
     opener.addEventListener('click', open);
   } else if (opener) {

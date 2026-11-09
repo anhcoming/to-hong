@@ -70,7 +70,6 @@ function seal(cls) {
 
 // hộp quà: thân hộp kem vẽ lá, nắp, ruy băng vàng, nơ
 const giftBox = (cls) => orn.svg(cls, '0 0 200 190', `
-<ellipse cx="100" cy="182" rx="70" ry="6" fill="#000" opacity=".08"/>
 <rect x="38" y="78" width="124" height="102" rx="4" fill="#f4ebdc"/>
 <rect x="38" y="78" width="124" height="102" rx="4" fill="none" stroke="#e2d4bd"/>
 <g fill="none" stroke="#c8b48f" stroke-width="1">${[52, 132].map((x) => `<path d="M${x} 172C${x + 2} 150 ${x - 4} 120 ${x + 6} 96"/><path d="M${x + 1} 150c-6-4-8-10-6-14M${x + 2} 132c6-4 8-10 6-14M${x} 116c-6-3-7-8-5-12"/>`).join('')}</g>
@@ -85,7 +84,24 @@ const giftBox = (cls) => orn.svg(cls, '0 0 200 190', `
 const mini = (cls, body, ribbon) => orn.svg(cls, '0 0 40 40', `<rect x="6" y="14" width="28" height="22" rx="2" fill="${body}"/><rect x="4" y="10" width="32" height="7" rx="1.5" fill="${body}" stroke="rgba(0,0,0,.08)"/><rect x="18" y="10" width="4" height="26" fill="${ribbon}"/><path d="M20 10C14 2 8 6 12 9ZM20 10C26 2 32 6 28 9Z" fill="${ribbon}"/>`);
 
 const heartIcon = '<svg viewBox="0 0 32 30" aria-hidden="true"><path d="M16 29C6 21 0 15 0 8.5 0 3.8 3.7 0 8.3 0c3 0 5.8 1.6 7.7 4.2C17.9 1.6 20.7 0 23.7 0 28.3 0 32 3.8 32 8.5 32 15 26 21 16 29z" fill="currentColor"/></svg>';
-const leafFall = () => `<div class="mn-fall" aria-hidden="true">${'<i></i>'.repeat(7)}</div>`;
+const leafFall = () => `<div class="mn-fall" aria-hidden="true">${'<i></i>'.repeat(12)}</div>`;
+
+// 32 hạt bung ra từ trái tim khi mở thiệp: góc, quãng bay, cỡ, màu, độ trễ khác nhau
+const BURST = (() => {
+  let s = '';
+  const colors = ['var(--accent)', 'var(--gold)', 'var(--bud)', '#fff', '#e9d9bd'];
+  for (let i = 0; i < 32; i++) {
+    const a = Math.round(i * (360 / 32) + ((i * 37) % 11) - 5);
+    const r = 70 + ((i * 53) % 90);
+    const z = 4 + ((i * 29) % 7);
+    const heart = i % 4 === 0;
+    s += `<i class="${heart ? 'h' : ''}" style="--a:${a}deg;--r:${r}px;--z:${z}px;--c:${colors[i % colors.length]};--dl:${(i % 5) * 18}ms"></i>`;
+  }
+  return `<span class="mn-burst" aria-hidden="true">${s}</span>`;
+})();
+
+// ngôi sao lấp lánh 4 cánh
+const spark = (cls) => orn.svg(cls, '0 0 20 20', '<path d="M10 0C11 7 13 9 20 10C13 11 11 13 10 20C9 13 7 11 0 10C7 9 9 7 10 0Z" fill="var(--gold)"/>');
 
 // ngày tách cột: THỨ BẢY | 03 | THÁNG 01, rồi năm và âm lịch
 function dateSplit(h, iso) {
@@ -123,16 +139,16 @@ module.exports = {
   opener(ctx) {
     const p = ctx.dparts;
     return `
-<div class="opener mn-opener" id="opener">
+<div class="opener mn-opener" id="opener" data-open-ms="1350">
   ${leafFall()}
   <div class="mn-o">
     ${dried('mn-o-dry tl', 3)}${dried('mn-o-dry br', 7)}
-    <div class="mn-o-heart">${heartIcon}</div>
+    <div class="mn-o-heart"><span class="mn-ring" aria-hidden="true"></span>${heartIcon}${BURST}</div>
     <p class="mn-o-names">${esc(ctx.g)}<em>&amp;</em>${esc(ctx.b)}</p>
     <p class="mn-o-div" aria-hidden="true"><i></i>❦<i></i></p>
     ${p ? `<p class="mn-o-date">${+p.d} tháng ${+p.m}, ${p.y}</p>` : ''}
     <p class="mn-o-to">${ctx.guest ? `Thân mời <b>${esc(ctx.guest.name)}</b>` : 'Thân Mời'}</p>
-    <button class="mn-o-btn" id="openBtn">Mở thiệp</button>
+    <button class="mn-o-btn" id="openBtn"><span>Mở thiệp</span></button>
   </div>
 </div>`;
   },
@@ -248,7 +264,9 @@ module.exports = {
     <details class="mn-gift">
       <summary aria-label="Mở hộp quà mừng">
         ${mini('mn-mini a', '#f1ece2', '#2f4a3a')}${mini('mn-mini b', '#dfe8ef', '#a9bccc')}${mini('mn-mini c', '#24375a', '#1c2a44')}${mini('mn-mini d', '#f3d9d4', '#c98d84')}${mini('mn-mini e', '#e9e2d3', '#b44d3c')}${mini('mn-mini f', '#2f4a3a', '#c9a96e')}
+        <i class="mn-shadow" aria-hidden="true"></i>
         ${giftBox('mn-box')}
+        ${spark('mn-spark s1')}${spark('mn-spark s2')}${spark('mn-spark s3')}${spark('mn-spark s4')}
         <span class="mn-tap">Nhấn để mở</span>
       </summary>
       <div class="mn-dim" onclick="this.closest('details').open=false"></div>
@@ -364,7 +382,35 @@ module.exports = {
 .tpl-mocnau .mn-mini.c{left:-6px;top:120px;width:28px;animation-delay:-2s}.tpl-mocnau .mn-mini.d{left:10px;top:176px;width:40px;animation-delay:-.5s}
 .tpl-mocnau .mn-mini.e{right:-4px;top:120px;width:26px;animation-delay:-1.5s}.tpl-mocnau .mn-mini.f{left:44px;top:186px;width:28px;animation-delay:-2.5s}
 @keyframes mnBob{50%{translate:0 -6px}}
-@media (prefers-reduced-motion:reduce){.tpl-mocnau .mn-box,.tpl-mocnau .mn-mini{animation:none}}
+/* bóng dưới hộp: co lại & nhạt đi khi hộp nhún lên (cùng nhịp 3s) */
+.tpl-mocnau .mn-shadow{position:absolute;left:60px;top:220px;width:140px;height:12px;border-radius:50%;background:radial-gradient(closest-side,rgba(60,40,25,.22),transparent);animation:mnShadow 3s ease-in-out infinite}
+@keyframes mnShadow{50%{scale:.82 .8;opacity:.6}}
+/* lấp lánh quanh hộp, lệch pha nhau */
+.tpl-mocnau .mn-spark{position:absolute;width:14px;opacity:0;animation:mnTwinkle 2.4s ease-in-out infinite}
+.tpl-mocnau .mn-spark.s1{left:38px;top:70px}
+.tpl-mocnau .mn-spark.s2{right:44px;top:58px;width:11px;animation-delay:-.6s}
+.tpl-mocnau .mn-spark.s3{right:30px;top:168px;width:16px;animation-delay:-1.2s}
+.tpl-mocnau .mn-spark.s4{left:64px;top:190px;width:10px;animation-delay:-1.8s}
+@keyframes mnTwinkle{0%,100%{opacity:0;scale:.4;rotate:0deg}50%{opacity:1;scale:1;rotate:45deg}}
+.tpl-mocnau .mn-tap{animation:mnHint 2s ease-in-out infinite}
+@keyframes mnHint{50%{opacity:.45}}
+@media (prefers-reduced-motion:reduce){.tpl-mocnau .mn-box,.tpl-mocnau .mn-mini,.tpl-mocnau .mn-shadow,.tpl-mocnau .mn-tap{animation:none}.tpl-mocnau .mn-spark{animation:none;opacity:.8}}
+
+/* nút nhạc: 4 cột sóng nhảy + viền đĩa xoay khi đang phát (chỉ có khi thiệp có nhạc) */
+.tpl-mocnau .music-btn{display:grid;place-items:center;border:0;background:var(--accent);color:#fff;box-shadow:0 0 0 3px color-mix(in srgb,var(--accent) 35%,transparent),0 6px 16px rgba(60,40,30,.3)}
+.tpl-mocnau .music-btn>span{display:none}
+.tpl-mocnau .music-btn::before{content:"";position:absolute;inset:4px;border-radius:50%;border:1.5px dashed rgba(255,255,255,.45)}
+.tpl-mocnau .music-btn.playing::before{animation:spin 6s linear infinite}
+.tpl-mocnau .mb-bars{display:flex;align-items:flex-end;gap:3px;height:16px}
+.tpl-mocnau .mb-bars i{width:3px;height:6px;border-radius:2px;background:#fff;transition:height .3s}
+.tpl-mocnau .mb-bars i:nth-child(2){height:12px}.tpl-mocnau .mb-bars i:nth-child(3){height:9px}.tpl-mocnau .mb-bars i:nth-child(4){height:5px}
+.tpl-mocnau .music-btn.playing .mb-bars i{animation:mnEq .9s ease-in-out infinite alternate}
+.tpl-mocnau .music-btn.playing .mb-bars i:nth-child(2){animation-delay:-.3s}.tpl-mocnau .music-btn.playing .mb-bars i:nth-child(3){animation-delay:-.6s}.tpl-mocnau .music-btn.playing .mb-bars i:nth-child(4){animation-delay:-.15s}
+@keyframes mnEq{from{height:4px}to{height:16px}}
+@media (prefers-reduced-motion:reduce){.tpl-mocnau .music-btn.playing::before,.tpl-mocnau .music-btn.playing .mb-bars i{animation:none}}
+
+/* mẫu này không làm mờ dần khi cuộn — các khối hiện sẵn */
+.tpl-mocnau .reveal{opacity:1;transform:none;transition:none}
 .tpl-mocnau .mn-gift[open] summary{opacity:.35}
 .tpl-mocnau .mn-dim{position:fixed;inset:0;z-index:59;background:rgba(40,28,22,.35);animation:mnFade .3s}
 @keyframes mnFade{from{opacity:0}}
@@ -386,6 +432,8 @@ module.exports = {
 .mn-fall i{position:absolute;top:-20px;width:14px;height:9px;border-radius:0 100% 0 100%;background:color-mix(in srgb,var(--twig) 55%,#d8c3ad);opacity:.7;animation:mnFall 12s linear infinite}
 .mn-fall i:nth-child(1){left:12%}.mn-fall i:nth-child(2){left:30%;animation-delay:-4s;animation-duration:14s}.mn-fall i:nth-child(3){left:46%;animation-delay:-8s}
 .mn-fall i:nth-child(4){left:64%;animation-delay:-2s;animation-duration:15s}.mn-fall i:nth-child(5){left:80%;animation-delay:-6s}.mn-fall i:nth-child(6){left:90%;animation-delay:-10s;animation-duration:13s}.mn-fall i:nth-child(7){left:22%;animation-delay:-11s}
+.mn-fall i:nth-child(8){left:4%;animation-delay:-3s;animation-duration:16s;width:10px;height:7px}.mn-fall i:nth-child(9){left:38%;animation-delay:-9.5s;animation-duration:13s}.mn-fall i:nth-child(10){left:56%;animation-delay:-5s;width:11px;height:7px}
+.mn-fall i:nth-child(11){left:72%;animation-delay:-12.5s;animation-duration:17s}.mn-fall i:nth-child(12){left:96%;animation-delay:-7s;width:10px;height:6px}
 @keyframes mnFall{0%{transform:translate(0,0) rotate(0)}50%{transform:translate(24px,55vh) rotate(160deg)}100%{transform:translate(-8px,110vh) rotate(320deg)}}
 @media (prefers-reduced-motion:reduce){.mn-fall{display:none}}
 .mn-opener .mn-o{position:relative;width:min(310px,82vw);padding:22px 24px 54px;text-align:center;color:var(--ink);background:linear-gradient(170deg,#fffdfa,#fbf5ef);border-radius:8px;box-shadow:0 24px 50px rgba(90,60,40,.25);font-family:var(--font-title)}
@@ -393,8 +441,40 @@ module.exports = {
 .mn-opener .mn-o-to b{display:block;font-size:20px}
 .mn-opener .mn-o-dry.tl{left:-6px;top:-6px;transform:rotate(150deg) scaleX(-1)}
 .mn-opener .mn-o-dry.br{right:-8px;bottom:-4px;transform:rotate(-14deg)}
-.mn-opener .mn-o-heart{display:grid;place-items:center;width:56px;height:56px;margin:0 auto;border-radius:50%;color:#fff;background:radial-gradient(circle at 35% 30%,color-mix(in srgb,var(--accent) 70%,#fff),var(--accent));box-shadow:0 6px 14px rgba(70,50,40,.35)}
+.mn-opener .mn-o-heart{position:relative;display:grid;place-items:center;width:56px;height:56px;margin:0 auto;border-radius:50%;color:#fff;background:radial-gradient(circle at 35% 30%,color-mix(in srgb,var(--accent) 70%,#fff),var(--accent));box-shadow:0 6px 14px rgba(70,50,40,.35);animation:mnBeat 1.8s ease-in-out infinite}
 .mn-opener .mn-o-heart svg{width:24px}
+@keyframes mnBeat{0%,100%{scale:1}15%{scale:1.08}30%{scale:1}45%{scale:1.05}}
+/* vòng sáng lan ra từ trái tim */
+.mn-opener .mn-ring{position:absolute;inset:0;border-radius:50%;border:2px solid color-mix(in srgb,var(--accent) 55%,transparent);animation:mnRing 1.8s ease-out infinite;pointer-events:none}
+@keyframes mnRing{0%{scale:1;opacity:.8}100%{scale:1.9;opacity:0}}
+/* vệt sáng xiên chạy ngang nút */
+.mn-opener .mn-o-btn{position:relative;overflow:hidden}
+.mn-opener .mn-o-btn span{position:relative;z-index:1}
+.mn-opener .mn-o-btn::after{content:"";position:absolute;top:0;bottom:0;left:-40%;width:28%;background:linear-gradient(90deg,transparent,rgba(255,255,255,.45),transparent);transform:skewX(-20deg);animation:mnShine 2.6s ease-in-out infinite}
+@keyframes mnShine{0%,55%{left:-40%}100%{left:130%}}
+
+/* ----- chuỗi hiệu ứng khi bấm "Mở thiệp" (card.js gắn .opening, đợi 1350ms) ----- */
+.mn-burst{position:absolute;left:50%;top:50%;width:0;height:0;pointer-events:none}
+.mn-burst i{position:absolute;left:calc(var(--z) / -2);top:calc(var(--z) / -2);width:var(--z);height:var(--z);border-radius:50%;background:var(--c);opacity:0}
+.mn-burst i.h{width:calc(var(--z) * 1.6);height:calc(var(--z) * 1.5);border-radius:0;-webkit-mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 30'%3E%3Cpath d='M16 29C6 21 0 15 0 8.5 0 3.8 3.7 0 8.3 0c3 0 5.8 1.6 7.7 4.2C17.9 1.6 20.7 0 23.7 0 28.3 0 32 3.8 32 8.5 32 15 26 21 16 29z'/%3E%3C/svg%3E") center/contain no-repeat;mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 30'%3E%3Cpath d='M16 29C6 21 0 15 0 8.5 0 3.8 3.7 0 8.3 0c3 0 5.8 1.6 7.7 4.2C17.9 1.6 20.7 0 23.7 0 28.3 0 32 3.8 32 8.5 32 15 26 21 16 29z'/%3E%3C/svg%3E") center/contain no-repeat}
+.mn-opener.opening .mn-burst i{animation:mnBurst .9s cubic-bezier(.15,.7,.3,1) var(--dl) both}
+@keyframes mnBurst{0%{opacity:1;transform:rotate(var(--a)) translateY(0) scale(.4)}60%{opacity:1}100%{opacity:0;transform:rotate(var(--a)) translateY(calc(var(--r) * -1)) scale(1)}}
+/* trái tim "vỡ": phóng to rồi mờ; vòng sáng lan rộng gấp 4 */
+.mn-opener.opening .mn-o-heart{animation:mnBreak .5s ease-out forwards}
+.mn-opener.opening .mn-o-heart svg{animation:mnBreakIcon .45s ease-in forwards}
+@keyframes mnBreak{0%{scale:1}35%{scale:1.25}100%{scale:1.1;background:transparent;box-shadow:none}}
+@keyframes mnBreakIcon{40%{scale:1.4;opacity:1}100%{scale:2;opacity:0}}
+.mn-opener.opening .mn-ring{animation:mnRingOut .8s ease-out forwards}
+@keyframes mnRingOut{0%{scale:1;opacity:1;border-width:3px}100%{scale:4;opacity:0;border-width:1px}}
+/* hai cành hoa khô bay chéo ra ngoài */
+.mn-opener.opening .mn-o-dry.tl{animation:mnFlyTL .9s ease-in forwards}
+.mn-opener.opening .mn-o-dry.br{animation:mnFlyBR .9s ease-in forwards}
+@keyframes mnFlyTL{to{translate:-140px -260px;rotate:-40deg;opacity:0}}
+@keyframes mnFlyBR{to{translate:150px -220px;rotate:50deg;opacity:0}}
+/* cả tấm thiệp bay lên */
+.mn-opener.opening .mn-o{animation:mnAway .75s cubic-bezier(.5,0,.75,0) .55s forwards}
+@keyframes mnAway{to{translate:0 -110vh;rotate:-6deg;opacity:.6}}
+@media (prefers-reduced-motion:reduce){.mn-opener .mn-o-heart,.mn-opener .mn-ring,.mn-opener .mn-o-btn::after{animation:none}.mn-opener .mn-ring{display:none}}
 .mn-opener .mn-o-names{margin:28px 0 0;font-size:31px;line-height:1.05}
 .mn-opener .mn-o-names em{display:block;font-style:normal;font-size:20px;line-height:1}
 .mn-opener .mn-o-div{display:flex;align-items:center;justify-content:center;gap:10px;margin:12px 0 0;color:var(--muted);font-size:12px}
