@@ -1,3 +1,4 @@
+require('./lib/env');
 const http = require('http');
 const fs = require('fs');
 const path = require('path');
@@ -702,4 +703,10 @@ const server = http.createServer(async (req, res) => {
 if (require.main === module) {
   server.listen(PORT, () => console.log(`${config.brand} đang chạy tại ${BASE_URL} (cổng ${PORT})`));
 }
-module.exports = server;
+// Xuất dạng hàm (req, res) để chạy được cả trên Vercel; vẫn có listen/close cho chạy thường và kiểm thử.
+const handler = (req, res) => server.emit('request', req, res);
+handler.server = server;
+handler.listen = (...a) => server.listen(...a);
+handler.close = (...a) => server.close(...a);
+handler.address = () => server.address();
+module.exports = handler;
