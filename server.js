@@ -3,7 +3,8 @@ const http = require('http');
 const fs = require('fs');
 const path = require('path');
 const config = require('./config.json');
-const { db, save, UPLOAD_DIR } = require('./lib/db');
+const store = require('./lib/db');
+const { db, save, UPLOAD_DIR } = store;
 const { rid, json, send, readJson, readBody, httpError, slugify, str, cookies } = require('./lib/util');
 const auth = require('./lib/auth');
 const google = require('./lib/google');
@@ -18,7 +19,7 @@ const { execFile } = require('child_process');
 const Wd = require('./lib/wedding');
 const Gs = require('./lib/guests');
 
-Wd.migrate(); // dữ liệu từ trước khi có sổ tay cưới → gắn vào đám cưới
+store.onLoad(() => Wd.migrate()); // dữ liệu từ trước khi có sổ tay cưới → gắn vào đám cưới
 
 // Sản phẩm bán: thiệp, màn LED, video dạm ngõ (đều gắn với một thiệp)
 const PRODUCTS = {
@@ -364,6 +365,12 @@ route('POST', '/api/upload', async (req, res, ctx) => {
   const buf = await readBody(req, t[1]);
   if (!buf.length) throw httpError(400, 'Tệp rỗng');
   const name = `${user.id}-${rid(10)}${t[0]}`;
+  if (process.env.BLOB_READ_WRITE_TOKEN) {
+    // Vercel Blob: ổ đĩa serverless không giữ được tệp, nên lưu lên kho Blob (trả về link https)
+    const { put } = require('@vercel/blob');
+    const blob = await put(`uploads/${name}`, buf, { access: 'public', contentType: type, addRandomSuffix: false });
+    return json(res, 200, { url: blob.url });
+  }
   fs.writeFileSync(path.join(UPLOAD_DIR, name), buf);
   json(res, 200, { url: `/uploads/${name}` });
 });
@@ -673,6 +680,22 @@ function serveStatic(req, res, pathname) {
 
 // ---------------- máy chủ ----------------
 const server = http.createServer(async (req, res) => {
+  // Chế độ Redis: nạp dữ liệu mới nhất, và ghi lại trước khi trả lời (res.end chờ ghi xong).
+  if (store.remote) {
+    let finish;
+    try { finish = await store.begin(req.method); } catch (e) {
+      console.error(e);
+      return json(res, 503, { error: 'Không kết nối được cơ sở dữ liệu, vui lòng thử lại' });
+    }
+    const end = res.end.bind(res);
+    let ending = false;
+    res.end = (...a) => {
+      if (ending) return res;
+      ending = true;
+      finish().catch((e) => console.error('Lỗi ghi dữ liệu:', e)).finally(() => end(...a));
+      return res;
+    };
+  }
   let url;
   try { url = new URL(req.url, 'http://x'); } catch { return json(res, 400, { error: 'URL lỗi' }); }
   const pathname = decodeURIComponent(url.pathname);

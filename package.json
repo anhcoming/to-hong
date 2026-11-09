@@ -9,6 +9,9 @@
     "test": "node test/smoke.js && node test/migrate.js && node test/admin.js"
   },
   "engines": {
-    "node": ">=18"
+    "node": ">=20"
+  },
+  "dependencies": {
+    "@vercel/blob": "2.8.2"
   }
 }
