@@ -242,4 +242,35 @@ function damask(cls, id, { stroke = 'var(--gold)', op = 0.14 } = {}) {
   return `<svg class="${cls}" aria-hidden="true" width="100%" height="100%"><defs><pattern id="${id}" width="60" height="80" patternUnits="userSpaceOnUse">${tile}</pattern></defs><rect width="100%" height="100%" fill="url(#${id})" opacity="${op}"/></svg>`;
 }
 
-module.exports = { svg, f, rad, sprig, branch, wreath, bloom, blossom, lotus, corner, divider, cloud, waves, crane, dragon, phoenix, meander, scrollCorner, damask, swapXY };
+// ---------- chất liệu ----------
+
+// vân đá cẩm thạch: nhiễu fractal → giữ dải giữa thành đường vân mảnh → tô màu currentColor.
+// `layers`: [{ color, seed, freq, width (0..1, càng nhỏ vân càng mảnh), op }]; id phải duy nhất trong trang.
+function marble(cls, id, layers) {
+  const defs = layers.map((L, i) => {
+    const w = L.width || 0.02, c = L.level || 0.5, steps = 101, tv = [];
+    for (let k = 0; k < steps; k++) { const x = k / (steps - 1); tv.push(+Math.max(0, 1 - Math.abs(x - c) / w).toFixed(2)); }
+    return `<filter id="${id}${i}" x="0" y="0" width="100%" height="100%"><feTurbulence type="fractalNoise" baseFrequency="${L.freq || '0.004 0.011'}" numOctaves="5" seed="${L.seed || 3}"/><feComponentTransfer><feFuncR type="table" tableValues="${tv.join(' ')}"/></feComponentTransfer><feColorMatrix type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  1 0 0 0 0" result="a"/><feFlood flood-color="currentColor"/><feComposite in2="a" operator="in"/></filter>`;
+  }).join('');
+  const rects = layers.map((L, i) => `<rect x="-50%" y="-50%" width="200%" height="200%" filter="url(#${id}${i})" style="color:${L.color};transform-box:fill-box;transform-origin:center;transform:rotate(${L.rot ?? -28}deg)" opacity="${L.op ?? 0.6}"/>`).join('');
+  return `<svg class="${cls}" aria-hidden="true" width="100%" height="100%" preserveAspectRatio="none"><defs>${defs}</defs>${rects}</svg>`;
+}
+
+// dải ren: mép vỏ sò, hoa ren rỗng, lỗ tròn; tô bằng `fill` (mặc định var(--lace))
+function lace(cls, { fill = 'var(--lace)', n = 10 } = {}) {
+  let g = '';
+  for (let i = 0; i < n; i++) {
+    const x = i * 40;
+    g += `<path d="M${x} 0H${x + 40}V30A20 20 0 0 1 ${x} 30Z" fill="${fill}"/>`;
+    g += `<circle cx="${x + 20}" cy="16" r="9" fill="none" stroke="rgba(0,0,0,.13)" stroke-width="1"/>`;
+    for (let k = 0; k < 6; k++) {
+      const a = rad(k * 60);
+      g += `<ellipse cx="${f(x + 20 + 5 * Math.cos(a))}" cy="${f(16 + 5 * Math.sin(a))}" rx="2.2" ry="4" transform="rotate(${k * 60 + 90} ${f(x + 20 + 5 * Math.cos(a))} ${f(16 + 5 * Math.sin(a))})" fill="rgba(0,0,0,.08)"/>`;
+    }
+    g += `<circle cx="${x + 20}" cy="16" r="1.8" fill="rgba(0,0,0,.13)"/><circle cx="${x}" cy="8" r="2.6" fill="rgba(0,0,0,.11)"/><circle cx="${x + 20}" cy="40" r="2.4" fill="rgba(0,0,0,.11)"/>`;
+    for (let k = 1; k <= 5; k++) { const a = rad(180 * k / 6); g += `<circle cx="${f(x + 20 - 16 * Math.cos(a))}" cy="${f(30 + 16 * Math.sin(a))}" r="1.3" fill="rgba(0,0,0,.11)"/>`; }
+  }
+  return svg(cls, `0 0 ${n * 40} 52`, g, ' preserveAspectRatio="xMidYMin slice"');
+}
+
+module.exports = { svg, f, rad, sprig, branch, wreath, bloom, blossom, lotus, corner, divider, cloud, waves, crane, dragon, phoenix, meander, scrollCorner, damask, swapXY, marble, lace };
