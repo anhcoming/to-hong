@@ -10,6 +10,7 @@ const base = {
 module.exports = {
   id: 'hy',
   name: 'Song Hỷ',
+  group: 'truyenthong',
   desc: 'Truyền thống đỏ son – vàng kim, có chữ Hỷ và phong bì mở thiệp',
   fonts: 'https://fonts.googleapis.com/css2?family=Charm:wght@400;700&family=Fraunces:ital,opsz,wght@0,9..144,300..700;1,9..144,300..700&family=Hanken+Grotesk:wght@300..700&display=swap',
   palettes: [

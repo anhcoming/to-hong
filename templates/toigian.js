@@ -10,6 +10,7 @@ const base = {
 module.exports = {
   id: 'toigian',
   name: 'Tinh Khôi',
+  group: 'toigian',
   desc: 'Hiện đại tối giản, ảnh cưới tràn màn hình, chữ thanh mảnh',
   fonts: 'https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@300..700&family=Newsreader:ital,opsz,wght@0,6..72,300..600;1,6..72,300..600&display=swap',
   palettes: [

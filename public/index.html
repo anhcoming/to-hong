@@ -36,6 +36,7 @@
   <div class="head rv">
     <div><span class="eyebrow">Bộ sưu tập</span><h2 class="h2">Mẫu thiệp <em>được yêu thích</em></h2><p class="lead" style="margin:0">Bấm vào mẫu để mở như khách mời nhìn thấy — chạm phong bì để mở thiệp.</p></div>
   </div>
+  <div class="tfilter" id="tfilter" role="tablist" aria-label="Lọc theo phong cách"></div>
   <div class="rail" id="rail"></div>
 </div></section>
 
@@ -167,21 +168,44 @@
   }
 })();
 
-// băng chuyền mẫu: mỗi mẫu × bảng màu là một thẻ, chạy thiệp thật
+// băng chuyền mẫu: mỗi mẫu một thẻ (chạy thiệp thật), chấm màu để đổi bảng màu, nút lọc theo phong cách
 document.addEventListener('meta', (e) => {
   const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
-  const items = [];
-  e.detail.templates.forEach((t) => t.palettes.forEach((p, i) => items.push({ t, p, i })));
-  items.sort((a, b) => a.i - b.i); // xen kẽ các mẫu
-  document.getElementById('rail').innerHTML = items.map(({ t, p, i }) => `
-    <div class="tpl">
+  const { templates, templateGroups = [] } = e.detail;
+  const rail = document.getElementById('rail');
+  const used = templateGroups.filter((g) => templates.some((t) => t.group === g.id));
+  const filter = document.getElementById('tfilter');
+  filter.innerHTML = [{ id: '', name: 'Tất cả' }, ...used].map((g, i) =>
+    `<button role="tab" data-g="${g.id}" aria-selected="${i === 0}">${esc(g.name)}</button>`).join('');
+  rail.innerHTML = templates.map((t) => {
+    const p = t.palettes[0];
+    return `
+    <div class="tpl" data-g="${t.group}" data-tpl="${t.id}">
       <a class="scr" href="/demo/${t.id}?palette=${p.id}" target="_blank" style="display:block">
-        <span class="badge ${i === 0 ? 'free' : ''}">${i === 0 ? '✦ Phổ biến' : '♛ ' + esc(p.name)}</span>
-        <iframe loading="lazy" tabindex="-1" src="/demo/${t.id}?palette=${p.id}" title="${esc(t.name)} ${esc(p.name)}"></iframe>
+        <span class="badge">${esc(t.palettes.length)} bảng màu</span>
+        <iframe loading="lazy" tabindex="-1" src="/demo/${t.id}?palette=${p.id}" title="${esc(t.name)}"></iframe>
       </a>
-      <div class="info"><div><b>${esc(t.name)} · ${esc(p.name)}</b><div class="swatches"><i style="background:${p.swatch[0]}"></i><i style="background:${p.swatch[1]}"></i></div></div>
+      <div class="info"><div><b>${esc(t.name)}</b><div class="swatches">${t.palettes.map((q, i) =>
+        `<button type="button" data-pal="${q.id}" title="${esc(q.name)}" aria-label="Bảng màu ${esc(q.name)}" class="${i === 0 ? 'on' : ''}" style="background:linear-gradient(135deg,${q.swatch[0]} 50%,${q.swatch[1]} 50%)"></button>`).join('')}</div></div>
         <a class="go" href="/thiep-cua-toi?tao=${t.id}&mau=${p.id}" title="Dùng mẫu này">→</a></div>
-    </div>`).join('');
+    </div>`;
+  }).join('');
+  filter.addEventListener('click', (ev) => {
+    const b = ev.target.closest('button'); if (!b) return;
+    filter.querySelectorAll('button').forEach((x) => x.setAttribute('aria-selected', x === b));
+    rail.querySelectorAll('.tpl').forEach((c) => { c.hidden = !!b.dataset.g && c.dataset.g !== b.dataset.g; });
+    rail.scrollTo({ left: 0 });
+  });
+  // đổi bảng màu ngay trên thẻ
+  rail.addEventListener('click', (ev) => {
+    const b = ev.target.closest('.swatches button'); if (!b) return;
+    const card = b.closest('.tpl'), id = card.dataset.tpl, pal = b.dataset.pal;
+    card.querySelectorAll('.swatches button').forEach((x) => x.classList.toggle('on', x === b));
+    const url = `/demo/${id}?palette=${pal}`;
+    card.querySelector('.scr').href = url;
+    card.querySelector('iframe').src = url;
+    card.querySelector('.go').href = `/thiep-cua-toi?tao=${id}&mau=${pal}`;
+  });
 });
 </script>
 </body>
