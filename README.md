@@ -123,3 +123,13 @@ Tham khảo ý tưởng thị trường, tự thiết kế mẫu và hiệu ứn
 4. **Sao lưu thư mục `data/` hằng ngày** — toàn bộ thiệp và ảnh của khách nằm ở đó.
 
 Khi vượt vài nghìn thiệp, thay `lib/db.js` bằng Postgres/Supabase và đưa ảnh lên kho lưu trữ (Cloudflare R2/S3).
+
+## Chạy trên Vercel
+
+Ổ đĩa của Vercel không giữ được dữ liệu, nên cần gắn hai kho lưu trữ (Vercel → dự án → **Storage**):
+
+1. **Upstash Redis** (Marketplace) → *Connect* vào dự án. Vercel tự thêm `KV_REST_API_URL` và `KV_REST_API_TOKEN`; toàn bộ dữ liệu (tài khoản, thiệp, khách…) được lưu ở đây.
+2. **Blob** → *Connect* vào dự án. Vercel tự thêm `BLOB_READ_WRITE_TOKEN`; ảnh và nhạc tải lên được lưu ở đây.
+3. Deploy lại (Deployments → Redeploy) để nhận biến môi trường mới.
+
+Không có hai biến trên thì app vẫn chạy nhưng dữ liệu chỉ nằm trong `/tmp` và sẽ mất. Giới hạn trên Vercel: tệp tải lên tối đa ~4,5 MB (nhạc MP3 lớn hơn sẽ bị từ chối) và chưa xuất được video MP4 (cần ffmpeg).
