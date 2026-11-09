@@ -689,7 +689,7 @@ const server = http.createServer(async (req, res) => {
       ctx.params = Object.fromEntries(r.keys.map((k, i) => [k, m[i + 1]]));
       return await r.handler(req, res, ctx);
     }
-    if (pathname.startsWith('/api/')) throw httpError(404, 'Không có API này');
+    if (pathname.startsWith('/api/')) { console.warn('API 404:', req.method, req.url); throw httpError(404, 'Không có API này'); }
     if (req.method !== 'GET' && req.method !== 'HEAD') throw httpError(405, 'Không hỗ trợ');
     serveStatic(req, res, pathname);
   } catch (e) {
@@ -704,7 +704,18 @@ if (require.main === module) {
   server.listen(PORT, () => console.log(`${config.brand} đang chạy tại ${BASE_URL} (cổng ${PORT})`));
 }
 // Xuất dạng hàm (req, res) để chạy được cả trên Vercel; vẫn có listen/close cho chạy thường và kiểm thử.
-const handler = (req, res) => server.emit('request', req, res);
+// Trên Vercel, mọi đường dẫn được rewrite vào một hàm; đường dẫn gốc được gửi kèm ở ?__p=
+// (xem vercel.json). Khôi phục lại req.url để bộ định tuyến khớp đúng.
+function restoreUrl(req) {
+  if (!req.url || !req.url.includes('__p=')) return;
+  const u = new URL(req.url, 'http://x');
+  let p = u.searchParams.get('__p') || '/';
+  if (!p.startsWith('/')) p = '/' + p;
+  u.searchParams.delete('__p');
+  const q = u.searchParams.toString();
+  req.url = p + (q ? '?' + q : '');
+}
+const handler = (req, res) => { restoreUrl(req); server.emit('request', req, res); };
 handler.server = server;
 handler.listen = (...a) => server.listen(...a);
 handler.close = (...a) => server.close(...a);
