@@ -9,7 +9,7 @@ const google = require('./lib/google');
 const adminLib = require('./lib/admin');
 adminLib.applySettings(); // giá, mã giảm giá… sửa trên trang quản trị đè lên config.json
 const cd = require('./lib/carddata');
-const { renderCard, renderNotice, templates, templateList } = require('./lib/render');
+const { renderCard, renderNotice, templates, templateList, groups: templateGroups } = require('./lib/render');
 const banks = require('./lib/banks');
 const ledLib = require('./lib/led');
 const videoLib = require('./lib/video');
@@ -188,7 +188,7 @@ route('GET', '/auth/google/callback', async (req, res, ctx) => {
 route('GET', '/api/meta', async (req, res) => {
   json(res, 200, {
     brand: config.brand, tagline: config.tagline, price: config.price, trialDays: config.trialDays,
-    trialGuestLimit: config.trialGuestLimit, banks, templates: templateList(), baseUrl: BASE_URL, support: config.support,
+    trialGuestLimit: config.trialGuestLimit, banks, templates: templateList(), templateGroups, baseUrl: BASE_URL, support: config.support,
     ledPrice: config.ledPrice, led: ledLib.options(),
     videoPrice: config.videoPrice, video: videoLib.options(),
     googleLogin: google.enabled(),

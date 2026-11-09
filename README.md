@@ -46,6 +46,7 @@ lib/
   lunar.js           đổi dương lịch → âm lịch (can chi)
   banks.js           mã BIN ngân hàng VietQR
 templates/           mỗi mẫu thiệp = 1 file (bảng màu, trang bìa, phong bì, CSS)
+  _orn.js            kho họa tiết SVG dùng chung (lá, hoa, rồng phượng, hạc, hồi văn, góc baroque, damask, vân đá, ren…)
 public/
   index.html         trang chủ (giới thiệu, mẫu, bảng giá, hỏi đáp)
   auth.html          đăng nhập / đăng ký           → /dang-nhap
@@ -59,9 +60,26 @@ data/                dữ liệu + ảnh tải lên (không đưa lên git — n
 
 Link thiệp: `/t/:duong-dan` (link chung) và `/t/:duong-dan/:mã-khách` (link có tên khách). Xem mẫu: `/demo/hy`, `/demo/toigian?palette=dem`.
 
-## Thêm mẫu thiệp mới
+## Mẫu thiệp
 
-Sao chép `templates/toigian.js`, đổi `id`, `name`, `palettes`, `cover()`, `opener()`, `css`, rồi khai báo trong `lib/render.js` (đối tượng `templates`). Các phần lời mời, lịch trình, bản đồ, RSVP, QR, lưu bút dùng chung — mẫu mới chỉ cần lo phần nhìn.
+19 mẫu, chia 6 nhóm phong cách (`groups` trong `lib/render.js`, hiện ở bộ lọc trang chủ và trình chỉnh sửa):
+
+| Nhóm | Mẫu (`id`) |
+|---|---|
+| Truyền thống | Song Hỷ (`hy`), Cổng Vòm (`vomcong`), Long Phụng (`longphung`), Song Hạc (`songhac`), Cổ Phục (`cophuc`) |
+| Tối giản | Tinh Khôi (`toigian`), Thư Tay (`thutay`) |
+| Hoa & thiên nhiên | Nguyệt Quế (`nguyetque`), Vườn Kính (`vuonkinh`), Hoa Khô (`hoakho`), Liên Hoa (`lienhoa`) |
+| Hoàng gia | Baroque (`baroque`), Hoàng Kim (`hoangkim`), Lâu Đài (`laudai`) |
+| Chất liệu | Cẩm Thạch (`camthach`), Ren Thêu (`rentheu`), Bạch Sứ (`bachsu`) |
+| Dễ thương | Chibi (`chibi`), Anh Đào (`anhdao`) |
+
+Xem nhanh: `/demo/<id>?palette=<id bảng màu>`. Mọi họa tiết đều vẽ bằng SVG/CSS và tô bằng biến màu (`var(--accent)`, `var(--gold)`…), nên đổi bảng màu là họa tiết đổi theo — không có file ảnh nào.
+
+### Thêm / sửa mẫu
+
+Sao chép một mẫu gần giống (ví dụ `templates/thutay.js`), đổi `id`, `name`, `group`, `desc`, `palettes`, `title()`, `cover()`, `opener()` (phải có `#opener` và nút `#openBtn`), `css` (scope bằng `.tpl-<id>`), rồi khai báo trong `lib/render.js` (đối tượng `templates`). Họa tiết lấy từ `templates/_orn.js`. Các phần lời mời, lịch trình, bản đồ, RSVP, QR, lưu bút dùng chung — mẫu mới chỉ cần lo phần nhìn. `test/smoke.js` tự kiểm tra mọi mẫu × mọi bảng màu.
+
+Khi chạy thử nên dùng `node --watch server.js` để sửa mẫu là trang tự nạp lại.
 
 ## Thanh toán
 

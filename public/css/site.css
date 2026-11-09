@@ -115,6 +115,13 @@ section{position:relative}
 .tpl:hover .go{background:var(--grad);color:#fff}
 .swatches{display:flex;gap:6px;margin-top:6px}
 .swatches i{width:14px;height:14px;border-radius:50%;border:1px solid var(--line)}
+.swatches button{width:20px;height:20px;padding:0;border-radius:50%;border:1px solid var(--line);cursor:pointer;outline-offset:2px}
+.swatches button.on{outline:2px solid var(--ink)}
+.tfilter{display:flex;gap:8px;overflow-x:auto;scrollbar-width:none;margin:0 -20px 4px;padding:4px 20px}
+.tfilter::-webkit-scrollbar{display:none}
+.tfilter button{flex:none;border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:999px;padding:8px 16px;font:inherit;font-size:14px;cursor:pointer}
+.tfilter button[aria-selected="true"]{background:var(--ink);color:var(--card);border-color:var(--ink)}
+.tpl[hidden]{display:none}
 
 /* chữ + ảnh ghép */
 .split{display:grid;grid-template-columns:1fr 1fr;gap:70px;align-items:center}

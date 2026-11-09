@@ -10,6 +10,7 @@ const base = {
 module.exports = {
   id: 'toigian',
   name: 'Tinh Khôi',
+  group: 'toigian',
   desc: 'Hiện đại tối giản, ảnh cưới tràn màn hình, chữ thanh mảnh',
   fonts: 'https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@300..700&family=Newsreader:ital,opsz,wght@0,6..72,300..600;1,6..72,300..600&display=swap',
   palettes: [
@@ -35,7 +36,6 @@ module.exports = {
   },
 
   cover(ctx) {
-    const p = ctx.dparts;
     const photo = ctx.d.cover || ctx.d.photos[0] || '';
     return `
 <header class="tk-cover${photo ? '' : ' no-photo'}"${photo ? ` style="background-image:url('${esc(photo)}')"` : ''}>
@@ -43,15 +43,10 @@ module.exports = {
   <div class="tk-hero">
     <p class="tk-k">Chúng mình cưới</p>
     <h1 class="tk-names">${esc(ctx.g)}<span>&amp;</span>${esc(ctx.b)}</h1>
-    ${p ? `<p class="tk-date">${p.d} <i></i> ${p.m} <i></i> ${p.y}</p>` : ''}
+    ${ctx.dateBlock('line')}
   </div>
 </header>
-${p ? `
-<section class="sec tk-when reveal">
-  <p class="tk-wd">${esc(ctx.weekday)}${ctx.timeText ? ` · ${esc(ctx.timeText)}` : ''}</p>
-  <p class="tk-big">${p.d}<small>/${p.m}</small></p>
-  <p class="tk-lunar">${esc(ctx.lunar)}</p>
-</section>` : ''}`;
+`;
   },
 
   css: `
@@ -62,13 +57,6 @@ ${p ? `
 .tpl-toigian .tk-k{margin:0 0 4px;font-size:12px;letter-spacing:.4em;text-transform:uppercase;font-weight:300}
 .tpl-toigian .tk-names{margin:0;font-family:var(--font-title);font-weight:400;font-style:italic;font-size:54px;line-height:1.05}
 .tpl-toigian .tk-names span{display:block;font-size:30px;margin:4px 0;opacity:.85}
-.tpl-toigian .tk-date{margin:18px 0 0;font-size:15px;letter-spacing:.3em;font-weight:300;display:flex;align-items:center;justify-content:center;gap:12px}
-.tpl-toigian .tk-date i{width:5px;height:5px;border-radius:50%;background:#fff;opacity:.7}
-.tpl-toigian .tk-when{padding-bottom:16px}
-.tpl-toigian .tk-wd{margin:0;font-size:13px;letter-spacing:.24em;text-transform:uppercase;color:var(--muted)}
-.tpl-toigian .tk-big{margin:4px 0;font-family:var(--font-title);font-size:96px;line-height:1;color:var(--accent);font-weight:400}
-.tpl-toigian .tk-big small{font-size:40px;color:var(--gold)}
-.tpl-toigian .tk-lunar{margin:0;font-style:italic;color:var(--muted);font-size:14px}
 .tpl-toigian .sec-title{font-weight:400;font-size:36px;color:var(--ink)}
 .tpl-toigian .tk-title{margin-bottom:28px}
 .tpl-toigian .tk-title .sec-title{margin:0}
@@ -76,9 +64,7 @@ ${p ? `
 .tpl-toigian .tk-rule{display:block;width:40px;height:1px;background:var(--gold);margin:14px auto 0}
 .tpl-toigian .guest-name{font-family:var(--font-title);font-style:italic;font-size:40px;color:var(--ink)}
 .tpl-toigian .couple-full .amp{font-family:var(--font-title);font-style:italic}
-.tpl-toigian .event,.tpl-toigian .form,.tpl-toigian .gift,.tpl-toigian .cd-cell,.tpl-toigian .wish{border-radius:4px}
-.tpl-toigian .event{border:0;border-top:1px solid var(--gold);border-bottom:1px solid var(--gold);background:transparent;border-radius:0}
-.tpl-toigian .event h3{font-size:26px;font-style:italic;color:var(--ink)}
+.tpl-toigian .form,.tpl-toigian .gift,.tpl-toigian .wish{border-radius:4px}
 .tpl-toigian .btn{border-radius:2px;letter-spacing:.14em;text-transform:uppercase;font-size:12px;font-weight:400}
 .tpl-toigian .gallery{gap:4px}
 .tpl-toigian .ph{border-radius:0}
@@ -90,5 +76,6 @@ ${p ? `
 .tk-opener .tk-env-k{margin:12px 0 4px;font-size:11px;letter-spacing:.34em;text-transform:uppercase;color:var(--muted)}
 .tk-opener .tk-env-to{margin:0 0 26px;font-family:var(--font-title);font-size:22px}
 .tk-opener .btn{border-radius:2px;letter-spacing:.2em;text-transform:uppercase;font-size:12px;font-weight:400;padding:12px 26px}
+.tpl-toigian .tk-hero .db{--db-hi:rgba(255,255,255,.8)}
 `,
 };
