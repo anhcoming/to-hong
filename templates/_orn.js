@@ -155,4 +155,60 @@ function crane(cls, { body = 'var(--paper)', ink = 'var(--ink)', crown = '#c8102
 <path d="M80 86C78 100 74 110 70 116M90 86C92 100 92 110 90 118" stroke="${ink}" stroke-width="1.4" opacity=".6"/>`);
 }
 
-module.exports = { svg, f, rad, sprig, branch, wreath, bloom, blossom, lotus, corner, divider, cloud, waves, crane };
+// ---------- rồng / phượng cách điệu (nét vàng) ----------
+
+// rồng uốn khúc, đầu quay sang phải, ngậm ngọc
+function dragon(cls, { gold = 'var(--gold)', dark = 'rgba(0,0,0,.45)' } = {}) {
+  const body = 'M14 128C30 96 54 92 70 108C86 124 108 120 116 98C124 76 112 58 128 46C142 36 160 42 168 54';
+  const s = (d, w = 2, extra = '') => `<path d="${d}" fill="none" stroke="${gold}" stroke-width="${w}" stroke-linecap="round" stroke-linejoin="round"${extra}/>`;
+  return svg(cls, '0 0 222 150', `
+${s(body, 15, ' stroke-dasharray="2 6" opacity=".85"')}
+${s(body, 9)}
+${s(body, 5, ` stroke="${dark}" stroke-dasharray="3 3" opacity=".5"`).replace(`stroke="${gold}" `, '')}
+${s('M14 128C4 132 0 122 8 118M14 128C8 140 -2 138 2 130', 2.4)}
+${s('M58 104C54 114 46 118 38 116M38 116l-4 -5M38 116l-6 2M38 116l-2 6', 3)}
+${s('M120 86C132 82 140 74 138 64M138 64l4 -6M138 64l-5 -4M138 64l6 1', 3)}
+${s('M84 116C80 128 90 134 96 128M108 120C112 132 124 132 124 122', 1.6)}
+${s('M166 52C156 40 158 30 166 26M164 58C150 54 146 44 150 36M160 62C146 64 138 58 138 50', 2)}
+<path d="M164 50C172 40 188 38 198 46C204 50 206 56 200 60C192 64 180 62 172 62Z" fill="${gold}"/>
+${s('M172 62C180 70 192 72 200 66', 3)}
+<circle cx="186" cy="48" r="2.4" fill="${dark}"/>
+${s('M176 42C174 30 180 22 190 20M182 40C184 30 192 26 200 28', 2.5)}
+${s('M200 58C210 62 216 74 210 84M198 64C204 76 200 88 190 92', 1.4)}
+<circle cx="214" cy="34" r="6" fill="${gold}"/>
+${s('M214 22v-6M224 28l5-3M204 28l-5-3M222 40l5 3', 1.4)}`);
+}
+
+// phượng hoàng, đầu quay sang trái, đuôi dài uốn xoắn
+function phoenix(cls, { gold = 'var(--gold)', dark = 'rgba(0,0,0,.4)' } = {}) {
+  const s = (d, w = 2) => `<path d="${d}" fill="none" stroke="${gold}" stroke-width="${w}" stroke-linecap="round"/>`;
+  const eye = (x, y) => `<circle cx="${x}" cy="${y}" r="5" fill="none" stroke="${gold}" stroke-width="1.4"/><circle cx="${x}" cy="${y}" r="2" fill="${gold}"/>`;
+  return svg(cls, '0 0 222 150', `
+${s('M168 76C190 96 196 120 176 136C164 144 150 138 156 128', 3)}
+${s('M164 80C176 108 168 130 146 140C132 146 120 138 128 130', 3)}
+${s('M160 80C156 110 136 128 112 132C98 134 94 124 104 122', 3)}
+${s('M166 80C200 92 214 112 212 132', 1.4)}${s('M158 82C140 112 108 112 88 108', 1.4)}
+${eye(156, 128)}${eye(128, 130)}${eye(104, 122)}
+<path d="M150 62C150 40 168 18 200 10C190 22 186 32 190 40C178 40 172 48 172 58Z" fill="${gold}" opacity=".95"/>
+<path d="M160 52L188 18M166 54L194 28M170 56L196 38" stroke="${dark}" stroke-width="1.2"/>
+<ellipse cx="150" cy="72" rx="22" ry="11" transform="rotate(-20 150 72)" fill="${gold}"/>
+${s('M136 64C122 52 118 38 126 30', 5)}
+<circle cx="126" cy="28" r="6.5" fill="${gold}"/>
+<path d="M120 26L106 30L120 33Z" fill="${gold}"/>
+<circle cx="124" cy="27" r="1.6" fill="${dark}"/>
+${s('M128 22C130 12 138 8 146 10M130 23C136 15 146 15 152 19M126 22C124 12 128 4 134 2', 1.6)}`);
+}
+
+// ---------- viền hình học ----------
+
+// dải hồi văn (meander) nằm ngang, lặp `n` ô
+function meander(cls, { stroke = 'var(--gold)', n = 16, w = 1.6 } = {}) {
+  let d = '';
+  for (let i = 0; i < n; i++) {
+    const x = i * 24;
+    d += `M${x} 22H${x + 22}V2H${x + 4}V18H${x + 18}V6H${x + 8}V14H${x + 14}V10`;
+  }
+  return svg(cls, `-1 0 ${n * 24 + 2} 24`, `<path d="${d}" fill="none" stroke="${stroke}" stroke-width="${w}" stroke-linejoin="miter"/>`, ' preserveAspectRatio="xMidYMid slice"');
+}
+
+module.exports = { svg, f, rad, sprig, branch, wreath, bloom, blossom, lotus, corner, divider, cloud, waves, crane, dragon, phoenix, meander };
