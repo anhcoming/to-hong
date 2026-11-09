@@ -211,4 +211,35 @@ function meander(cls, { stroke = 'var(--gold)', n = 16, w = 1.6 } = {}) {
   return svg(cls, `-1 0 ${n * 24 + 2} 24`, `<path d="${d}" fill="none" stroke="${stroke}" stroke-width="${w}" stroke-linejoin="miter"/>`, ' preserveAspectRatio="xMidYMid slice"');
 }
 
-module.exports = { svg, f, rad, sprig, branch, wreath, bloom, blossom, lotus, corner, divider, cloud, waves, crane, dragon, phoenix, meander };
+// ---------- hoa văn châu Âu ----------
+
+// đổi chỗ x/y trong chuỗi path (lật qua đường chéo) — dùng để vẽ một nửa rồi đối xứng
+const swapXY = (d) => d.replace(/(-?\d+\.?\d*)[ ,](-?\d+\.?\d*)/g, (m, a, b) => `${b} ${a}`);
+
+// góc cuộn baroque: xoắn chữ C, tua lá chạy dọc hai cạnh, lá acanthus ở giữa (đặt góc trên-trái)
+function scrollCorner(cls, { gold = 'var(--gold)' } = {}) {
+  const half = [
+    ['M14 30C14 14 30 8 46 12C62 16 70 30 64 40C58 50 44 46 46 36C48 28 58 30 56 36', 2.2],
+    ['M46 12C70 4 96 8 118 14', 1.4],
+    ['M64 40C78 34 86 22 82 14', 1.4],
+  ];
+  const leaves = [[60, 8, -70], [76, 6, -80], [92, 8, -95], [106, 11, -100]];
+  let g = '';
+  for (const [d, w] of half) for (const dd of [d, swapXY(d)]) g += `<path d="${dd}" fill="none" stroke="${gold}" stroke-width="${w}" stroke-linecap="round"/>`;
+  for (const [x, y, r] of leaves) for (const [xx, yy, rr] of [[x, y, r], [y, x, -90 - r]]) g += `<ellipse cx="${xx}" cy="${yy}" rx="2.2" ry="6" transform="rotate(${rr} ${xx} ${yy})" fill="${gold}"/>`;
+  g += `<path d="M10 10C30 18 42 30 48 48C34 44 20 32 10 10Z" fill="${gold}"/><path d="M14 14L44 44" stroke="rgba(0,0,0,.25)" stroke-width=".8"/>`;
+  g += `<circle cx="56" cy="36" r="2.4" fill="${gold}"/><circle cx="36" cy="56" r="2.4" fill="${gold}"/><circle cx="118" cy="14" r="2" fill="${gold}"/><circle cx="14" cy="118" r="2" fill="${gold}"/>`;
+  return svg(cls, '0 0 122 122', g);
+}
+
+// nền gấm damask: lưới ogee + hoa văn giữa ô; dùng <pattern> nên mỗi trang chỉ gọi một lần với id riêng
+function damask(cls, id, { stroke = 'var(--gold)', op = 0.14 } = {}) {
+  const tile = `
+<path d="M30 0C30 14 50 20 50 40C50 60 30 66 30 80M30 0C30 14 10 20 10 40C10 60 30 66 30 80" fill="none" stroke="${stroke}" stroke-width="1"/>
+<path d="M30 26C36 32 38 40 30 52C22 40 24 32 30 26Z" fill="${stroke}"/>
+<path d="M30 40C40 36 44 44 38 48M30 40C20 36 16 44 22 48" fill="none" stroke="${stroke}" stroke-width="1"/>
+<circle cx="30" cy="20" r="2" fill="${stroke}"/><circle cx="0" cy="40" r="3" fill="${stroke}"/><circle cx="60" cy="40" r="3" fill="${stroke}"/>`;
+  return `<svg class="${cls}" aria-hidden="true" width="100%" height="100%"><defs><pattern id="${id}" width="60" height="80" patternUnits="userSpaceOnUse">${tile}</pattern></defs><rect width="100%" height="100%" fill="url(#${id})" opacity="${op}"/></svg>`;
+}
+
+module.exports = { svg, f, rad, sprig, branch, wreath, bloom, blossom, lotus, corner, divider, cloud, waves, crane, dragon, phoenix, meander, scrollCorner, damask, swapXY };
