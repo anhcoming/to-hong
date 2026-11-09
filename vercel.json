@@ -5,5 +5,5 @@
       "maxDuration": 30
     }
   },
-  "rewrites": [{ "source": "/(.*)", "destination": "/api/index.js" }]
+  "rewrites": [{ "source": "/:path*", "destination": "/api/index.js?__p=/:path*" }]
 }
