@@ -16,11 +16,28 @@
 <script>document.documentElement.classList.add('js');</script>
 </head>
 <body data-page="home">
-<header id="nav"></header>
+<header class="hnav" id="hnav"><div class="wrap">
+  <a class="logo" href="/" id="hlogo"><span data-brand>Cưới Nha</span></a>
+  <nav class="menu" aria-label="Menu chính">
+    <div class="dd" id="dd"><button type="button" aria-expanded="false" aria-controls="ddPanel">Sản phẩm</button>
+      <div class="panel" id="ddPanel">
+        <a href="#mau"><i>💌</i><span><b>Thiệp cưới online</b><small>Tên riêng từng khách, QR mừng cưới</small></span></a>
+        <a href="/video-dam-ngo"><i>🎬</i><span><b>Video dạm ngõ</b><small>Chiếu TV, tải MP4 Full HD</small></span></a>
+        <a href="/man-hinh-led-dam-cuoi"><i>✨</i><span><b>Màn hình LED</b><small>Tên đôi trên nền động sảnh tiệc</small></span></a>
+        <a href="/so-tay-cuoi"><i>📒</i><span><b>Sổ tay cưới</b><small>Miễn phí, cả nhà cùng đánh dấu</small></span></a>
+      </div></div>
+    <a href="#mau">Mẫu thiệp</a><a href="#gia">Bảng giá</a>
+  </nav>
+  <div class="hacts" id="hacts"><a class="login" href="/dang-nhap">Đăng nhập</a><a class="btn btn-main btn-sm" href="/thiep-cua-toi">Tạo thiệp</a></div>
+  <button class="burger" id="burger" type="button" aria-label="Mở menu" aria-expanded="false" aria-controls="mpanel"><i></i></button>
+</div>
+<nav class="mpanel" id="mpanel" aria-label="Menu">
+  <a href="#mau"><i>💌</i>Thiệp cưới online</a><a href="/video-dam-ngo"><i>🎬</i>Video dạm ngõ</a><a href="/man-hinh-led-dam-cuoi"><i>✨</i>Màn hình LED</a><a href="/so-tay-cuoi"><i>📒</i>Sổ tay cưới</a><a href="#gia"><i>🏷️</i>Bảng giá</a><a href="/dang-nhap" id="mLogin"><i>👤</i>Đăng nhập</a>
+</nav></header>
 
 <section class="hero">
   <div class="hwall" id="cols" aria-hidden="true"></div>
-  <div class="invite" aria-live="polite"><small>Thiệp mời cưới</small><div class="pair">Đức Minh &amp; Thu Hà</div><div class="date">Chủ nhật · 20.12.2026 · nhằm 12 tháng 11 âm</div><hr><div class="to">Trân trọng kính mời</div><b class="guest" id="guest">Anh Hùng &amp; người thương</b>
+  <div class="invite" aria-live="polite"><small>Thiệp mời cưới</small><div class="pair">Minh &amp; Hà</div><div class="date">Chủ nhật · 20.12.2026</div><hr><div class="to">Trân trọng kính mời</div><b class="guest" id="guest">Anh Hùng &amp; người thương</b>
     <span class="seal" aria-hidden="true"><svg viewBox="0 0 32 32"><path d="M16 27C6.5 20 3 15 3 10.5 3 6.9 5.8 4 9.4 4c2.6 0 4.6 1.4 6.6 3.9C18 5.4 20 4 22.6 4 26.2 4 29 6.9 29 10.5 29 15 25.5 20 16 27z" fill="#ffe2c4"/></svg></span></div>
   <div class="wrap"><div class="hero-copy">
     <h1>Gửi lời mời cưới<br><span class="script">có tên từng khách<svg viewBox="0 0 300 20" preserveAspectRatio="none" aria-hidden="true"><path d="M4 14 C 70 4, 150 4, 220 10 S 290 16, 296 8"/></svg></span></h1>
@@ -135,6 +152,34 @@
   // ảnh bìa chụp sẵn của từng mẫu × bảng màu (public/demo/cover-<mẫu>-<màu>.jpg)
   const cover = (id, pal) => `/demo/cover-${id}-${pal}.jpg`;
   const DEF = 'Anh Hùng & người thương';
+
+  // thanh trên: logo dùng chung, menu thả "Sản phẩm", menu điện thoại, trạng thái đăng nhập
+  const hnav = document.getElementById('hnav'), dd = document.getElementById('dd'), burger = document.getElementById('burger');
+  if (window.SITE) document.getElementById('hlogo').insertAdjacentHTML('afterbegin', SITE.LOGO);
+  const toggle = (el, btn, on) => { el.classList.toggle('open', on); if (btn) btn.setAttribute('aria-expanded', on); };
+  dd.querySelector('button').addEventListener('click', () => toggle(dd, dd.querySelector('button'), !dd.classList.contains('open')));
+  if (matchMedia('(hover:hover)').matches) {
+    dd.addEventListener('mouseenter', () => toggle(dd, dd.querySelector('button'), true));
+    dd.addEventListener('mouseleave', () => toggle(dd, dd.querySelector('button'), false));
+  }
+  burger.addEventListener('click', () => { const on = !hnav.classList.contains('mopen'); hnav.classList.toggle('mopen', on); burger.setAttribute('aria-expanded', on); });
+  hnav.addEventListener('click', (e) => { if (e.target.closest('.panel a,.mpanel a')) { toggle(dd, dd.querySelector('button'), false); hnav.classList.remove('mopen'); burger.setAttribute('aria-expanded', false); } });
+  document.addEventListener('click', (e) => {
+    if (!e.target.closest('#dd')) toggle(dd, dd.querySelector('button'), false);
+    const me = document.getElementById('me'); if (me && !e.target.closest('#me')) toggle(me, me.querySelector('.ava'), false);
+  });
+  document.addEventListener('keydown', (e) => { if (e.key === 'Escape') { toggle(dd, dd.querySelector('button'), false); const me = document.getElementById('me'); if (me) toggle(me, me.querySelector('.ava'), false); } });
+  fetch('/api/me').then((r) => r.json()).then(({ user }) => {
+    if (!user) return;
+    const name = user.name || user.email.split('@')[0];
+    document.getElementById('hacts').innerHTML = `<a class="mine" href="/thiep-cua-toi">Thiệp của tôi</a>
+      <div class="me" id="me"><button class="ava" type="button" aria-label="Tài khoản" aria-expanded="false" ${user.avatar ? `style="background-image:url('${esc(user.avatar)}')"` : ''}>${user.avatar ? '' : esc(name.trim()[0].toUpperCase())}</button>
+        <div class="mmenu"><div class="who"><b>${esc(name)}</b>${esc(user.email)}</div><a href="/thiep-cua-toi">Thiệp &amp; sản phẩm của tôi</a><a href="/so-tay">Sổ tay cưới của tôi</a>${user.isAdmin ? '<a href="/quan-tri">Trang quản trị</a>' : ''}<a href="#" id="logout">Đăng xuất</a></div></div>`;
+    const me = document.getElementById('me'), ava = me.querySelector('.ava');
+    ava.addEventListener('click', () => toggle(me, ava, !me.classList.contains('open')));
+    document.getElementById('logout').addEventListener('click', async (e) => { e.preventDefault(); await fetch('/api/auth/logout', { method: 'POST' }); location.reload(); });
+    const ml = document.getElementById('mLogin'); ml.href = '/thiep-cua-toi'; ml.innerHTML = '<i>💌</i>Thiệp của tôi';
+  }).catch(() => {});
 
   // gõ tên là thiệp gọi đúng người đó
   const who = document.getElementById('who'), guest = document.getElementById('guest');
