@@ -80,6 +80,7 @@ Nhóm phong cách khai báo ở `groups` trong `lib/render.js` (hiện ở bộ 
 | Hoa & thiên nhiên | Hoa Mộc (`hoamoc`) |
 | Chất liệu | Tơ Duyên (`toduyen`) |
 | Truyền thống | Long Phụng (`longphung`) |
+| Hoa & thiên nhiên | Thanh Diệp (`thanhdiep`) |
 
 Xem nhanh: `/demo/<id>?palette=<id bảng màu>`. Các mẫu Tối giản dựng lại theo bộ Minimalism của chungdoi.com và dùng ảnh trang trí của bản gốc trong `public/demo/<id>-*` (phong bao nhỏ quanh hộp quà dùng chung `toigian-mini-*`); chỉ nên dùng công khai khi đã thay bằng ảnh của mình.
 
