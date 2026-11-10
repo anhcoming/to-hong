@@ -12,7 +12,7 @@
     nav.className = 'nav' + (document.body.hasAttribute('data-solid') ? ' always' : '');
     nav.innerHTML = '<div class="wrap"><a class="logo" href="/">' + LOGO + '<span data-brand>Cưới Nha</span></a>' +
       '<nav class="menu">' + MENU.map(function (m) { return '<a href="' + m[0] + '"' + (m[2] === page ? ' class="on"' : '') + '>' + m[1] + '</a>'; }).join('') + '</nav>' +
-      '<div class="acts" id="navActs"><a class="btn btn-ghost btn-sm login" href="/dang-nhap">Đăng nhập</a><a class="btn btn-main btn-sm" href="/so-tay">Tạo thiệp</a></div></div>';
+      '<div class="acts" id="navActs"><a class="btn btn-ghost btn-sm login" href="/dang-nhap">Đăng nhập</a><a class="btn btn-main btn-sm" href="/thiep-cua-toi">Tạo thiệp</a></div></div>';
     var onScroll = function () { nav.classList.toggle('solid', window.scrollY > 40); };
     window.addEventListener('scroll', onScroll, { passive: true });
     onScroll();
@@ -48,7 +48,7 @@
   // đã đăng nhập → nút trên thanh đổi thành "Sổ tay của tôi"
   fetch('/api/me').then(function (r) { return r.json(); }).then(function (me) {
     var a = document.getElementById('navActs');
-    if (me.user && a) a.innerHTML = '<a class="btn btn-ghost btn-sm login" href="/thiep-cua-toi">Thiệp & sản phẩm</a><a class="btn btn-main btn-sm" href="/so-tay">Sổ tay của tôi</a>';
+    if (me.user && a) a.innerHTML = '<a class="btn btn-main btn-sm" href="/thiep-cua-toi">Thiệp của tôi</a>';
   }).catch(function () {});
 
   // khung 16:9 chứa trang 1280×720 (video, màn LED)

@@ -109,6 +109,7 @@ const panes = {
         const list = META.templates.filter((t) => !g.id || t.group === g.id);
         return list.length ? `${g.name ? `<p class="tplgroup">${esc(g.name)}</p>` : ''}<div class="tplpick">${list.map((t) => `<button data-tpl="${t.id}" class="${t.id === card.template ? 'on' : ''}"><b>${esc(t.name)}</b><br><span class="muted" style="font-size:13px">${esc(t.desc)}</span></button>`).join('')}</div>` : '';
       }).join('')}</div>
+      <p class="muted" style="font-size:12px;margin:0;text-align:center">Cuộn trong khung để xem thêm mẫu ↓</p>
       <h3 style="margin:18px 0 10px">Bảng màu</h3>
       <div class="pals">${tpl.palettes.map((p) => `<button data-pal="${p.id}" class="${p.id === card.palette ? 'on' : ''}"><i style="background:linear-gradient(135deg,${p.swatch[0]} 50%,${p.swatch[1]} 50%)"></i>${esc(p.name)}</button>`).join('')}</div>
     </section>

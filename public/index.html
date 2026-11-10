@@ -166,19 +166,20 @@
   hnav.addEventListener('click', (e) => { if (e.target.closest('.panel a,.mpanel a')) { toggle(dd, dd.querySelector('button'), false); hnav.classList.remove('mopen'); burger.setAttribute('aria-expanded', false); } });
   document.addEventListener('click', (e) => {
     if (!e.target.closest('#dd')) toggle(dd, dd.querySelector('button'), false);
-    const me = document.getElementById('me'); if (me && !e.target.closest('#me')) toggle(me, me.querySelector('.ava'), false);
+    const me = document.getElementById('me'); if (me && !e.target.closest('#me')) toggle(me, me.querySelector('.caret'), false);
   });
-  document.addEventListener('keydown', (e) => { if (e.key === 'Escape') { toggle(dd, dd.querySelector('button'), false); const me = document.getElementById('me'); if (me) toggle(me, me.querySelector('.ava'), false); } });
+  document.addEventListener('keydown', (e) => { if (e.key === 'Escape') { toggle(dd, dd.querySelector('button'), false); const me = document.getElementById('me'); if (me) toggle(me, me.querySelector('.caret'), false); } });
   fetch('/api/me').then((r) => r.json()).then(({ user }) => {
     if (!user) return;
     const name = user.name || user.email.split('@')[0];
-    document.getElementById('hacts').innerHTML = `<a class="mine" href="/thiep-cua-toi">Thiệp của tôi</a>
-      <div class="me" id="me"><button class="ava" type="button" aria-label="Tài khoản" aria-expanded="false" ${user.avatar ? `style="background-image:url('${esc(user.avatar)}')"` : ''}>${user.avatar ? '' : esc(name.trim()[0].toUpperCase())}</button>
-        <div class="mmenu"><div class="who"><b>${esc(name)}</b>${esc(user.email)}</div><a href="/thiep-cua-toi">Thiệp &amp; sản phẩm của tôi</a><a href="/so-tay">Sổ tay cưới của tôi</a>${user.isAdmin ? '<a href="/quan-tri">Trang quản trị</a>' : ''}<a href="#" id="logout">Đăng xuất</a></div></div>`;
-    const me = document.getElementById('me'), ava = me.querySelector('.ava');
-    ava.addEventListener('click', () => toggle(me, ava, !me.classList.contains('open')));
+    document.getElementById('hacts').innerHTML = `<div class="me" id="me"><a class="mine-btn" href="/thiep-cua-toi">Thiệp của tôi</a><button class="caret" type="button" aria-label="Tài khoản" aria-expanded="false"></button>
+        <div class="mmenu"><div class="who"><b>${esc(name)}</b>${esc(user.email)}</div><a href="/thiep-cua-toi">Thiệp &amp; sản phẩm của tôi</a><a href="/so-tay">Sổ tay cưới của tôi</a><a href="#" id="logout">Đăng xuất</a></div></div>`;
+    const me = document.getElementById('me'), caret = me.querySelector('.caret');
+    caret.addEventListener('click', () => toggle(me, caret, !me.classList.contains('open')));
     document.getElementById('logout').addEventListener('click', async (e) => { e.preventDefault(); await fetch('/api/auth/logout', { method: 'POST' }); location.reload(); });
-    const ml = document.getElementById('mLogin'); ml.href = '/thiep-cua-toi'; ml.innerHTML = '<i>💌</i>Thiệp của tôi';
+    // menu điện thoại: thay "Đăng nhập" bằng các mục tài khoản (mũi tên ▾ ẩn trên điện thoại)
+    document.getElementById('mLogin').outerHTML = `<a href="/so-tay"><i>📝</i>Sổ tay cưới của tôi</a><a href="#" id="mLogout"><i>↩</i>Đăng xuất</a>`;
+    document.getElementById('mLogout').addEventListener('click', async (e) => { e.preventDefault(); await fetch('/api/auth/logout', { method: 'POST' }); location.reload(); });
   }).catch(() => {});
 
   // gõ tên là thiệp gọi đúng người đó

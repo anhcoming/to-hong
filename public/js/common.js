@@ -104,13 +104,21 @@ window.renderTopbar = async function (active) {
     <a class="logo" href="/"><svg viewBox="0 0 40 40" aria-hidden="true"><defs><linearGradient id="lga" x1="0" x2="1"><stop offset="0" stop-color="#d6334a"/><stop offset="1" stop-color="#e8b65a"/></linearGradient></defs><path d="M20 33s-11-6.8-11-14.4C9 14.6 11.8 12 15.2 12c2.1 0 3.8 1.1 4.8 2.7 1-1.6 2.7-2.7 4.8-2.7 3.4 0 6.2 2.6 6.2 6.6C31 26.2 20 33 20 33z" fill="none" stroke="url(#lga)" stroke-width="2.4" stroke-linejoin="round"/><path d="M2 30c6-1 9-4 13-9" fill="none" stroke="#d6334a" stroke-width="1.6" stroke-linecap="round"/></svg>${esc(meta.brand)}</a>
     <nav class="nav">
       ${me.user ? `
-        <a href="/so-tay" ${active === 'planner' ? 'style="background:var(--primary-soft)"' : ''}>Sổ tay cưới</a>
-        <a href="/thiep-cua-toi" ${active === 'cards' ? 'style="background:var(--primary-soft)"' : ''}><span class="hide-sm">Thiệp & </span>Sản phẩm</a>
-        ${me.user.isAdmin ? '<a href="/quan-tri" class="hide-sm">Quản trị</a>' : ''}
-        <a href="#" id="logoutBtn" class="hide-sm">Đăng xuất</a>` : '<a href="/dang-nhap" class="btn sm">Đăng nhập</a>'}
+        <a href="/#mau" class="hide-sm">Mẫu thiệp</a>
+        <a href="/so-tay" class="${active === 'planner' ? 'on' : ''}">Sổ tay<span class="hide-xs"> cưới</span></a>
+        <div class="acct" id="acct"><a href="/thiep-cua-toi">Thiệp<span class="hide-xs"> của tôi</span></a><button type="button" aria-label="Tài khoản" aria-expanded="false"></button>
+          <div class="acct-menu"><div class="who"><b>${esc(me.user.name || '')}</b>${esc(me.user.email)}</div><a href="/thiep-cua-toi">Thiệp &amp; sản phẩm của tôi</a><a href="/so-tay">Sổ tay cưới của tôi</a><a href="/">Trang chủ</a><a href="#" id="logoutBtn">Đăng xuất</a></div></div>` : '<a href="/dang-nhap" class="btn sm">Đăng nhập</a>'}
     </nav></div>`;
   document.body.prepend(bar);
   const lo = $('#logoutBtn');
   if (lo) lo.onclick = async (e) => { e.preventDefault(); await api('/api/auth/logout', { method: 'POST' }); location.href = '/'; };
+  const acct = $('#acct');
+  if (acct) {
+    const btn = $('button', acct);
+    const set = (on) => { acct.classList.toggle('open', on); btn.setAttribute('aria-expanded', on); };
+    btn.onclick = () => set(!acct.classList.contains('open'));
+    document.addEventListener('click', (e) => { if (!e.target.closest('#acct')) set(false); });
+    document.addEventListener('keydown', (e) => { if (e.key === 'Escape') set(false); });
+  }
   return { meta, user: me.user };
 };

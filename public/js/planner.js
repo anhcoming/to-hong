@@ -28,7 +28,7 @@ function renderHero() {
   const ah = w.anhoi ? daysTo(w.anhoi) : null;
   $('#hero').innerHTML = `<div class="wrap">
     <div>
-      <h1>${esc(names() || 'Sổ tay cưới của bạn')}</h1>
+      <h1>${names() ? `<span class="script">${esc(names())}</span>` : 'Sổ tay cưới <span class="script">của bạn</span>'}</h1>
       <p class="sub">💍 ${w.date ? `Cưới ${dvn(w.date)} · ${esc(Lunar.lunarText(w.date))}` : 'Chưa chọn ngày cưới'} · ${esc(S.ov.regions[w.region])}</p>
       ${w.anhoi ? `<p class="sub" style="margin-top:2px">🎁 ${esc(evName('anhoi'))} ${dvn(w.anhoi)}${ah > 0 ? ` · còn ${ah} ngày` : ah === 0 ? ' · hôm nay!' : ''}</p>` : ''}
       <div class="prog" title="Tiến độ chuẩn bị"><i style="width:${pct}%"></i></div>
