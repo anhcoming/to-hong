@@ -658,7 +658,7 @@ route('POST', '/api/cards/:id/video/export', async (req, res, ctx) => {
 
 // ---------------- trang tĩnh ----------------
 const PAGES = {
-  '/': 'index.html', '/dang-nhap': 'auth.html', '/thiep-cua-toi': 'dashboard.html', '/admin': 'admin.html',
+  '/': 'index.html', '/dang-nhap': 'auth.html', '/thiep-cua-toi': 'dashboard.html', '/admin': 'admin.html', '/mau-thiep': 'templates.html',
   '/man-hinh-led-dam-cuoi': 'led-landing.html',
   '/video-dam-ngo': 'video-landing.html',
   '/so-tay': 'planner.html',

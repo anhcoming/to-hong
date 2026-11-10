@@ -1,0 +1,178 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Mẫu thiệp cưới online — truyền thống, tối giản, hoa lá | Cưới Nha</title>
+<meta name="description" content="Bộ sưu tập mẫu thiệp cưới online: truyền thống chữ Hỷ, tối giản, hoa lá, chất liệu giấy. Lọc theo phong cách, màu sắc, xem trước như khách mời nhìn thấy và tạo thiệp miễn phí.">
+<meta property="og:title" content="Mẫu thiệp cưới online — Cưới Nha">
+<meta property="og:description" content="Lọc theo phong cách, màu sắc, xem trước và tạo thiệp cưới có tên từng khách. Dùng thử miễn phí.">
+<meta property="og:image" content="/demo/cover-dodam-do-ruou.jpg">
+<meta name="theme-color" content="#fffafa">
+<link rel="canonical" href="/mau-thiep">
+<link rel="icon" href="/favicon.svg">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&amp;family=Dancing+Script:wght@600;700&amp;display=swap">
+<link rel="stylesheet" href="/css/site.css">
+<style>
+/* Trang bộ sưu tập mẫu: thanh lọc (tìm, phong cách, màu, nhãn, sắp xếp) + lưới ảnh bìa; bộ lọc ghi lên URL để gửi link được */
+.phero{padding-bottom:26px}
+.filters{margin:0 auto 26px;padding:14px 16px;border-radius:18px;background:rgba(255,255,255,.96);backdrop-filter:blur(12px);box-shadow:0 10px 30px rgba(120,40,50,.08);border:1px solid var(--line);display:grid;gap:12px}
+.frow{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.frow>b{flex:none;width:92px;font-size:13px;color:var(--muted);font-weight:600}
+.search{flex:1;min-width:180px;display:flex;align-items:center;gap:8px;padding:0 14px;border:1px solid var(--line);border-radius:999px;background:#fff}
+.search input{flex:1;min-width:0;border:0;outline:0;padding:11px 0;font:15px var(--sans);background:none;color:var(--ink)}
+.sort{padding:10px 36px 10px 14px;border:1px solid var(--line);border-radius:999px;font:500 14px var(--sans);color:var(--ink);-webkit-appearance:none;appearance:none;background:#fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%236f6668' stroke-width='2.2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E") right 12px center/14px no-repeat;cursor:pointer}
+.chip{display:inline-flex;align-items:center;gap:7px;padding:7px 14px;border:1px solid var(--line);border-radius:999px;background:#fff;font:500 14px var(--sans);color:var(--ink);cursor:pointer;white-space:nowrap}
+.chip:hover{border-color:#f2b6bf}
+.chip[aria-pressed="true"]{border-color:var(--red);background:var(--red);color:#fff}
+.chip[data-n="0"]:not([aria-pressed="true"]){opacity:.45}
+.chip i{width:14px;height:14px;border-radius:50%;box-shadow:0 0 0 1px rgba(0,0,0,.12)}
+.chip small{font-size:12px;opacity:.7}
+.meta{display:flex;justify-content:space-between;align-items:center;gap:10px;margin:0 0 16px;color:var(--muted);font-size:14px}
+.meta button{border:0;background:none;color:var(--red);font:600 14px var(--sans);cursor:pointer}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:26px 22px;padding-bottom:80px}
+.tc{min-width:0}
+.tc .pic{position:relative;display:block;border-radius:16px;overflow:hidden;box-shadow:0 14px 30px rgba(120,40,50,.14);transition:transform .3s,box-shadow .3s}
+.tc .pic:hover{transform:translateY(-6px);box-shadow:0 22px 44px rgba(120,40,50,.2)}
+.tc img{width:100%;aspect-ratio:9/16;object-fit:cover;object-position:top;background:var(--bg2)}
+.tc .tag{position:absolute;top:10px;left:10px;padding:3px 10px;border-radius:999px;background:var(--red);color:#fff;font-size:12px;font-weight:700}
+.tc .tag.hot{background:#8b5cf6}
+.tc .peek{position:absolute;left:50%;bottom:14px;transform:translate(-50%,8px);padding:7px 14px;border-radius:999px;background:rgba(255,255,255,.95);font-size:13px;font-weight:600;white-space:nowrap;opacity:0;transition:.25s;box-shadow:0 4px 14px rgba(0,0,0,.15)}
+.tc .pic:hover .peek,.tc .pic:focus-visible .peek{opacity:1;transform:translate(-50%,0)}
+.tc .row{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:12px}
+.tc b{font-size:16px}
+.tc .use{flex:none;font-size:13px;font-weight:600;color:var(--red)}
+.tc .use:hover{text-decoration:underline}
+.tc .sub2{margin-top:2px;font-size:13px;color:var(--muted)}
+.sw{display:flex;gap:6px;margin-top:8px;min-height:20px}
+.sw button{width:20px;height:20px;padding:0;border-radius:50%;border:2px solid #fff;box-shadow:0 0 0 1px var(--line);cursor:pointer}
+.sw button.on{box-shadow:0 0 0 2px var(--red)}
+.none{grid-column:1/-1;padding:60px 16px;text-align:center;color:var(--muted)}
+.chon{display:none;margin:0 auto 18px;max-width:640px;padding:12px 18px;border-radius:14px;background:#fff0f2;color:var(--ink);font-size:15px;text-align:center}
+.chon.show{display:block}
+@media (max-width:700px){
+  .filters{padding:12px;gap:10px}
+  .frow>b{width:100%}
+  .frow.scroll{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;margin:0 -12px;padding:0 12px}
+  .frow.scroll::-webkit-scrollbar{display:none}
+  .frow.scroll>b{display:none}
+  .grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:20px 12px}
+  .tc .row{flex-direction:column;align-items:flex-start;gap:2px}
+  .tc .use{font-size:13px;order:3}
+}
+</style>
+</head>
+<body data-page="tpl">
+<header id="nav"></header>
+
+<section class="phero"><div class="wrap center">
+  <span class="eyebrow" id="count">Bộ sưu tập mẫu</span>
+  <h1>Mẫu thiệp <em>cưới online</em></h1>
+  <p class="sub">Bấm vào mẫu để xem như khách mời nhìn thấy, chấm màu để đổi bảng màu, rồi bấm <b>Dùng mẫu →</b> để tạo thiệp. Đổi mẫu, đổi màu lúc nào cũng được.</p>
+</div></section>
+
+<main class="wrap">
+  <p class="chon" id="chon"><b>Chọn một mẫu để tạo thiệp mới</b> — bấm vào mẫu để xem trước, rồi bấm <b>Dùng mẫu →</b>.</p>
+  <div class="filters" role="search">
+    <div class="frow">
+      <label class="search"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#6f6668" stroke-width="2.2" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg><input id="q" type="search" placeholder="Tìm mẫu theo tên, ví dụ: Song Hỷ" aria-label="Tìm mẫu"></label>
+      <select class="sort" id="sort" aria-label="Sắp xếp"><option value="">Nổi bật</option><option value="new">Mới nhất</option><option value="az">Tên A → Z</option></select>
+    </div>
+    <div class="frow scroll" id="fStyle"><b>Phong cách</b></div>
+    <div class="frow scroll" id="fColor"><b>Màu chủ đạo</b></div>
+    <div class="frow scroll" id="fTag"><b>Nhãn</b></div>
+  </div>
+  <div class="meta"><span id="shown"></span><button id="clear" hidden>Xoá bộ lọc</button></div>
+  <div class="grid" id="grid"></div>
+</main>
+
+<footer id="foot"></footer>
+<script src="/js/site.js"></script>
+<script>
+(function () {
+  const $ = (s) => document.querySelector(s);
+  const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  const cover = (id, pal) => `/demo/cover-${id}-${pal}.jpg`;
+  // nhóm màu theo phần đầu mã bảng màu (do-ruou, do-son → đỏ…)
+  const FAMILY = { do: 'Đỏ', xanh: 'Xanh', nau: 'Nâu', tim: 'Tím', hong: 'Hồng', vang: 'Vàng', den: 'Đen', trang: 'Trắng' };
+  const fam = (p) => p.id.split('-')[0];
+  const qs = new URLSearchParams(location.search);
+  const F = { q: qs.get('q') || '', style: qs.get('phong-cach') || '', color: qs.get('mau-sac') || '', tag: qs.get('nhan') || '', sort: qs.get('sap-xep') || '' };
+  if (qs.has('chon')) $('#chon').classList.add('show');
+  let T = [], G = [];
+
+  function sync() {
+    const u = new URLSearchParams();
+    if (qs.has('chon')) u.set('chon', '1');
+    if (F.q) u.set('q', F.q);
+    if (F.style) u.set('phong-cach', F.style);
+    if (F.color) u.set('mau-sac', F.color);
+    if (F.tag) u.set('nhan', F.tag);
+    if (F.sort) u.set('sap-xep', F.sort);
+    history.replaceState(null, '', location.pathname + (u.toString() ? '?' + u : ''));
+  }
+  const chips = (box, items, key) => {
+    box.querySelectorAll('.chip').forEach((c) => c.remove());
+    box.insertAdjacentHTML('beforeend', [{ id: '', name: 'Tất cả' }, ...items].map((it) =>
+      `<button type="button" class="chip" data-v="${esc(it.id)}" data-n="${it.n === undefined ? '' : it.n}" aria-pressed="${F[key] === it.id}">${it.dot ? `<i style="background:${it.dot}"></i>` : ''}${esc(it.name)}${it.n !== undefined ? ` <small>${it.n}</small>` : ''}</button>`).join(''));
+    box.onclick = (e) => { const b = e.target.closest('.chip'); if (!b) return; F[key] = b.dataset.v; render(); };
+  };
+
+  function render() {
+    sync();
+    const q = F.q.trim().toLowerCase();
+    let list = T.filter((t) => (!F.style || t.group === F.style)
+      && (!F.color || t.palettes.some((p) => fam(p) === F.color))
+      && (!F.tag || t.badge === F.tag)
+      && (!q || (t.name + ' ' + t.desc).toLowerCase().includes(q)));
+    if (F.sort === 'new') list = list.slice().sort((a, b) => (b.badge === 'Mới') - (a.badge === 'Mới'));
+    if (F.sort === 'az') list = list.slice().sort((a, b) => a.name.localeCompare(b.name, 'vi'));
+
+    // số đếm cạnh mỗi lựa chọn tính trên các bộ lọc còn lại
+    const base = (skip) => T.filter((t) => (skip === 'style' || !F.style || t.group === F.style) && (skip === 'color' || !F.color || t.palettes.some((p) => fam(p) === F.color)) && (skip === 'tag' || !F.tag || t.badge === F.tag) && (!q || (t.name + ' ' + t.desc).toLowerCase().includes(q)));
+    chips($('#fStyle'), G.filter((g) => T.some((t) => t.group === g.id)).map((g) => ({ ...g, n: base('style').filter((t) => t.group === g.id).length })), 'style');
+    const fams = [];
+    T.forEach((t) => t.palettes.forEach((p) => { if (!fams.some((f) => f.id === fam(p))) fams.push({ id: fam(p), name: FAMILY[fam(p)] || p.name, dot: p.swatch[1] }); }));
+    chips($('#fColor'), fams.map((f) => ({ ...f, n: base('color').filter((t) => t.palettes.some((p) => fam(p) === f.id)).length })), 'color');
+    chips($('#fTag'), ['Hot', 'Mới'].map((x) => ({ id: x, name: x === 'Hot' ? '🔥 Hot' : '✨ Mới', n: base('tag').filter((t) => t.badge === x).length })), 'tag');
+
+    $('#shown').textContent = list.length === T.length ? `${T.length} mẫu` : `${list.length} / ${T.length} mẫu`;
+    $('#clear').hidden = !(F.q || F.style || F.color || F.tag);
+    $('#grid').innerHTML = list.length ? list.map((t) => {
+      // lọc theo màu thì bìa hiện đúng bảng màu đó
+      const p = (F.color && t.palettes.find((x) => fam(x) === F.color)) || t.palettes[0];
+      const g = G.find((x) => x.id === t.group);
+      return `<div class="tc" data-tpl="${t.id}">
+        <a class="pic" href="/demo/${t.id}?palette=${p.id}" aria-label="Xem thử mẫu ${esc(t.name)}">${t.badge ? `<span class="tag${t.badge === 'Hot' ? ' hot' : ''}">${esc(t.badge)}</span>` : ''}<img src="${cover(t.id, p.id)}" alt="Mẫu thiệp ${esc(t.name)}" loading="lazy"><span class="peek">Xem thử</span></a>
+        <div class="row"><b>${esc(t.name)}</b><a class="use" href="/thiep-cua-toi?tao=${t.id}&mau=${p.id}">Dùng mẫu →</a></div>
+        <div class="sub2">${esc(g ? g.name : '')}</div>
+        <div class="sw">${t.palettes.length > 1 ? t.palettes.map((q2) => `<button type="button" data-pal="${q2.id}" title="${esc(q2.name)}" aria-label="Bảng màu ${esc(q2.name)}" class="${q2.id === p.id ? 'on' : ''}" style="background:linear-gradient(135deg,${q2.swatch[0]} 50%,${q2.swatch[1]} 50%)"></button>`).join('') : ''}</div>
+      </div>`;
+    }).join('') : '<div class="none"><p style="font-size:40px;margin:0">🔍</p><p>Chưa có mẫu khớp bộ lọc.</p><button class="btn btn-ghost" id="clear2">Xoá bộ lọc</button></div>';
+    const c2 = $('#clear2'); if (c2) c2.onclick = clear;
+  }
+  function clear() { Object.assign(F, { q: '', style: '', color: '', tag: '' }); $('#q').value = ''; render(); }
+
+  if (matchMedia('(max-width:700px)').matches) $('#q').placeholder = 'Tìm mẫu…';
+  $('#q').value = F.q;
+  $('#sort').value = F.sort;
+  $('#q').addEventListener('input', (e) => { F.q = e.target.value; render(); });
+  $('#sort').addEventListener('change', (e) => { F.sort = e.target.value; render(); });
+  $('#clear').onclick = clear;
+  $('#grid').addEventListener('click', (e) => {
+    const b = e.target.closest('.sw button'); if (!b) return;
+    const card = b.closest('.tc'), id = card.dataset.tpl, pal = b.dataset.pal;
+    card.querySelectorAll('.sw button').forEach((x) => x.classList.toggle('on', x === b));
+    card.querySelector('.pic').href = `/demo/${id}?palette=${pal}`;
+    card.querySelector('img').src = cover(id, pal);
+    card.querySelector('.use').href = `/thiep-cua-toi?tao=${id}&mau=${pal}`;
+  });
+  document.addEventListener('meta', (e) => {
+    T = e.detail.templates; G = e.detail.templateGroups || [];
+    $('#count').textContent = `Bộ sưu tập · ${T.length} mẫu`;
+    render();
+  });
+})();
+</script>
+</body>
+</html>

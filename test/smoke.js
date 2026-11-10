@@ -56,6 +56,9 @@ async function call(who, method, url, body) {
   assert.equal(r.status, 200, 'URL rewrite của Vercel phải về đúng đường dẫn gốc');
   assert.ok(r.json.templates, 'URL rewrite của Vercel phải trả /api/meta');
   assert.equal((await call('x', 'GET', '/../server.js')).status, 404);
+  r = await call('x', 'GET', '/mau-thiep');
+  assert.equal(r.status, 200, 'trang bộ sưu tập mẫu');
+  assert.match(r.text, /id="fStyle"/);
 
   // tài khoản người dùng đều là khách; quản trị vào bằng mật khẩu riêng (phiên 'qt' tách khỏi tài khoản)
   r = await call('admin', 'POST', '/api/auth/register', { email: 'admin@test.vn', password: '123456', name: 'Admin' });
