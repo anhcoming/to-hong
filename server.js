@@ -528,7 +528,9 @@ route('GET', '/demo/:tpl', async (req, res, ctx) => {
     { name: 'Lan Anh', message: 'Chúc hai bạn trăm năm hạnh phúc, sớm có tin vui nhé!' },
     { name: 'Team Marketing', message: 'Mãi yêu thương và luôn cười thật tươi như hôm nay ❤' },
   ];
-  html(res, 200, renderCard(card, { guest, wishes, demo: true, trial: false, baseUrl: BASE_URL }));
+  // ?preview=1: bỏ màn mở thiệp, hiện thẳng trang bìa (ảnh xem trước trong bộ sưu tập trang chủ)
+  const preview = ctx.query.get('preview') === '1';
+  html(res, 200, renderCard(card, { guest, wishes, demo: true, preview, trial: false, baseUrl: BASE_URL }));
 });
 
 // ---------------- màn hình LED ----------------

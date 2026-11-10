@@ -66,7 +66,7 @@ function renderSide() {
 function renderHeader() {
   const s = card.led;
   $('#ttl').textContent = 'Màn hình LED · ' + ([card.data.groom.name, card.data.bride.name].filter(Boolean).join(' & ') || card.title);
-  $('#back').href = '/sua/' + CARD_ID;
+  backTo($('#back'), '/sua/' + CARD_ID);
   $('#chip').innerHTML = !s.created ? '' : s.paid ? '<span class="chip ok">● Đã kích hoạt</span>'
     : s.expired ? '<span class="chip red">Hết hạn dùng thử</span>'
     : `<span class="chip warn">Dùng thử · còn ${Math.max(0, Math.ceil((s.trialEndsAt - Date.now()) / 864e5))} ngày</span>`;

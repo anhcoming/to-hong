@@ -48,6 +48,7 @@ module.exports = {
   id: 'hoamoc',
   name: 'Hoa Mộc',
   group: 'hoa',
+  badge: 'Mới', // nhãn trên thẻ ở bộ sưu tập trang chủ
   desc: 'Boho xanh lá: nền kem, hoa mộc trắng màu nước, hai khung ảnh chân dung xoay nghiêng',
   fonts: 'https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500&family=EB+Garamond:wght@400;500&family=Ms+Madi&family=Lora:wght@300;400;500;600&family=Libre+Baskerville:wght@400;700&family=Montserrat:wght@400&display=swap',
   palettes: [

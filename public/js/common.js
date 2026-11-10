@@ -43,6 +43,17 @@ window.copyText = async function (text, msg) {
   catch { window.prompt('Sao chép nội dung này', text); }
 };
 
+// Nút ← của trang sửa: quay về đúng trang vừa đứng trước đó (danh sách thiệp hoặc trang sửa thiệp);
+// mở thẳng từ link/đăng nhập thì đi theo href mặc định.
+window.backTo = function (a, fallback) {
+  a.href = fallback;
+  a.onclick = (e) => {
+    const ref = document.referrer;
+    if (!ref.startsWith(location.origin + '/') || ref === location.href || ref.includes('/dang-nhap') || history.length < 2) return;
+    e.preventDefault();
+    history.back();
+  };
+};
 window.openModal = function (html, onMount) {
   const m = document.createElement('div');
   m.className = 'modal';

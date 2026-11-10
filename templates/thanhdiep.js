@@ -65,6 +65,7 @@ module.exports = {
   id: 'thanhdiep',
   name: 'Thanh Diệp',
   group: 'hoa',
+  badge: 'Mới', // nhãn trên thẻ ở bộ sưu tập trang chủ
   desc: 'Xanh lá thanh lịch: nền trắng, khối xanh rừng, lá màu nước và chữ song ngữ Việt – Anh',
   fonts: 'https://fonts.googleapis.com/css2?family=EB+Garamond:wght@400;500&family=Lora:wght@300;400;500;600&family=Montserrat:wght@400&family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&display=swap',
   palettes: [

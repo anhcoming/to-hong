@@ -82,7 +82,7 @@ function renderExport() {
 function renderHeader() {
   const s = card.video;
   $('#ttl').textContent = video.event.kind + ' · ' + ([card.data.groom.name, card.data.bride.name].filter(Boolean).join(' & ') || card.title);
-  $('#back').href = '/sua/' + CARD_ID;
+  backTo($('#back'), '/sua/' + CARD_ID);
   if (!s || !s.created) return;
   $('#chip').innerHTML = s.paid ? '<span class="chip ok">● Đã kích hoạt</span>'
     : s.expired ? '<span class="chip red">Hết hạn dùng thử</span>'
@@ -264,7 +264,7 @@ function start() {
     return;
   }
   if (card.videoConfig) { video = card.videoConfig; return start(); }
-  $('#back').href = '/sua/' + CARD_ID;
+  backTo($('#back'), '/sua/' + CARD_ID);
   $('#introBox').innerHTML = `<div class="intro panel">
     <p style="font-size:44px;margin:0">🎬</p>
     <h2 style="font-family:var(--serif);margin:8px 0">Video dạm ngõ, ăn hỏi chiếu TV</h2>

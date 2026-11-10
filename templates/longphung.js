@@ -46,6 +46,7 @@ module.exports = {
   id: 'longphung',
   name: 'Long Phụng',
   group: 'truyenthong',
+  badge: 'Hot', // nhãn trên thẻ ở bộ sưu tập trang chủ
   desc: 'Truyền thống: nền đỏ thẫm, chữ màu đào, rồng phượng chìm, chữ Hỷ và khung ảnh bo góc',
   fonts: 'https://fonts.googleapis.com/css2?family=EB+Garamond:wght@400;500&family=Lora:wght@300;400;500;600&family=Libre+Baskerville:wght@400;700&family=Libre+Caslon+Text&display=swap',
   palettes: [

@@ -51,6 +51,7 @@ module.exports = {
   id: 'toduyen',
   name: 'Tơ Duyên',
   group: 'chatlieu',
+  badge: 'Hot', // nhãn trên thẻ ở bộ sưu tập trang chủ
   desc: 'Tối giản trên nền trắng: chữ xanh lá, hoa rum trắng và dải lụa xanh vắt ngang các phần',
   fonts: 'https://fonts.googleapis.com/css2?family=Carattere&family=Whisper&family=Aguafina+Script&family=Uchen&family=The+Nautigal:wght@400;700&family=Lora:wght@300;400;500;600&family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=Roboto:wght@300;400&display=swap',
   palettes: [

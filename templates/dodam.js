@@ -24,6 +24,7 @@ module.exports = {
   id: 'dodam',
   name: 'Đỏ Đậm',
   group: 'toigian',
+  badge: 'Hot', // nhãn trên thẻ ở bộ sưu tập trang chủ
   desc: 'Tối giản sang trọng: giấy kem, khối đỏ rượu vang, phong bì sáp niêm và hoa mẫu đơn',
   fonts: 'https://fonts.googleapis.com/css2?family=Viaoda+Libre&family=The+Nautigal:wght@400;700&family=Cormorant+Garamond:wght@500;600&family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=Lora:wght@400;500;600&family=Uchen&family=Ms+Madi&display=swap',
   palettes: [

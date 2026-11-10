@@ -51,6 +51,7 @@ module.exports = {
   id: 'songhy2',
   name: 'Song Hỷ Đỏ',
   group: 'truyenthong',
+  badge: 'Mới', // nhãn trên thẻ ở bộ sưu tập trang chủ
   desc: 'Truyền thống đỏ son: chữ Song Hỷ, khung giấy kem viền đào, ảnh cưới trong khung cong',
   fonts: 'https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght,SOFT,WONK@9..144,400,0..100,0..1&family=Carattere&family=Ms+Madi&family=Uchen&family=Lora:wght@300;400;500;600&family=The+Nautigal:wght@400;700&family=Libre+Baskerville:wght@400;700&family=Montserrat:wght@400;500;600&display=swap',
   palettes: [
