@@ -55,8 +55,11 @@ const FALL = [
 ];
 const LEAF = '<svg viewBox="0 0 24 24" fill="currentColor" width="1em" height="1em"><path d="M17 8C8 10 5.9 16.17 3.82 21.34l1.89.66.95-2.3c.48.17.98.3 1.34.3C19 20 22 3 22 3c-1 2-8 2.25-13 3.25S2 11.5 2 13.5s1.75 3.75 1.75 3.75C7 8 17 8 17 8z"/></svg>';
 
-// lá màu nước: ảnh nền (ô trống nếu chưa có file), trôi theo cuộn trang bằng --td-sy (đặt ở trang bìa)
-const leaf = (cls, img) => `<span class="td-leaf ${cls}" aria-hidden="true" style="background-image:url('${A(img)}')"></span>`;
+// lá ở góc màn mở thiệp: ba dải (gốc, giữa, ngọn) lồng nhau, mỗi dải lắc một biên độ riêng như bản gốc
+const oleaf = (pos, img) => `<span class="td-oleaf ${pos}" aria-hidden="true"><img class="s1" src="${A(img)}" alt=""><span class="w2"><img class="s2" src="${A(img)}" alt=""><span class="w3"><img class="s3" src="${A(img)}" alt=""></span></span></span>`;
+
+// lá màu nước, trôi theo cuộn trang bằng --td-sy (đặt ở trang bìa)
+const leaf = (cls, img) => `<span class="td-leaf ${cls}" aria-hidden="true"><img src="${A(img)}" alt=""></span>`;
 
 module.exports = {
   id: 'thanhdiep',
@@ -100,8 +103,8 @@ module.exports = {
   <div class="td-ocard">
     <span class="td-seal" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg></span>
     <div class="td-opaper">
-      <span class="td-oleaf tr" style="background-image:url('${A('la2')}')"></span>
-      <span class="td-oleaf bl" style="background-image:url('${A('la1')}')"></span>
+      ${oleaf('tr', 'la2')}
+      ${oleaf('bl', 'la1')}
     </div>
     <div class="td-obody">
       <h1 class="td-onames"><span>${esc(ctx.g)}</span><i>&amp;</i><span>${esc(ctx.b)}</span></h1>
@@ -333,8 +336,9 @@ module.exports = {
 .tpl-thanhdiep .sec-sub{margin:4px 0 0;color:var(--muted);font-size:14px}
 
 /* lá màu nước: ảnh 1748×2480, trôi theo cuộn trang (hệ số như bản gốc) */
-.tpl-thanhdiep .td-leaf{position:absolute;z-index:0;display:block;aspect-ratio:1748/2480;background:center/100% 100% no-repeat;pointer-events:none;will-change:transform}
-.tpl-thanhdiep{--td-sy:0}
+.tpl-thanhdiep .td-leaf{position:absolute;z-index:0;display:block;pointer-events:none;will-change:transform}
+.tpl-thanhdiep .td-leaf img{display:block;width:100%;height:auto}
+:root{--td-sy:0}
 
 /* ---- màn mở thiệp ---- */
 .tpl-thanhdiep .td-opener{overflow:hidden;background:linear-gradient(to bottom right,var(--td-dark),var(--td-dark2),var(--td-dark3))}
@@ -343,9 +347,23 @@ module.exports = {
 @keyframes tdFall{0%{transform:translateY(-8vh) translateX(0) rotate(0);opacity:0}10%{opacity:.5}50%{transform:translateY(48vh) translateX(var(--sway,20px)) rotate(180deg);opacity:.6}92%{opacity:.45}100%{transform:translateY(105vh) translateX(0) rotate(360deg);opacity:0}}
 .tpl-thanhdiep .td-ocard{position:relative;z-index:10;width:310px;max-width:calc(100vw - 32px);text-align:center;border-radius:8px;box-shadow:0 25px 60px -12px rgba(0,0,0,.45),0 8px 24px rgba(0,0,0,.2),0 0 40px color-mix(in srgb,var(--accent) 15%,transparent)}
 .tpl-thanhdiep .td-opaper{position:absolute;inset:0;overflow:hidden;border-radius:8px;background:rgba(255,255,255,.95);border:1px solid color-mix(in srgb,var(--accent) 15%,transparent)}
-.tpl-thanhdiep .td-oleaf{position:absolute;display:block;width:180px;aspect-ratio:1748/2480;background:center/100% 100% no-repeat;opacity:.4;-webkit-mask-image:linear-gradient(to bottom,#000 0%,#000 26%,transparent 42%);mask-image:linear-gradient(to bottom,#000 0%,#000 26%,transparent 42%)}
-.tpl-thanhdiep .td-oleaf.tr{top:-30px;right:-40px;transform:rotate(30deg)}
-.tpl-thanhdiep .td-oleaf.bl{bottom:-30px;left:-40px;transform:rotate(180deg)}
+.tpl-thanhdiep .td-oleaf{position:absolute;display:block;width:180px;pointer-events:none;--a:.45deg;animation:tdWhip 4s ease-in-out infinite}
+.tpl-thanhdiep .td-oleaf img{display:block;width:100%;height:auto;opacity:.4}
+.tpl-thanhdiep .td-oleaf .w2,.tpl-thanhdiep .td-oleaf .w3,.tpl-thanhdiep .td-oleaf .s2,.tpl-thanhdiep .td-oleaf .s3{position:absolute;inset:0}
+.tpl-thanhdiep .td-oleaf .w2{--a:1.65deg;animation:tdWhip 4s ease-in-out .48s infinite}
+.tpl-thanhdiep .td-oleaf .w3{--a:4.2deg;animation:tdWhip 4s ease-in-out 1.12s infinite}
+.tpl-thanhdiep .td-oleaf .s1{-webkit-mask-image:linear-gradient(to bottom,#000 0%,#000 26%,transparent 42%);mask-image:linear-gradient(to bottom,#000 0%,#000 26%,transparent 42%)}
+.tpl-thanhdiep .td-oleaf .s2{-webkit-mask-image:linear-gradient(to bottom,transparent 26%,#000 38%,#000 60%,transparent 74%);mask-image:linear-gradient(to bottom,transparent 26%,#000 38%,#000 60%,transparent 74%)}
+.tpl-thanhdiep .td-oleaf .s3{-webkit-mask-image:linear-gradient(to bottom,transparent 58%,#000 74%,#000 100%);mask-image:linear-gradient(to bottom,transparent 58%,#000 74%,#000 100%)}
+.tpl-thanhdiep .td-oleaf.tr{top:-30px;right:-40px;transform-origin:right top}
+.tpl-thanhdiep .td-oleaf.tr .w2{transform-origin:50% 33%}
+.tpl-thanhdiep .td-oleaf.tr .w3{transform-origin:50% 67%}
+.tpl-thanhdiep .td-oleaf.tr img{rotate:30deg}
+.tpl-thanhdiep .td-oleaf.bl{bottom:-30px;left:-40px;transform-origin:left bottom;animation-duration:5s;animation-delay:.7s}
+.tpl-thanhdiep .td-oleaf.bl .w2{transform-origin:50% 67%;animation-duration:5s;animation-delay:1.3s}
+.tpl-thanhdiep .td-oleaf.bl .w3{transform-origin:50% 33%;animation-duration:5s;animation-delay:2.1s}
+.tpl-thanhdiep .td-oleaf.bl img{rotate:180deg}
+@keyframes tdWhip{0%,100%{transform:rotate(calc(var(--a) * -1))}50%{transform:rotate(var(--a))}}
 .tpl-thanhdiep .td-seal{position:absolute;left:50%;top:50px;z-index:30;display:flex;align-items:center;justify-content:center;width:56px;height:56px;border-radius:50%;background:radial-gradient(circle at 30% 30%,var(--accent),var(--td-seal));--sh:color-mix(in srgb,var(--accent) 50%,transparent);box-shadow:0 4px 20px var(--sh),inset 0 2px 4px rgba(255,255,255,.3);transform:translate(-50%,-50%);animation:tdSeal 2s ease-in-out infinite}
 .tpl-thanhdiep .td-seal svg{width:28px;height:28px;fill:#fff}
 @keyframes tdSeal{0%,100%{transform:translate(-50%,-50%) scale(1);box-shadow:0 4px 20px var(--sh)}50%{transform:translate(-50%,-50%) scale(1.06);box-shadow:0 6px 35px var(--sh)}}
@@ -366,7 +384,7 @@ module.exports = {
 .tpl-thanhdiep .td-obtn{position:relative;display:flex;align-items:center;justify-content:center;width:fit-content;margin:0 auto;padding:10px 32px;border:0;border-radius:999px;overflow:hidden;background:var(--accent);color:#fff;font-family:'Lora','Times New Roman',serif;font-size:18px;line-height:28px;font-weight:600;box-shadow:0 4px 14px color-mix(in srgb,var(--accent) 35%,transparent);cursor:pointer}
 .tpl-thanhdiep .td-obtn i{position:absolute;top:0;left:-100%;width:32px;height:100%;background:linear-gradient(90deg,transparent,rgba(255,255,255,.4),transparent);animation:tdShine 3s ease-in-out infinite;pointer-events:none}
 @keyframes tdShine{0%{left:-100%}50%,100%{left:100%}}
-@media (prefers-reduced-motion:reduce){.tpl-thanhdiep .td-fall,.tpl-thanhdiep .td-obtn i{display:none}.tpl-thanhdiep .td-seal{animation:none}}
+@media (prefers-reduced-motion:reduce){.tpl-thanhdiep .td-fall,.tpl-thanhdiep .td-obtn i{display:none}.tpl-thanhdiep .td-seal,.tpl-thanhdiep .td-oleaf,.tpl-thanhdiep .td-oleaf span{animation:none}}
 
 /* ---- trang bìa: The story of love + hai ảnh vuông nghiêng ---- */
 .tpl-thanhdiep .td-cover{position:relative;z-index:10;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:600px;padding:48px 24px 148px;text-align:center;background:var(--bg)}
@@ -379,7 +397,7 @@ module.exports = {
 .tpl-thanhdiep .td-person{position:absolute;display:flex;align-items:center;gap:24px}
 .tpl-thanhdiep .td-person.groom{left:-20px;top:0}
 .tpl-thanhdiep .td-person.bride{right:-20px;bottom:80px;flex-direction:row-reverse}
-.tpl-thanhdiep .td-pic{flex:none;width:245px;transform:rotate(-8deg)}
+.tpl-thanhdiep .td-pic{width:245px;transform:rotate(-8deg)}
 .tpl-thanhdiep .bride .td-pic{transform:rotate(6deg)}
 .tpl-thanhdiep .td-pic div{position:relative;aspect-ratio:1;overflow:hidden;border:8px solid #fff;background:#fff;box-shadow:0 25px 50px -12px rgba(0,0,0,.25)}
 .tpl-thanhdiep .td-pic img{width:100%;height:100%;object-fit:cover}
