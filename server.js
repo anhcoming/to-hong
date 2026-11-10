@@ -11,7 +11,7 @@ const google = require('./lib/google');
 const adminLib = require('./lib/admin');
 adminLib.applySettings(); // giá, mã giảm giá… sửa trên trang quản trị đè lên config.json
 const cd = require('./lib/carddata');
-const { renderCard, renderNotice, templates, templateList, groups: templateGroups } = require('./lib/render');
+const { renderCard, renderNotice, templates, templateList, groups: templateGroups, DEFAULT_TEMPLATE } = require('./lib/render');
 const banks = require('./lib/banks');
 const ledLib = require('./lib/led');
 const videoLib = require('./lib/video');
@@ -211,7 +211,7 @@ route('POST', '/api/cards', async (req, res, ctx) => {
   if (db.cards.filter((c) => c.userId === user.id).length >= 30) throw httpError(400, 'Bạn đã có quá nhiều thiệp');
   const w = Wd.ensure(user);
   const b = await readJson(req);
-  const tpl = templates[b.template] ? b.template : 'hy';
+  const tpl = templates[b.template] ? b.template : DEFAULT_TEMPLATE;
   const now = Date.now();
   const data = cd.defaults();
   Wd.prefill(data, w); // tên đôi, bố mẹ, ngày cưới đã nhập trong sổ tay
@@ -243,6 +243,7 @@ route('PUT', '/api/cards/:id', async (req, res, ctx) => {
     if (b.template !== card.template) card.palette = templates[b.template].palettes[0].id;
     card.template = b.template;
   }
+  if (!templates[card.template]) card.template = DEFAULT_TEMPLATE;
   if (b.palette && templates[card.template].palettes.some((p) => p.id === b.palette)) card.palette = b.palette;
   if (b.slug !== undefined && slugify(b.slug) !== card.slug) {
     const s = slugify(b.slug);

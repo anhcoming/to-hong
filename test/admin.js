@@ -114,7 +114,7 @@ async function call(who, method, url, body, raw) {
   assert.equal((await call('x', 'GET', '/api/meta')).json.price, 99000, 'giá mới áp dụng ngay');
 
   // ---------- thiệp, đơn ----------
-  r = await call('u2', 'POST', '/api/cards', { template: 'hy' });
+  r = await call('u2', 'POST', '/api/cards', { template: 'coban' });
   const card = r.json.card;
   const data = { ...card.data, groom: { name: 'An' }, bride: { name: 'Bình' }, date: '2027-01-01' };
   await call('u2', 'PUT', `/api/cards/${card.id}`, { data, slug: 'an-binh' });

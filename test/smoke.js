@@ -29,13 +29,12 @@ async function call(who, method, url, body) {
 
   // trang tĩnh + mẫu
   assert.equal((await call('x', 'GET', '/')).status, 200);
-  r = await call('x', 'GET', '/demo/hy');
+  r = await call('x', 'GET', '/demo/coban');
   assert.equal(r.status, 200);
   assert.match(r.text, /Đức Minh/);
   assert.match(r.text, /Bính Ngọ/, 'phải có âm lịch');
   assert.match(r.text, /class="cal-grid"/, 'phải có lịch tháng');
   assert.match(r.text, /class="tl"/, 'lịch trình dạng dòng thời gian');
-  assert.equal((await call('x', 'GET', '/demo/toigian?palette=dem')).status, 200);
   // mọi mẫu × mọi bảng màu phải dựng được, có nút mở thiệp, nhóm hợp lệ
   const meta = (await call('x', 'GET', '/api/meta')).json;
   const groupIds = meta.templateGroups.map((g) => g.id);
@@ -61,7 +60,7 @@ async function call(who, method, url, body) {
   assert.equal((await call('u2', 'POST', '/api/auth/login', { email: 'cuoi@test.vn', password: 'sai' })).status, 401);
 
   // tạo + sửa thiệp
-  r = await call('u', 'POST', '/api/cards', { template: 'hy' });
+  r = await call('u', 'POST', '/api/cards', { template: 'coban' });
   const id = r.json.card.id;
   assert.equal((await call('u', 'POST', `/api/cards/${id}/publish`, {})).status, 400, 'chưa có tên thì không được phát hành');
   const data = r.json.card.data;

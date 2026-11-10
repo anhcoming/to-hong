@@ -58,26 +58,17 @@ public/
 data/                dữ liệu + ảnh tải lên (không đưa lên git — nhớ sao lưu!)
 ```
 
-Link thiệp: `/t/:duong-dan` (link chung) và `/t/:duong-dan/:mã-khách` (link có tên khách). Xem mẫu: `/demo/hy`, `/demo/toigian?palette=dem`.
+Link thiệp: `/t/:duong-dan` (link chung) và `/t/:duong-dan/:mã-khách` (link có tên khách). Xem mẫu: `/demo/coban`.
 
 ## Mẫu thiệp
 
-19 mẫu, chia 6 nhóm phong cách (`groups` trong `lib/render.js`, hiện ở bộ lọc trang chủ và trình chỉnh sửa):
-
-| Nhóm | Mẫu (`id`) |
-|---|---|
-| Truyền thống | Song Hỷ (`hy`), Cổng Vòm (`vomcong`), Long Phụng (`longphung`), Song Hạc (`songhac`), Cổ Phục (`cophuc`) |
-| Tối giản | Tinh Khôi (`toigian`), Thư Tay (`thutay`) |
-| Hoa & thiên nhiên | Nguyệt Quế (`nguyetque`), Vườn Kính (`vuonkinh`), Hoa Khô (`hoakho`), Liên Hoa (`lienhoa`) |
-| Hoàng gia | Baroque (`baroque`), Hoàng Kim (`hoangkim`), Lâu Đài (`laudai`) |
-| Chất liệu | Cẩm Thạch (`camthach`), Ren Thêu (`rentheu`), Bạch Sứ (`bachsu`) |
-| Dễ thương | Chibi (`chibi`), Anh Đào (`anhdao`) |
+Hiện chỉ còn khung tối thiểu **Cơ Bản** (`coban`) để thiệp vẫn dựng được — toàn bộ mẫu cũ đã gỡ. Nhóm phong cách khai báo ở `groups` trong `lib/render.js` (hiện ở bộ lọc trang chủ và trình chỉnh sửa).
 
 Xem nhanh: `/demo/<id>?palette=<id bảng màu>`. Mọi họa tiết đều vẽ bằng SVG/CSS và tô bằng biến màu (`var(--accent)`, `var(--gold)`…), nên đổi bảng màu là họa tiết đổi theo — không có file ảnh nào.
 
 ### Thêm / sửa mẫu
 
-Sao chép một mẫu gần giống (ví dụ `templates/thutay.js`), đổi `id`, `name`, `group`, `desc`, `palettes`, `title()`, `cover()`, `opener()` (phải có `#opener` và nút `#openBtn`), `css` (scope bằng `.tpl-<id>`), rồi khai báo trong `lib/render.js` (đối tượng `templates`). Họa tiết lấy từ `templates/_orn.js`. Các phần lời mời, lịch trình, bản đồ, RSVP, QR, lưu bút dùng chung — mẫu mới chỉ cần lo phần nhìn. `test/smoke.js` tự kiểm tra mọi mẫu × mọi bảng màu.
+Sao chép một mẫu gần giống (ví dụ `templates/coban.js`), đổi `id`, `name`, `group`, `desc`, `palettes`, `title()`, `cover()`, `opener()` (phải có `#opener` và nút `#openBtn`), `css` (scope bằng `.tpl-<id>`), rồi khai báo trong `lib/render.js` (đối tượng `templates`). Họa tiết lấy từ `templates/_orn.js`. Các phần lời mời, lịch trình, bản đồ, RSVP, QR, lưu bút dùng chung — mẫu mới chỉ cần lo phần nhìn. `test/smoke.js` tự kiểm tra mọi mẫu × mọi bảng màu.
 
 Khi chạy thử nên dùng `node --watch server.js` để sửa mẫu là trang tự nạp lại.
 
