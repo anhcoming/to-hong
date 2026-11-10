@@ -9,7 +9,6 @@ const { esc } = require('../lib/util');
 const A = (n) => `/demo/songhy-${n}`;
 const has = (n) => fs.existsSync(path.join(__dirname, '..', 'public', 'demo', `songhy-${n}`));
 const HY = has('chu-hy.webp');
-const SEAL = has('happiness.webp');
 const STAR = has('star.webp');
 const BURST = has('sunburst.svg');
 const hyMark = (cls) => (HY ? `<img class="${cls}" src="${A('chu-hy.webp')}" alt="">` : `<span class="${cls} sh-hyg" aria-hidden="true">囍</span>`);
@@ -87,7 +86,7 @@ module.exports = {
 <div class="opener sh-opener" id="opener">
   <div class="sh-rise" aria-hidden="true">${RISE.map(([l, s, c, t, dl, sw]) => `<i style="left:${l}%;font-size:${s}px;color:var(--sh-p${c});--sway:${sw}px;animation-duration:${t}s;animation-delay:${dl}s">囍</i>`).join('')}</div>
   <div class="sh-ocard">
-    <span class="sh-seal" aria-hidden="true">${SEAL ? '<i></i>' : '<b>囍</b>'}</span>
+    <span class="sh-seal" aria-hidden="true"><i></i></span>
     <div class="sh-obg">${hyMark('tl')}${hyMark('br')}</div>
     <div class="sh-obody">
       <h1 class="sh-onames"><span>${esc(ctx.g)}</span><i>&amp;</i><span>${esc(ctx.b)}</span></h1>
@@ -325,7 +324,6 @@ module.exports = {
 .tpl-songhy .sh-obg .br{bottom:-39px;right:-156px}
 .tpl-songhy .sh-seal{position:absolute;left:50%;top:50px;z-index:30;display:flex;align-items:center;justify-content:center;width:56px;height:56px;border-radius:50%;transform:translate(-50%,-50%);background:radial-gradient(circle at 30% 30%,var(--accent-ink),var(--sh-seal2));box-shadow:0 4px 20px color-mix(in srgb,var(--accent-ink) 50%,transparent),inset 0 2px 4px rgba(255,255,255,.3);animation:shSeal 2s ease-in-out infinite}
 .tpl-songhy .sh-seal i{width:32px;height:32px;background:var(--accent);opacity:.9;-webkit-mask:url('${A('happiness.webp')}') center/contain no-repeat;mask:url('${A('happiness.webp')}') center/contain no-repeat}
-.tpl-songhy .sh-seal b{font-family:'PingFang SC','Hiragino Sans GB','Noto Serif SC',serif;font-size:28px;font-weight:400;line-height:1;color:var(--accent);opacity:.9}
 @keyframes shSeal{0%,100%{transform:translate(-50%,-50%) scale(1);box-shadow:0 4px 20px color-mix(in srgb,var(--accent-ink) 50%,transparent)}50%{transform:translate(-50%,-50%) scale(1.06);box-shadow:0 6px 35px color-mix(in srgb,var(--accent-ink) 50%,transparent)}}
 .tpl-songhy .sh-obody{position:relative;z-index:10;padding:112px 24px 56px}
 .tpl-songhy .sh-onames{display:flex;flex-direction:column;align-items:center;margin:0 0 8px;font-family:var(--font-title);font-weight:400;font-size:30px;line-height:1.25;color:var(--accent-ink)}
