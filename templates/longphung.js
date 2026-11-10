@@ -1,15 +1,13 @@
 // Mẫu "Long Phụng" — truyền thống: nền đỏ thẫm, chữ màu đào, rồng phượng chìm, chữ Hỷ và khung ảnh bo góc lõm.
 // Kích thước lấy theo bản gốc (Tailwind): số đầu cho điện thoại, khối @media (min-width:768px) / (min-width:1024px) cho màn rộng.
-// Ảnh trang trí (rồng, phượng, chữ Hỷ, chim én) nằm ở public/demo/longphung-*.webp; thiếu ảnh nào thì phần đó tự ẩn
-// (chữ Hỷ thay bằng ký tự 囍). Khung tiêu đề, khung ảnh bìa và khung lịch vẽ lại bằng SVG ngay trong mẫu.
+// Ảnh trang trí (rồng, phượng, chữ Hỷ, chim én) là ảnh của bản gốc ở public/demo/longphung-*.webp.
+// Khung tiêu đề, khung ảnh bìa và khung lịch vẽ lại bằng SVG ngay trong mẫu.
 const { esc } = require('../lib/util');
 
 const A = (n) => `/demo/longphung-${n}`; // ảnh của mẫu
 const PEACH = '#FFBE89';
-// ảnh trang trí: lỗi tải thì gỡ hẳn để không hiện biểu tượng ảnh hỏng
-const deco = (n, cls, extra = '') => `<img class="${cls}" src="${A(n)}" alt="" aria-hidden="true" onerror="this.remove()"${extra}>`;
-// chữ Hỷ: ảnh của mẫu, thiếu ảnh thì dùng ký tự 囍
-const hy = (cls) => `<span class="lp-hy ${cls}"><img src="${A('chu-hy.webp')}" alt="囍" onerror="this.parentNode.classList.add('noimg');this.remove()"></span>`;
+const deco = (n, cls, extra = '') => `<img class="${cls}" src="${A(n)}" alt="" aria-hidden="true"${extra}>`;
+const hy = (cls) => `<span class="lp-hy ${cls}"><img src="${A('chu-hy.webp')}" alt="囍"></span>`;
 
 const base = {
   '--font-title': "'EB Garamond',Baskerville,'Times New Roman',serif",
@@ -90,7 +88,7 @@ module.exports = {
   <div class="lp-ocard">
     ${hy('lp-seal')}
     <div class="lp-oinner">
-      <div class="lp-obg">${deco('phung.webp', 'ph')}${deco('rong.webp', 'ro')}</div>
+      <div class="lp-obg">${deco('phung.webp', 'pg')}${deco('rong.webp', 'ro')}</div>
       <div class="lp-obody">
         <h1 class="lp-onames"><span>${esc(ctx.g)}</span><i>&amp;</i><span>${esc(ctx.b)}</span></h1>
         <p class="lp-rule" aria-hidden="true"><span></span>❦<span></span></p>
@@ -336,32 +334,29 @@ module.exports = {
 .tpl-longphung .lp-bg img{width:100%;opacity:.4}
 .tpl-longphung .lp-bg img:first-child{margin-top:-50%}
 
-/* chữ Hỷ: ảnh của mẫu, thiếu ảnh thì ký tự 囍 trong vòng tròn */
-.tpl-longphung .lp-hy{display:flex;align-items:center;justify-content:center;aspect-ratio:1}
+/* chữ Hỷ */
+.tpl-longphung .lp-hy{display:flex;align-items:center;justify-content:center}
 .tpl-longphung .lp-hy img{width:100%;height:auto;object-fit:contain}
-.tpl-longphung .lp-hy.noimg{border-radius:50%;border:2px solid ${PEACH};box-shadow:inset 0 0 0 3px #7a0014,inset 0 0 0 4px ${PEACH};color:${PEACH};font-family:'Noto Serif SC','Songti SC',serif;line-height:1}
-.tpl-longphung .lp-hy.noimg::before{content:"囍";font-size:52%}
 
 /* ---- màn mở thiệp ---- */
-.tpl-longphung .lp-opener{overflow:hidden;background:linear-gradient(to bottom right,var(--lp-o1),var(--lp-o2),var(--lp-o3))}
+.tpl-longphung .lp-opener{overflow:hidden;line-height:1.5;background:linear-gradient(to bottom right,var(--lp-o1),var(--lp-o2),var(--lp-o3))}
 .tpl-longphung .lp-rise{position:absolute;inset:0;z-index:1;overflow:hidden;pointer-events:none}
 .tpl-longphung .lp-rise span{position:absolute;bottom:-30px;animation:lpRise 20s ease-in-out infinite}
 @keyframes lpRise{0%{transform:translateY(6vh) translateX(0) rotate(0);opacity:0}12%{opacity:.45}55%{transform:translateY(-42vh) translateX(var(--sway,20px)) rotate(8deg);opacity:.55}92%{opacity:.35}100%{transform:translateY(-92vh) translateX(0) rotate(0);opacity:0}}
 .tpl-longphung .lp-ocard{position:relative;z-index:10;width:310px;max-width:calc(100vw - 32px)}
 .tpl-longphung .lp-seal{position:absolute;left:50%;top:50px;z-index:30;width:64px;height:64px;transform:translate(-50%,-50%);animation:lpSeal 2s ease-in-out infinite}
 .tpl-longphung .lp-seal img{width:52px;height:52px}
-.tpl-longphung .lp-seal.noimg{width:56px;height:56px;font-size:58px}
 @keyframes lpSeal{0%,100%{transform:translate(-50%,-50%) scale(1)}50%{transform:translate(-50%,-50%) scale(1.06)}}
 .tpl-longphung .lp-oinner{position:relative;border-radius:8px;box-shadow:0 25px 60px -12px rgba(0,0,0,.45),0 8px 24px rgba(0,0,0,.2),0 0 40px rgba(255,190,137,.15)}
 .tpl-longphung .lp-obg{position:absolute;inset:0;overflow:hidden;border-radius:8px;background:rgba(255,190,137,.1);border:1px solid rgba(255,190,137,.15);clip-path:inset(0 round 8px)}
 .tpl-longphung .lp-obg img{position:absolute;width:230px;max-width:none;opacity:.55;pointer-events:none}
-.tpl-longphung .lp-obg .ph{top:10px;left:-20px;transform:rotate(20deg)}
+.tpl-longphung .lp-obg .pg{top:10px;left:-20px;transform:rotate(20deg)}
 .tpl-longphung .lp-obg .ro{bottom:10px;right:-20px;transform:rotate(-20deg)}
 .tpl-longphung .lp-obody{position:relative;z-index:10;padding:112px 24px 56px;text-align:center}
 .tpl-longphung .lp-onames{display:flex;flex-direction:column;align-items:center;margin:0 0 8px;font-family:'EB Garamond',Baskerville,'Times New Roman',serif;font-weight:400;font-size:30px;line-height:1.25;color:${PEACH}}
 .tpl-longphung .lp-onames span{display:block;width:100%}
 .tpl-longphung .lp-onames i{display:block;font-style:normal;font-family:Baskerville,'Times New Roman',serif;font-size:18px;line-height:1}
-.tpl-longphung .lp-rule{display:flex;align-items:center;justify-content:center;gap:12px;margin-bottom:8px;color:${PEACH};font-size:14px}
+.tpl-longphung .lp-rule{display:flex;align-items:center;justify-content:center;gap:12px;margin-bottom:8px;color:${PEACH};font-size:14px;line-height:20px}
 .tpl-longphung .lp-rule span{width:40px;height:1px;background:linear-gradient(to right,transparent,${PEACH})}
 .tpl-longphung .lp-rule span:last-child{background:linear-gradient(to left,transparent,${PEACH})}
 .tpl-longphung .lp-odate,.tpl-longphung .lp-oto p{font-family:Lora,'Times New Roman',serif;font-size:18px;color:rgba(255,190,137,.8)}
@@ -384,7 +379,6 @@ module.exports = {
 .tpl-longphung .lp-names{display:flex;align-items:center;justify-content:center;gap:12px;width:100%;padding:0 24px}
 .tpl-longphung .lp-names p{flex:1;min-width:0;text-align:center;white-space:nowrap;font-family:'Big Caslon','Libre Caslon Text',Baskerville,'Times New Roman',serif;font-size:17px;letter-spacing:.12em;text-transform:uppercase;color:var(--ink)}
 .tpl-longphung .lp-hy-top{flex-shrink:0;width:64px}
-.tpl-longphung .lp-hy-top.noimg{font-size:44px}
 .tpl-longphung .lp-hero{position:relative;width:min(360px,100%);aspect-ratio:360/525;margin-top:28px}
 .tpl-longphung .lp-hero svg{display:block;width:100%;height:100%;overflow:visible}
 .tpl-longphung .lp-bird{position:absolute;z-index:10;top:-28px;width:88px;pointer-events:none}
@@ -582,14 +576,13 @@ ${[[-55, -130, 540, 0.05, 1], [46, -150, -460, 0.12, 1.1], [-12, -160, 620, 0.2,
   .tpl-longphung .lp-bg>div{gap:50px}
   .tpl-longphung .lp-ocard{width:520px}
   .tpl-longphung .lp-obg img{width:320px}
-  .tpl-longphung .lp-obg .ph{top:0;left:-30px}
+  .tpl-longphung .lp-obg .pg{top:0;left:-30px}
   .tpl-longphung .lp-obg .ro{bottom:0;right:-30px}
   .tpl-longphung .lp-obody{padding:96px 24px 32px}
   .tpl-longphung .lp-cover{padding-top:64px}
   .tpl-longphung .lp-names{max-width:480px;padding:0 40px}
   .tpl-longphung .lp-names p{font-size:22px}
   .tpl-longphung .lp-hy-top{width:82px}
-  .tpl-longphung .lp-hy-top.noimg{font-size:56px}
   .tpl-longphung .lp-hero{width:450px;margin-top:36px}
   .tpl-longphung .lp-bird{width:110px}
   .tpl-longphung .lp-invite{gap:32px;padding:48px 32px 16px}
