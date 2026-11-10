@@ -682,6 +682,7 @@ function serveStatic(req, res, pathname) {
 
 // ---------------- máy chủ ----------------
 const server = http.createServer(async (req, res) => {
+  restoreUrl(req); // Vercel có thể gửi request thẳng vào server này, bỏ qua `handler` bên dưới
   // Chế độ Redis: nạp dữ liệu mới nhất, và ghi lại trước khi trả lời (res.end chờ ghi xong).
   if (store.remote) {
     let finish;
@@ -730,17 +731,18 @@ if (require.main === module) {
 }
 // Xuất dạng hàm (req, res) để chạy được cả trên Vercel; vẫn có listen/close cho chạy thường và kiểm thử.
 // Trên Vercel, mọi đường dẫn được rewrite vào một hàm; đường dẫn gốc được gửi kèm ở ?__p=
-// (xem vercel.json). Khôi phục lại req.url để bộ định tuyến khớp đúng.
+// (xem vercel.json), Vercel còn tự thêm ?path=. Khôi phục lại req.url để bộ định tuyến khớp đúng.
 function restoreUrl(req) {
   if (!req.url || !req.url.includes('__p=')) return;
   const u = new URL(req.url, 'http://x');
   let p = u.searchParams.get('__p') || '/';
   if (!p.startsWith('/')) p = '/' + p;
   u.searchParams.delete('__p');
+  u.searchParams.delete('path');
   const q = u.searchParams.toString();
   req.url = p + (q ? '?' + q : '');
 }
-const handler = (req, res) => { restoreUrl(req); server.emit('request', req, res); };
+const handler = (req, res) => server.emit('request', req, res);
 handler.server = server;
 handler.listen = (...a) => server.listen(...a);
 handler.close = (...a) => server.close(...a);

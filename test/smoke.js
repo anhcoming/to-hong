@@ -48,6 +48,10 @@ async function call(who, method, url, body) {
     }
   }
   assert.equal((await call('x', 'GET', '/demo/cover.jpg')).status, 200, 'ảnh mẫu phải tải được');
+  // dạng URL Vercel gửi tới hàm sau khi rewrite (vercel.json)
+  r = await call('x', 'GET', '/api/index.js?palette=dem&__p=%2Fapi%2Fmeta&path=api%2Fmeta');
+  assert.equal(r.status, 200, 'URL rewrite của Vercel phải về đúng đường dẫn gốc');
+  assert.ok(r.json.templates, 'URL rewrite của Vercel phải trả /api/meta');
   assert.equal((await call('x', 'GET', '/../server.js')).status, 404);
 
   // tài khoản: người đầu tiên là admin
