@@ -12,7 +12,7 @@ const base = {
 };
 
 const evList = (d) => d.events.filter((e) => e.name || e.place);
-// sự kiện chính của tiệc (khung "Thông tin tiệc cưới", bản đồ) và mốc ngay trước nó (đón khách)
+// sự kiện chính của tiệc (khung "Thông tin tiệc cưới", bản đồ)
 function partyEvent(d) {
   const evs = evList(d);
   return evs.find((e) => /khai tiệc|tiệc cưới/i.test(e.name)) || evs.find((e) => /tiệc/i.test(e.name)) || evs[evs.length - 1] || null;
@@ -125,7 +125,7 @@ module.exports = {
       <script>(function(){
         // tên đầy đủ: cùng một cỡ chữ cho cả hai người, tối đa 43px, co lại cho vừa 97% bề ngang khung (như bản gốc)
         var hs=[].slice.call(document.currentScript.parentNode.querySelectorAll('h3'));
-        function fit(){var k=1;hs.forEach(function(h){h.style.fontSize='43px';var r=document.createRange();r.selectNodeContents(h);var w=r.getBoundingClientRect().width;if(w)k=Math.min(k,h.clientWidth*.97/w);});hs.forEach(function(h){h.style.fontSize=Math.floor(43*k)+'px';});}
+        function fit(){var k=1;hs.forEach(function(h){h.style.fontSize='43px';var r=document.createRange();r.selectNodeContents(h);var w=r.getBoundingClientRect().width;if(w)k=Math.min(k,h.getBoundingClientRect().width*.97/w);});hs.forEach(function(h){h.style.fontSize=Math.floor(43*k)+'px';});}
         fit();if(document.fonts)document.fonts.ready.then(fit);addEventListener('resize',fit);
       })()</script>
       </div>
@@ -178,8 +178,8 @@ module.exports = {
       const evs = evList(d);
       const party = partyEvent(d) || {};
       const time = party.time || d.time;
-      const at = evs.indexOf(party);
-      const marks = at > 0 && evs[at - 1].time && (!evs[at - 1].date || evs[at - 1].date === ctx.date) ? [evs[at - 1], party] : [];
+      const guestIn = evs.find((e) => e !== party && /đón khách/i.test(e.name) && e.time && (!e.date || e.date === ctx.date));
+      const marks = party.time ? [guestIn, party].filter(Boolean) : [];
       const grid = d.show.calendar ? h.calGrid(ctx, `<p class="mn-calh">Tháng ${+p.m} / ${p.y}</p>`) : '';
       const cal = h.calendarLink(`Đám cưới ${ctx.g} & ${ctx.b}`, ctx.date, time, party.address || party.place);
       const rsvp = d.show.rsvp ? h.rsvp(ctx).replace('sec s-rsvp reveal', 's-rsvp') : '';
