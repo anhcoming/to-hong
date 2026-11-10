@@ -3,7 +3,6 @@
 const { esc } = require('../lib/util');
 
 const A = (n) => `/demo/toduyen-${n}.webp`; // ảnh trang trí của mẫu
-const HIDE = ` onerror="this.style.visibility='hidden'"`; // ảnh trang trí chưa có thì ẩn hẳn, không hiện khung ảnh hỏng
 
 const base = {
   '--font-title': "'Carattere',cursive",
@@ -21,7 +20,7 @@ function partyEvent(d) {
 const ceremony = (d) => { const p = partyEvent(d); return evList(d).find((e) => e !== p) || p; };
 
 // trang trí: ảnh nằm tuyệt đối, data-px = biên độ trôi khi cuộn (px)
-const deco = (cls, name, px) => `<img class="td-d ${cls}" src="${A(name)}" alt=""${HIDE}${px ? ` data-px="${px}"` : ''}>`;
+const deco = (cls, name, px) => `<img class="td-d ${cls}" src="${A(name)}" alt=""${px ? ` data-px="${px}"` : ''}>`;
 const decos = (...imgs) => `<div class="td-decos" aria-hidden="true">${imgs.join('')}</div>`;
 
 // ngày | tháng-năm (cùng một kiểu ở lời mời và tiệc cưới)
@@ -93,7 +92,7 @@ module.exports = {
   <div class="td-ocard">
     <span class="td-seal" aria-hidden="true"><svg viewBox="0 0 24 24" width="28" height="28"><path fill="currentColor" d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg></span>
     <div class="td-obox">
-      <div class="td-obg"><img class="tl" src="${A('flower-decoration')}" alt=""${HIDE}><img class="br" src="${A('flower-decoration')}" alt=""${HIDE}></div>
+      <div class="td-obg"><img class="tl" src="${A('flower-decoration')}" alt=""><img class="br" src="${A('flower-decoration')}" alt=""></div>
       <div class="td-obody">
         <h1 class="td-onames"><span>${esc(ctx.g)}</span><i>&amp;</i><span>${esc(ctx.b)}</span></h1>
         <p class="td-rule" aria-hidden="true"><span></span><b>❦</b><span></span></p>
@@ -258,7 +257,7 @@ module.exports = {
             const p = h.parts(e.date);
             const other = p && e.date !== ctx.date;
             const ic = icons[i - 1];
-            return `<li><span class="t"><b>${ic ? `<span class="ic"><img src="${A(ic)}" alt=""${HIDE}></span>` : ''}${esc(e.time) || '—'}</b></span><span class="dot"></span><span class="l">${esc(e.name)}${other ? ` <small>${p.d}/${p.m}</small>` : ''}</span></li>`;
+            return `<li><span class="t"><b>${ic ? `<span class="ic"><img src="${A(ic)}" alt=""></span>` : ''}${esc(e.time) || '—'}</b></span><span class="dot"></span><span class="l">${esc(e.name)}${other ? ` <small>${p.d}/${p.m}</small>` : ''}</span></li>`;
           }).join('')}
         </ol>
       </div>
