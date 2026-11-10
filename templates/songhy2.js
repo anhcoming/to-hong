@@ -1,13 +1,12 @@
 // Mẫu "Song Hỷ Đỏ" — truyền thống: nền đỏ son, khung giấy kem viền đào, chữ 囍, đường cong mây ôm ảnh.
 // Kích thước lấy theo bản gốc (Tailwind): số đầu cho điện thoại, khối @media (min-width:768px) cho màn rộng.
-// Ảnh trang trí của bản gốc (hoa, mây, nhẫn, ly, bánh, phong bao) đọc từ /demo/songhy2-*.webp nếu có;
-// thiếu ảnh thì thẻ <img> tự gỡ (onerror) và phần dựng bằng CSS/chữ 囍 thay thế.
+// Ảnh trang trí lấy từ bản gốc (hoa, mây, nhẫn, ly, bánh, phong bao) trong /demo/songhy2-*.webp;
+// khung giấy (songhy2-panel.svg) và đường cong đỏ vẽ lại, chữ 囍 dùng ký tự thay ảnh song hỷ.
 const { esc } = require('../lib/util');
 const banks = require('../lib/banks');
 
 const A = (n) => `/demo/songhy2-${n}`;
-// ảnh trang trí có thể chưa có trong public/demo: lỗi tải thì gỡ hẳn
-const deco = (n, cls, extra = '') => `<img class="${cls}" src="${A(n)}" alt="" aria-hidden="true" onerror="this.remove()"${extra}>`;
+const deco = (n, cls) => `<img class="${cls}" src="${A(n)}" alt="" aria-hidden="true">`;
 
 const base = {
   '--font-title': "'Times New Roman',Times,serif",
@@ -252,7 +251,7 @@ module.exports = {
       if (!evs.length) return '';
       const party = partyEvent(ctx.d);
       const at = evs.indexOf(party);
-      const icons = { [at - 3]: ['ring', '💍'], [at - 2]: ['toast', '🥂'], [at - 1]: ['cake', '🎂'] }; // ba mốc ngay trước khai tiệc
+      const icons = { [at - 3]: 'ring', [at - 2]: 'toast', [at - 1]: 'cake' }; // ba mốc ngay trước khai tiệc
       const addr = party ? [party.place, party.address].filter(Boolean).join('\n') : '';
       const q = party ? [party.place, party.address].filter(Boolean).join(', ') : '';
       const dir = party && (party.mapUrl || (q ? `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(q)}` : ''));
@@ -280,7 +279,7 @@ module.exports = {
             const p = h.parts(e.date);
             const other = p && e.date !== ctx.date;
             const ic = icons[i];
-            return `<li><span class="t"><b>${ic ? `<span class="ic ${ic[0]}"><img src="${A(ic[0] + '.webp')}" alt="" onerror="this.remove()"><em>${ic[1]}</em></span>` : ''}${esc(e.time) || '—'}</b></span><span class="dot"></span><span class="l">${esc(e.name)}${other ? ` <small>${p.d}/${p.m}</small>` : ''}</span></li>`;
+            return `<li><span class="t"><b>${ic ? `<span class="ic ic-${ic}"><img src="${A(ic + '.webp')}" alt=""></span>` : ''}${esc(e.time) || '—'}</b></span><span class="dot"></span><span class="l">${esc(e.name)}${other ? ` <small>${p.d}/${p.m}</small>` : ''}</span></li>`;
           }).join('')}
         </ol>
       </div>
@@ -328,7 +327,7 @@ module.exports = {
       };
       const html = card(ctx.d.gifts.groom, 'groom') + card(ctx.d.gifts.bride, 'bride');
       if (!html) return '';
-      const env = (cls) => `<span class="env ${cls}"><img src="${A('envelope.webp')}" alt="" onerror="this.remove()"><span class="fb"><i>囍</i></span></span>`;
+      const env = (cls) => `<img class="env ${cls}" src="${A('envelope.webp')}" alt="">`;
       return `
   <section class="sh-sec sh-giftbox reveal">
     <div class="sh-in">
@@ -533,10 +532,8 @@ module.exports = {
 .tpl-songhy2 .sh-tl .t b{position:relative;display:inline-block;font-weight:400}
 .tpl-songhy2 .sh-tl .ic{position:absolute;right:100%;top:50%;display:flex;align-items:center;justify-content:center;margin-right:36px;transform:translateY(-50%)}
 .tpl-songhy2 .sh-tl .ic img{max-width:none;object-fit:contain}
-.tpl-songhy2 .sh-tl .ic.ring img{width:32px;height:22px}
-.tpl-songhy2 .sh-tl .ic.toast img,.tpl-songhy2 .sh-tl .ic.cake img{width:30px;height:32px}
-.tpl-songhy2 .sh-tl .ic em{font-style:normal;font-size:22px;line-height:1}
-.tpl-songhy2 .sh-tl .ic:has(img) em{display:none}
+.tpl-songhy2 .sh-tl .ic-ring img{width:32px;height:22px}
+.tpl-songhy2 .sh-tl .ic-toast img,.tpl-songhy2 .sh-tl .ic-cake img{width:30px;height:32px}
 .tpl-songhy2 .sh-tl .dot{position:relative;align-self:stretch;display:flex;align-items:center;justify-content:center}
 .tpl-songhy2 .sh-tl .dot::before{content:"";position:absolute;left:50%;width:1px;top:calc(-1 * var(--gy));bottom:calc(-1 * var(--gy));transform:translateX(-50%);background:color-mix(in srgb,var(--accent) 40%,transparent)}
 .tpl-songhy2 .sh-tl li:first-child .dot::before{top:50%}
@@ -573,13 +570,7 @@ module.exports = {
 .tpl-songhy2 .sh-envbtn{position:relative;display:flex;align-items:flex-end;justify-content:center;width:250px;height:357px;padding:0 0 48px;border:0;background:none;outline:none;cursor:pointer}
 /* hai phong bao chồng nhau (theo bản gốc): bao trước xoay -10° nổi lên xuống, bao sau lật ngang thu 80% */
 .tpl-songhy2 .sh-envs{position:relative;display:block;width:190px;height:275px}
-.tpl-songhy2 .sh-envs .env{position:absolute;inset:0;display:block}
-.tpl-songhy2 .sh-envs .env img{width:100%;height:100%;object-fit:contain;object-position:center bottom}
-.tpl-songhy2 .sh-envs .fb{position:absolute;left:12%;right:12%;bottom:0;height:86%;display:grid;place-items:center;overflow:hidden;border:1px solid #e6d5bd;border-radius:10px;background:#fbf4e6}
-/* phong bao kem có nắp tam giác và chữ 囍 đỏ (thay ảnh phong bao của bản gốc khi chưa có file) */
-.tpl-songhy2 .sh-envs .fb::before{content:"";position:absolute;left:0;right:0;top:0;height:40%;background:#f3e7d2;clip-path:polygon(0 0,100% 0,50% 100%);filter:drop-shadow(0 2px 2px rgba(0,0,0,.15))}
-.tpl-songhy2 .sh-envs .fb i{position:relative;font-family:'PingFang SC','Noto Serif SC',serif;font-weight:900;font-style:normal;font-size:46px;line-height:1;color:#b3141c}
-.tpl-songhy2 .sh-envs .env:has(img) .fb{display:none}
+.tpl-songhy2 .sh-envs .env{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;object-position:center bottom}
 .tpl-songhy2 .sh-envs .front{z-index:2;rotate:-10deg;transform-origin:50% 92%;filter:drop-shadow(0 10px 18px rgba(0,0,0,.22));animation:shFloatMain 3s ease-in-out infinite}
 .tpl-songhy2 .sh-envs .back{z-index:1;transform-origin:50% 100%;transform:translateX(20%) translateY(-10%) scale(-.8,.8) rotate(-15deg);filter:drop-shadow(0 8px 14px rgba(0,0,0,.18));animation:shFloat 5.2s ease-in-out .5s infinite}
 .tpl-songhy2 .sh-envbtn:hover .front,.tpl-songhy2 .sh-envbtn:focus-visible .front{animation:shFloatMain 3s ease-in-out infinite,shWave 1.1s ease-in-out infinite;scale:1.12}
@@ -744,9 +735,8 @@ module.exports = {
   .tpl-songhy2 .sh-sched .sh-frame{top:-7px;bottom:-16px}
   .tpl-songhy2 .sh-sched .sh-body{max-width:563px;padding:59px 52px 37px}
   .tpl-songhy2 .sh-tl{--gy:40px;column-gap:32px;font-size:18px;line-height:27px}
-  .tpl-songhy2 .sh-tl .ic.ring img{width:44px;height:30px}
-  .tpl-songhy2 .sh-tl .ic.toast img,.tpl-songhy2 .sh-tl .ic.cake img{width:41px;height:44px}
-  .tpl-songhy2 .sh-tl .ic em{font-size:30px}
+  .tpl-songhy2 .sh-tl .ic-ring img{width:44px;height:30px}
+  .tpl-songhy2 .sh-tl .ic-toast img,.tpl-songhy2 .sh-tl .ic-cake img{width:41px;height:44px}
   .tpl-songhy2 .sh-guest{margin-top:31px}
   .tpl-songhy2 .sh-guest .sh-fl.r{top:-91px}
   .tpl-songhy2 .sh-guest .sh-fl.l{top:276px}
