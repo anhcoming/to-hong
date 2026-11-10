@@ -44,7 +44,7 @@ Write a short table before building — source section → template part → car
 | `sections.gift` | `h.giftCard(ctx, d.gifts.groom|bride, who)` |
 | `sections.thanks` | `d.message` |
 
-Override a shared section only when styling can't match; reorder with `layout`; shared sections live in `lib/render.js`. List source parts with **no card data** (e.g. dress code) as known gaps instead of hard-coding them. Set the template's `demo: {…}` (photos, `story`, `events`, …) so `/demo/<id>` shows the **same content as the source** — comparison is meaningless otherwise.
+Override a shared section only when styling can't match; reorder with `layout`; shared sections live in `lib/render.js`. List source parts with **no card data** (e.g. dress code) as known gaps instead of hard-coding them. Set the template's `demo: {…}` (photos, `story`, `events`, …) so `/demo/<id>` shows the **same content as the source** — comparison is meaningless otherwise. Exception: keep the couple's names and parents from `sample()` (Đức Minh & Thu Hà) — `test/smoke.js` checks them on every template — and treat differences caused by name length as data differences.
 
 ## 3. Build
 
