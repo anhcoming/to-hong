@@ -1,17 +1,10 @@
 // Mẫu "Song Hỷ" — thiệp truyền thống chữ Hỷ: vòm đỏ trên đầu trang, ảnh cưới khung cổng tròn, dải tiêu đề đỏ, album xoay 3D.
 // Kích thước lấy theo bản gốc (Tailwind): số đầu cho điện thoại, khối @media (min-width:640/768/1024px) cho màn rộng.
 // Bản xanh dùng cùng ảnh trang trí với bản đỏ, chỉ đổi màu bằng filter (hue-rotate) như bản gốc; hộp quà có ảnh riêng.
-const fs = require('fs');
-const path = require('path');
 const { esc } = require('../lib/util');
 
-// Ảnh trang trí của bản gốc. Ảnh nào chưa có trong public/demo thì dựng tạm bằng CSS / ký tự 囍.
-const A = (n) => `/demo/songhy-${n}`;
-const has = (n) => fs.existsSync(path.join(__dirname, '..', 'public', 'demo', `songhy-${n}`));
-const HY = has('chu-hy.webp');
-const STAR = has('star.webp');
-const BURST = has('sunburst.svg');
-const hyMark = (cls) => (HY ? `<img class="${cls}" src="${A('chu-hy.webp')}" alt="">` : `<span class="${cls} sh-hyg" aria-hidden="true">囍</span>`);
+const A = (n) => `/demo/songhy-${n}`; // ảnh trang trí của bản gốc
+const hyMark = (cls) => `<img class="${cls}" src="${A('chu-hy.png')}" alt="">`;
 
 const base = {
   '--font-title': "'Playfair Display',Baskerville,'Times New Roman',serif",
@@ -101,10 +94,10 @@ module.exports = {
 
   cover(ctx) {
     const photo = ctx.d.cover || ctx.d.photos[0] || '';
-    const star = (x) => (STAR ? `<image href="${A('star.webp')}" x="${x}" y="27" width="12" height="12" opacity=".9"/>` : `<text x="${x + 6}" y="33" font-size="13" text-anchor="middle" dominant-baseline="central" fill="#ffeed2" opacity=".9">✦</text>`);
+    const star = (x) => `<image href="${A('star.png')}" x="${x}" y="27" width="12" height="12" opacity=".9"/>`;
     return `
 <header class="sh-cover">
-  <div class="sh-burst" aria-hidden="true">${BURST ? `<img src="${A('sunburst.svg')}" alt="">` : '<span></span>'}</div>
+  <div class="sh-burst" aria-hidden="true"><img src="${A('sunburst.svg')}" alt=""></div>
   <p class="sh-welcome">Welcome to our wedding</p>
   <div class="sh-hnames">
     <div><p class="k">Chú rể</p><p class="n">${esc(ctx.g)}</p></div>
@@ -272,8 +265,8 @@ module.exports = {
       const html = h.giftCard(ctx, ctx.d.gifts.groom, 'groom') + h.giftCard(ctx, ctx.d.gifts.bride, 'bride');
       if (!html) return '';
       const tone = ctx.pal.id === 'xanh' ? 'green' : 'red';
-      const box = has(`giftbox-${tone}.webp`) ? `<img class="box" src="${A(`giftbox-${tone}.webp`)}" alt="">` : '<span class="box sh-boxcss" aria-hidden="true"><b>囍</b></span>';
-      const minis = MINI.map(([x, y, w, r, z], i) => (has(`mini-${tone}-${i + 1}.webp`) ? `<img class="mini m${i + 1}" src="${A(`mini-${tone}-${i + 1}.webp`)}" alt="" style="left:${x}px;top:${y}px;width:${w}px;z-index:${z};transform:rotate(${r}deg)">` : '')).join('');
+      const box = `<img class="box" src="${A(`giftbox-${tone}.webp`)}" alt="">`;
+      const minis = MINI.map(([x, y, w, r, z], i) => `<img class="mini m${i + 1}" src="${A(`mini-${tone}-${i + 1}.webp`)}" alt="" style="left:${x}px;top:${y}px;width:${w}px;z-index:${z};transform:rotate(${r}deg)">`).join('');
       return `
   <section class="sec sh-giftbox">
     <h2 class="sh-h">Hộp quà mừng</h2>
@@ -309,7 +302,6 @@ module.exports = {
 .tpl-songhy .sh-band{padding:12px 0;background:var(--accent)}
 .tpl-songhy .sh-band .sh-h{padding:0 8px;color:var(--accent-ink)}
 .tpl-songhy .sec-sub{margin:4px 0 0;color:var(--muted);font-size:14px}
-.tpl-songhy .sh-hyg{display:flex;align-items:center;justify-content:center;font-family:'PingFang SC','Hiragino Sans GB','Noto Serif SC',serif;line-height:1;color:#f0e0d0}
 
 /* ---- màn mở thiệp ---- */
 .tpl-songhy .sh-opener{background:var(--sh-op);overflow:hidden}
@@ -319,7 +311,6 @@ module.exports = {
 .tpl-songhy .sh-ocard{position:relative;z-index:10;width:310px;max-width:calc(100vw - 32px);text-align:center;border-radius:8px;box-shadow:0 25px 60px -12px rgba(0,0,0,.45),0 8px 24px rgba(0,0,0,.2),0 0 40px color-mix(in srgb,var(--accent-ink) 15%,transparent)}
 .tpl-songhy .sh-obg{position:absolute;inset:0;overflow:hidden;border-radius:8px;background:var(--accent);border:1px solid color-mix(in srgb,var(--accent-ink) 15%,transparent);clip-path:inset(0 round 8px)}
 .tpl-songhy .sh-obg>*{position:absolute;width:220px;height:auto;opacity:.15;rotate:30deg;pointer-events:none}
-.tpl-songhy .sh-obg .sh-hyg{height:220px;font-size:200px}
 .tpl-songhy .sh-obg .tl{top:-65px;left:-124px}
 .tpl-songhy .sh-obg .br{bottom:-39px;right:-156px}
 .tpl-songhy .sh-seal{position:absolute;left:50%;top:50px;z-index:30;display:flex;align-items:center;justify-content:center;width:56px;height:56px;border-radius:50%;transform:translate(-50%,-50%);background:radial-gradient(circle at 30% 30%,var(--accent-ink),var(--sh-seal2));box-shadow:0 4px 20px color-mix(in srgb,var(--accent-ink) 50%,transparent),inset 0 2px 4px rgba(255,255,255,.3);animation:shSeal 2s ease-in-out infinite}
@@ -343,7 +334,6 @@ module.exports = {
 .tpl-songhy .sh-cover{position:relative;overflow:hidden;padding-bottom:100px;background:var(--page)}
 .tpl-songhy .sh-burst{position:absolute;left:50%;top:0;width:min(671px,130vw);aspect-ratio:1;transform:translate(-50%,-50%);pointer-events:none}
 .tpl-songhy .sh-burst>*{display:block;width:100%;height:100%;filter:var(--sh-burst-f)}
-.tpl-songhy .sh-burst span{border-radius:50%;background:#800000}
 .tpl-songhy .sh-welcome{position:relative;z-index:10;margin:0;padding:40px 16px 0;text-align:center;font-family:'Cormorant Garamond','Times New Roman',serif;font-size:11px;line-height:16.5px;letter-spacing:.35em;text-transform:uppercase;color:var(--accent-ink);text-shadow:var(--sh-tshadow)}
 .tpl-songhy .sh-hnames{position:relative;z-index:10;display:flex;align-items:center;justify-content:center;gap:16px;width:100%;max-width:872px;margin:12px auto 0;padding:0 16px}
 .tpl-songhy .sh-hnames>div:not(.hy){flex:1;min-width:0;text-align:center}
@@ -352,7 +342,6 @@ module.exports = {
 .tpl-songhy .sh-hnames .n{font-family:'Big Caslon',Baskerville,'Times New Roman',serif;font-size:16px;line-height:24px;white-space:nowrap;text-transform:uppercase}
 .tpl-songhy .sh-hnames .hy{display:flex;flex-shrink:0;align-items:center;justify-content:center;width:64px}
 .tpl-songhy .sh-hy{width:64px;height:64px;object-fit:contain;filter:var(--sh-hy-f)}
-.tpl-songhy span.sh-hy{font-size:58px}
 .tpl-songhy .sh-arch{position:relative;z-index:10;display:flex;justify-content:center;margin-top:8px;padding:0 24px}
 .tpl-songhy .sh-arch-in{position:relative;width:100%;max-width:286px;transform:translateY(50px)}
 .tpl-songhy .sh-arch-photo{position:relative;aspect-ratio:286/481;overflow:hidden;border-radius:9999px 9999px 0 0;background:#d9d9d9}
@@ -483,8 +472,6 @@ module.exports = {
 .tpl-songhy .sh-gin .shadow{position:absolute;left:50%;bottom:-8px;z-index:0;width:144px;height:12px;margin-left:-72px;border-radius:50%;background:rgba(0,0,0,.45);filter:blur(4px);animation:shShadow 3s ease-in-out infinite}
 .tpl-songhy .sh-gin .mini{position:absolute;filter:drop-shadow(0 2px 3px rgba(0,0,0,.25));pointer-events:none}
 .tpl-songhy .sh-gin .box{position:absolute;left:50%;bottom:0;z-index:2;width:170px;max-height:220px;margin-left:-85px;object-fit:contain;filter:drop-shadow(0 10px 18px rgba(0,0,0,.25));transform-origin:50% 100%;transition:transform .3s ease}
-.tpl-songhy .sh-boxcss{display:flex;align-items:center;justify-content:center;height:150px;border-radius:10px;background:linear-gradient(var(--accent-ink),var(--accent-ink)) center/26px 100% no-repeat,linear-gradient(var(--accent-ink),var(--accent-ink)) center 36%/100% 22px no-repeat,var(--accent)}
-.tpl-songhy .sh-boxcss b{display:grid;place-items:center;width:58px;height:58px;margin-top:-20px;border-radius:50%;background:var(--accent);border:2px solid var(--accent-ink);font:400 34px/1 'PingFang SC','Hiragino Sans GB',serif;color:var(--accent-ink)}
 .tpl-songhy .sh-gin .cf{position:absolute;left:50%;bottom:187px;z-index:0;pointer-events:none}
 .tpl-songhy .sh-gin .cf i{position:absolute;left:50%;top:0;opacity:0;width:10px;height:5px;margin:-2.5px 0 0 -5px;border-radius:2px}
 .tpl-songhy .sh-gin .c1{width:11px!important;height:5.5px!important;background:rgb(236,72,153)}
@@ -588,7 +575,6 @@ module.exports = {
   .tpl-songhy .card{max-width:900px;border:1px solid color-mix(in srgb,var(--accent) 13%,transparent)}
   .tpl-songhy .sh-ocard{width:520px}
   .tpl-songhy .sh-obg>*{width:300px}
-  .tpl-songhy .sh-obg .sh-hyg{height:300px;font-size:270px}
   .tpl-songhy .sh-obg .tl{top:-104px;left:-130px}
   .tpl-songhy .sh-obg .br{bottom:-104px;right:-143px}
   .tpl-songhy .sh-obody{padding:96px 24px 32px}
@@ -599,7 +585,6 @@ module.exports = {
   .tpl-songhy .sh-hnames .k{font-size:14px;line-height:21px}
   .tpl-songhy .sh-hnames .hy{width:83px}
   .tpl-songhy .sh-hy{width:83px;height:83px}
-  .tpl-songhy span.sh-hy{font-size:76px}
   .tpl-songhy .sh-arch{margin-top:12px}
   .tpl-songhy .sh-arch-in{max-width:372px;transform:translateY(73px)}
   .tpl-songhy .sh-arch-text{transform:translateY(-15px)}
