@@ -44,7 +44,9 @@ async function call(who, method, url, body) {
       r = await call('x', 'GET', `/demo/${t.id}?palette=${p.id}`);
       assert.equal(r.status, 200, `mẫu ${t.id}/${p.id}`);
       assert.match(r.text, /id="openBtn"/, `mẫu ${t.id}: thiếu nút mở thiệp`);
-      assert.match(r.text, /Đức Minh/, `mẫu ${t.id}: thiếu tên`);
+      // mẫu có thể xem thử bằng tên riêng (demo.groom) cho giống trang gốc
+      const demoName = (require(`../templates/${t.id}`).demo?.groom || {}).name || 'Đức Minh';
+      assert.ok(r.text.includes(demoName), `mẫu ${t.id}: thiếu tên`);
     }
   }
   assert.equal((await call('x', 'GET', '/demo/dodam-1.jpg')).status, 200, 'ảnh mẫu phải tải được');

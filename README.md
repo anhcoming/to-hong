@@ -74,9 +74,9 @@ Nhóm phong cách khai báo ở `groups` trong `lib/render.js` (hiện ở bộ 
 
 | Nhóm | Mẫu (`id`) |
 |---|---|
-| Tối giản | Đỏ Đậm (`dodam`, mẫu mặc định) |
+| Tối giản | Đỏ Đậm (`dodam`, mẫu mặc định), Nâu (`nau`), Nâu Đậm (`naudam`), Xanh Lá (`xanhla`), Tím (`tim`) |
 
-Xem nhanh: `/demo/<id>?palette=<id bảng màu>`. Mọi họa tiết đều vẽ bằng SVG/CSS và tô bằng biến màu (`var(--accent)`, `var(--gold)`…), nên đổi bảng màu là họa tiết đổi theo — không có file ảnh nào.
+Xem nhanh: `/demo/<id>?palette=<id bảng màu>`. Các mẫu Tối giản dựng lại theo bộ Minimalism của chungdoi.com và dùng ảnh trang trí của bản gốc trong `public/demo/<id>-*` (phong bao nhỏ quanh hộp quà dùng chung `toigian-mini-*`); chỉ nên dùng công khai khi đã thay bằng ảnh của mình.
 
 ### Thêm / sửa mẫu
 
