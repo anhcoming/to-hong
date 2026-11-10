@@ -32,7 +32,15 @@ node test/smoke.js
 | `payment` | **Tài khoản nhận tiền của bạn** — BIN ngân hàng (xem `lib/banks.js`), số TK, tên chủ TK |
 | `support` | Zalo/email hỗ trợ hiện ở chân trang |
 
-Biến môi trường ghi đè: `PORT`, `BASE_URL`, `DATA_DIR`.
+Biến môi trường ghi đè: `PORT`, `BASE_URL`, `DATA_DIR`. Đặt chúng (và khoá bí mật) trong file `.env` ở thư mục gốc — xem `.env.example`; file này không được đưa lên git.
+
+### Đăng nhập Google
+
+1. [Google Cloud Console](https://console.cloud.google.com/apis/credentials) → **Create credentials → OAuth client ID** → loại **Web application** (lần đầu cần cấu hình *OAuth consent screen*, chọn *External*).
+2. **Authorized redirect URIs**: `http://localhost:3210/auth/google/callback` khi chạy máy mình, và `<baseUrl>/auth/google/callback` khi chạy thật.
+3. Điền `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET` vào `.env` (trên Vercel: Settings → Environment Variables), khởi động lại server. Nút "Tiếp tục với Google" tự hiện ở `/dang-nhap`.
+
+Tài khoản Google trùng email với tài khoản đăng ký bằng mật khẩu sẽ được gộp làm một.
 
 ## Cấu trúc
 
@@ -62,7 +70,11 @@ Link thiệp: `/t/:duong-dan` (link chung) và `/t/:duong-dan/:mã-khách` (link
 
 ## Mẫu thiệp
 
-Hiện chỉ còn khung tối thiểu **Cơ Bản** (`coban`) để thiệp vẫn dựng được — toàn bộ mẫu cũ đã gỡ. Nhóm phong cách khai báo ở `groups` trong `lib/render.js` (hiện ở bộ lọc trang chủ và trình chỉnh sửa).
+Nhóm phong cách khai báo ở `groups` trong `lib/render.js` (hiện ở bộ lọc trang chủ và trình chỉnh sửa).
+
+| Nhóm | Mẫu (`id`) |
+|---|---|
+| Tối giản | Cơ Bản (`coban`, khung tối thiểu làm mẫu mặc định), Đỏ Đậm (`dodam`) |
 
 Xem nhanh: `/demo/<id>?palette=<id bảng màu>`. Mọi họa tiết đều vẽ bằng SVG/CSS và tô bằng biến màu (`var(--accent)`, `var(--gold)`…), nên đổi bảng màu là họa tiết đổi theo — không có file ảnh nào.
 
