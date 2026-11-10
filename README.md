@@ -74,15 +74,12 @@ Nhóm phong cách khai báo ở `groups` trong `lib/render.js` (hiện ở bộ 
 
 | Nhóm | Mẫu (`id`) |
 |---|---|
+| Truyền thống | Song Hỷ (`songhy`, bảng màu Đỏ/Xanh), Song Hỷ Đỏ (`songhy2`), Long Phụng (`longphung`) |
 | Tối giản | Đỏ Đậm (`dodam`, mẫu mặc định), Nâu (`nau`), Nâu Đậm (`naudam`), Xanh Lá (`xanhla`), Tím (`tim`) |
-| Tối giản | Đỏ Đậm (`dodam`, mẫu mặc định) |
-| Truyền thống | Song Hỷ Đỏ (`songhy2`) |
-| Hoa & thiên nhiên | Hoa Mộc (`hoamoc`) |
+| Hoa & thiên nhiên | Hoa Mộc (`hoamoc`), Thanh Diệp (`thanhdiep`) |
 | Chất liệu | Tơ Duyên (`toduyen`) |
-| Truyền thống | Long Phụng (`longphung`) |
-| Hoa & thiên nhiên | Thanh Diệp (`thanhdiep`) |
 
-Xem nhanh: `/demo/<id>?palette=<id bảng màu>`. Các mẫu Tối giản dựng lại theo bộ Minimalism của chungdoi.com và dùng ảnh trang trí của bản gốc trong `public/demo/<id>-*` (phong bao nhỏ quanh hộp quà dùng chung `toigian-mini-*`); chỉ nên dùng công khai khi đã thay bằng ảnh của mình.
+Xem nhanh: `/demo/<id>?palette=<id bảng màu>`. Các mẫu đều dựng lại theo thiệp mẫu của chungdoi.com và dùng ảnh trang trí của bản gốc trong `public/demo/<id>-*` (phong bao nhỏ quanh hộp quà của bộ Tối giản dùng chung `toigian-mini-*`); chỉ nên dùng công khai khi đã thay bằng ảnh của mình.
 
 ### Thêm / sửa mẫu
 
