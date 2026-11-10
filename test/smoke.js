@@ -6,6 +6,7 @@ const assert = require('assert');
 
 process.env.DATA_DIR = fs.mkdtempSync(path.join(os.tmpdir(), 'thiep-test-'));
 process.env.BASE_URL = 'http://localhost';
+process.env.ADMIN_PASSWORD = 'mat-khau-quan-tri';
 const server = require('../server');
 
 let base;
@@ -56,11 +57,14 @@ async function call(who, method, url, body) {
   assert.ok(r.json.templates, 'URL rewrite của Vercel phải trả /api/meta');
   assert.equal((await call('x', 'GET', '/../server.js')).status, 404);
 
-  // tài khoản: người đầu tiên là admin
+  // tài khoản người dùng đều là khách; quản trị vào bằng mật khẩu riêng (phiên 'qt' tách khỏi tài khoản)
   r = await call('admin', 'POST', '/api/auth/register', { email: 'admin@test.vn', password: '123456', name: 'Admin' });
-  assert.equal(r.json.user.isAdmin, true);
+  assert.equal(r.json.user.isAdmin, undefined, 'tài khoản đầu tiên không còn là quản trị');
+  assert.equal((await call('qt', 'GET', '/api/admin/overview')).status, 403);
+  assert.equal((await call('qt', 'POST', '/api/admin/login', { password: 'sai' })).status, 401);
+  assert.equal((await call('qt', 'POST', '/api/admin/login', { password: 'mat-khau-quan-tri' })).status, 200);
+  assert.equal((await call('qt', 'GET', '/api/admin/session')).json.admin, true);
   r = await call('u', 'POST', '/api/auth/register', { email: 'cuoi@test.vn', password: '123456' });
-  assert.equal(r.json.user.isAdmin, false);
   assert.equal((await call('u', 'POST', '/api/auth/register', { email: 'cuoi@test.vn', password: '123456' })).status, 409);
   assert.equal((await call('anon', 'GET', '/api/cards')).status, 401);
   assert.equal((await call('u2', 'POST', '/api/auth/login', { email: 'cuoi@test.vn', password: 'sai' })).status, 401);
@@ -134,9 +138,9 @@ async function call(who, method, url, body) {
   r = await call('anon', 'POST', `/api/orders/${order.code}/claim`);
   assert.ok(r.json.order.claimedAt);
   assert.equal((await call('u', 'GET', '/api/admin/overview')).status, 403);
-  r = await call('admin', 'GET', '/api/admin/overview');
+  r = await call('qt', 'GET', '/api/admin/overview');
   const oid = r.json.orders[0].id;
-  assert.equal((await call('admin', 'POST', `/api/admin/orders/${oid}/confirm`)).status, 200);
+  assert.equal((await call('qt', 'POST', `/api/admin/orders/${oid}/confirm`)).status, 200);
   r = await call('u', 'GET', `/api/cards/${id}`);
   assert.equal(r.json.card.paid, true);
   r = await call('anon', 'GET', `/t/tuan-lan/${lateGuest.code}`);
@@ -164,9 +168,9 @@ async function call(who, method, url, body) {
   r = await call('u', 'POST', `/api/cards/${id}/order`, { product: 'led' });
   assert.equal(r.json.order.amount, 29000);
   assert.match(r.json.order.code, /^LD/);
-  r = await call('admin', 'GET', '/api/admin/overview');
+  r = await call('qt', 'GET', '/api/admin/overview');
   const ledOrder = r.json.orders.find((o) => o.product === 'led');
-  await call('admin', 'POST', `/api/admin/orders/${ledOrder.id}/confirm`);
+  await call('qt', 'POST', `/api/admin/orders/${ledOrder.id}/confirm`);
   r = await call('u', 'GET', `/api/cards/${id}`);
   assert.equal(r.json.card.led.paid, true);
   assert.ok(!(await call('anon', 'GET', '/led/tuan-lan')).text.includes('Bản dùng thử'));
@@ -200,8 +204,8 @@ async function call(who, method, url, body) {
   r = await call('u', 'POST', `/api/cards/${id}/order`, { product: 'video' });
   assert.equal(r.json.order.amount, 69000);
   assert.match(r.json.order.code, /^VD/);
-  r = await call('admin', 'GET', '/api/admin/overview');
-  await call('admin', 'POST', `/api/admin/orders/${r.json.orders.find((o) => o.product === 'video').id}/confirm`);
+  r = await call('qt', 'GET', '/api/admin/overview');
+  await call('qt', 'POST', `/api/admin/orders/${r.json.orders.find((o) => o.product === 'video').id}/confirm`);
   r = await call('u', 'GET', `/api/cards/${id}`);
   assert.equal(r.json.card.video.paid, true);
   assert.equal(r.json.card.led.paid, true, 'kích hoạt video không ảnh hưởng màn LED');

@@ -9,6 +9,7 @@ const { rid, json, send, readJson, readBody, httpError, slugify, str, cookies } 
 const auth = require('./lib/auth');
 const google = require('./lib/google');
 const adminLib = require('./lib/admin');
+const adminAuth = require('./lib/adminauth');
 adminLib.applySettings(); // giá, mã giảm giá… sửa trên trang quản trị đè lên config.json
 const cd = require('./lib/carddata');
 const { renderCard, renderNotice, templates, templateList, groups: templateGroups, DEFAULT_TEMPLATE } = require('./lib/render');
@@ -46,8 +47,9 @@ function needUser(ctx) {
   if (!ctx.user) throw httpError(401, 'Bạn cần đăng nhập');
   return ctx.user;
 }
+// Quản trị không gắn với tài khoản người dùng: vào bằng mật khẩu riêng ở /admin (lib/adminauth.js)
 function needAdmin(ctx) {
-  if (!needUser(ctx).isAdmin) throw httpError(403, 'Chỉ quản trị viên');
+  if (!ctx.admin) throw httpError(403, 'Cần đăng nhập trang quản trị');
 }
 // Thiệp của mình, hoặc thiệp trong đám cưới mà mình là thành viên (người yêu, bố mẹ cùng sửa)
 function ownedCard(ctx, id) {
@@ -423,6 +425,21 @@ route('POST', '/api/orders/:code/claim', async (req, res, ctx) => {
 });
 
 // ---------------- API: quản trị ----------------
+route('GET', '/api/admin/session', async (req, res, ctx) => {
+  json(res, 200, { admin: ctx.admin, enabled: adminAuth.enabled() });
+});
+route('POST', '/api/admin/login', async (req, res, ctx) => {
+  rateLimit('admin-login:' + ctx.ip, 8, 15 * 60e3);
+  if (!adminAuth.enabled()) throw httpError(503, 'Chưa đặt mật khẩu quản trị (biến môi trường ADMIN_PASSWORD)');
+  const b = await readJson(req);
+  if (!adminAuth.verify(String(b.password || ''))) throw httpError(401, 'Sai mật khẩu');
+  adminAuth.login(res);
+  json(res, 200, { ok: true });
+});
+route('POST', '/api/admin/logout', async (req, res) => {
+  adminAuth.logout(res);
+  json(res, 200, { ok: true });
+});
 route('GET', '/api/admin/overview', async (req, res, ctx) => {
   needAdmin(ctx);
   const paid = db.orders.filter((o) => o.status === 'paid');
@@ -496,7 +513,7 @@ function html(res, status, body) {
 async function showCard(req, res, ctx) {
   const card = db.cards.find((c) => c.slug === ctx.params.slug);
   if (!card) return html(res, 404, renderNotice('Không tìm thấy thiệp', 'Đường dẫn có thể đã bị đổi hoặc thiệp đã bị xoá.'));
-  const isOwner = canManage(ctx.user, card) || !!(ctx.user && ctx.user.isAdmin); // quản trị viên xem trước được để kiểm tra
+  const isOwner = canManage(ctx.user, card) || ctx.admin; // quản trị viên xem trước được để kiểm tra
   const preview = isOwner && ctx.query.get('preview') === '1';
   const st = cardState(card);
   if (!preview) {
@@ -641,7 +658,7 @@ route('POST', '/api/cards/:id/video/export', async (req, res, ctx) => {
 
 // ---------------- trang tĩnh ----------------
 const PAGES = {
-  '/': 'index.html', '/dang-nhap': 'auth.html', '/thiep-cua-toi': 'dashboard.html', '/quan-tri': 'admin.html',
+  '/': 'index.html', '/dang-nhap': 'auth.html', '/thiep-cua-toi': 'dashboard.html', '/admin': 'admin.html',
   '/man-hinh-led-dam-cuoi': 'led-landing.html',
   '/video-dam-ngo': 'video-landing.html',
   '/so-tay': 'planner.html',
@@ -707,6 +724,7 @@ const server = http.createServer(async (req, res) => {
   const ctx = {
     query: url.searchParams,
     user: auth.currentUser(req),
+    admin: adminAuth.check(req),
     ip: (req.headers['x-forwarded-for'] || '').split(',')[0].trim() || req.socket.remoteAddress,
   };
   try {

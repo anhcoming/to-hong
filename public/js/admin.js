@@ -107,19 +107,18 @@ async function users() {
   $('#view').innerHTML = `
     <div class="tools">
       <input class="input" id="fq" placeholder="Tìm email hoặc tên…" value="${esc(f.q)}">
-      <select class="input" id="ffl"><option value="">Tất cả</option><option value="paying" ${f.filter === 'paying' ? 'selected' : ''}>Đã trả tiền</option><option value="admin" ${f.filter === 'admin' ? 'selected' : ''}>Quản trị viên</option><option value="disabled" ${f.filter === 'disabled' ? 'selected' : ''}>Đang bị khoá</option></select>
+      <select class="input" id="ffl"><option value="">Tất cả</option><option value="paying" ${f.filter === 'paying' ? 'selected' : ''}>Đã trả tiền</option><option value="disabled" ${f.filter === 'disabled' ? 'selected' : ''}>Đang bị khoá</option></select>
       <span class="muted" style="font-size:13px">${d.users.length}/${d.total} người</span>
     </div>
     <div class="panel wrapx">${d.users.length ? `<table class="tbl"><thead><tr><th>Người dùng</th><th>Đăng nhập</th><th>Thiệp</th><th>Đã chi</th><th>Hoạt động</th><th></th></tr></thead><tbody>
       ${d.users.map((u) => `<tr data-id="${u.id}" data-email="${esc(u.email)}" class="${u.disabled ? 'off' : ''}">
-        <td><b>${esc(u.name || '')}</b> ${u.isAdmin ? '<span class="chip red">Quản trị</span>' : ''} ${u.disabled ? '<span class="chip">Đã khoá</span>' : ''}<div class="sub">${esc(u.email)}</div></td>
+        <td><b>${esc(u.name || '')}</b> ${u.disabled ? '<span class="chip">Đã khoá</span>' : ''}<div class="sub">${esc(u.email)}</div></td>
         <td>${u.google ? 'Google' : ''}${u.google && u.hasPassword ? ' + ' : ''}${u.hasPassword ? 'Mật khẩu' : ''}<div class="sub">tham gia ${fmtDate(u.createdAt)}</div></td>
         <td>${u.cards}</td>
         <td>${u.spent ? money(u.spent) : '—'}${u.orders ? `<div class="sub">${u.orders} đơn</div>` : ''}</td>
         <td>${ago(u.lastSeenAt)}</td>
-        <td><div class="acts">${u.id === A.me.id ? '<span class="muted" style="font-size:12px">(bạn)</span>' : `
+        <td><div class="acts">
           <button class="btn sm plain" data-a="lock">${u.disabled ? 'Mở khoá' : 'Khoá'}</button>
-          <button class="btn sm plain" data-a="admin">${u.isAdmin ? 'Bỏ quản trị' : 'Cấp quản trị'}</button>`}
           <button class="btn sm plain" data-a="pw">Đặt lại mật khẩu</button>
         </div></td></tr>`).join('')}</tbody></table>` : '<p class="empty">Không có người dùng khớp.</p>'}</div>`;
   bindFilters('users', { fq: 'q', ffl: 'filter' });
@@ -132,9 +131,6 @@ async function users() {
       if (b.dataset.a === 'lock') {
         if (!confirm(u.disabled ? `Mở khoá ${u.email}?` : `Khoá ${u.email}? Người này bị đăng xuất ngay và không đăng nhập được nữa. Thiệp đã gửi vẫn mở được.`)) return;
         await api(`/api/admin/users/${u.id}`, { method: 'PUT', body: { disabled: !u.disabled } });
-      } else if (b.dataset.a === 'admin') {
-        if (!confirm(u.isAdmin ? `Bỏ quyền quản trị của ${u.email}?` : `Cấp quyền quản trị cho ${u.email}? Người này sẽ xem được mọi đơn hàng và người dùng.`)) return;
-        await api(`/api/admin/users/${u.id}`, { method: 'PUT', body: { isAdmin: !u.isAdmin } });
       } else if (b.dataset.a === 'pw') {
         if (!confirm(`Tạo mật khẩu tạm mới cho ${u.email}? Mật khẩu cũ hết hiệu lực và người này bị đăng xuất.`)) return;
         const r = await api(`/api/admin/users/${u.id}/password`, { method: 'POST' });
@@ -288,16 +284,34 @@ const VIEWS = { home, orders, users, cards, settings, audit };
 async function render() {
   $$('#tabs .tab').forEach((b) => b.classList.toggle('on', b.dataset.t === A.tab));
   $('#view').onclick = null;
-  try { await VIEWS[A.tab](); } catch (e) { $('#view').innerHTML = `<p class="empty">${esc(e.message)}</p>`; }
+  try { await VIEWS[A.tab](); } catch (e) {
+    if (e.status === 403) return loginForm('Phiên quản trị đã hết, nhập lại mật khẩu nhé.');
+    $('#view').innerHTML = `<p class="empty">${esc(e.message)}</p>`;
+  }
+}
+
+// Vào trang quản trị bằng mật khẩu riêng (không dùng tài khoản người dùng)
+function loginForm(msg) {
+  $('main').innerHTML = `<form class="panel alogin" id="alogin">
+    <h1>Quản trị</h1><p class="muted">Nhập mật khẩu quản trị để tiếp tục.</p>
+    ${msg ? `<p class="err">${esc(msg)}</p>` : ''}
+    <input class="input" type="password" id="apw" autocomplete="current-password" placeholder="Mật khẩu" required autofocus>
+    <button class="btn block" type="submit">Vào trang quản trị</button></form>`;
+  $('#alogin').onsubmit = async (e) => {
+    e.preventDefault();
+    const btn = $('#alogin button'); btn.disabled = true;
+    try { await api('/api/admin/login', { method: 'POST', body: { password: $('#apw').value }, allow401: true }); location.reload(); } catch (err) { loginForm(err.message); }
+  };
 }
 
 (async () => {
-  const { user, meta } = await renderTopbar();
-  A.me = user; A.meta = meta;
+  const meta = await fetch('/api/meta').then((r) => r.json());
+  A.meta = window.META = meta;
   document.title = 'Quản trị — ' + meta.brand;
-  if (!user) return (location.href = '/dang-nhap?next=/quan-tri');
-  if (!user.isAdmin) { $('main').innerHTML = '<p class="empty">Bạn không có quyền vào trang này.</p>'; return; }
-  $('#hello').textContent = `Xin chào ${user.name || user.email}`;
+  const s = await fetch('/api/admin/session').then((r) => r.json());
+  if (!s.admin) return loginForm(s.enabled ? '' : 'Máy chủ chưa đặt mật khẩu quản trị (biến môi trường ADMIN_PASSWORD).');
+  $('#hello').innerHTML = `${esc(meta.brand)} · <a href="#" id="alogout">Đăng xuất quản trị</a>`;
+  $('#alogout').onclick = async (e) => { e.preventDefault(); await api('/api/admin/logout', { method: 'POST' }); location.reload(); };
   const h = location.hash.slice(1);
   if (VIEWS[h]) A.tab = h;
   $('#tabs').onclick = (e) => { const b = e.target.closest('.tab'); if (b) { A.tab = b.dataset.t; history.replaceState(null, '', '#' + A.tab); render(); } };

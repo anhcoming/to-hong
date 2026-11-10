@@ -9,7 +9,7 @@ Chạy bằng Node.js 18+, **không cần cài thư viện nào**.
 node server.js
 ```
 
-Mở http://localhost:3210. **Tài khoản đăng ký đầu tiên tự động là quản trị viên** (vào được `/quan-tri`).
+Mở http://localhost:3210. Mọi tài khoản (đăng ký hay đăng nhập Google) đều là khách. **Trang quản trị ở `/admin`**, vào bằng mật khẩu riêng đặt ở biến môi trường `ADMIN_PASSWORD` (file `.env` khi chạy máy; trên Vercel: Settings → Environment Variables). Chưa đặt biến này thì không ai vào được trang quản trị.
 
 Chạy kiểm thử toàn bộ luồng:
 
@@ -61,7 +61,7 @@ public/
   dashboard.html     danh sách thiệp               → /thiep-cua-toi
   editor.html        trình sửa + xem trước         → /sua/:id
   pay.html           trang thanh toán hộ           → /thanh-toan/:mã
-  admin.html         xác nhận đơn, thống kê        → /quan-tri
+  admin.html         xác nhận đơn, thống kê        → /admin
   card/              CSS + JS chạy trên trang thiệp của khách
 data/                dữ liệu + ảnh tải lên (không đưa lên git — nhớ sao lưu!)
 ```
@@ -89,7 +89,7 @@ Khi chạy thử nên dùng `node --watch server.js` để sửa mẫu là trang
 
 ## Thanh toán
 
-Hiện tại: khách quét VietQR chuyển khoản với nội dung là mã đơn (`THxxxxxx`) → bấm "Tôi đã chuyển khoản" → bạn vào `/quan-tri` đối chiếu app ngân hàng và bấm **Xác nhận**.
+Hiện tại: khách quét VietQR chuyển khoản với nội dung là mã đơn (`THxxxxxx`) → bấm "Tôi đã chuyển khoản" → bạn vào `/admin` đối chiếu app ngân hàng và bấm **Xác nhận**.
 
 Tự động hoá sau này: đăng ký PayOS hoặc Casso (đọc biến động số dư), nhận webhook rồi gọi đúng logic của `POST /api/admin/orders/:id/confirm` khi số tiền và nội dung khớp.
 

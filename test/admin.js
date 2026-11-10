@@ -6,6 +6,7 @@ const assert = require('assert');
 
 process.env.DATA_DIR = fs.mkdtempSync(path.join(os.tmpdir(), 'thiep-admin-'));
 process.env.BASE_URL = 'http://localhost';
+process.env.ADMIN_PASSWORD = 'mat-khau-quan-tri';
 // Giả lập Google: không gọi mạng thật
 const google = require('../lib/google');
 let fakeGoogle = null;
@@ -42,6 +43,22 @@ async function call(who, method, url, body, raw) {
   await call('u', 'POST', '/api/auth/register', { email: 'khach@test.vn', password: '123456', name: 'Khách' });
   await call('v', 'POST', '/api/auth/register', { email: 'xau@test.vn', password: '123456' });
 
+  // ---------- đăng nhập quản trị bằng mật khẩu riêng ----------
+  assert.deepEqual((await call('admin', 'GET', '/api/admin/session')).json, { admin: false, enabled: true });
+  assert.equal((await call('admin', 'POST', '/api/admin/login', { password: 'Mat-khau-quan-tri' })).status, 401, 'phân biệt hoa thường');
+  assert.equal((await call('admin', 'POST', '/api/admin/login', {})).status, 401);
+  assert.equal((await call('admin', 'POST', '/api/admin/login', { password: 'mat-khau-quan-tri' })).status, 200);
+  assert.match(jar.admin, /cn_admin=/);
+  assert.equal((await call('admin', 'GET', '/api/admin/session')).json.admin, true);
+  assert.equal((await call('x', 'GET', '/api/admin/stats')).status, 403, 'chưa đăng nhập quản trị');
+  // cookie giả / sửa hạn thì không qua
+  const real = jar.admin.match(/cn_admin=([^;]+)/)[1];
+  jar.fake = `cn_admin=${Date.now() + 9e9}.${real.split('.')[1]}`;
+  assert.equal((await call('fake', 'GET', '/api/admin/stats')).status, 403, 'đổi hạn thì chữ ký sai');
+  // đoán mật khẩu nhiều lần bị chặn
+  for (let i = 0; i < 6; i++) await call('brute', 'POST', '/api/admin/login', { password: 'doan-' + i });
+  assert.equal((await call('brute', 'POST', '/api/admin/login', { password: 'mat-khau-quan-tri' })).status, 429);
+
   // ---------- đăng nhập Google ----------
   assert.equal((await call('x', 'GET', '/api/meta')).json.googleLogin, true);
   r = await call('g', 'GET', '/auth/google?next=/thiep-cua-toi');
@@ -66,7 +83,8 @@ async function call(who, method, url, body, raw) {
   fakeGoogle = { sub: 'g-999', email: 'moi@gmail.com', name: 'Người Mới' };
   r = await call('g2', 'GET', `/auth/google/callback?state=${new URL(r.location).searchParams.get('state')}&code=ma-dung`);
   assert.equal(r.location, '/so-tay', 'next lạ bị thay bằng /so-tay');
-  assert.equal((await call('g2', 'GET', '/api/me')).json.user.isAdmin, false);
+  assert.equal((await call('g2', 'GET', '/api/me')).json.user.isAdmin, undefined, 'đăng nhập Google là khách');
+  assert.equal((await call('g2', 'GET', '/api/admin/stats')).status, 403);
   r = await call('z', 'POST', '/api/auth/login', { email: 'moi@gmail.com', password: 'gi-cung-duoc' });
   assert.equal(r.status, 401);
   assert.match(r.json.error, /Google/);
@@ -90,9 +108,6 @@ async function call(who, method, url, body, raw) {
   assert.equal((await call('v', 'GET', '/api/me')).json.user, null, 'bị khoá thì mất phiên ngay');
   assert.equal((await call('v', 'POST', '/api/auth/login', { email: 'xau@test.vn', password: '123456' })).status, 403);
   await call('admin', 'PUT', `/api/admin/users/${v.id}`, { disabled: false });
-  const adminId = (await call('admin', 'GET', '/api/me')).json.user.id;
-  assert.equal((await call('admin', 'PUT', `/api/admin/users/${adminId}`, { disabled: true })).status, 400, 'không tự khoá');
-  assert.equal((await call('admin', 'PUT', `/api/admin/users/${adminId}`, { isAdmin: false })).status, 400, 'không tự bỏ quyền');
   r = await call('admin', 'GET', '/api/admin/users?q=khach');
   const u = r.json.users[0];
   assert.equal(u.google, true);
@@ -102,8 +117,7 @@ async function call(who, method, url, body, raw) {
   assert.equal((await call('g', 'GET', '/api/me')).json.user, null, 'đặt lại mật khẩu → đăng xuất mọi nơi');
   assert.equal((await call('u2', 'POST', '/api/auth/login', { email: 'khach@test.vn', password: tmp })).status, 200);
   await call('admin', 'PUT', `/api/admin/users/${u.id}`, { isAdmin: true });
-  assert.equal((await call('u2', 'GET', '/api/admin/stats')).status, 200, 'được cấp quyền quản trị');
-  await call('admin', 'PUT', `/api/admin/users/${u.id}`, { isAdmin: false });
+  assert.equal((await call('u2', 'GET', '/api/admin/stats')).status, 403, 'không cấp quyền quản trị cho tài khoản người dùng được nữa');
 
   // ---------- cài đặt ----------
   r = await call('admin', 'PUT', '/api/admin/settings', { price: '99.000', coupons: { 'giam 10k!': '10000' }, payment: { bankBin: '970422', bankName: 'MB', accountNo: '0123 456', accountName: 'nguyen van a' } });
@@ -152,7 +166,11 @@ async function call(who, method, url, body, raw) {
   r = await call('admin', 'GET', '/api/admin/audit');
   const acts = r.json.entries.map((e) => e.action);
   for (const a of ['Khoá tài khoản', 'Đặt lại mật khẩu', 'Sửa cài đặt', 'Huỷ đơn', 'Kích hoạt tay: Thiệp cưới online', 'Gỡ thiệp', 'Khôi phục thiệp']) assert.ok(acts.includes(a), a);
-  assert.equal((await call('x', 'GET', '/quan-tri')).status, 200);
+  assert.ok(r.json.entries.every((e) => e.byEmail === 'Quản trị'));
+  assert.equal((await call('x', 'GET', '/admin')).status, 200);
+  assert.equal((await call('x', 'GET', '/quan-tri')).status, 404, 'đường dẫn quản trị cũ đã bỏ');
+  await call('admin', 'POST', '/api/admin/logout');
+  assert.equal((await call('admin', 'GET', '/api/admin/stats')).status, 403, 'đăng xuất quản trị');
 
   console.log('✓ Đăng nhập Google & trang quản trị: tất cả kiểm thử đều qua');
   server.close();
