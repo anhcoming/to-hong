@@ -21,8 +21,8 @@ module.exports = {
   desc: 'Tối giản sang trọng: giấy kem, khối đỏ rượu vang, phong bì sáp niêm và hoa mẫu đơn',
   fonts: 'https://fonts.googleapis.com/css2?family=Viaoda+Libre&family=The+Nautigal:wght@400;700&family=Cormorant+Garamond:wght@500;600&family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=Lora:wght@400;600&display=swap',
   palettes: [
-    { id: 'do-ruou', name: 'Đỏ rượu vang', swatch: ['#ece4d8', '#511419'], vars: { ...base, '--page': '#2b0a0d', '--bg': '#fff7eb', '--paper': '#f7f2ec', '--ink': '#511419', '--muted': '#8a6a66', '--accent': '#511419', '--accent-ink': '#ece4d8', '--gold': '#c9a24e', '--line': '#d9cbbd', '--dd-hi': '#6e1a20', '--dd-lo': '#380a0e', '--dd-cream': '#ece4d8' } },
-    { id: 'xanh-reu', name: 'Xanh rêu', swatch: ['#ebe8dc', '#2f3d2c'], vars: { ...base, '--page': '#141b13', '--bg': '#f8f6ee', '--paper': '#f3f1e9', '--ink': '#2f3d2c', '--muted': '#6f7a68', '--accent': '#2f3d2c', '--accent-ink': '#ebe8dc', '--gold': '#b89b5e', '--line': '#d4d3c3', '--dd-hi': '#3f5139', '--dd-lo': '#1d281b', '--dd-cream': '#ebe8dc' } },
+    { id: 'do-ruou', name: 'Đỏ rượu vang', swatch: ['#ece4d8', '#511419'], vars: { ...base, '--page': '#f7f3ee', '--bg': '#fff7eb', '--paper': '#f7f2ec', '--ink': '#511419', '--muted': '#8a6a66', '--accent': '#511419', '--accent-ink': '#ece4d8', '--gold': '#c9a24e', '--line': '#d9cbbd', '--dd-hi': '#6e1a20', '--dd-lo': '#380a0e', '--dd-cream': '#ece4d8' } },
+    { id: 'xanh-reu', name: 'Xanh rêu', swatch: ['#ebe8dc', '#2f3d2c'], vars: { ...base, '--page': '#f3f3ee', '--bg': '#f8f6ee', '--paper': '#f3f1e9', '--ink': '#2f3d2c', '--muted': '#6f7a68', '--accent': '#2f3d2c', '--accent-ink': '#ebe8dc', '--gold': '#b89b5e', '--line': '#d4d3c3', '--dd-hi': '#3f5139', '--dd-lo': '#1d281b', '--dd-cream': '#ebe8dc' } },
   ],
   demo: {
     cover: '/demo/dodam-2.jpg',
@@ -198,7 +198,7 @@ module.exports = {
   css: `
 .tpl-dodam .card{background:url('${A('paper')}') center top/100% auto repeat-y,var(--bg);background-blend-mode:multiply;color:var(--ink);font-family:var(--font-body)}
 .tpl-dodam .sec{padding:44px 24px}
-.tpl-dodam .dd-castle{position:absolute;left:50%;top:0;width:170%;max-width:none;transform:translateX(-50%);opacity:.22;mix-blend-mode:multiply;pointer-events:none}
+.tpl-dodam .dd-castle{position:absolute;left:50%;top:0;width:170%;max-width:none;transform:translateX(-50%);opacity:.22;mix-blend-mode:multiply;pointer-events:none;-webkit-mask-image:linear-gradient(#000 55%,transparent);mask-image:linear-gradient(#000 55%,transparent)}
 .tpl-dodam .dd-h,.tpl-dodam .sec-title{position:relative;margin:0 0 18px;font-family:'Times New Roman',Times,serif;font-weight:700;font-size:20px;letter-spacing:.03em;text-transform:uppercase;color:var(--ink)}
 .tpl-dodam .sec-sub{position:relative;margin:-10px 0 20px;color:var(--muted);font-size:13px}
 
@@ -335,5 +335,44 @@ module.exports = {
 .tpl-dodam .dd-thanks .dd-tn{margin-top:14px;font-family:var(--font-title);font-size:24px}
 .tpl-dodam .s-story{font-family:'Times New Roman',serif;font-size:16px}
 .tpl-dodam .credit{color:var(--muted)}
+
+/* màn hình rộng (máy tính bảng, máy tính): cột 900px, các khối lớn hơn như bản gốc */
+.tpl-dodam .card{max-width:900px;box-shadow:none}
+@media (min-width:768px){
+  .tpl-dodam .dd-ocard{width:600px;padding:96px 48px 48px}
+  .tpl-dodam .dd-fl{width:96px}
+  .tpl-dodam .dd-fl.br{top:-6px;bottom:auto;transform:scaleX(-1) rotate(-8deg)}
+  .tpl-dodam .dd-heart{top:28px}
+  .tpl-dodam .dd-onames{font-size:36px}
+  .tpl-dodam .dd-castle{width:150%}
+  .tpl-dodam .dd-cover{padding:56px 24px 48px}
+  .tpl-dodam .dd-cover .dd-castle{top:220px}
+  .tpl-dodam .dd-std{margin-bottom:56px;font-size:18px}
+  .tpl-dodam .dd-env{width:420px;height:484px}
+  .tpl-dodam .dd-env-photo{left:111px;top:-27px;width:324px;height:407px;padding:12px 12px 32px}
+  .tpl-dodam .dd-env-fl{left:-66px;top:-83px;width:292px}
+  .tpl-dodam .dd-names{margin-top:56px;font-size:58px}
+  .tpl-dodam .dd-names i{font-size:150px}
+  .tpl-dodam .dd-box{max-width:560px;margin:32px auto;padding:48px 40px}
+  .tpl-dodam .dd-box .dd-h{font-size:24px}
+  .tpl-dodam .dd-fam{font-size:13px}
+  .tpl-dodam .dd-lead{font-size:20px}
+  .tpl-dodam .dd-full{font-size:46px}
+  .tpl-dodam .dd-amp{font-size:44px}
+  .tpl-dodam .dd-date b{font-size:52px}
+  .tpl-dodam .dd-side{width:180px}
+  .tpl-dodam .dd-side.r{right:-140px;top:20%}
+  .tpl-dodam .dd-side.l{left:-140px;top:30%}
+  .tpl-dodam .dd-h{font-size:24px}
+  .tpl-dodam .dd-strip{padding-left:calc(50% - 160px);padding-right:calc(50% - 160px);gap:20px}
+  .tpl-dodam .dd-strip .ph{flex-basis:320px}
+  .tpl-dodam .dd-venue,.tpl-dodam .s-wishes,.tpl-dodam .dd-thanks,.tpl-dodam .s-story{max-width:608px;margin-left:auto;margin-right:auto}
+  .tpl-dodam .s-rsvp{max-width:560px;margin:32px auto}
+  .tpl-dodam .dd-addr{max-width:420px}
+  .tpl-dodam .dd-envs{height:380px}
+  .tpl-dodam .dd-envs img{width:210px}
+  .tpl-dodam .dd-envs img:last-child{width:165px}
+  .tpl-dodam .dd-gift .gifts{display:grid;grid-template-columns:1fr 1fr;gap:16px;max-width:620px;margin:24px auto 0}
+}
 `,
 };
