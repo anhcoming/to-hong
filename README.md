@@ -74,6 +74,7 @@ Nhóm phong cách khai báo ở `groups` trong `lib/render.js` (hiện ở bộ 
 
 | Nhóm | Mẫu (`id`) |
 |---|---|
+| Truyền thống | Song Hỷ (`songhy`) |
 | Tối giản | Đỏ Đậm (`dodam`, mẫu mặc định) |
 
 Xem nhanh: `/demo/<id>?palette=<id bảng màu>`. Mọi họa tiết đều vẽ bằng SVG/CSS và tô bằng biến màu (`var(--accent)`, `var(--gold)`…), nên đổi bảng màu là họa tiết đổi theo — không có file ảnh nào.
