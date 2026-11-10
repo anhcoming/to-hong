@@ -2,7 +2,7 @@
 // Kích thước lấy theo bản gốc (Tailwind): số đầu cho điện thoại, @media 768px / 1024px cho màn rộng.
 const { esc } = require('../lib/util');
 
-const A = (n) => `/demo/hoamoc-${n}.webp`; // ảnh trang trí của mẫu (thiếu file thì ẩn đi, không hiện biểu tượng ảnh hỏng)
+const A = (n) => `/demo/hoamoc-${n}.webp`; // ảnh trang trí của mẫu
 
 const base = {
   '--font-title': "'Playfair Display','Baskerville',Georgia,serif",
@@ -51,8 +51,8 @@ module.exports = {
   desc: 'Boho xanh lá: nền kem, hoa mộc trắng màu nước, hai khung ảnh chân dung xoay nghiêng',
   fonts: 'https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500&family=EB+Garamond:wght@400;500&family=Ms+Madi&family=Lora:wght@300;400;500;600&family=Libre+Baskerville:wght@400;700&family=Montserrat:wght@400&display=swap',
   palettes: [
-    { id: 'xanh-la', name: 'Xanh lá', swatch: ['#fffaf7', '#30530f'], vars: { ...base, '--page': '#ffffff', '--bg': '#fffaf7', '--paper': '#fffaf7', '--ink': '#30530f', '--muted': '#6b8040', '--accent': '#30530f', '--accent-ink': '#fffaf7', '--gold': '#b28e72', '--line': '#d6dcc8', '--hm-frame': '#b28e72', '--hm-role': '#464646', '--hm-bar': '#3b5a2a', '--hm-o1': '#1a3005', '--hm-o2': '#0f2003', '--hm-o3': '#081500', '--hm-leaf': '#6b8040' } },
-    { id: 'xanh-reu', name: 'Xanh rêu', swatch: ['#f8f6ee', '#4a5a3a'], vars: { ...base, '--page': '#ffffff', '--bg': '#f8f6ee', '--paper': '#f8f6ee', '--ink': '#4a5a3a', '--muted': '#7f8a68', '--accent': '#4a5a3a', '--accent-ink': '#f8f6ee', '--gold': '#a88f6a', '--line': '#d8d8c6', '--hm-frame': '#a88f6a', '--hm-role': '#4d4d47', '--hm-bar': '#55663f', '--hm-o1': '#2b3420', '--hm-o2': '#1d2416', '--hm-o3': '#11160c', '--hm-leaf': '#7f8a68' } },
+    { id: 'xanh-la', name: 'Xanh lá', swatch: ['#fffaf7', '#30530f'], vars: { ...base, '--page': '#ffffff', '--bg': '#fffaf7', '--paper': '#fffaf7', '--ink': '#30530f', '--muted': '#6b8040', '--accent': '#30530f', '--accent-ink': '#fffaf7', '--gold': '#b28e72', '--line': '#d6dcc8', '--hm-frame': '#b28e72', '--hm-role': '#464646', '--hm-o1': '#1a3005', '--hm-o2': '#0f2003', '--hm-o3': '#081500', '--hm-leaf': '#6b8040' } },
+    { id: 'xanh-reu', name: 'Xanh rêu', swatch: ['#f8f6ee', '#4a5a3a'], vars: { ...base, '--page': '#ffffff', '--bg': '#f8f6ee', '--paper': '#f8f6ee', '--ink': '#4a5a3a', '--muted': '#7f8a68', '--accent': '#4a5a3a', '--accent-ink': '#f8f6ee', '--gold': '#a88f6a', '--line': '#d8d8c6', '--hm-frame': '#a88f6a', '--hm-role': '#4d4d47', '--hm-o1': '#2b3420', '--hm-o2': '#1d2416', '--hm-o3': '#11160c', '--hm-leaf': '#7f8a68' } },
   ],
   // dữ liệu xem thử theo bản gốc (tên & bố mẹ giữ của thiệp mẫu chung): lễ thành hôn 9 giờ tại tư gia, tiệc tối 24/5/2026
   demo: {
@@ -89,7 +89,7 @@ module.exports = {
   <div class="hm-leaves" aria-hidden="true">${LEAVES.map(([l, fs, sw, dur, dl, c]) => `<i style="left:${l}%;color:${c};font-size:${fs}px;--sway:${sw}px;animation-duration:${dur}s;animation-delay:${dl}s">${LEAF}</i>`).join('')}</div>
   <div class="hm-ocard">
     <span class="hm-heart" aria-hidden="true"><svg viewBox="0 0 24 24" width="26" height="26"><path fill="currentColor" d="M12 21s-7.5-4.6-10-9.3C.3 8.3 2.2 4 6.3 4c2.3 0 3.9 1.3 5.7 3.4C13.8 5.3 15.4 4 17.7 4 21.8 4 23.7 8.3 22 11.7 19.5 16.4 12 21 12 21z"/></svg></span>
-    <div class="hm-osheet"><img class="f1" onerror="this.style.visibility='hidden'" src="${A('flower')}" alt=""><img class="f2" onerror="this.style.visibility='hidden'" src="${A('flower')}" alt=""></div>
+    <div class="hm-osheet"><img class="f1" src="${A('flower')}" alt=""><img class="f2" src="${A('flower')}" alt=""></div>
     <div class="hm-obody">
       <h1 class="hm-onames"><span>${esc(ctx.g)}</span><i>&amp;</i><span>${esc(ctx.b)}</span></h1>
       <p class="hm-rule" aria-hidden="true"><span></span><em>❦</em><span></span></p>
@@ -108,12 +108,12 @@ module.exports = {
     const p2 = d.photos.find((u) => u !== p1 && d.photos.indexOf(u) > 0) || d.photos[0] || p1;
     const frame = (src) => `<div class="hm-ph"><div>${src ? `<img src="${esc(src)}" alt="Ảnh cưới">` : ''}</div></div>`;
     return `
-${FLOWERS.map((k) => `<span class="hm-fl hm-fl-${k}" aria-hidden="true"><img onerror="this.style.visibility='hidden'" src="${A('flower')}" alt=""></span>`).join('')}
+${FLOWERS.map((k) => `<span class="hm-fl hm-fl-${k}" aria-hidden="true"><img src="${A('flower')}" alt=""></span>`).join('')}
 <header class="hm-cover">
-  <span class="hm-fl hm-fl-top" aria-hidden="true"><img onerror="this.style.visibility='hidden'" src="${A('flower')}" alt=""></span>
-  <span class="hm-fl hm-fl-top2" aria-hidden="true"><img onerror="this.style.visibility='hidden'" src="${A('flower')}" alt=""></span>
+  <span class="hm-fl hm-fl-top" aria-hidden="true"><img src="${A('flower')}" alt=""></span>
+  <span class="hm-fl hm-fl-top2" aria-hidden="true"><img src="${A('flower')}" alt=""></span>
   <div class="hm-pair">
-    <div class="hm-bar" aria-hidden="true"><img onerror="this.style.visibility='hidden'" src="${A('bar')}" alt=""></div>
+    <div class="hm-bar" aria-hidden="true"><img src="${A('bar')}" alt=""></div>
     <div class="hm-p hm-p1">${frame(p1)}<div class="hm-who"><span>Chú rể</span><p>${esc(ctx.g)}</p></div></div>
     <div class="hm-p hm-p2">${frame(p2)}<div class="hm-who"><span>Cô dâu</span><p>${esc(ctx.b)}</p></div></div>
   </div>
@@ -293,8 +293,8 @@ ${FLOWERS.map((k) => `<span class="hm-fl hm-fl-${k}" aria-hidden="true"><img one
         <i class="sp s1">✦</i><i class="sp s2">✦</i><i class="sp s3">✦</i><i class="sp s4">✦</i>
         <span class="hm-bob">
           <span class="sh"></span>
-          ${mini.map(([n, st], i) => `<img class="mini m${i + 1}" onerror="this.style.visibility='hidden'" src="${A('mini-' + n)}" alt="" style="${st}">`).join('')}
-          <span class="box"><img onerror="this.parentNode.classList.add('miss');this.remove()" src="${A('giftbox')}" alt=""></span>
+          ${mini.map(([n, st], i) => `<img class="mini m${i + 1}" src="${A('mini-' + n)}" alt="" style="${st}">`).join('')}
+          <span class="box"><img src="${A('giftbox')}" alt=""></span>
         </span>
       </span>
       <span class="hint">Nhấn để mở</span>
@@ -369,7 +369,7 @@ ${FLOWERS.map((k) => `<span class="hm-fl hm-fl-${k}" aria-hidden="true"><img one
 .tpl-hoamoc .hm-fl-top{top:-327px;left:111.5px;width:622.77px;rotate:-.76deg;z-index:-1}
 .tpl-hoamoc .hm-fl-top2{top:5px;left:-83px;width:450px;opacity:.2;scale:-1 1;rotate:142deg;z-index:-1}
 .tpl-hoamoc .hm-pair{position:relative;z-index:1;width:320px;height:440px;margin:0 auto}
-.tpl-hoamoc .hm-bar{position:absolute;left:50%;top:170px;z-index:-1;width:100vw;max-width:900px;height:48px;transform:translate(-50%,-50%);background:var(--hm-bar)}
+.tpl-hoamoc .hm-bar{position:absolute;left:50%;top:170px;z-index:-1;width:100vw;height:48px;transform:translate(-50%,-50%)}
 .tpl-hoamoc .hm-bar img{width:100%;height:100%;object-fit:cover}
 .tpl-hoamoc .hm-p{position:absolute;display:flex;align-items:center;gap:12px}
 .tpl-hoamoc .hm-p1{left:20px;top:-40px;z-index:2}
@@ -493,11 +493,8 @@ ${FLOWERS.map((k) => `<span class="hm-fl hm-fl-${k}" aria-hidden="true"><img one
 .tpl-hoamoc .hm-bob{position:relative;display:block;width:200px;height:220px;animation:hmBob 3s ease-in-out infinite}
 .tpl-hoamoc .hm-bob .sh{position:absolute;left:50%;bottom:-8px;width:144px;height:12px;margin-left:-72px;border-radius:50%;background:rgba(0,0,0,.3);filter:blur(4px);animation:hmShadow 3s ease-in-out infinite}
 .tpl-hoamoc .hm-bob .mini{position:absolute;max-width:none;filter:drop-shadow(0 2px 3px rgba(0,0,0,.25));pointer-events:none}
-/* hộp quà: khối xanh vẽ bằng CSS làm nền, ảnh hộp của mẫu phủ lên khi có */
-.tpl-hoamoc .hm-bob .box{position:absolute;left:50%;bottom:0;z-index:2;width:170px;margin-left:-85px;transform-origin:50% 100%;filter:drop-shadow(0 10px 18px rgba(0,0,0,.22))}
-.tpl-hoamoc .hm-bob .box img{width:100%;max-height:220px;object-fit:contain}
-/* chưa có ảnh hộp quà của mẫu: vẽ tạm hộp xanh có dải ruy băng */
-.tpl-hoamoc .hm-bob .box.miss{height:150px;border-radius:10px;background:linear-gradient(90deg,transparent 44%,var(--gold) 44% 56%,transparent 56%),linear-gradient(160deg,color-mix(in srgb,var(--accent) 75%,#fff),var(--accent))}
+.tpl-hoamoc .hm-bob .box{position:absolute;left:50%;bottom:0;z-index:2;width:170px;margin-left:-85px;transform-origin:50% 100%}
+.tpl-hoamoc .hm-bob .box img{width:100%;max-height:220px;object-fit:contain;filter:drop-shadow(0 10px 18px rgba(0,0,0,.25))}
 .tpl-hoamoc .hm-gbtn:hover .box,.tpl-hoamoc .hm-gbtn:focus-visible .box{animation:hmPop .7s cubic-bezier(.34,1.56,.64,1) forwards}
 .tpl-hoamoc .hm-gbtn:hover .m1,.tpl-hoamoc .hm-gbtn:focus-visible .m1{animation:hmUp 1.6s ease-in-out infinite;--x:-14px;--y:-55px}
 .tpl-hoamoc .hm-gbtn:hover .m2,.tpl-hoamoc .hm-gbtn:focus-visible .m2{animation:hmUp 1.8s ease-in-out .15s infinite;--x:14px;--y:-60px}
