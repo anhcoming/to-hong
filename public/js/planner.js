@@ -475,7 +475,7 @@ async function cta(kind) {
   if (!c) return;
   if (c[1].startsWith('tab:')) return go(c[1].slice(4));
   let card = S.ov.cards[0];
-  if (!card) card = (await api('/api/cards', { method: 'POST', body: { template: 'coban' } })).card;
+  if (!card) card = (await api('/api/cards', { method: 'POST', body: { template: 'dodam' } })).card;
   location.href = `/${c[1]}/${card.id}`;
 }
 

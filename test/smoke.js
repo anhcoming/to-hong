@@ -29,12 +29,12 @@ async function call(who, method, url, body) {
 
   // trang tĩnh + mẫu
   assert.equal((await call('x', 'GET', '/')).status, 200);
-  r = await call('x', 'GET', '/demo/coban');
+  r = await call('x', 'GET', '/demo/dodam');
   assert.equal(r.status, 200);
   assert.match(r.text, /Đức Minh/);
   assert.match(r.text, /Bính Ngọ/, 'phải có âm lịch');
   assert.match(r.text, /class="cal-grid"/, 'phải có lịch tháng');
-  assert.match(r.text, /class="tl"/, 'lịch trình dạng dòng thời gian');
+  assert.match(r.text, /class="dd-tl"/, 'lịch trình dạng dòng thời gian');
   // mọi mẫu × mọi bảng màu phải dựng được, có nút mở thiệp, nhóm hợp lệ
   const meta = (await call('x', 'GET', '/api/meta')).json;
   const groupIds = meta.templateGroups.map((g) => g.id);
@@ -47,7 +47,7 @@ async function call(who, method, url, body) {
       assert.match(r.text, /Đức Minh/, `mẫu ${t.id}: thiếu tên`);
     }
   }
-  assert.equal((await call('x', 'GET', '/demo/cover.jpg')).status, 200, 'ảnh mẫu phải tải được');
+  assert.equal((await call('x', 'GET', '/demo/dodam-1.jpg')).status, 200, 'ảnh mẫu phải tải được');
   // dạng URL Vercel gửi tới hàm sau khi rewrite (vercel.json)
   r = await call('x', 'GET', '/api/index.js?palette=dem&__p=%2Fapi%2Fmeta&path=api%2Fmeta');
   assert.equal(r.status, 200, 'URL rewrite của Vercel phải về đúng đường dẫn gốc');
@@ -64,7 +64,7 @@ async function call(who, method, url, body) {
   assert.equal((await call('u2', 'POST', '/api/auth/login', { email: 'cuoi@test.vn', password: 'sai' })).status, 401);
 
   // tạo + sửa thiệp
-  r = await call('u', 'POST', '/api/cards', { template: 'coban' });
+  r = await call('u', 'POST', '/api/cards', { template: 'dodam' });
   const id = r.json.card.id;
   assert.equal((await call('u', 'POST', `/api/cards/${id}/publish`, {})).status, 400, 'chưa có tên thì không được phát hành');
   const data = r.json.card.data;

@@ -66,7 +66,7 @@ public/
 data/                dữ liệu + ảnh tải lên (không đưa lên git — nhớ sao lưu!)
 ```
 
-Link thiệp: `/t/:duong-dan` (link chung) và `/t/:duong-dan/:mã-khách` (link có tên khách). Xem mẫu: `/demo/coban`.
+Link thiệp: `/t/:duong-dan` (link chung) và `/t/:duong-dan/:mã-khách` (link có tên khách). Xem mẫu: `/demo/dodam`.
 
 ## Mẫu thiệp
 
@@ -74,13 +74,13 @@ Nhóm phong cách khai báo ở `groups` trong `lib/render.js` (hiện ở bộ 
 
 | Nhóm | Mẫu (`id`) |
 |---|---|
-| Tối giản | Cơ Bản (`coban`, khung tối thiểu làm mẫu mặc định), Đỏ Đậm (`dodam`) |
+| Tối giản | Đỏ Đậm (`dodam`, mẫu mặc định) |
 
 Xem nhanh: `/demo/<id>?palette=<id bảng màu>`. Mọi họa tiết đều vẽ bằng SVG/CSS và tô bằng biến màu (`var(--accent)`, `var(--gold)`…), nên đổi bảng màu là họa tiết đổi theo — không có file ảnh nào.
 
 ### Thêm / sửa mẫu
 
-Sao chép một mẫu gần giống (ví dụ `templates/coban.js`), đổi `id`, `name`, `group`, `desc`, `palettes`, `title()`, `cover()`, `opener()` (phải có `#opener` và nút `#openBtn`), `css` (scope bằng `.tpl-<id>`), rồi khai báo trong `lib/render.js` (đối tượng `templates`). Họa tiết lấy từ `templates/_orn.js`. Các phần lời mời, lịch trình, bản đồ, RSVP, QR, lưu bút dùng chung — mẫu mới chỉ cần lo phần nhìn. `test/smoke.js` tự kiểm tra mọi mẫu × mọi bảng màu.
+Sao chép một mẫu gần giống (ví dụ `templates/dodam.js`), đổi `id`, `name`, `group`, `desc`, `palettes`, `title()`, `cover()`, `opener()` (phải có `#opener` và nút `#openBtn`), `css` (scope bằng `.tpl-<id>`), rồi khai báo trong `lib/render.js` (đối tượng `templates`). Họa tiết lấy từ `templates/_orn.js`. Các phần lời mời, lịch trình, bản đồ, RSVP, QR, lưu bút dùng chung — mẫu mới chỉ cần lo phần nhìn. `test/smoke.js` tự kiểm tra mọi mẫu × mọi bảng màu.
 
 Khi chạy thử nên dùng `node --watch server.js` để sửa mẫu là trang tự nạp lại.
 

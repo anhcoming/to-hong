@@ -130,7 +130,7 @@ window.newCard = function () {
     // từ trang giới thiệu sản phẩm: dùng thiệp gần nhất, chưa có thì tạo thiệp mới
     const { cards } = await api('/api/cards');
     if (cards[0]) return (location.href = `/${want}/${cards[0].id}`);
-    const { card } = await api('/api/cards', { method: 'POST', body: { template: 'coban' } });
+    const { card } = await api('/api/cards', { method: 'POST', body: { template: 'dodam' } });
     return (location.href = `/${want}/${card.id}`);
   }
   load().catch(e => toast(e.message, true));
