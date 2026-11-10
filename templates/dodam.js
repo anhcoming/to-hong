@@ -151,6 +151,7 @@ module.exports = {
       return `
   ${party && (party.place || party.address) ? `
   <section class="sec dd-venue reveal">
+    <img class="dd-castle" src="${A('castle-background')}" alt="">
     <h2 class="dd-h">${esc(party.name || 'Tiệc cưới')} sẽ tổ chức tại</h2>
     <p class="dd-addr">${esc([party.place, party.address].filter(Boolean).join(', '))}</p>
     ${party.address ? `<div class="dd-map"><iframe loading="lazy" title="Bản đồ" referrerpolicy="no-referrer-when-downgrade" src="https://www.google.com/maps?q=${encodeURIComponent(party.address)}&amp;output=embed"></iframe></div>` : ''}
@@ -198,7 +199,8 @@ module.exports = {
   css: `
 .tpl-dodam .card{background:url('${A('paper')}') center top/100% auto repeat-y,var(--bg);background-blend-mode:multiply;color:var(--ink);font-family:var(--font-body)}
 .tpl-dodam .sec{padding:44px 24px}
-.tpl-dodam .dd-castle{position:absolute;left:50%;top:0;width:170%;max-width:none;transform:translateX(-50%);opacity:.22;mix-blend-mode:multiply;pointer-events:none;-webkit-mask-image:linear-gradient(#000 55%,transparent);mask-image:linear-gradient(#000 55%,transparent)}
+/* hình lâu đài mờ sau từng phần, tràn xuống phía sau phần kế tiếp (chỉ cắt theo chiều ngang) */
+.tpl-dodam .dd-castle{position:absolute;left:50%;top:0;width:170%;max-width:none;transform:translateX(-50%);opacity:.1;pointer-events:none}
 .tpl-dodam .dd-h,.tpl-dodam .sec-title{position:relative;margin:0 0 18px;font-family:'Times New Roman',Times,serif;font-weight:700;font-size:20px;letter-spacing:.03em;text-transform:uppercase;color:var(--ink)}
 .tpl-dodam .sec-sub{position:relative;margin:-10px 0 20px;color:var(--muted);font-size:13px}
 
@@ -218,8 +220,8 @@ module.exports = {
 .tpl-dodam .dd-obtn{padding:12px 38px;border:0;border-radius:999px;background:var(--accent);color:var(--paper);font-family:'Lora',serif;font-size:17px;font-weight:600;box-shadow:0 10px 22px rgba(0,0,0,.25)}
 
 /* trang bìa: phong bì + ảnh */
-.tpl-dodam .dd-cover{position:relative;padding:28px 24px 30px;text-align:center;overflow:hidden}
-.tpl-dodam .dd-cover .dd-castle{top:150px}
+.tpl-dodam .dd-cover{position:relative;padding:28px 24px 30px;text-align:center;overflow-x:clip}
+.tpl-dodam .dd-cover .dd-castle{top:26%}
 .tpl-dodam .dd-std{position:relative;margin:0 0 32px;font-family:'Cormorant Garamond',serif;font-weight:600;font-size:15px;letter-spacing:.16em;text-transform:uppercase;color:var(--ink)}
 .tpl-dodam .dd-env{position:relative;width:248px;height:286px;margin:0 auto}
 .tpl-dodam .dd-env-back{position:absolute;left:0;bottom:0;width:100%}
@@ -232,7 +234,10 @@ module.exports = {
 .tpl-dodam .dd-names i{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);font-family:var(--font-script);font-style:normal;font-size:92px;color:color-mix(in srgb,var(--ink) 15%,transparent)}
 
 /* khung đỏ */
-.tpl-dodam .dd-box{margin:16px 20px;padding:36px 22px;border-radius:12px;background:var(--accent);color:var(--dd-cream);box-shadow:0 14px 30px rgba(0,0,0,.18)}
+/* khung đỏ: nền đỏ + lớp giấy nhân màu 40% */
+.tpl-dodam .dd-box{margin:16px 20px;padding:36px 22px;border-radius:10px;background:var(--accent);color:var(--dd-cream);box-shadow:4px 4px 10px rgba(0,0,0,.25)}
+.tpl-dodam .dd-box::before{content:"";position:absolute;inset:0;border-radius:inherit;background:url('${A('paper')}') center/cover;mix-blend-mode:multiply;opacity:.4;pointer-events:none}
+.tpl-dodam .dd-box>:not(.dd-side){position:relative}
 .tpl-dodam .dd-box .dd-h{color:var(--dd-cream);font-size:21px}
 .tpl-dodam .dd-side{position:absolute;width:80px;pointer-events:none;z-index:1}
 .tpl-dodam .dd-side.r{right:-34px;top:38%}
@@ -250,10 +255,13 @@ module.exports = {
 .tpl-dodam .dd-role{margin-top:14px!important;font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:color-mix(in srgb,var(--dd-cream) 70%,transparent)}
 .tpl-dodam .dd-amp{margin:14px 0 -16px!important;font-family:var(--font-title);font-style:italic;font-size:34px}
 .tpl-dodam .dd-full+.dd-role+.dd-lead,.tpl-dodam .dd-role+.dd-lead{margin-top:34px}
-.tpl-dodam .dd-when{display:flex;justify-content:center;gap:40px;margin:22px 0 6px;font-size:13px;text-transform:uppercase;color:color-mix(in srgb,var(--dd-cream) 75%,transparent)}
-.tpl-dodam .dd-date{display:flex;align-items:center;justify-content:center;gap:16px}
+.tpl-dodam .dd-when,.tpl-dodam .dd-date{display:grid;grid-template-columns:1fr 1fr;align-items:center}
+.tpl-dodam .dd-when{margin:22px 0 6px;font-size:13px;text-transform:uppercase;color:color-mix(in srgb,var(--dd-cream) 75%,transparent)}
+.tpl-dodam .dd-when span:first-child,.tpl-dodam .dd-date b{text-align:right}
+.tpl-dodam .dd-when span:first-child{padding-right:30px}
+.tpl-dodam .dd-when span:last-child{padding-left:22px;text-align:left}
 .tpl-dodam .dd-date b{padding-right:16px;border-right:1px solid color-mix(in srgb,var(--dd-cream) 50%,transparent);font-family:'Times New Roman',Times,serif;font-weight:300;font-size:40px;line-height:1.3}
-.tpl-dodam .dd-date span{text-align:left;font-family:'Times New Roman',Times,serif;font-size:14px;line-height:2;text-transform:uppercase}
+.tpl-dodam .dd-date span{padding-left:16px;text-align:left;font-family:'Times New Roman',Times,serif;font-size:14px;line-height:2;text-transform:uppercase}
 .tpl-dodam .dd-lunar{margin-top:8px!important;font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:color-mix(in srgb,var(--dd-cream) 75%,transparent)}
 .tpl-dodam .dd-guest{margin:28px 0 0;padding-top:22px;border-top:1px solid color-mix(in srgb,var(--dd-cream) 25%,transparent)}
 .tpl-dodam .dd-guest .k{font-size:12px;color:color-mix(in srgb,var(--dd-cream) 75%,transparent)}
@@ -261,7 +269,8 @@ module.exports = {
 .tpl-dodam .dd-msg{margin-top:18px!important;font-style:italic;font-size:14px;color:color-mix(in srgb,var(--dd-cream) 80%,transparent)}
 
 /* album */
-.tpl-dodam .dd-album{overflow:hidden;padding-left:0;padding-right:0}
+.tpl-dodam .dd-album{overflow-x:clip;padding-left:0;padding-right:0}
+.tpl-dodam .dd-album .dd-castle{width:150%;top:-6%}
 .tpl-dodam .dd-strip{position:relative;display:flex;gap:12px;overflow-x:auto;scroll-snap-type:x mandatory;padding:10px calc(50% - 105px) 18px;scrollbar-width:none}
 .tpl-dodam .dd-strip::-webkit-scrollbar{display:none}
 .tpl-dodam .dd-strip .ph{flex:0 0 210px;aspect-ratio:2/3;padding:0;border:0;border-radius:14px;overflow:hidden;background:var(--line);scroll-snap-align:center;box-shadow:0 10px 24px rgba(0,0,0,.18)}
@@ -275,16 +284,17 @@ module.exports = {
 .tpl-dodam .dd-marks{display:flex;justify-content:center;gap:34px;margin:24px 0 4px}
 .tpl-dodam .dd-marks .k{font-size:12px;letter-spacing:.05em;text-transform:uppercase;color:color-mix(in srgb,var(--dd-cream) 70%,transparent)}
 .tpl-dodam .dd-marks .t{font-size:17px}
-.tpl-dodam .dd-party .cal{margin:22px -6px 0;padding:8px 14px 16px;border-radius:10px;background:var(--dd-cream);color:var(--accent)}
-.tpl-dodam .dd-calh{margin:4px 0 6px!important;padding-bottom:8px;border-bottom:2px solid var(--accent);font-family:var(--font-script);font-size:27px;font-weight:700}
+.tpl-dodam .dd-party .cal{width:auto;margin:22px -6px 0;padding:8px 14px 16px;border-radius:10px;background:var(--dd-cream);color:var(--accent)}
+.tpl-dodam .dd-calh{margin:4px 0 6px!important;padding-bottom:8px;border-bottom:1px solid color-mix(in srgb,var(--accent) 30%,transparent);font-family:var(--font-script);font-size:27px;font-weight:700}
 .tpl-dodam .dd-party .cal-grid{font-family:'Times New Roman',serif;font-size:13px;color:var(--accent)}
-.tpl-dodam .dd-party .cal-w{font-size:10px;color:var(--accent);opacity:.8}
+.tpl-dodam .dd-party .cal-w{margin-bottom:6px;border-bottom:2px solid var(--accent);font-size:10px;color:color-mix(in srgb,var(--accent) 70%,transparent);opacity:1}
 .tpl-dodam .dd-party{--cal-hi:var(--accent);--cal-on:var(--dd-cream)}
 .tpl-dodam .dd-link{display:inline-block;margin:20px 0 18px;font-family:'Times New Roman',serif;font-size:15px;color:var(--dd-cream);text-underline-offset:4px}
 .tpl-dodam .dd-pill{display:table;margin:0 auto;padding:9px 26px;border-radius:999px;background:var(--dd-cream);color:var(--accent);font-size:14px;letter-spacing:.03em;text-transform:uppercase;text-decoration:none}
 
 /* nơi tổ chức */
-.tpl-dodam .dd-venue{padding-top:36px}
+.tpl-dodam .dd-venue{padding-top:36px;overflow-x:clip}
+.tpl-dodam .dd-venue .dd-castle{width:158%;top:-1%}
 .tpl-dodam .dd-venue .dd-h{font-size:18px}
 .tpl-dodam .dd-addr{position:relative;margin:0 auto 18px;max-width:300px;font-family:'Times New Roman',serif;font-size:14px;color:var(--muted)}
 .tpl-dodam .dd-map{position:relative;aspect-ratio:1.25;border-radius:4px;overflow:hidden;background:var(--line)}
@@ -315,8 +325,8 @@ module.exports = {
 .tpl-dodam .wish p{margin:6px 0 0;font-family:'Times New Roman',serif;font-size:15px;color:var(--ink)}
 
 /* hộp quà */
-.tpl-dodam .dd-giftbox{overflow:hidden}
-.tpl-dodam .dd-giftbox .dd-castle{top:40px}
+.tpl-dodam .dd-giftbox{overflow-x:clip}
+.tpl-dodam .dd-giftbox .dd-castle{width:155%;top:6%}
 .tpl-dodam .dd-gift summary{position:relative;list-style:none;cursor:pointer}
 .tpl-dodam .dd-gift summary::-webkit-details-marker{display:none}
 .tpl-dodam .dd-envs{display:flex;justify-content:center;align-items:flex-end;height:270px}
@@ -344,9 +354,9 @@ module.exports = {
   .tpl-dodam .dd-fl.br{top:-6px;bottom:auto;transform:scaleX(-1) rotate(-8deg)}
   .tpl-dodam .dd-heart{top:28px}
   .tpl-dodam .dd-onames{font-size:36px}
-  .tpl-dodam .dd-castle{width:150%}
   .tpl-dodam .dd-cover{padding:56px 24px 48px}
-  .tpl-dodam .dd-cover .dd-castle{top:220px}
+  .tpl-dodam .card{border:1px solid color-mix(in srgb,var(--accent) 13%,transparent)}
+  .tpl-dodam .dd-venue .dd-castle{width:233%}
   .tpl-dodam .dd-std{margin-bottom:56px;font-size:18px}
   .tpl-dodam .dd-env{width:420px;height:484px}
   .tpl-dodam .dd-env-photo{left:111px;top:-27px;width:324px;height:407px;padding:12px 12px 32px}
@@ -360,6 +370,8 @@ module.exports = {
   .tpl-dodam .dd-full{font-size:46px}
   .tpl-dodam .dd-amp{font-size:44px}
   .tpl-dodam .dd-date b{font-size:52px}
+  .tpl-dodam .dd-party .cal{width:min(380px,100%);margin:32px auto 0;padding:12px 20px 22px}
+  .tpl-dodam .dd-calh{font-size:32px}
   .tpl-dodam .dd-side{width:180px}
   .tpl-dodam .dd-side.r{right:-140px;top:20%}
   .tpl-dodam .dd-side.l{left:-140px;top:30%}
