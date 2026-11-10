@@ -521,7 +521,8 @@ route('GET', '/t/:slug/:code', showCard);
 route('GET', '/demo/:tpl', async (req, res, ctx) => {
   const tpl = templates[ctx.params.tpl];
   if (!tpl) return serveStatic(req, res, '/demo/' + ctx.params.tpl); // ảnh mẫu trong public/demo
-  const card = { slug: 'demo', template: tpl.id, palette: ctx.query.get('palette') || '', data: cd.normalize(cd.sample()) };
+  // mẫu có thể kèm ảnh xem thử riêng: demo: { cover: '/demo/<id>-1.jpg', photos: [...] }
+  const card = { slug: 'demo', template: tpl.id, palette: ctx.query.get('palette') || '', data: cd.normalize({ ...cd.sample(), ...tpl.demo }) };
   const guest = { name: 'Anh Hoàng & Người thương', code: 'demo' };
   const wishes = [
     { name: 'Lan Anh', message: 'Chúc hai bạn trăm năm hạnh phúc, sớm có tin vui nhé!' },
