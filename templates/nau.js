@@ -103,7 +103,7 @@ module.exports = {
     invite(ctx) {
       const { d, dparts: p } = ctx;
       const strip = (s) => esc(s.replace(/^(Ông|Bà)\s+/i, ''));
-      const fam = (x) => `<div class="mn-fam"><span class="k">Ông Bà</span><span class="n">${x.father ? strip(x.father) : ''}${x.father && x.mother ? '<br>' : ''}${x.mother ? strip(x.mother) : ''}</span>${x.address ? `<span class="a">${esc(x.address)}</span>` : ''}</div>`;
+      const fam = (x) => `<div class="mn-fam"><span class="k">Ông Bà</span><span class="n">${x.father ? `<span>${strip(x.father)}</span>` : ''}${x.mother ? `<span>${strip(x.mother)}</span>` : ''}</span>${x.address ? `<span class="a">${esc(x.address)}</span>` : ''}</div>`;
       const hasFam = d.groom.father || d.groom.mother || d.bride.father || d.bride.mother;
       const party = partyEvent(d);
       const cer = evList(d).find((e) => e !== party) || party;
@@ -122,6 +122,12 @@ module.exports = {
         <p class="mn-amp">&amp;</p>
         <h3>${esc(d.bride.fullName || d.bride.name)}</h3>
         <p class="mn-role">Cô dâu</p>
+      <script>(function(){
+        // tên đầy đủ: cùng một cỡ chữ cho cả hai người, tối đa 43px, co lại cho vừa 97% bề ngang khung (như bản gốc)
+        var hs=[].slice.call(document.currentScript.parentNode.querySelectorAll('h3'));
+        function fit(){var k=1;hs.forEach(function(h){h.style.fontSize='43px';var r=document.createRange();r.selectNodeContents(h);var w=r.getBoundingClientRect().width;if(w)k=Math.min(k,h.clientWidth*.97/w);});hs.forEach(function(h){h.style.fontSize=Math.floor(43*k)+'px';});}
+        fit();if(document.fonts)document.fonts.ready.then(fit);addEventListener('resize',fit);
+      })()</script>
       </div>
       ${p ? `<div class="mn-when-block">
         <div class="mn-place">
@@ -369,10 +375,12 @@ module.exports = {
 .tpl-nau .mn-fams>i{width:1px;height:50px;background:color-mix(in srgb,var(--ink) 33.3%,transparent)}
 .tpl-nau .mn-fam{display:flex;flex-direction:column;align-items:center;gap:3px;min-width:0;font-family:var(--font-body);font-size:12px;line-height:1.5}
 .tpl-nau .mn-fam .k,.tpl-nau .mn-fam .a{color:var(--muted)}
-.tpl-nau .mn-fam .n{font-weight:600;overflow-wrap:anywhere}
+.tpl-nau .mn-fam .n{display:flex;flex-direction:column;align-items:center;gap:3px;font-weight:600;overflow-wrap:anywhere}
+/* lưới bố mẹ của bản gốc luôn có 4 hàng cách 3px, kể cả khi không có địa chỉ */
+.tpl-nau .mn-fam:not(:has(.a))::after{content:""}
 .tpl-nau .mn-fam .a{margin-top:4px;font-size:10px;line-height:1.25}
 .tpl-nau .mn-couple{display:flex;flex-direction:column;align-items:center;gap:12px;width:100%}
-.tpl-nau .mn-couple h3{display:flex;align-items:center;justify-content:center;width:80%;min-height:80px;font-family:var(--font-title);font-weight:400;font-size:27px;line-height:52px;white-space:nowrap}
+.tpl-nau .mn-couple h3{display:flex;align-items:center;justify-content:center;width:80%;min-height:80px;font-family:var(--font-title);font-weight:400;font-size:43px;line-height:52px;white-space:nowrap}
 .tpl-nau .mn-role{font-family:'Cormorant Garamond',serif;font-size:10px;line-height:1.5;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
 .tpl-nau .mn-amp{font-family:'Ms Madi',cursive;font-size:35px;line-height:1.5}
 .tpl-nau .mn-when-block{display:flex;flex-direction:column;align-items:center;gap:16px;width:100%}
@@ -438,7 +446,7 @@ module.exports = {
 .tpl-nau .mn-tl li{display:contents}
 .tpl-nau .mn-tl .t{text-align:right;font-size:16px;letter-spacing:.025em;font-variant-numeric:tabular-nums;line-height:1.375;color:var(--ink)}
 .tpl-nau .mn-tl .t b{position:relative;display:inline-block;font-weight:400}
-.tpl-nau .mn-tl .ic{position:absolute;right:100%;top:50%;width:36px;height:36px;margin-right:30px;transform:translateY(-50%);object-fit:contain}
+.tpl-nau .mn-tl .ic{position:absolute;right:100%;top:50%;max-width:none;width:36px;height:36px;margin-right:30px;transform:translateY(-50%);object-fit:contain}
 .tpl-nau .mn-tl .dot{position:relative;align-self:stretch;display:flex;align-items:center;justify-content:center}
 .tpl-nau .mn-tl .dot::before{content:"";position:absolute;left:50%;width:1px;top:calc(-1 * var(--gy));bottom:calc(-1 * var(--gy));transform:translateX(-50%);background:color-mix(in srgb,var(--ink) 40%,transparent)}
 .tpl-nau .mn-tl li:first-child .dot::before{top:50%}
@@ -585,7 +593,7 @@ module.exports = {
   .tpl-nau .mn-panel-wrap{max-width:560px}
   .tpl-nau .mn-lead{font-size:20px}
   .tpl-nau .mn-couple{gap:16px}
-  .tpl-nau .mn-couple h3{font-size:43px;line-height:60px}
+  .tpl-nau .mn-couple h3{line-height:60px}
   .tpl-nau .mn-when-block{gap:20px}
   .tpl-nau .mn-at{font-size:18px}
   .tpl-nau .mn-time{font-size:30px}
