@@ -5,5 +5,21 @@
       "maxDuration": 30
     }
   },
-  "rewrites": [{ "source": "/:path*", "destination": "/api/index.js?__p=/:path*" }]
+  "rewrites": [
+    { "source": "/", "destination": "/index.html" },
+    { "source": "/dang-nhap", "destination": "/auth.html" },
+    { "source": "/thiep-cua-toi", "destination": "/dashboard.html" },
+    { "source": "/video-cua-toi", "destination": "/dashboard.html" },
+    { "source": "/admin", "destination": "/admin.html" },
+    { "source": "/mau-thiep", "destination": "/templates.html" },
+    { "source": "/video-cuoi", "destination": "/video-landing.html" },
+    { "source": "/so-tay", "destination": "/planner.html" },
+    { "source": "/so-tay-cuoi", "destination": "/planner-landing.html" },
+    { "source": "/sua/:id", "destination": "/editor.html" },
+    { "source": "/sua-led/:id", "destination": "/led-editor.html" },
+    { "source": "/sua-video/:id", "destination": "/video-editor.html" },
+    { "source": "/tham-gia/:id", "destination": "/join.html" },
+    { "source": "/thanh-toan/:id", "destination": "/pay.html" },
+    { "source": "/:path*", "destination": "/api/index.js?__p=/:path*" }
+  ]
 }

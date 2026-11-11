@@ -138,4 +138,6 @@ Khi vượt vài nghìn thiệp, thay `lib/db.js` bằng Postgres/Supabase và �
 2. **Blob** → *Connect* vào dự án. Vercel tự thêm `BLOB_READ_WRITE_TOKEN`; ảnh và nhạc tải lên được lưu ở đây.
 3. Deploy lại (Deployments → Redeploy) để nhận biến môi trường mới.
 
+**Tốc độ:** hàm Vercel và cơ sở dữ liệu phải nằm cùng vùng và gần khách. Khách ở Việt Nam → tạo Supabase ở Singapore và thêm `"regions": ["sin1"]` vào `vercel.json` (đổi một trong hai mà không đổi cái kia sẽ chậm hơn). Chuyển dữ liệu giữa hai Supabase: `FROM_URL=… TO_URL=… node tools/copy-db.js`.
+
 Không có hai biến trên thì app vẫn chạy nhưng dữ liệu chỉ nằm trong `/tmp` và sẽ mất. Giới hạn trên Vercel: tệp tải lên tối đa ~4,5 MB (nhạc MP3 lớn hơn sẽ bị từ chối) và chưa xuất được video MP4 (cần ffmpeg).

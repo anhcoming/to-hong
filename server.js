@@ -737,6 +737,7 @@ route('POST', '/api/cards/:id/video/saved-file', async (req, res, ctx) => {
 });
 
 // ---------------- trang tĩnh ----------------
+// Trên Vercel các trang này được CDN trả thẳng (rewrites trong vercel.json) — thêm/đổi trang thì sửa cả hai nơi.
 const PAGES = {
   '/': 'index.html', '/dang-nhap': 'auth.html', '/thiep-cua-toi': 'dashboard.html', '/admin': 'admin.html', '/mau-thiep': 'templates.html',
   '/video-cuoi': 'video-landing.html',
@@ -800,10 +801,22 @@ function serveStatic(req, res, pathname) {
 // ---------------- máy chủ ----------------
 const server = http.createServer(async (req, res) => {
   restoreUrl(req); // Vercel có thể gửi request thẳng vào server này, bỏ qua `handler` bên dưới
-  // Chế độ Redis: nạp dữ liệu mới nhất, và ghi lại trước khi trả lời (res.end chờ ghi xong).
-  if (store.remote) {
+  let url, pathname;
+  try { url = new URL(req.url, 'http://x'); pathname = decodeURIComponent(url.pathname); } catch { return json(res, 400, { error: 'URL lỗi' }); }
+  let matched = null, params = null;
+  for (const r of routes) {
+    if (r.method !== req.method) continue;
+    const m = r.re.exec(pathname);
+    if (!m) continue;
+    matched = r;
+    params = Object.fromEntries(r.keys.map((k, i) => [k, m[i + 1]]));
+    break;
+  }
+  // Kho từ xa: nạp dữ liệu mới nhất, và ghi lại trước khi trả lời (res.end chờ ghi xong).
+  // Chỉ làm khi có route xử lý — file tĩnh và trang HTML không đụng tới dữ liệu nên không phải chờ kho.
+  if (store.remote && matched) {
     let finish;
-    try { finish = await store.begin(req.method, (req.url || '').split('?')[0]); } catch (e) {
+    try { finish = await store.begin(req.method, pathname); } catch (e) {
       console.error(e);
       return json(res, 503, { error: 'Không kết nối được cơ sở dữ liệu, vui lòng thử lại' });
     }
@@ -816,22 +829,16 @@ const server = http.createServer(async (req, res) => {
       return res;
     };
   }
-  let url;
-  try { url = new URL(req.url, 'http://x'); } catch { return json(res, 400, { error: 'URL lỗi' }); }
-  const pathname = decodeURIComponent(url.pathname);
-  const ctx = {
-    query: url.searchParams,
-    user: auth.currentUser(req),
-    admin: adminAuth.check(req),
-    ip: (req.headers['x-forwarded-for'] || '').split(',')[0].trim() || req.socket.remoteAddress,
-  };
   try {
-    for (const r of routes) {
-      if (r.method !== req.method) continue;
-      const m = r.re.exec(pathname);
-      if (!m) continue;
-      ctx.params = Object.fromEntries(r.keys.map((k, i) => [k, m[i + 1]]));
-      return await r.handler(req, res, ctx);
+    if (matched) {
+      const ctx = {
+        query: url.searchParams,
+        user: auth.currentUser(req),
+        admin: adminAuth.check(req),
+        ip: (req.headers['x-forwarded-for'] || '').split(',')[0].trim() || req.socket.remoteAddress,
+        params,
+      };
+      return await matched.handler(req, res, ctx);
     }
     if (pathname.startsWith('/api/')) { console.warn('API 404:', req.method, req.url); throw httpError(404, 'Không có API này'); }
     if (req.method !== 'GET' && req.method !== 'HEAD') throw httpError(405, 'Không hỗ trợ');
