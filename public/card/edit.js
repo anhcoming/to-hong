@@ -156,12 +156,14 @@
 
   function init() {
     markPhotos(); markText();
+    tell({ type: 'ready' });
+    // gợi ý chỉ hiện lần đầu, không hiện lại mỗi lần thiệp vẽ lại sau khi lưu
+    try { if (sessionStorage.getItem('ceTip')) return; sessionStorage.setItem('ceTip', '1'); } catch (e) { /* bỏ qua */ }
     var tip = document.createElement('div'); tip.className = 'ce-tip';
     tip.textContent = 'Bấm vào ảnh hoặc chữ có viền để sửa';
     document.body.appendChild(tip);
     setTimeout(function () { tip.style.opacity = '0'; }, 3500);
     setTimeout(function () { tip.remove(); }, 4200);
-    tell({ type: 'ready' });
   }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init); else init();
 })();

@@ -194,15 +194,22 @@ function setMode(edit) {
   $$('#pvMode button').forEach((x) => x.classList.toggle('on', (x.dataset.m === 'edit') === edit));
   refreshPreview();
 }
+// Vẽ lại thiệp sau mỗi lần lưu mà không "F5" trước mặt người dùng: tải bản mới vào một khung ẩn
+// đè lên khung cũ, cuộn tới đúng chỗ đang xem rồi mới đổi — không nháy trắng, không nhảy về đầu.
 function refreshPreview() {
   const fr = $('#frame');
   const src = `/t/${card.slug}?preview=1${liveEdit ? '&edit=1' : ''}`;
-  // giữ nguyên chỗ đang cuộn khi vẽ lại sau mỗi lần sửa
-  let y = 0;
-  try { y = fr.contentWindow.scrollY || 0; } catch (e) { /* khung chưa tải */ }
-  fr.onload = () => { try { if (y) fr.contentWindow.scrollTo(0, y); } catch (e) { /* bỏ qua */ } };
-  if (!fr.src.endsWith(src)) fr.src = src;
-  else fr.contentWindow.location.reload();
+  if (!fr.getAttribute('src')) { fr.src = src; return; }
+  const old = $('#frameNext'); if (old) old.remove(); // lần lưu trước chưa tải xong → bỏ, tải bản mới nhất
+  const nf = document.createElement('iframe');
+  nf.id = 'frameNext'; nf.title = fr.title; nf.className = 'buf';
+  nf.onload = () => {
+    const cur = $('#frame');
+    try { nf.contentWindow.scrollTo({ top: cur.contentWindow.scrollY || 0, behavior: 'instant' }); } catch (e) { /* bỏ qua */ }
+    requestAnimationFrame(() => { cur.remove(); nf.id = 'frame'; nf.className = ''; });
+  };
+  nf.src = src;
+  fr.parentNode.appendChild(nf);
 }
 
 // ---------- tiêu đề + phát hành ----------
