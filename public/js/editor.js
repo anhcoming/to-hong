@@ -177,9 +177,15 @@ async function save() {
     if (pending) { pending = false; save(); }
   }
 }
+// Khung xem trước = khung sửa trực tiếp (bấm ảnh/chữ để sửa). "Xem như khách" tắt các viền sửa.
+let liveEdit = true;
 function refreshPreview() {
   const fr = $('#frame');
-  const src = `/t/${card.slug}?preview=1`;
+  const src = `/t/${card.slug}?preview=1${liveEdit ? '&edit=1' : ''}`;
+  // giữ nguyên chỗ đang cuộn khi vẽ lại sau mỗi lần sửa
+  let y = 0;
+  try { y = fr.contentWindow.scrollY || 0; } catch (e) { /* khung chưa tải */ }
+  fr.onload = () => { try { if (y) fr.contentWindow.scrollTo(0, y); } catch (e) { /* bỏ qua */ } };
   if (!fr.src.endsWith(src)) fr.src = src;
   else fr.contentWindow.location.reload();
 }
@@ -374,8 +380,130 @@ function bind() {
   $('#tabs').addEventListener('click', (e) => { const t = e.target.closest('.tab'); if (t) showTab(t.dataset.tab); });
   $('#pvBtn').onclick = () => $('#prev').classList.add('show');
   $('#pvClose').onclick = () => $('#prev').classList.remove('show');
+  $('#pvMode').addEventListener('click', (e) => {
+    const b = e.target.closest('[data-m]'); if (!b) return;
+    liveEdit = b.dataset.m === 'edit';
+    $$('#pvMode button').forEach((x) => x.classList.toggle('on', x === b));
+    refreshPreview();
+  });
   window.addEventListener('beforeunload', (e) => { if (saveTimer && $('#saved').textContent.startsWith('Đang')) { e.preventDefault(); e.returnValue = ''; } });
 }
+
+// ---------- sửa trực tiếp trên thiệp (kiểu Canva) ----------
+// Khung xem trước báo lại người dùng bấm vào ô ảnh nào / dòng chữ nào (public/card/edit.js).
+const baseUrl = (u) => String(u || '').split('#')[0];
+const focusOf = (u) => { const m = /#p=([\d.]+),([\d.]+)/.exec(u || ''); return m ? [+m[1], +m[2]] : [50, 50]; };
+const withFocus = (u, x, y) => (Math.round(x) === 50 && Math.round(y) === 50 ? baseUrl(u) : `${baseUrl(u)}#p=${Math.round(x)},${Math.round(y)}`);
+function photoGet(key) {
+  if (key === 'cover') return card.data.cover;
+  const i = +key.split('.')[1];
+  return card.data.photos[i] || '';
+}
+function photoSet(key, url) {
+  const d = card.data;
+  if (key === 'cover') { d.cover = url; return; }
+  const i = +key.split('.')[1];
+  if (!url) { if (i < d.photos.length) d.photos.splice(i, 1); return; }
+  if (i < d.photos.length) d.photos[i] = url; else d.photos.push(url); // ô trống phía sau → thêm vào cuối album
+}
+function applyLive() { rerender(); renderHeader(); clearTimeout(saveTimer); save(); }
+function pickFile(accept = 'image/*') {
+  return new Promise((ok) => {
+    const inp = document.createElement('input');
+    inp.type = 'file'; inp.accept = accept;
+    inp.onchange = () => ok(inp.files[0] || null);
+    inp.click();
+  });
+}
+async function livePhotoUpload(key, ratio) {
+  const f = await pickFile();
+  if (!f) return;
+  try {
+    const url = await uploadFile(f);
+    photoSet(key, url);
+    applyLive();
+    if (ratio && Math.abs(ratio - 1) > 0.05) setTimeout(() => cropModal(key, ratio, true), 300); // ảnh mới: mời căn khung luôn
+  } catch (e) { toast(e.message, true); }
+}
+function photoActions(key, ratio) {
+  const u = photoGet(key);
+  openModal(`<h2 style="margin-top:0">${key === 'cover' ? 'Ảnh bìa' : `Ảnh ${+key.split('.')[1] + 1}`}</h2>
+    <div style="border-radius:12px;height:180px;background:#eee url('${esc(baseUrl(u))}') ${focusOf(u).join('% ')}%/cover;margin-bottom:14px"></div>
+    <div style="display:grid;gap:8px">
+      <button class="btn block" data-pa="replace">Đổi ảnh khác</button>
+      <button class="btn block plain" data-pa="crop">Căn chỉnh phần ảnh hiện trong khung</button>
+      <button class="btn block plain" data-pa="del" style="color:#c0392b">Xoá ảnh này</button>
+    </div>`, (box, close) => {
+    box.addEventListener('click', (e) => {
+      const a = e.target.closest('[data-pa]'); if (!a) return;
+      close();
+      if (a.dataset.pa === 'replace') livePhotoUpload(key, ratio);
+      else if (a.dataset.pa === 'crop') cropModal(key, ratio);
+      else { photoSet(key, ''); applyLive(); toast('Đã xoá ảnh'); }
+    });
+  });
+}
+// kéo ảnh trong khung (đúng tỉ lệ ô của mẫu) để chọn phần hiện ra
+function cropModal(key, ratio = 1, fresh = false) {
+  const u = photoGet(key);
+  if (!u) return;
+  let [x, y] = focusOf(u);
+  const W = 300, H = Math.round(Math.min(420, Math.max(170, W / (ratio || 1))));
+  const FW = Math.round(H * (ratio || 1) > W ? W : H * (ratio || 1));
+  openModal(`<h2 style="margin-top:0">Căn chỉnh ảnh</h2>
+    <p class="muted" style="margin:-4px 0 12px">${fresh ? 'Ảnh đã tải lên. ' : ''}Kéo ảnh để chọn phần hiện trong khung của mẫu.</p>
+    <div id="cropF" style="position:relative;margin:0 auto;width:${FW}px;height:${H}px;border-radius:12px;overflow:hidden;touch-action:none;cursor:grab;background:#eee url('${esc(baseUrl(u))}') ${x}% ${y}%/cover;box-shadow:inset 0 0 0 2px var(--primary)"></div>
+    <div style="display:flex;gap:8px;margin-top:16px"><button class="btn plain" data-c="reset" style="flex:1">Về giữa</button><button class="btn" data-c="ok" style="flex:2">Xong</button></div>`, (box, close) => {
+    const fr = $('#cropF', box);
+    const img = new Image();
+    let iw = 1, ih = 1;
+    img.onload = () => { iw = img.naturalWidth; ih = img.naturalHeight; };
+    img.src = baseUrl(u);
+    let drag = null;
+    const paint = () => { fr.style.backgroundPosition = `${x}% ${y}%`; };
+    fr.addEventListener('pointerdown', (e) => { drag = { sx: e.clientX, sy: e.clientY, x, y }; fr.setPointerCapture(e.pointerId); fr.style.cursor = 'grabbing'; });
+    fr.addEventListener('pointermove', (e) => {
+      if (!drag) return;
+      const s = Math.max(FW / iw, H / ih), extraX = iw * s - FW, extraY = ih * s - H; // phần ảnh thừa ra ngoài khung
+      if (extraX > 1) x = Math.min(100, Math.max(0, drag.x - ((e.clientX - drag.sx) / extraX) * 100));
+      if (extraY > 1) y = Math.min(100, Math.max(0, drag.y - ((e.clientY - drag.sy) / extraY) * 100));
+      paint();
+    });
+    const end = () => { drag = null; fr.style.cursor = 'grab'; };
+    fr.addEventListener('pointerup', end); fr.addEventListener('pointercancel', end);
+    box.addEventListener('click', (e) => {
+      const b = e.target.closest('[data-c]'); if (!b) return;
+      if (b.dataset.c === 'reset') { x = 50; y = 50; paint(); return; }
+      photoSet(key, withFocus(u, x, y));
+      close();
+      applyLive();
+    });
+  });
+}
+const LONG_FIELDS = /^(message|story)$|\.address$/;
+const FIELD_NAMES = { name: 'Tên gọi', fullName: 'Họ và tên đầy đủ', father: 'Tên bố', mother: 'Tên mẹ', address: 'Địa chỉ', place: 'Nơi tổ chức', inviteText: 'Lời mời', message: 'Lời nhắn', story: 'Chuyện tình yêu' };
+function textModal(key) {
+  const cur = getP(card.data, key) || '';
+  const parts = key.split('.');
+  const who = parts[0] === 'groom' ? 'Chú rể · ' : parts[0] === 'bride' ? 'Cô dâu · ' : parts[0] === 'events' ? `${(card.data.events[+parts[1]] || {}).name || 'Sự kiện'} · ` : '';
+  const label = who + (FIELD_NAMES[parts[parts.length - 1]] || 'Nội dung');
+  const long = LONG_FIELDS.test(key);
+  openModal(`<h2 style="margin-top:0">Sửa chữ</h2>
+    <label class="field"><span>${esc(label)}</span>${long ? `<textarea id="ceIn" rows="4">${esc(cur)}</textarea>` : `<input id="ceIn" value="${esc(cur)}">`}</label>
+    <button class="btn block" id="ceOk">Lưu</button>`, (box, close) => {
+    const inp = $('#ceIn', box);
+    setTimeout(() => { inp.focus(); inp.select(); }, 30);
+    const ok = () => { setP(card.data, key, inp.value.trim()); close(); applyLive(); };
+    $('#ceOk', box).onclick = ok;
+    inp.addEventListener('keydown', (e) => { if (e.key === 'Enter' && !long) ok(); });
+  });
+}
+window.addEventListener('message', (e) => {
+  if (e.origin !== location.origin || !e.data || !e.data.ce) return;
+  const m = e.data;
+  if (m.type === 'photo') { if (m.empty || !photoGet(m.key)) livePhotoUpload(m.key, m.ratio); else photoActions(m.key, m.ratio); }
+  else if (m.type === 'text') textModal(m.key);
+});
 
 (async () => {
   try {

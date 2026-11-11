@@ -175,6 +175,24 @@ const eq = (a, b, msg) => { assert.deepEqual(a, b, msg); n++; };
   eq((await call('a', 'GET', `/api/cards/${id}`)).json.card.video.mp4, r.json.url, 'thiệp nhớ bản MP4 mới nhất (mở từ máy khác vẫn tải lại được)');
   eq((await call('a', 'POST', `/api/cards/${id}/video/saved`, { url: 'https://evil.example.com/videos/x.mp4' })).status, 400, 'không nhận đường dẫn ngoài kho');
 
+  // ---------- sửa trực tiếp trên thiệp ----------
+  {
+    const c = (await call('a', 'GET', `/api/cards/${id}`)).json.card;
+    const data = { ...c.data, cover: '/demo/dodam-2.jpg#p=20,70', photos: ['/demo/dodam-1.jpg', '/demo/dodam-3.jpg#p=0,100', '/demo/dodam-4.jpg#p=1,2,3'] };
+    const u = (await call('a', 'PUT', `/api/cards/${id}`, { data })).json.card.data;
+    eq(u.cover, '/demo/dodam-2.jpg#p=20,70', 'lưu được điểm lấy nét của ảnh bìa');
+    eq(u.photos.length, 2, 'bỏ ảnh có điểm lấy nét sai định dạng');
+    eq(u.photos[1], '/demo/dodam-3.jpg#p=0,100', 'lưu được điểm lấy nét của ảnh album');
+    let h = (await call('a', 'GET', `/t/${c.slug}?preview=1&edit=1`)).text;
+    ok(h.includes('/card/edit.js') && /#p=20,70(&amp;|&)k=cover/.test(h) && h.includes('/card/slot.svg#k=photos.'), 'chủ thiệp: khung sửa trực tiếp có ô ảnh và ô trống');
+    ok(!(await call('a', 'GET', `/t/${c.slug}?preview=1`)).text.includes('/card/edit.js'), 'xem trước thường không bật chế độ sửa');
+    h = (await call('anon', 'GET', `/t/${c.slug}?preview=1&edit=1`)).text;
+    ok(!h.includes('/card/edit.js') && !h.includes('slot.svg'), 'khách không mở được chế độ sửa');
+    eq((await call('anon', 'GET', '/card/edit.js')).status, 200, 'tải được edit.js');
+    eq((await call('anon', 'GET', '/card/slot.svg')).status, 200, 'tải được ảnh ô trống');
+    await call('a', 'PUT', `/api/cards/${id}`, { data: c.data });
+  }
+
   // ---------- quản trị ----------
   eq((await call('a', 'GET', '/api/admin/overview')).status, 403, 'tài khoản thường không vào được quản trị');
   eq((await call('qt', 'POST', '/api/admin/login', { password: 'sai' })).status, 401, 'sai mật khẩu quản trị');

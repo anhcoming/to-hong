@@ -21,8 +21,11 @@ body{height:100vh;display:flex;flex-direction:column;overflow:hidden}
 .group{padding:18px;margin-bottom:16px}
 .group h3{margin:0 0 14px;font-size:16px}
 .group h3 small{font-weight:400;color:var(--muted);font-size:13px;margin-left:6px}
-.prev{background:#e9e2da;display:grid;place-items:center;padding:16px;overflow:auto}
-.phone{width:375px;height:min(760px,calc(100vh - 110px));border-radius:40px;background:#1d1517;padding:10px;box-shadow:0 30px 60px rgba(0,0,0,.2)}
+.prev{background:#e9e2da;display:grid;place-items:center;align-content:center;gap:12px;padding:16px;overflow:auto}
+.pvmode{display:inline-flex;padding:4px;border-radius:999px;background:rgba(255,255,255,.75);box-shadow:0 4px 14px rgba(0,0,0,.08)}
+.pvmode button{border:0;background:none;padding:7px 14px;border-radius:999px;font:inherit;font-size:13px;font-weight:600;color:#5d4f4a;cursor:pointer;white-space:nowrap}
+.pvmode button.on{background:var(--primary);color:#fff}
+.phone{width:375px;height:min(760px,calc(100vh - 160px));border-radius:40px;background:#1d1517;padding:10px;box-shadow:0 30px 60px rgba(0,0,0,.2)}
 .phone iframe{width:100%;height:100%;border:0;border-radius:31px;background:var(--surface)}
 .ev{border:1px solid var(--line);border-radius:12px;padding:14px;margin-bottom:12px;background:var(--surface)}
 .ev-h{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
@@ -67,6 +70,8 @@ body{height:100vh;display:flex;flex-direction:column;overflow:hidden}
   .prev .close{position:fixed;top:max(10px,env(safe-area-inset-top));right:10px;z-index:61;background:rgba(20,12,14,.55);color:#fff;border:0;box-shadow:0 4px 14px rgba(0,0,0,.25);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px)}
   .phone{width:100%;height:100vh;height:100dvh;border-radius:0;padding:0;background:none;box-shadow:none}
   .phone iframe{border-radius:0}
+  .pvmode{position:fixed;top:max(10px,env(safe-area-inset-top));left:10px;z-index:61;background:rgba(20,12,14,.55);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px)}
+  .pvmode button{color:#fff;padding:6px 11px}
   body:has(.prev.show){overflow:hidden}
   .mobile-prev{display:inline-flex}
 }
@@ -80,7 +85,7 @@ body{height:100vh;display:flex;flex-direction:column;overflow:hidden}
   <span class="saved" id="saved"></span>
   <a class="btn sm plain" id="ledLink" href="#">✨ Màn LED</a>
   <a class="btn sm plain" id="videoLink" href="#">🎬 Video</a>
-  <button class="btn sm plain mobile-prev" id="pvBtn">Xem trước</button>
+  <button class="btn sm plain mobile-prev" id="pvBtn">✎ Sửa trên thiệp</button>
   <span id="pubArea"></span>
 </header>
 <div class="layout">
@@ -98,6 +103,7 @@ body{height:100vh;display:flex;flex-direction:column;overflow:hidden}
   </div>
   <div class="prev" id="prev">
     <button class="btn sm close" id="pvClose">✕ Đóng</button>
+    <div class="pvmode" id="pvMode" role="group" aria-label="Chế độ khung xem trước"><button data-m="edit" class="on">✎ Sửa trực tiếp</button><button data-m="view">👁 Xem như khách</button></div>
     <div class="phone"><iframe id="frame" title="Xem trước thiệp"></iframe></div>
   </div>
 </div>

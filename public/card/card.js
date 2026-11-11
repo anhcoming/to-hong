@@ -164,4 +164,13 @@
     }).catch(function (err) { msg.textContent = err.message; })
       .then(function () { btn.disabled = false; });
   });
+
+  // ----- điểm lấy nét của ảnh: link ảnh có "#p=x,y" → căn phần ảnh hiện trong khung (ảnh thẻ <img> và ảnh nền) -----
+  function focusOf(u) { var m = /#p=([\d.]+),([\d.]+)/.exec(u || ''); return m ? m[1] + '% ' + m[2] + '%' : ''; }
+  function applyFocus(root) {
+    $$('img[src*="#p="]', root).forEach(function (im) { var f = focusOf(im.getAttribute('src')); if (f) im.style.objectPosition = f; });
+    $$('[style*="#p="]', root).forEach(function (el) { var f = focusOf(el.getAttribute('style')); if (f) el.style.backgroundPosition = f; });
+  }
+  applyFocus(document);
+  window.__applyFocus = applyFocus;
 })();

@@ -530,7 +530,8 @@ async function showCard(req, res, ctx) {
     save();
   }
   const wishes = db.wishes.filter((w) => w.cardId === card.id && !w.hidden).sort((a, b) => b.createdAt - a.createdAt).slice(0, 200);
-  html(res, 200, renderCard(card, { guest, wishes, preview, trial: !st.paid, baseUrl: BASE_URL }));
+  const edit = preview && ctx.query.get('edit') === '1'; // khung sửa trực tiếp trong trang sửa thiệp (chỉ chủ thiệp)
+  html(res, 200, renderCard(card, { guest, wishes, preview, edit, trial: !st.paid, baseUrl: BASE_URL }));
 }
 route('GET', '/t/:slug', showCard);
 route('GET', '/t/:slug/:code', showCard);
