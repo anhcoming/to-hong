@@ -947,6 +947,128 @@
       });
     }
 
+
+    // ---------- xuất MP4 ngay trong trình duyệt (không cần máy chủ / ffmpeg) ----------
+    // 1. mã hoá MỘT vòng video H.264 bằng WebCodecs (dạng "avc" để đóng gói MP4)
+    // 2. nhạc nền: giải mã MP3, lặp/cắt đúng độ dài, mờ dần cuối bài, mã hoá AAC
+    // 3. đóng gói bằng mp4-muxer; video dài hơn 1 vòng thì lặp lại các khung đã mã hoá (không mã hoá lại)
+    function encodeLoop(onProgress) {
+      var fps = 30, total = Math.round(D * fps), chunks = [], meta = null, failed = null;
+      var enc = new VideoEncoder({
+        output: function (chunk, m) {
+          if (!meta && m && m.decoderConfig) meta = m;
+          var b = new Uint8Array(chunk.byteLength); chunk.copyTo(b);
+          chunks.push({ data: b, type: chunk.type, ts: chunk.timestamp, dur: chunk.duration || Math.round(1e6 / fps) });
+        },
+        error: function (e) { failed = e; },
+      });
+      // 4 Mbps: đủ nét cho video trình chiếu ảnh 1080p trên TV, file 3 phút ~90MB thay vì ~130MB
+      var base = { width: W, height: H, bitrate: 4e6, bitrateMode: 'variable', framerate: fps, avc: { format: 'avc' } };
+      function pick(i) {
+        if (i >= AVC.length) return Promise.reject(new Error('Trình duyệt chưa hỗ trợ mã hoá H.264 — dùng Chrome hoặc Edge bản mới nhé'));
+        var c = Object.assign({ codec: AVC[i] }, base);
+        return VideoEncoder.isConfigSupported(c).then(function (r) { return r.supported ? c : pick(i + 1); });
+      }
+      function breathe() { return new Promise(function (res) { var ch = new MessageChannel(); ch.port1.onmessage = function () { res(); }; ch.port2.postMessage(0); }); }
+      return pick(0).then(function (c) {
+        enc.configure(c);
+        var i = 0;
+        function next() {
+          if (failed) return Promise.reject(failed);
+          if (i >= total) return enc.flush();
+          if (enc.encodeQueueSize > 6) return breathe().then(next);
+          renderAt(i / fps);
+          var f = new VideoFrame(canvas, { timestamp: Math.round(i * 1e6 / fps), duration: Math.round(1e6 / fps) });
+          enc.encode(f, { keyFrame: i % (fps * 2) === 0 }); // khung khoá 2 giây/lần, khung đầu luôn là khung khoá → lặp vòng được
+          f.close();
+          i++;
+          if (onProgress && i % 10 === 0) onProgress(i / total);
+          return (i % 15 === 0 ? breathe() : Promise.resolve()).then(next);
+        }
+        return next();
+      }).then(function () {
+        enc.close();
+        if (failed) throw failed;
+        return { chunks: chunks, meta: meta, loopUs: Math.round(total * 1e6 / fps) };
+      });
+    }
+
+    var SR = 48000;
+    // nhạc nền → AudioBuffer stereo 48kHz đúng `seconds` giây (lặp bài nếu ngắn, mờ dần 2 giây cuối)
+    function renderMusic(url, seconds) {
+      if (!url || !window.OfflineAudioContext) return Promise.resolve(null);
+      return fetch(url, { mode: 'cors' }).then(function (r) { if (!r.ok) throw new Error('Không tải được nhạc'); return r.arrayBuffer(); })
+        .then(function (buf) { return new OfflineAudioContext(2, SR, SR).decodeAudioData(buf); })
+        .then(function (song) {
+          var len = Math.ceil(seconds * SR), off = new OfflineAudioContext(2, len, SR);
+          var src = off.createBufferSource(), g = off.createGain();
+          src.buffer = song; src.loop = true;
+          g.gain.setValueAtTime(0, 0); g.gain.linearRampToValueAtTime(1, Math.min(0.6, seconds / 4));
+          g.gain.setValueAtTime(1, Math.max(0, seconds - 2)); g.gain.linearRampToValueAtTime(0, seconds);
+          src.connect(g); g.connect(off.destination); src.start(0);
+          return off.startRendering();
+        });
+    }
+    function aacConfig() {
+      if (!window.AudioEncoder) return Promise.resolve(null);
+      var c = { codec: 'mp4a.40.2', sampleRate: SR, numberOfChannels: 2, bitrate: 160000 };
+      return AudioEncoder.isConfigSupported(c).then(function (r) { return r.supported ? c : null; }, function () { return null; });
+    }
+    function encodeAudio(buffer, config, muxer) {
+      var failed = null;
+      var enc = new AudioEncoder({ output: function (chunk, meta) { muxer.addAudioChunk(chunk, meta); }, error: function (e) { failed = e; } });
+      enc.configure(config);
+      var L = buffer.getChannelData(0), R = buffer.getChannelData(1), N = 4096;
+      for (var i = 0; i < buffer.length; i += N) {
+        var n = Math.min(N, buffer.length - i), planar = new Float32Array(n * 2);
+        planar.set(L.subarray(i, i + n), 0); planar.set(R.subarray(i, i + n), n);
+        var ad = new AudioData({ format: 'f32-planar', sampleRate: SR, numberOfFrames: n, numberOfChannels: 2, timestamp: Math.round(i * 1e6 / SR), data: planar });
+        enc.encode(ad); ad.close();
+      }
+      return enc.flush().then(function () { enc.close(); if (failed) throw failed; });
+    }
+
+    // opts: { loops, music (đường dẫn MP3), onProgress(0..1, chữ) } → Promise<{ blob, music: true|false }>
+    function exportMp4(opts) {
+      opts = opts || {};
+      var loops = Math.max(1, Math.min(30, opts.loops | 0 || 1)), prog = opts.onProgress || function () {};
+      if (!window.VideoEncoder || !window.VideoFrame) return Promise.reject(new Error('Trình duyệt chưa hỗ trợ xuất video — dùng Chrome hoặc Edge bản mới nhé'));
+      if (!window.Mp4Muxer) return Promise.reject(new Error('Thiếu thư viện đóng gói MP4'));
+      var loop, audioCfg = null, music = null;
+      return ready().then(function () {
+        stop();
+        return encodeLoop(function (p) { prog(p * 0.8, 'Đang dựng hình'); });
+      }).then(function (r) {
+        loop = r;
+        prog(0.82, 'Đang chuẩn bị nhạc nền');
+        return aacConfig();
+      }).then(function (cfg) {
+        audioCfg = cfg;
+        if (!cfg || !opts.music) return null;
+        return renderMusic(opts.music, loops * loop.loopUs / 1e6).catch(function (e) { console.warn('Bỏ qua nhạc nền:', e); return null; });
+      }).then(function (buf) {
+        music = buf;
+        prog(0.9, 'Đang đóng gói MP4');
+        var muxer = new Mp4Muxer.Muxer({
+          target: new Mp4Muxer.ArrayBufferTarget(),
+          video: { codec: 'avc', width: W, height: H, frameRate: 30 },
+          audio: music ? { codec: 'aac', numberOfChannels: 2, sampleRate: SR } : undefined,
+          fastStart: 'in-memory',
+          firstTimestampBehavior: 'offset',
+        });
+        for (var k = 0; k < loops; k++) {
+          loop.chunks.forEach(function (c, j) {
+            muxer.addVideoChunkRaw(c.data, c.type, c.ts + k * loop.loopUs, c.dur, k === 0 && j === 0 ? loop.meta : undefined);
+          });
+        }
+        return (music ? encodeAudio(music, audioCfg, muxer) : Promise.resolve()).then(function () {
+          muxer.finalize();
+          prog(1, 'Xong');
+          return { blob: new Blob([muxer.target.buffer], { type: 'video/mp4' }), music: !!music };
+        });
+      });
+    }
+
     function ready() {
       if (fontsReady || !document.fonts) return photosReady;
       return Promise.all(['700 80px "Dancing Script"', '500 80px "Playfair Display"', 'italic 500 80px "Playfair Display"', '700 80px "Charm"', '500 80px "Fraunces"', 'italic 400 80px "Fraunces"', '300 80px "Hanken Grotesk"', '500 80px "Hanken Grotesk"']
@@ -955,7 +1077,7 @@
     ready();
 
     return {
-      set: set, setPhoto: setPhoto, setPhotos: setPhotos, sceneTime: sceneTime, renderAt: renderAt, play: play, stop: stop, seek: seek, record: record, ready: ready,
+      set: set, setPhoto: setPhoto, setPhotos: setPhotos, sceneTime: sceneTime, renderAt: renderAt, play: play, stop: stop, seek: seek, record: record, exportMp4: exportMp4, ready: ready,
       duration: function () { return D; },
       time: now, pause: pause, resume: resume, paused: function () { return pausedAt !== null; },
     };

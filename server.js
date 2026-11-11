@@ -97,7 +97,7 @@ function cardSummary(card) {
     cover: card.data.cover || card.data.photos[0] || '',
     ...cardState(card),
     led: { ...ledLib.state(card.led), url: `${BASE_URL}/led/${card.slug}` },
-    video: { ...videoLib.state(card.video), url: `${BASE_URL}/video/${card.slug}` },
+    video: { ...videoLib.state(card.video), url: `${BASE_URL}/video/${card.slug}`, template: card.video ? card.video.template : null, kind: card.video ? card.video.event.kind : null },
   };
 }
 function cardFull(card) {
@@ -194,7 +194,7 @@ route('GET', '/api/meta', async (req, res) => {
     brand: config.brand, tagline: config.tagline, price: config.price, trialDays: config.trialDays,
     trialGuestLimit: config.trialGuestLimit, banks, templates: templateList(), templateGroups, baseUrl: BASE_URL, support: config.support,
     ledPrice: config.ledPrice, led: ledLib.options(),
-    videoPrice: config.videoPrice, video: videoLib.options(),
+    videoPrice: config.videoPrice, video: videoLib.options(), blobUpload: !!process.env.BLOB_READ_WRITE_TOKEN,
     googleLogin: google.enabled(),
   });
 });
@@ -615,7 +615,9 @@ route('POST', '/api/cards/:id/video/reset', async (req, res, ctx) => {
 function runFfmpeg(args) {
   return new Promise((resolve, reject) => {
     execFile(config.ffmpegPath || 'ffmpeg', args, { timeout: 10 * 60e3, windowsHide: true, maxBuffer: 8e6 }, (err, _out, stderr) => {
-      if (err) { console.error('ffmpeg lỗi:', String(stderr).slice(-1500)); reject(httpError(500, 'Chuyển video thất bại')); }
+      // máy chủ không cài ffmpeg (ENOENT): báo rõ để khách dùng link chiếu TV thay vì "lỗi máy chủ" chung chung
+      if (err && err.code === 'ENOENT') { console.error('ffmpeg chưa được cài trên máy chủ'); reject(httpError(503, 'Máy chủ tạm chưa xuất được MP4 — bạn vẫn chiếu được bằng link "Chép link chiếu TV". Vui lòng thử lại sau hoặc nhắn hỗ trợ.')); }
+      else if (err) { console.error('ffmpeg lỗi:', String(stderr).slice(-1500)); reject(httpError(500, 'Chuyển video thất bại')); }
       else resolve();
     });
   });
@@ -671,11 +673,74 @@ route('POST', '/api/cards/:id/video/export', async (req, res, ctx) => {
   json(res, 200, { url: card.video.mp4 });
 });
 
+// ---- bản sao MP4 (video dựng & đóng gói ngay trong trình duyệt khách) ----
+// Chạy thật trên Vercel: trình duyệt tải file thẳng lên Vercel Blob (không qua hàm, không vướng giới hạn 4,5MB);
+// máy chủ chỉ cấp vé tải lên và ghi lại đường dẫn. Chạy máy riêng (không có Blob): nhận file và lưu vào uploads.
+const BLOB_HOST = /^https:\/\/[a-z0-9]+\.public\.blob\.vercel-storage\.com\/videos\/[\w-]+\.mp4$/i;
+function paidVideoCard(ctx, id) {
+  const card = ownedCard(ctx, id);
+  if (!card.video) throw httpError(400, 'Hãy tạo video trước');
+  if (!card.video.paid) throw httpError(402, 'Kích hoạt video để tải bản MP4 Full HD');
+  return card;
+}
+// bỏ bản xuất cũ (chỉ giữ bản mới nhất của mỗi video)
+async function dropOldMp4(old) {
+  if (!old) return;
+  if (/^\/uploads\/[\w.-]+\.mp4$/.test(old)) fs.rmSync(path.join(UPLOAD_DIR, path.basename(old)), { force: true });
+  else if (BLOB_HOST.test(old) && process.env.BLOB_READ_WRITE_TOKEN) {
+    try { await require('@vercel/blob').del(old); } catch (e) { console.warn('Không xoá được bản MP4 cũ:', e.message); }
+  }
+}
+route('POST', '/api/cards/:id/video/blob', async (req, res, ctx) => {
+  if (!process.env.BLOB_READ_WRITE_TOKEN) throw httpError(501, 'Chưa cấu hình kho lưu trữ');
+  const body = await readJson(req);
+  if (!body || body.type !== 'blob.generate-client-token') throw httpError(400, 'Yêu cầu không hợp lệ');
+  const card = paidVideoCard(ctx, ctx.params.id);
+  rateLimit('mp4copy:' + card.userId, 20, 36e5);
+  const { handleUpload } = require('@vercel/blob/client');
+  const out = await handleUpload({
+    body, request: req,
+    onBeforeGenerateToken: async (pathname) => {
+      if (pathname !== `videos/${card.id}.mp4`) throw httpError(400, 'Tên file không hợp lệ');
+      return { allowedContentTypes: ['video/mp4'], maximumSizeInBytes: 400e6, addRandomSuffix: true, tokenPayload: card.id };
+    },
+  });
+  json(res, 200, out);
+});
+route('POST', '/api/cards/:id/video/saved', async (req, res, ctx) => {
+  const card = paidVideoCard(ctx, ctx.params.id);
+  const { url } = await readJson(req);
+  if (!BLOB_HOST.test(url || '') || !url.includes(`/videos/${card.id}`)) throw httpError(400, 'Đường dẫn video không hợp lệ');
+  const old = card.video.mp4;
+  card.video.mp4 = url;
+  save();
+  if (old !== url) await dropOldMp4(old);
+  json(res, 200, { url });
+});
+route('POST', '/api/cards/:id/video/saved-file', async (req, res, ctx) => {
+  const card = paidVideoCard(ctx, ctx.params.id);
+  if (process.env.VERCEL) throw httpError(501, 'Hãy cấu hình Vercel Blob để lưu bản sao video');
+  const type = String(req.headers['content-type'] || '').split(';')[0].trim();
+  if (type !== 'video/mp4') throw httpError(415, 'Chỉ nhận file MP4');
+  rateLimit('mp4copy:' + card.userId, 20, 36e5);
+  const buf = await readBody(req, 400e6);
+  // MP4 hợp lệ có hộp "ftyp" ngay đầu file
+  if (buf.length < 1000 || buf.toString('latin1', 4, 8) !== 'ftyp') throw httpError(400, 'File MP4 không hợp lệ');
+  const name = `${card.userId}-video-${rid(10)}.mp4`;
+  fs.writeFileSync(path.join(UPLOAD_DIR, name), buf);
+  const old = card.video.mp4;
+  card.video.mp4 = `/uploads/${name}`;
+  save();
+  await dropOldMp4(old);
+  json(res, 200, { url: card.video.mp4 });
+});
+
 // ---------------- trang tĩnh ----------------
 const PAGES = {
   '/': 'index.html', '/dang-nhap': 'auth.html', '/thiep-cua-toi': 'dashboard.html', '/admin': 'admin.html', '/mau-thiep': 'templates.html',
   '/video-cuoi': 'video-landing.html',
   '/so-tay': 'planner.html',
+  '/video-cua-toi': 'dashboard.html', // cùng trang với "Thiệp của tôi", hiện danh sách video
   '/so-tay-cuoi': 'planner-landing.html',
 };
 const MIME = {
@@ -684,10 +749,24 @@ const MIME = {
   '.svg': 'image/svg+xml', '.ico': 'image/x-icon', '.mp3': 'audio/mpeg', '.mp4': 'video/mp4', '.webmanifest': 'application/manifest+json', '.txt': 'text/plain; charset=utf-8', '.xml': 'application/xml',
 };
 
-function serveFile(res, file, cache) {
+function serveFile(res, file, cache, req) {
   fs.stat(file, (err, st) => {
     if (err || !st.isFile()) return html(res, 404, renderNotice('Không tìm thấy trang', 'Đường dẫn không tồn tại.'));
+    // tải từng đoạn (Range): trình duyệt / TV tua được video MP4 lưu trên máy chủ
+    const m = req && /^bytes=(\d*)-(\d*)$/.exec(req.headers.range || '');
+    if (m && (m[1] || m[2])) {
+      let start = m[1] ? +m[1] : Math.max(0, st.size - +m[2]);
+      let end = m[1] && m[2] ? Math.min(+m[2], st.size - 1) : st.size - 1;
+      if (start > end || start >= st.size) { res.writeHead(416, { 'Content-Range': `bytes */${st.size}` }); return res.end(); }
+      res.writeHead(206, {
+        'Content-Type': MIME[path.extname(file).toLowerCase()] || 'application/octet-stream',
+        'Content-Length': end - start + 1, 'Content-Range': `bytes ${start}-${end}/${st.size}`, 'Accept-Ranges': 'bytes',
+        'Cache-Control': cache, 'X-Content-Type-Options': 'nosniff',
+      });
+      return fs.createReadStream(file, { start, end }).pipe(res);
+    }
     res.writeHead(200, {
+      'Accept-Ranges': 'bytes',
       'Content-Type': MIME[path.extname(file).toLowerCase()] || 'application/octet-stream',
       'Content-Length': st.size,
       'Cache-Control': cache,
@@ -710,7 +789,7 @@ function serveStatic(req, res, pathname) {
   if (/^\/sua-video\/[\w-]+$/.test(pathname)) return serveFile(res, path.join(PUBLIC_DIR, 'video-editor.html'), 'no-cache');
   if (pathname === '/js/lunar.js') return serveFile(res, path.join(__dirname, 'lib', 'lunar.js'), 'no-cache');
   if (/^\/thanh-toan\/[\w-]+$/.test(pathname)) return serveFile(res, path.join(PUBLIC_DIR, 'pay.html'), 'no-cache');
-  if (/^\/uploads\/[\w.-]+$/.test(pathname)) return serveFile(res, path.join(UPLOAD_DIR, path.basename(pathname)), 'public, max-age=31536000, immutable');
+  if (/^\/uploads\/[\w.-]+$/.test(pathname)) return serveFile(res, path.join(UPLOAD_DIR, path.basename(pathname)), 'public, max-age=31536000, immutable', req);
   const file = path.normalize(path.join(PUBLIC_DIR, pathname));
   if (!file.startsWith(PUBLIC_DIR + path.sep)) return html(res, 404, renderNotice('Không tìm thấy trang', ''));
   // JS/CSS đổi theo phiên bản code: bắt trình duyệt kiểm tra lại, tránh khách chạy bản cũ

@@ -6,12 +6,17 @@
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
-    "test": "node test/smoke.js && node test/migrate.js && node test/admin.js"
+    "test": "node test/smoke.js && node test/migrate.js && node test/admin.js && node test/full.js",
+    "vendor": "cp node_modules/mp4-muxer/build/mp4-muxer.js public/vendor/mp4-muxer.js && esbuild tools/blob-client-entry.js --bundle --minify --format=iife --global-name=BlobClient --platform=browser --outfile=public/vendor/blob-client.js"
   },
   "engines": {
     "node": ">=20"
   },
   "dependencies": {
     "@vercel/blob": "2.8.2"
+  },
+  "devDependencies": {
+    "esbuild": "^0.24.2",
+    "mp4-muxer": "^5.2.2"
   }
 }

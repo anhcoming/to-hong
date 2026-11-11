@@ -114,13 +114,12 @@ function renderExport() {
   $('#exportBox').innerHTML = `<h3>Tải video MP4 Full HD</h3>
     <p class="muted" style="font-size:14px;margin:0 0 12px">Chép vào USB cắm TV, hoặc gửi qua Zalo. ${card.data.music ? 'Có kèm nhạc nền của thiệp.' : 'Muốn có nhạc nền: tải nhạc MP3 ở tab "Ảnh & nhạc" của thiệp.'}</p>
     <label class="field"><span>Độ dài</span><select id="loops" class="input">
-      <option value="1">1 vòng (${total} giây)</option>
-      <option value="${Math.max(2, Math.round(180 / total))}" selected>Lặp ~3 phút</option>
-      <option value="${Math.max(2, Math.min(30, Math.round(600 / total)))}">Lặp ~10 phút</option>
+      ${[[1, `1 vòng (${total} giây)`], [Math.max(2, Math.round(180 / total)), 'Lặp ~3 phút'], [Math.max(2, Math.min(30, Math.round(600 / total))), 'Lặp ~10 phút']]
+        .map(([n, label], i) => `<option value="${n}" ${i === 1 ? 'selected' : ''}>${label} · ~${Math.max(1, Math.round(n * total * 0.36))} MB</option>`).join('')}
     </select></label>
-    <button class="btn block" id="exportBtn">${s.paid ? '⬇ Quay & xuất MP4' : `Kích hoạt ${money(META.videoPrice)} để tải MP4`}</button>
-    ${s.mp4 ? `<a class="btn block plain" style="margin-top:8px" href="${esc(s.mp4)}" download>Tải bản đã xuất gần nhất</a>` : ''}
-    <p class="muted" style="font-size:12px;margin:10px 0 0">Nên dùng Chrome hoặc Edge bản mới. Trình duyệt cũ sẽ quay theo thời gian thực (~${total} giây, cần giữ tab mở).</p>`;
+    <button class="btn block" id="exportBtn">${s.paid ? '⬇ Xuất & tải MP4' : `Kích hoạt ${money(META.videoPrice)} để tải MP4`}</button>
+    ${s.mp4 ? `<a class="btn block plain" style="margin-top:8px" href="${esc(s.mp4)}" target="_blank" rel="noopener" download>Tải bản đã xuất gần nhất</a>` : ''}
+    <p class="muted" style="font-size:12px;margin:10px 0 0">Video dựng ngay trên máy bạn — nên dùng Chrome, Edge hoặc Safari bản mới.</p>`;
 }
 
 function renderHeader() {
@@ -173,33 +172,64 @@ async function reload() {
 }
 
 // ---------- xuất MP4 ----------
+// Dựng và đóng gói MP4 ngay trên máy khách (không qua máy chủ), tải về ngay; sau đó lưu một bản sao
+// lên kho (Vercel Blob khi chạy thật, thư mục uploads khi chạy máy riêng) để mở lại được từ máy khác.
+function fileName() {
+  const n = [card.data.groom.name, card.data.bride.name].filter(Boolean).join('-') || 'video-cuoi';
+  return (n.normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/đ/g, 'd').replace(/Đ/g, 'D').replace(/[^\w]+/g, '-').replace(/^-|-$/g, '').toLowerCase() || 'video-cuoi') + '.mp4';
+}
+function saveToDevice(blob) {
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob); a.download = fileName();
+  document.body.appendChild(a); a.click(); a.remove();
+  return a.href;
+}
+function loadScript(src) {
+  return new Promise((ok, fail) => { const s = document.createElement('script'); s.src = src; s.onload = ok; s.onerror = () => fail(new Error('Không tải được ' + src)); document.head.appendChild(s); });
+}
+// bản sao trên kho: chỉ giữ bản mới nhất của mỗi video
+async function saveCopy(blob) {
+  if (blob.size > 350e6) throw new Error('File quá lớn để lưu bản sao'); // bản 10 phút rất dài: chỉ giữ trên máy khách
+  if (META.blobUpload) {
+    if (!window.BlobClient) await loadScript('/vendor/blob-client.js');
+    const up = await BlobClient.upload(`videos/${CARD_ID}.mp4`, blob, { access: 'public', contentType: 'video/mp4', handleUploadUrl: `/api/cards/${CARD_ID}/video/blob`, clientPayload: CARD_ID, multipart: blob.size > 50e6 });
+    return (await api(`/api/cards/${CARD_ID}/video/saved`, { method: 'POST', body: { url: up.url } })).url;
+  }
+  return (await api(`/api/cards/${CARD_ID}/video/saved-file`, { method: 'POST', body: blob })).url;
+}
+
 async function exportMp4() {
   if (!card.video.paid) return openPayModal(CARD_ID, reload, 'video');
   clearTimeout(saveTimer);
   await save();
-  const loops = $('#loops').value;
+  const loops = +$('#loops').value || 1;
   let closeModal;
-  openModal(`<h2>Đang dựng video…</h2><p class="muted" style="margin:0">Thường mất dưới một phút. Đừng đóng trang này.</p><div class="bar"><i id="pg"></i></div><p class="muted" id="pgText" style="font-size:13px;margin:0">Chuẩn bị…</p>`, (box, close) => { closeModal = close; });
+  openModal(`<h2>Đang dựng video…</h2><p class="muted" style="margin:0">Video dựng ngay trên máy bạn, thường dưới một phút. Giữ trang này mở nhé.</p><div class="bar"><i id="pg"></i></div><p class="muted" id="pgText" style="font-size:13px;margin:0">Chuẩn bị…</p>`, (box, close) => { closeModal = close; });
   try {
     const off = document.createElement('canvas');
     off.width = 1920; off.height = 1080;
     const rec = VideoEngine.create(off, { photo: card.data.cover || card.data.photos[0] || '', photos: slidePhotos(), trial: false });
     rec.set(video, info());
-    await rec.ready(); // chờ chữ và ảnh tải xong
-    const blob = await rec.record((p) => {
-      $('#pg').style.width = Math.round(p * 80) + '%';
-      $('#pgText').textContent = `Đang dựng ${Math.round(p * rec.duration())}/${Math.round(rec.duration())} giây video`;
+    const { blob, music } = await rec.exportMp4({
+      loops, music: card.data.music,
+      onProgress: (p, label) => { $('#pg').style.width = Math.round(p * 100) + '%'; $('#pgText').textContent = `${label}… ${Math.round(p * 100)}%`; },
     });
-    $('#pg').style.width = '85%';
-    $('#pgText').textContent = 'Đang chuyển sang MP4 Full HD trên máy chủ…';
-    const r = await api(`/api/cards/${CARD_ID}/video/export?loops=${loops}`, { method: 'POST', body: blob });
-    $('#pg').style.width = '100%';
-    card.video.mp4 = r.url;
+    const local = saveToDevice(blob);
     closeModal();
-    openModal(`<h2>🎬 Video đã sẵn sàng</h2><p class="muted">MP4 Full HD 1920×1080 — chép vào USB để cắm TV, hoặc gửi cho người thân.</p>
-      <video src="${esc(r.url)}" controls style="width:100%;border-radius:10px;background:#000;margin:8px 0 14px"></video>
-      <a class="btn block lg" href="${esc(r.url)}" download>⬇ Tải video về máy</a>`);
-    renderExport();
+    const mb = (blob.size / 1e6).toFixed(1);
+    openModal(`<h2>🎬 Video đã tải về máy</h2><p class="muted">MP4 Full HD 1920×1080 · ${mb} MB${card.data.music ? (music ? ' · có nhạc nền' : ' · <b>không có nhạc</b> (trình duyệt này chưa ghép được nhạc — mở bằng Chrome nếu muốn có nhạc)') : ''}. Chép vào USB để cắm TV, hoặc gửi cho người thân.</p>
+      <video src="${local}" controls style="width:100%;border-radius:10px;background:#000;margin:8px 0 14px"></video>
+      <a class="btn block lg" href="${local}" download="${esc(fileName())}">⬇ Tải lại về máy</a>
+      <p class="muted" id="copyMsg" style="font-size:13px;margin:10px 0 0">Đang lưu một bản sao để tải lại từ máy khác…</p>`);
+    try {
+      const url = await saveCopy(blob);
+      card.video.mp4 = url;
+      const m = $('#copyMsg'); if (m) m.textContent = '✓ Đã lưu bản sao — mở "Video của tôi" ở máy khác là tải lại được.';
+      renderExport();
+    } catch (e) {
+      console.warn('Lưu bản sao thất bại:', e);
+      const m = $('#copyMsg'); if (m) m.textContent = 'Chưa lưu được bản sao lên kho (video trên máy bạn vẫn dùng bình thường). Máy khác muốn có file thì bấm xuất lại.';
+    }
   } catch (e) {
     if (closeModal) closeModal();
     toast(e.message, true);
