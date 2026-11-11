@@ -564,6 +564,8 @@ function eventModal(i) {
       if (!v('#evName')) return toast('Nhập tên lễ nhé', true);
       Object.assign(e, { name: v('#evName'), date: v('#evDate'), time: v('#evTime'), place: v('#evPlace'), address: v('#evAddr'), mapUrl: v('#evMap') });
       if (isNew) d.events.push(e);
+      // lịch trình xếp theo ngày giờ (lễ chưa có giờ đứng sau cùng trong ngày)
+      d.events.sort((a, b) => (a.date || '9999').localeCompare(b.date || '9999') || (a.time || '99').localeCompare(b.time || '99'));
       close(); applyLive();
     };
     const del = $('#evDel', box);
