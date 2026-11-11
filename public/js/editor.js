@@ -43,53 +43,56 @@ function tplPicker(cur) {
 `;
 }
 
+// Trình sửa mới: thiệp là màn hình chính (bấm ảnh/chữ trên thiệp để sửa). Những thứ không nằm trên thiệp
+// gom vào 6 nút công cụ, mỗi nút mở một bảng nhỏ (máy tính: bên trái cạnh thiệp; điện thoại: trượt từ dưới lên).
+const SHEETS = {
+  tpl: 'Mẫu & màu',
+  date: 'Ngày & các lễ',
+  media: 'Ảnh & nhạc',
+  gift: 'Mừng cưới',
+  guests: 'Khách mời & phản hồi',
+  more: 'Thêm',
+};
 const panes = {
-  info: () => `
-    ${person('groom', 'Chú rể')}
-    ${person('bride', 'Cô dâu')}
-    <section class="group panel"><h3>Ngày cưới <small>dùng cho trang bìa và đếm ngược</small></h3>
-      <div class="grid2">${f('date', 'Ngày (dương lịch)', { type: 'date', hint: 'Ngày âm lịch được tự tính và hiện trên thiệp' })}${f('time', 'Giờ', { type: 'time' })}</div>
-    </section>
-    <section class="group panel"><h3>Lời mời</h3>
-      ${f('inviteText', 'Câu mời', { ph: 'Trân trọng kính mời', max: 80 })}
-      ${f('message', 'Lời nhắn dưới phần mời', { type: 'textarea', max: 400 })}
-    </section>
-    <section class="group panel"><h3>Chuyện tình yêu <small>không bắt buộc</small></h3>
-      ${f('story', 'Kể ngắn về hai bạn', { type: 'textarea', rows: 5, max: 2000, ph: 'Chúng mình gặp nhau năm…' })}
-    </section>`,
+  tpl: () => {
+    const tpl = META.templates.find((t) => t.id === card.template) || META.templates[0];
+    return `
+    <section class="group panel">
+      ${tplPicker(tpl)}
+      <h3 style="margin:18px 0 10px">Bảng màu</h3>
+      <div class="pals">${tpl.palettes.map((p) => `<button data-pal="${p.id}" class="${p.id === card.palette ? 'on' : ''}"><i style="background:linear-gradient(135deg,${p.swatch[0]} 50%,${p.swatch[1]} 50%)"></i>${esc(p.name)}</button>`).join('')}</div>
+    </section>`;
+  },
 
-  events: () => `
-    <section class="group panel"><h3>Lịch trình ngày cưới</h3>
-      <p class="muted" style="margin:-6px 0 14px;font-size:14px">Mỗi sự kiện có bản đồ, nút chỉ đường và nút lưu vào lịch cho khách.</p>
+  date: () => `
+    <section class="group panel"><h3>Ngày cưới <small>dùng cho trang bìa và đếm ngược</small></h3>
+      <div class="grid2">${f('date', 'Ngày (dương lịch)', { type: 'date', hint: 'Ngày âm lịch tự tính và hiện trên thiệp' })}${f('time', 'Giờ', { type: 'time' })}</div>
+    </section>
+    <section class="group panel"><h3>Các lễ trong ngày cưới</h3>
+      <p class="muted" style="margin:-6px 0 14px;font-size:14px">Tên lễ, nơi tổ chức và địa chỉ sửa được ngay trên thiệp. Ở đây chọn ngày giờ, thêm hoặc bớt lễ.</p>
       <div id="evs">${card.data.events.map((e, i) => `
         <div class="ev">
-          <div class="ev-h"><b>Sự kiện ${i + 1}</b>
+          <div class="ev-h"><b>${esc(e.name || `Lễ ${i + 1}`)}</b>
             <span>${i ? `<button class="btn sm plain" data-ev-up="${i}" title="Lên trên">↑</button>` : ''}
             <button class="btn sm danger" data-ev-del="${i}">Xoá</button></span></div>
-          ${f(`events.${i}.name`, 'Tên sự kiện', { ph: 'Lễ Vu Quy / Lễ Thành Hôn / Tiệc Cưới', max: 60 })}
+          ${f(`events.${i}.name`, 'Tên lễ', { ph: 'Lễ Vu Quy / Lễ Thành Hôn / Tiệc Cưới', max: 60 })}
           <div class="grid2">${f(`events.${i}.date`, 'Ngày', { type: 'date' })}${f(`events.${i}.time`, 'Giờ', { type: 'time' })}</div>
-          ${f(`events.${i}.place`, 'Địa điểm', { ph: 'Nhà hàng Hoa Sen — Sảnh A', max: 120 })}
-          ${f(`events.${i}.address`, 'Địa chỉ (dùng để hiện bản đồ)', { ph: 'Số nhà, đường, phường, tỉnh/thành', max: 200 })}
+          ${f(`events.${i}.place`, 'Nơi tổ chức', { ph: 'Nhà hàng Hoa Sen — Sảnh A', max: 120 })}
+          ${f(`events.${i}.address`, 'Địa chỉ (hiện bản đồ)', { ph: 'Số nhà, đường, phường, tỉnh/thành', max: 200 })}
           ${f(`events.${i}.mapUrl`, 'Link Google Maps (không bắt buộc)', { ph: 'https://maps.app.goo.gl/…', hint: 'Dán link nếu bản đồ theo địa chỉ chưa đúng chỗ' })}
-        </div>`).join('') || '<p class="muted">Chưa có sự kiện nào.</p>'}</div>
-      ${card.data.events.length < 6 ? '<button class="btn soft" id="evAdd">+ Thêm sự kiện</button>' : ''}
+        </div>`).join('') || '<p class="muted">Chưa có lễ nào.</p>'}</div>
+      ${card.data.events.length < 6 ? '<button class="btn soft block" id="evAdd">+ Thêm lễ</button>' : ''}
     </section>`,
 
   media: () => {
     const d = card.data;
     return `
-    <section class="group panel"><h3>Ảnh bìa</h3>
-      <div class="cover-box">
-        ${d.cover ? `<div class="photo" style="background-image:url('${esc(d.cover)}')"><button data-cover-del title="Xoá">×</button></div>` : '<label class="drop" style="width:110px">+ Chọn ảnh<input type="file" accept="image/*" id="coverIn" hidden></label>'}
-        <p class="muted" style="font-size:14px;margin:0">Ảnh này hiện ở trang bìa và khi gửi link qua Zalo/Messenger. Nên dùng ảnh dọc, rõ mặt.${d.cover ? '<br><label class="btn sm soft" style="margin-top:8px">Đổi ảnh<input type="file" accept="image/*" id="coverIn" hidden></label>' : ''}</p>
-      </div>
-    </section>
     <section class="group panel"><h3>Album ảnh <small>${d.photos.length}/24 ảnh</small></h3>
+      <p class="muted" style="margin:-6px 0 12px;font-size:14px">Bấm thẳng vào ảnh trên thiệp để đổi, căn khung. Ở đây chọn nhiều ảnh một lúc và sắp xếp thứ tự.</p>
       <div class="photos">
-        ${d.photos.map((u, i) => `<div class="photo" style="background-image:url('${esc(u)}')">${i ? `<button class="mv" data-ph-up="${i}" title="Lên trước">←</button>` : ''}<button data-ph-del="${i}" title="Xoá">×</button></div>`).join('')}
+        ${d.photos.map((u, i) => `<div class="photo" style="background-image:url('${esc(u.split('#')[0])}')">${i ? `<button class="mv" data-ph-up="${i}" title="Lên trước">←</button>` : ''}<button data-ph-del="${i}" title="Xoá">×</button></div>`).join('')}
         ${d.photos.length < 24 ? '<label class="drop">+ Thêm ảnh<br>(chọn nhiều)<input type="file" accept="image/*" multiple id="photosIn" hidden></label>' : ''}
       </div>
-      <p class="muted" style="font-size:13px;margin:10px 0 0">Ảnh được tự thu nhỏ để thiệp mở nhanh trên điện thoại.</p>
     </section>
     <section class="group panel"><h3>Nhạc nền</h3>
       ${d.music ? `<audio controls src="${esc(d.music)}" style="width:100%;margin-bottom:10px"></audio><button class="btn sm danger" data-music-del>Bỏ nhạc</button>` : `
@@ -100,29 +103,30 @@ const panes = {
 
   gift: () => {
     const bankSel = (k) => `<label class="field"><span>Ngân hàng</span><select data-k="${k}.bin"><option value="">— Chọn ngân hàng —</option>${META.banks.map((b) => `<option value="${b.bin}" ${getP(card.data, k + '.bin') === b.bin ? 'selected' : ''}>${esc(b.name)}</option>`).join('')}</select></label>`;
-    const tg = (k, l) => `<label class="check"><input type="checkbox" data-k="show.${k}" ${card.data.show[k] ? 'checked' : ''}>${l}</label>`;
     return `
     <section class="group panel"><h3>Tài khoản mừng cưới <small>khách quét QR để chuyển</small></h3>
       <p class="muted" style="margin:-6px 0 14px;font-size:14px">Tiền chuyển thẳng vào tài khoản của bạn, không qua hệ thống. Để trống nếu không muốn hiện.</p>
       <h4 style="margin:0 0 8px">Chú rể</h4>
-      <div class="grid2">${bankSel('gifts.groom')}${f('gifts.groom.acc', 'Số tài khoản', { max: 30 })}</div>
+      ${bankSel('gifts.groom')}${f('gifts.groom.acc', 'Số tài khoản', { max: 30 })}
       ${f('gifts.groom.holder', 'Tên chủ tài khoản', { ph: 'NGUYEN DUC MINH', max: 60 })}
       <h4 style="margin:8px 0 8px">Cô dâu</h4>
-      <div class="grid2">${bankSel('gifts.bride')}${f('gifts.bride.acc', 'Số tài khoản', { max: 30 })}</div>
+      ${bankSel('gifts.bride')}${f('gifts.bride.acc', 'Số tài khoản', { max: 30 })}
       ${f('gifts.bride.holder', 'Tên chủ tài khoản', { ph: 'LE THU HA', max: 60 })}
-    </section>
-    <section class="group panel"><h3>Hiện/ẩn các phần trên thiệp</h3>
-      <div class="toggles">${tg('calendar', 'Lịch tháng')}${tg('countdown', 'Đếm ngược')}${tg('gallery', 'Album ảnh')}${tg('rsvp', 'Xác nhận tham dự')}${tg('gift', 'Hộp mừng cưới')}${tg('wishes', 'Sổ lưu bút')}</div>
     </section>`;
   },
 
-  look: () => {
-    const tpl = META.templates.find((t) => t.id === card.template) || META.templates[0];
+  guests: () => `<div id="gBox"><div class="skeleton" style="height:200px"></div></div><div id="rBox" style="margin-top:16px"><div class="skeleton" style="height:200px"></div></div>`,
+
+  more: () => {
+    const tg = (k, l) => `<label class="check"><input type="checkbox" data-k="show.${k}" ${card.data.show[k] ? 'checked' : ''}>${l}</label>`;
     return `
-    <section class="group panel"><h3>Mẫu thiệp</h3>
-      ${tplPicker(tpl)}
-      <h3 style="margin:18px 0 10px">Bảng màu</h3>
-      <div class="pals">${tpl.palettes.map((p) => `<button data-pal="${p.id}" class="${p.id === card.palette ? 'on' : ''}"><i style="background:linear-gradient(135deg,${p.swatch[0]} 50%,${p.swatch[1]} 50%)"></i>${esc(p.name)}</button>`).join('')}</div>
+    <section class="group panel"><h3>Xem thiệp</h3>
+      <div class="pvmode2" id="pvMode2">
+        <button data-mode="edit" class="${liveEdit ? 'on' : ''}">✎ Sửa trực tiếp</button><button data-mode="view" class="${liveEdit ? '' : 'on'}">👁 Xem như khách</button>
+      </div>
+    </section>
+    <section class="group panel"><h3>Hiện/ẩn các phần trên thiệp</h3>
+      <div class="toggles">${tg('calendar', 'Lịch tháng')}${tg('countdown', 'Đếm ngược')}${tg('gallery', 'Album ảnh')}${tg('rsvp', 'Xác nhận tham dự')}${tg('gift', 'Hộp mừng cưới')}${tg('wishes', 'Sổ lưu bút')}</div>
     </section>
     <section class="group panel"><h3>Tên & đường dẫn</h3>
       <label class="field"><span>Tên thiệp (chỉ bạn thấy)</span><input id="titleIn" value="${esc(card.title)}" maxlength="60"></label>
@@ -130,26 +134,32 @@ const panes = {
         <div style="display:flex;gap:8px"><div class="slug" style="flex:1"><span>${esc(META.baseUrl.replace(/^https?:\/\//, ''))}/t/</span><input id="slugIn" value="${esc(card.slug)}" maxlength="40"></div><button class="btn plain" id="slugSave">Lưu</button></div>
         <small>Chỉ dùng chữ không dấu, số và dấu gạch ngang. Ví dụ: minh-ha-2026</small></label>
     </section>
+    <section class="group panel" style="display:grid;gap:8px">
+      <a class="btn block plain" href="/sua-video/${CARD_ID}">🎬 Video cưới</a>
+      ${card.led && card.led.created ? `<a class="btn block plain" href="/sua-led/${CARD_ID}">✨ Màn LED</a>` : ''}
+    </section>
     ${card.status === 'published' ? `<section class="group panel"><h3>Tạm ẩn thiệp</h3><p class="muted" style="margin:-6px 0 12px;font-size:14px">Khách mời sẽ không mở được thiệp cho tới khi bạn phát hành lại.</p><button class="btn danger" id="unpub">Chuyển về bản nháp</button></section>` : ''}`;
   },
-
-  guests: () => `<div id="gBox"><div class="skeleton" style="height:200px"></div></div>`,
-  resp: () => `<div id="rBox"><div class="skeleton" style="height:200px"></div></div>`,
 };
 
-let curTab = 'info';
+let curTab = null;
 function showTab(t) {
+  if (!panes[t]) t = null;
   curTab = t;
-  $$('.tab').forEach((b) => b.classList.toggle('on', b.dataset.tab === t));
+  $$('#tools button').forEach((b) => b.classList.toggle('on', b.dataset.tab === t));
+  document.body.classList.toggle('sheet-open', !!t);
+  if (!t) { $('#panes').innerHTML = ''; return; }
+  $('#sheetTitle').textContent = SHEETS[t];
   $('#panes').innerHTML = `<div class="pane">${panes[t]()}</div>`;
-  $('.side').scrollTop = 0;
-  if (t === 'guests') loadGuests();
-  if (t === 'resp') loadResponses();
+  $('#sheetBody').scrollTop = 0;
+  if (t === 'guests') { loadGuests(); loadResponses(); }
 }
 function rerender() {
-  const y = $('.side').scrollTop;
+  if (!curTab) return;
+  const body = $('#sheetBody'), y = body.scrollTop;
   $('#panes').innerHTML = `<div class="pane">${panes[curTab]()}</div>`;
-  $('.side').scrollTop = y;
+  body.scrollTop = y;
+  if (curTab === 'guests') { loadGuests(); loadResponses(); }
 }
 
 // ---------- lưu ----------
@@ -179,6 +189,11 @@ async function save() {
 }
 // Khung xem trước = khung sửa trực tiếp (bấm ảnh/chữ để sửa). "Xem như khách" tắt các viền sửa.
 let liveEdit = true;
+function setMode(edit) {
+  liveEdit = edit;
+  $$('#pvMode button').forEach((x) => x.classList.toggle('on', (x.dataset.m === 'edit') === edit));
+  refreshPreview();
+}
 function refreshPreview() {
   const fr = $('#frame');
   const src = `/t/${card.slug}?preview=1${liveEdit ? '&edit=1' : ''}`;
@@ -351,6 +366,7 @@ function bind() {
     else if (ds.coverDel !== undefined) d.cover = '';
     else if (ds.musicDel !== undefined) d.music = '';
     else if (ds.tg !== undefined) { tplGroup = ds.tg; rerender(); return; }
+    else if (ds.mode) { setMode(ds.mode === 'edit'); rerender(); return; }
     else if (ds.tpl) { if (card.template !== ds.tpl) { card.template = ds.tpl; card.palette = ''; } }
     else if (ds.pal) card.palette = ds.pal;
     else if (b.id === 'slugSave') {
@@ -377,15 +393,12 @@ function bind() {
       rerender();
     } else save();
   });
-  $('#tabs').addEventListener('click', (e) => { const t = e.target.closest('.tab'); if (t) showTab(t.dataset.tab); });
-  $('#pvBtn').onclick = () => $('#prev').classList.add('show');
-  $('#pvClose').onclick = () => $('#prev').classList.remove('show');
-  $('#pvMode').addEventListener('click', (e) => {
-    const b = e.target.closest('[data-m]'); if (!b) return;
-    liveEdit = b.dataset.m === 'edit';
-    $$('#pvMode button').forEach((x) => x.classList.toggle('on', x === b));
-    refreshPreview();
-  });
+  // nút công cụ: bấm lần nữa (hoặc ×, hoặc nền mờ trên điện thoại) để đóng bảng
+  $('#tools').addEventListener('click', (e) => { const t = e.target.closest('[data-tab]'); if (t) showTab(curTab === t.dataset.tab ? null : t.dataset.tab); });
+  $('#sheetX').onclick = () => showTab(null);
+  $('#scrim').onclick = () => showTab(null);
+  document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && curTab && !document.querySelector('.modal')) showTab(null); });
+  $('#pvMode').addEventListener('click', (e) => { const b = e.target.closest('[data-m]'); if (b) setMode(b.dataset.m === 'edit'); });
   window.addEventListener('beforeunload', (e) => { if (saveTimer && $('#saved').textContent.startsWith('Đang')) { e.preventDefault(); e.returnValue = ''; } });
 }
 
@@ -549,12 +562,12 @@ window.addEventListener('message', (e) => {
     if (e.status === 404) $('#ttl').textContent = 'Không tìm thấy thiệp';
     return;
   }
-  $('#ledLink').href = '/sua-led/' + CARD_ID;
-  if (!(card.led && card.led.created)) $('#ledLink').style.display = 'none'; // màn LED không còn bán riêng, chỉ giữ cho thiệp đã tạo (thuộc tính hidden bị .btn ghi đè)
-  $('#videoLink').href = '/sua-video/' + CARD_ID;
   bind();
   renderHeader();
-  showTab(new URLSearchParams(location.search).get('tab') || 'info');
+  // ?tab=… (link cũ: info/events/look/resp…) mở thẳng bảng tương ứng; mặc định chỉ hiện thiệp
+  const OLD = { events: 'date', look: 'tpl', resp: 'guests', info: null };
+  const want = new URLSearchParams(location.search).get('tab');
+  showTab(want in OLD ? OLD[want] : want);
   refreshPreview();
   status('Đã lưu ✓');
 })();

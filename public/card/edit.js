@@ -13,6 +13,7 @@
     '[data-ce-photo]{cursor:pointer}',
     '[data-ce-key]{cursor:text;outline:1.5px dashed rgba(214,69,93,.5);outline-offset:3px;border-radius:2px}',
     '[data-ce-key]:hover,[data-ce-key].ce-on{outline:2px solid #d6455d;background:rgba(214,69,93,.06)}',
+    '[data-ce-key].ce-ph{opacity:.55;font-style:italic}',
     '.ce-hl{position:fixed;z-index:2147483000;pointer-events:none;border:3px solid #d6455d;border-radius:6px;box-shadow:0 0 0 9999px rgba(0,0,0,0);transition:all .08s}',
     '.ce-hl b{position:absolute;top:6px;left:6px;padding:3px 9px;border-radius:999px;background:#d6455d;color:#fff;font:600 12px/1.4 system-ui,sans-serif;white-space:nowrap}',
     '.ce-tip{position:fixed;left:50%;bottom:14px;translate:-50% 0;z-index:2147483001;padding:8px 14px;border-radius:999px;background:rgba(20,12,14,.78);color:#fff;font:600 13px/1.3 system-ui,sans-serif;white-space:nowrap;pointer-events:none;transition:opacity .4s}',
@@ -42,7 +43,7 @@
   var LIST = [];
   FIELDS.forEach(function (f) {
     var v = norm(f[1]); if (v.length < 2) return;
-    LIST.push({ key: f[0], v: v, raw: f[1] });
+    LIST.push({ key: f[0], v: v, raw: f[1], ph: !!f[2] });
     var u = unTitle(v); if (u !== v && u.length >= 2) LIST.push({ key: f[0], v: u, raw: f[1] });
   });
   LIST.sort(function (a, b) { return b.v.length - a.v.length; }); // ưu tiên đoạn dài nhất
@@ -55,20 +56,62 @@
     }
     return null;
   }
+  // tìm mọi đoạn trùng giá trị dữ liệu trong một đoạn chữ (không phân biệt hoa thường, khoảng trắng tuỳ ý)
+  var escRx = function (s) { return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&').replace(/\s+/g, '\\s+'); };
+  var seen = {};
+  var RX = LIST.filter(function (f) { var k = f.key + '|' + f.raw; if (seen[k]) return false; seen[k] = 1; return true; }).map(function (f) {
+    var raw = f.raw.normalize('NFC').trim(), m = /^(Ông|Bà)\s+(.+)$/i.exec(raw);
+    // mẫu hay bỏ chữ "Ông/Bà" trước tên bố mẹ → cho phép có hoặc không
+    var src = m ? '(?:(?:Ông|Bà)\\s+)?' + escRx(m[2]) : escRx(raw);
+    return { f: f, re: new RegExp(src, 'giu') };
+  });
+  function rangesIn(text) {
+    var out = [];
+    RX.forEach(function (r) {
+      r.re.lastIndex = 0;
+      var m;
+      while ((m = r.re.exec(text))) {
+        var a = m.index, b = a + m[0].length;
+        if (b > a && !out.some(function (x) { return a < x.b && b > x.a; })) out.push({ a: a, b: b, f: r.f });
+        if (!m[0].length) r.re.lastIndex++;
+      }
+    });
+    return out.sort(function (x, y) { return x.a - y.a; });
+  }
+  function tag(el, f) { el.dataset.ceKey = f.key; if (f.ph) el.classList.add('ce-ph'); }
   function markText() {
     var root = document.querySelector('main.card') || document.body;
     var w = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, {
       acceptNode: function (n) {
         var p = n.parentElement;
-        if (!p || /^(SCRIPT|STYLE|BUTTON|TEXTAREA|INPUT|OPTION)$/.test(p.tagName) || p.closest('form,.lightbox')) return NodeFilter.FILTER_REJECT;
+        if (!p || /^(SCRIPT|STYLE|BUTTON|TEXTAREA|INPUT|OPTION)$/.test(p.tagName) || p.closest('form,.lightbox,[data-ce-key]')) return NodeFilter.FILTER_REJECT;
         return n.nodeValue.trim().length > 1 ? NodeFilter.FILTER_ACCEPT : NodeFilter.FILTER_REJECT;
       },
     });
-    var n;
-    while ((n = w.nextNode())) {
-      var p = n.parentElement, f = fieldFor(p.textContent) || fieldFor(n.nodeValue);
-      if (f && !p.dataset.ceKey) p.dataset.ceKey = f.key;
-    }
+    var nodes = [], n;
+    while ((n = w.nextNode())) nodes.push(n);
+    nodes.forEach(function (n) {
+      var p = n.parentElement;
+      if (!p || p.closest('[data-ce-key]')) return;
+      var text = n.nodeValue, rs = rangesIn(text);
+      if (rs.length) {
+        // cả đoạn chữ của thẻ chính là một giá trị → đánh dấu luôn thẻ đó (viền đẹp hơn)
+        if (rs.length === 1 && p.childNodes.length === 1 && text.trim().length <= (rs[0].b - rs[0].a) + 2) { tag(p, rs[0].f); return; }
+        // nhiều giá trị chung một dòng (vd bố & mẹ, "nơi tổ chức, địa chỉ") → bọc từng đoạn để bấm riêng
+        var frag = document.createDocumentFragment(), at = 0;
+        rs.forEach(function (r) {
+          if (r.a > at) frag.appendChild(document.createTextNode(text.slice(at, r.a)));
+          var s = document.createElement('span'); s.textContent = text.slice(r.a, r.b); tag(s, r.f);
+          frag.appendChild(s); at = r.b;
+        });
+        if (at < text.length) frag.appendChild(document.createTextNode(text.slice(at)));
+        p.replaceChild(frag, n);
+        return;
+      }
+      // giá trị bị tách qua nhiều thẻ (vd tên xuống dòng) → so cả đoạn chữ của thẻ cha
+      var f = fieldFor(p.textContent);
+      if (f && !p.dataset.ceKey) tag(p, f);
+    });
   }
 
   // ---------- khung đánh dấu ảnh khi rê chuột ----------

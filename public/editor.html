@@ -8,24 +8,39 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&amp;family=Dancing+Script:wght@600;700&amp;display=swap">
 <link rel="stylesheet" href="/css/app.css">
 <style>
-body{height:100vh;display:flex;flex-direction:column;overflow:hidden}
-.ebar{display:flex;align-items:center;gap:10px;padding:10px 16px;border-bottom:1px solid var(--line);background:var(--surface);flex-wrap:wrap}
+body{height:100vh;height:100dvh;display:flex;flex-direction:column;overflow:hidden}
+.ebar{flex:none;display:flex;align-items:center;gap:10px;padding:10px 16px;border-bottom:1px solid var(--line);background:var(--surface);z-index:6}
 .ebar .back{text-decoration:none;color:var(--muted);font-size:20px;padding:4px 8px}
-.ebar h1{margin:0;font-size:17px;flex:1;min-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.saved{font-size:13px;color:var(--muted)}
-.layout{flex:1;display:grid;grid-template-columns:minmax(0,1fr) 440px;min-height:0}
-.side{overflow:auto;background:var(--bg)}
-.side .tabs{position:sticky;top:0;background:var(--bg);z-index:5;padding:0 16px}
-.pane{padding:20px 16px 80px;max-width:720px}
-.pane[hidden]{display:none}
-.group{padding:18px;margin-bottom:16px}
-.group h3{margin:0 0 14px;font-size:16px}
+.ebar h1{margin:0;font-size:17px;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.saved{font-size:13px;color:var(--muted);white-space:nowrap}
+.emain{flex:1;min-height:0;display:flex}
+/* 6 nút công cụ: cột dọc bên trái (máy tính), thanh dưới cùng (điện thoại) */
+.tools{flex:none;display:flex;flex-direction:column;gap:4px;width:88px;padding:12px 8px;background:var(--surface);border-right:1px solid var(--line);overflow-y:auto}
+.tools button{display:flex;flex-direction:column;align-items:center;gap:5px;padding:10px 4px;border:0;border-radius:12px;background:none;color:var(--ink);font:inherit;font-size:12px;font-weight:600;line-height:1.2;cursor:pointer;text-align:center}
+.tools button i{font-style:normal;font-size:20px;line-height:1}
+.tools button:hover{background:var(--primary-soft)}
+.tools button.on{background:var(--primary-soft);color:var(--primary)}
+/* bảng mở từ nút công cụ */
+.sheet{flex:none;width:400px;display:none;flex-direction:column;background:var(--bg);border-right:1px solid var(--line);min-height:0}
+.sheet-open .sheet{display:flex}
+.sheet-h{flex:none;display:flex;align-items:center;justify-content:space-between;gap:10px;padding:14px 16px 6px}
+.sheet-h b{font-size:17px}
+.sheet-h button{width:34px;height:34px;border-radius:50%;border:0;background:var(--surface);color:var(--muted);font-size:20px;cursor:pointer}
+.sheet-body{flex:1;min-height:0;overflow:auto}
+.pane{padding:8px 16px 40px}
+.group{padding:16px;margin-bottom:12px}
+.group h3{margin:0 0 12px;font-size:16px}
 .group h3 small{font-weight:400;color:var(--muted);font-size:13px;margin-left:6px}
-.prev{background:#e9e2da;display:grid;place-items:center;align-content:center;gap:12px;padding:16px;overflow:auto}
+.scrim{display:none}
+/* thiệp ở giữa: khung điện thoại trên máy tính */
+.stage{flex:1;min-width:0;display:grid;place-items:center;align-content:center;gap:12px;padding:16px;background:#e9e2da;overflow:auto}
+[data-theme="dark"] .stage{background:#1a1416}
 .pvmode{display:inline-flex;padding:4px;border-radius:999px;background:rgba(255,255,255,.75);box-shadow:0 4px 14px rgba(0,0,0,.08)}
-.pvmode button{border:0;background:none;padding:7px 14px;border-radius:999px;font:inherit;font-size:13px;font-weight:600;color:#5d4f4a;cursor:pointer;white-space:nowrap}
-.pvmode button.on{background:var(--primary);color:#fff}
-.phone{width:375px;height:min(760px,calc(100vh - 160px));border-radius:40px;background:#1d1517;padding:10px;box-shadow:0 30px 60px rgba(0,0,0,.2)}
+.pvmode button,.pvmode2 button{border:0;background:none;padding:7px 14px;border-radius:999px;font:inherit;font-size:13px;font-weight:600;color:#5d4f4a;cursor:pointer;white-space:nowrap}
+.pvmode button.on,.pvmode2 button.on{background:var(--primary);color:#fff}
+.pvmode2{display:flex;padding:4px;border-radius:999px;background:color-mix(in srgb,var(--ink) 8%,transparent);width:max-content;max-width:100%}
+.pvmode2 button{color:var(--ink)}
+.phone{width:400px;max-width:100%;height:min(820px,calc(100vh - 150px));border-radius:40px;background:#1d1517;padding:10px;box-shadow:0 30px 60px rgba(0,0,0,.2)}
 .phone iframe{width:100%;height:100%;border:0;border-radius:31px;background:var(--surface)}
 .ev{border:1px solid var(--line);border-radius:12px;padding:14px;margin-bottom:12px;background:var(--surface)}
 .ev-h{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
@@ -61,21 +76,26 @@ body{height:100vh;display:flex;flex-direction:column;overflow:hidden}
 .sum{flex:1;min-width:110px;padding:14px;text-align:center}
 .sum b{display:block;font-size:24px;font-family:var(--serif)}
 .sum span{font-size:12px;color:var(--muted)}
-.mobile-prev{display:none}
-@media (max-width:960px){
-  .layout{grid-template-columns:1fr}
-  /* xem trước trên điện thoại/máy tính bảng: tràn toàn màn hình như khi mở link thật, không khung điện thoại */
-  .prev{display:none;position:fixed;inset:0;z-index:60;padding:0;background:var(--surface)}
-  .prev.show{display:block}
-  .prev .close{position:fixed;top:max(10px,env(safe-area-inset-top));right:10px;z-index:61;background:rgba(20,12,14,.55);color:#fff;border:0;box-shadow:0 4px 14px rgba(0,0,0,.25);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px)}
-  .phone{width:100%;height:100vh;height:100dvh;border-radius:0;padding:0;background:none;box-shadow:none}
+@media (max-width:760px){
+  .ebar{padding:8px 10px;gap:6px}
+  .saved{display:none}
+  .emain{flex-direction:column-reverse}
+  .tools{flex-direction:row;width:auto;justify-content:space-around;gap:0;padding:4px 2px calc(4px + env(safe-area-inset-bottom));border-right:0;border-top:1px solid var(--line)}
+  .tools button{flex:1;padding:6px 1px;font-size:10.5px;gap:3px}
+  .tools button i{font-size:19px}
+  .stage{padding:0;display:block}
+  .pvmode{display:none}
+  .phone{width:100%;height:100%;border-radius:0;padding:0;background:none;box-shadow:none}
   .phone iframe{border-radius:0}
-  .pvmode{position:fixed;top:max(10px,env(safe-area-inset-top));left:10px;z-index:61;background:rgba(20,12,14,.55);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px)}
-  .pvmode button{color:#fff;padding:6px 11px}
-  body:has(.prev.show){overflow:hidden}
-  .mobile-prev{display:inline-flex}
+  /* bảng trượt từ dưới lên, che một phần thiệp */
+  .sheet{position:fixed;left:0;right:0;bottom:0;width:auto;max-height:78vh;max-height:78dvh;border:0;border-radius:20px 20px 0 0;box-shadow:0 -14px 40px rgba(0,0,0,.25);z-index:30;animation:sheetUp .22s ease-out}
+  .sheet-h{padding-top:10px}
+  .sheet-h::before{content:"";position:absolute;left:50%;top:6px;translate:-50% 0;width:40px;height:4px;border-radius:4px;background:var(--line)}
+  .sheet-body{padding-bottom:env(safe-area-inset-bottom)}
+  .sheet-open .scrim{display:block;position:fixed;inset:0;background:rgba(0,0,0,.32);z-index:29}
+  .grid2{grid-template-columns:1fr}
 }
-@media (min-width:961px){.prev .close{display:none}}
+@keyframes sheetUp{from{transform:translateY(40px);opacity:.4}to{transform:none;opacity:1}}
 </style>
 </head>
 <body>
@@ -83,29 +103,26 @@ body{height:100vh;display:flex;flex-direction:column;overflow:hidden}
   <a class="back" href="/thiep-cua-toi" title="Về danh sách">←</a>
   <h1 id="ttl">Đang tải…</h1>
   <span class="saved" id="saved"></span>
-  <a class="btn sm plain" id="ledLink" href="#">✨ Màn LED</a>
-  <a class="btn sm plain" id="videoLink" href="#">🎬 Video</a>
-  <button class="btn sm plain mobile-prev" id="pvBtn">✎ Sửa trên thiệp</button>
   <span id="pubArea"></span>
 </header>
-<div class="layout">
-  <div class="side">
-    <nav class="tabs" id="tabs">
-      <button class="tab on" data-tab="info">Thông tin</button>
-      <button class="tab" data-tab="events">Lịch trình</button>
-      <button class="tab" data-tab="media">Ảnh & nhạc</button>
-      <button class="tab" data-tab="gift">Mừng cưới</button>
-      <button class="tab" data-tab="look">Giao diện</button>
-      <button class="tab" data-tab="guests">Khách mời</button>
-      <button class="tab" data-tab="resp">Phản hồi</button>
-    </nav>
-    <div id="panes"></div>
-  </div>
-  <div class="prev" id="prev">
-    <button class="btn sm close" id="pvClose">✕ Đóng</button>
-    <div class="pvmode" id="pvMode" role="group" aria-label="Chế độ khung xem trước"><button data-m="edit" class="on">✎ Sửa trực tiếp</button><button data-m="view">👁 Xem như khách</button></div>
-    <div class="phone"><iframe id="frame" title="Xem trước thiệp"></iframe></div>
-  </div>
+<div class="emain">
+  <nav class="tools" id="tools" aria-label="Công cụ">
+    <button data-tab="tpl"><i>🎨</i>Mẫu</button>
+    <button data-tab="date"><i>📅</i>Ngày &amp; lễ</button>
+    <button data-tab="media"><i>🖼</i>Ảnh &amp; nhạc</button>
+    <button data-tab="gift"><i>💝</i>Mừng cưới</button>
+    <button data-tab="guests"><i>👥</i>Khách</button>
+    <button data-tab="more"><i>⋯</i>Thêm</button>
+  </nav>
+  <aside class="sheet" id="sheet" aria-label="Bảng công cụ">
+    <div class="sheet-h"><b id="sheetTitle"></b><button id="sheetX" aria-label="Đóng">×</button></div>
+    <div class="sheet-body" id="sheetBody"><div id="panes"></div></div>
+  </aside>
+  <div class="scrim" id="scrim"></div>
+  <main class="stage" id="prev">
+    <div class="pvmode" id="pvMode" role="group" aria-label="Chế độ"><button data-m="edit" class="on">✎ Sửa trực tiếp</button><button data-m="view">👁 Xem như khách</button></div>
+    <div class="phone"><iframe id="frame" title="Thiệp — bấm ảnh hoặc chữ để sửa"></iframe></div>
+  </main>
 </div>
 <script src="/js/common.js"></script>
 <script src="/js/pay.js"></script>
