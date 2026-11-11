@@ -802,7 +802,7 @@ const server = http.createServer(async (req, res) => {
   // Chế độ Redis: nạp dữ liệu mới nhất, và ghi lại trước khi trả lời (res.end chờ ghi xong).
   if (store.remote) {
     let finish;
-    try { finish = await store.begin(req.method); } catch (e) {
+    try { finish = await store.begin(req.method, (req.url || '').split('?')[0]); } catch (e) {
       console.error(e);
       return json(res, 503, { error: 'Không kết nối được cơ sở dữ liệu, vui lòng thử lại' });
     }

@@ -25,6 +25,7 @@
 .more{position:relative}.more summary{list-style:none;cursor:pointer}.more summary::-webkit-details-marker{display:none}
 .more>div{position:absolute;right:0;top:calc(100% + 6px);z-index:5;min-width:170px;padding:6px;border-radius:12px;background:var(--surface);border:1px solid var(--line);box-shadow:0 14px 34px rgba(0,0,0,.14)}
 .more button{display:block;width:100%;text-align:left;padding:8px 10px;border:0;border-radius:8px;background:none;color:var(--ink);font:inherit;font-size:14px;cursor:pointer}
+.more.flip>div{right:auto;left:0}
 .more button:hover{background:var(--primary-soft)}.more button.danger{color:#c0392b}
 @media (max-width:560px){.vitem{grid-template-columns:120px 1fr}}
 .link{font-size:13px;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
@@ -89,6 +90,15 @@ async function load() {
     </article>`).join('');
   $$('[data-a]').forEach(b => b.onclick = () => act(b.dataset.a, b.closest('.item').dataset.id, cards.find(c => c.id === b.closest('.item').dataset.id)));
 }
+// menu ⋯: mở cái này thì đóng cái khác; sát mép trái màn hình (điện thoại) thì mở sang phải; bấm ra ngoài thì đóng
+document.addEventListener('toggle', (e) => {
+  const d = e.target;
+  if (!d.matches || !d.matches('details.more') || !d.open) return;
+  $$('details.more[open]').forEach((o) => { if (o !== d) o.open = false; });
+  d.classList.remove('flip');
+  if (d.querySelector('div').getBoundingClientRect().left < 8) d.classList.add('flip');
+}, true);
+document.addEventListener('click', (e) => { if (!e.target.closest('details.more')) $$('details.more[open]').forEach((o) => { o.open = false; }); });
 
 // danh sách video cưới: mỗi đám cưới (thiệp) một video
 function videoChip(v) {
