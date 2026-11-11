@@ -105,9 +105,11 @@ img{display:block;max-width:100%}
 .track{position:relative}
 .slider{display:flex;gap:16px;overflow-x:auto;overflow-y:hidden;overscroll-behavior-x:contain;scroll-behavior:smooth;scrollbar-width:none;padding:16px var(--edge) 44px;scroll-padding-inline:var(--edge);margin-bottom:-26px}
 .slider::-webkit-scrollbar{display:none}
-.arrow{position:absolute;top:0;bottom:18px;z-index:5;width:clamp(36px,4vw,56px);border:0;background:rgba(255,255,255,.6);color:var(--ink);font-size:34px;cursor:pointer;opacity:0;transition:opacity .2s}
+/* nút cuộn hàng: nút tròn nổi giữa hàng (không phủ dải mờ lên thẻ) */
+.arrow{position:absolute;top:calc(50% - 40px);z-index:5;width:52px;height:52px;padding:0 0 4px;border:1px solid var(--line);border-radius:50%;background:var(--card);color:var(--ink);font-size:30px;line-height:1;cursor:pointer;box-shadow:0 10px 26px rgba(0,0,0,.25);opacity:0;transition:opacity .2s,transform .2s}
+.arrow:hover{transform:scale(1.08)}
 .track:hover .arrow{opacity:1}
-.arrow.l{left:max(0px,calc(var(--edge) - 56px))}.arrow.r{right:max(0px,calc(var(--edge) - 56px))}
+.arrow.l{left:max(10px,calc(var(--edge) - 26px))}.arrow.r{right:max(10px,calc(var(--edge) - 26px))}
 .ncard{position:relative;flex:none;width:clamp(140px,13vw,200px)}
 .ncard .pic{position:relative;display:block;border-radius:10px;overflow:hidden;background:var(--soft);box-shadow:0 8px 20px rgba(120,40,50,.1);transition:transform .25s,box-shadow .25s}
 .ncard .pic>a{display:block}
@@ -289,8 +291,69 @@ html.js .rv.in{opacity:1;transform:none}
 [data-theme="dark"] .col img{box-shadow:none;opacity:.9}
 [data-theme="dark"] .bb .rate{background:rgba(51,51,51,.6)}
 [data-theme="dark"] .bb .b-more{background:rgba(255,255,255,.14)}
-[data-theme="dark"] .arrow{background:rgba(20,16,18,.6)}
+[data-theme="dark"] .arrow{background:#241d1f;border-color:rgba(255,255,255,.14);color:#fff}
 [data-theme="dark"] .ncard .pic{box-shadow:none}
 [data-theme="dark"] .ncard:hover .pic{box-shadow:0 18px 40px rgba(0,0,0,.55)}
 [data-theme="dark"] .top .num{-webkit-text-stroke-color:#5c5254}
 @media (max-width:700px){[data-theme="dark"] .bb::after{background:linear-gradient(0deg,var(--bg) 18%,rgba(20,16,18,.75) 50%,rgba(20,16,18,.2))}}
+
+/* ba chức năng chính (thiệp / video / sổ tay) + khu giới thiệu video cưới */
+.trio3{padding:10px 0 40px;margin-top:-8vh;position:relative;z-index:3}
+.rows{margin-top:0!important}
+.trio3 .wrap{max-width:1240px}
+.t3h{margin:0 0 22px;font:800 clamp(24px,3vw,36px)/1.2 var(--sans);letter-spacing:-.02em;text-align:center}
+.t3h em{font:700 1.15em var(--script);font-style:normal;color:var(--acc)}
+.t3{display:grid;grid-template-columns:repeat(3,1fr);gap:20px}
+.t3c{display:flex;flex-direction:column;border-radius:22px;overflow:hidden;background:var(--card);border:1px solid var(--line);box-shadow:0 18px 40px rgba(120,40,50,.08);transition:transform .25s,box-shadow .25s}
+.t3c:hover{transform:translateY(-6px);box-shadow:0 26px 50px rgba(120,40,50,.16)}
+.t3c .vis{position:relative;height:230px;overflow:hidden;background:var(--soft)}
+.t3c .body{padding:18px 20px 22px}
+.t3c h3{margin:0 0 6px;font:800 21px var(--sans)}
+.t3c p{margin:0 0 12px;color:var(--muted);font-size:14.5px;line-height:1.55}
+.t3c .go{font-weight:700;color:var(--acc);font-size:14px}
+.t3c .badge{position:absolute;top:14px;left:14px;z-index:3;padding:4px 11px;border-radius:999px;background:var(--acc);color:#fff;font-size:12px;font-weight:700}
+/* hình minh hoạ từng chức năng */
+.v-cards img{position:absolute;bottom:-30px;width:120px;aspect-ratio:9/16;object-fit:cover;object-position:top;border-radius:12px;box-shadow:0 14px 30px rgba(0,0,0,.25);transition:transform .4s}
+.v-cards img:nth-child(1){left:calc(50% - 160px);transform:rotate(-10deg)}
+.v-cards img:nth-child(2){left:calc(50% - 60px);bottom:-14px;z-index:2}
+.v-cards img:nth-child(3){left:calc(50% + 40px);transform:rotate(10deg)}
+.t3c:hover .v-cards img:nth-child(1){transform:rotate(-14deg) translateX(-14px)}
+.t3c:hover .v-cards img:nth-child(3){transform:rotate(14deg) translateX(14px)}
+.v-video iframe{position:absolute;left:0;top:0;width:1280px;height:720px;border:0;pointer-events:none;transform-origin:0 0}
+.v-video .play{position:absolute;left:50%;top:50%;z-index:2;width:58px;height:58px;margin:-29px 0 0 -29px;border-radius:50%;background:rgba(255,255,255,.9);display:grid;place-items:center;color:#c2415d;font-size:20px;box-shadow:0 10px 26px rgba(0,0,0,.3);transition:opacity .3s}
+.t3c:hover .v-video .play{opacity:0}
+.v-plan{display:grid;place-items:center;background:linear-gradient(160deg,var(--soft),var(--card))}
+.v-plan ul{list-style:none;margin:0;padding:16px 18px;width:78%;border-radius:16px;background:var(--card);box-shadow:0 14px 30px rgba(120,40,50,.12);font-size:13.5px}
+.v-plan li{display:flex;align-items:center;gap:10px;padding:7px 0;border-bottom:1px dashed var(--line)}
+.v-plan li:last-child{border:0}
+.v-plan li i{flex:none;width:18px;height:18px;border-radius:6px;border:1.5px solid var(--acc);display:grid;place-items:center;font-style:normal;font-size:11px;color:#fff}
+.v-plan li.d i{background:var(--acc)}
+.v-plan li.d span{text-decoration:line-through;color:var(--muted)}
+.v-plan li em{margin-left:auto;font-style:normal;color:var(--muted);font-size:12px}
+@media (max-width:900px){.t3{grid-template-columns:minmax(0,1fr)}.t3c .vis{height:200px}}
+
+/* khu video cưới: TV lớn chạy thử, bấm mẫu để đổi */
+.vshow{position:relative;padding:80px 0;margin-top:30px;background:radial-gradient(1200px 500px at 70% 30%,rgba(214,69,93,.10),transparent),var(--soft)}
+.vshow .wrap{max-width:1240px;display:grid;grid-template-columns:minmax(0,.85fr) minmax(0,1.4fr);gap:48px;align-items:center}
+.vshow .kick{display:inline-block;padding:5px 12px;border-radius:999px;background:var(--card);border:1px solid var(--line);font-size:12px;font-weight:800;letter-spacing:.18em;color:var(--acc)}
+.vshow h2{margin:14px 0 12px;font:900 clamp(30px,3.6vw,46px)/1.08 var(--sans);letter-spacing:-.03em}
+.vshow h2 em{display:block;font:700 1.1em/1.15 var(--script);font-style:normal;color:var(--acc);letter-spacing:0}
+.vshow p.lead{margin:0 0 22px;color:var(--muted);font-size:16px;line-height:1.6}
+.vs-steps{list-style:none;margin:0 0 26px;padding:0;display:grid;gap:10px}
+.vs-steps li{display:flex;align-items:center;gap:12px;font-weight:600}
+.vs-steps b{flex:none;display:grid;place-items:center;width:34px;height:34px;border-radius:50%;background:var(--card);border:1px solid var(--line);color:var(--acc);font-size:14px}
+.vs-steps small{display:block;font-weight:400;color:var(--muted);font-size:13px}
+.vs-acts{display:flex;gap:10px;flex-wrap:wrap}
+.vs-tv{position:relative}
+.vs-screen{position:relative;aspect-ratio:16/9;border-radius:18px;overflow:hidden;background:#000;border:10px solid #1d1719;box-shadow:0 40px 80px rgba(40,10,20,.35)}
+.vs-screen iframe{position:absolute;left:0;top:0;width:1280px;height:720px;border:0;transform-origin:0 0;pointer-events:none}
+.vs-stand{width:30%;height:14px;margin:0 auto;border-radius:0 0 12px 12px;background:#1d1719}
+.vs-name{position:absolute;left:22px;top:22px;z-index:2;padding:6px 12px;border-radius:999px;background:rgba(0,0,0,.55);color:#fff;font-size:13px;font-weight:600;backdrop-filter:blur(6px)}
+.vs-picks{display:flex;gap:10px;margin-top:22px;overflow-x:auto;padding:4px 2px 8px;scrollbar-width:thin}
+.vs-picks button{flex:none;width:118px;padding:0;border:2px solid transparent;border-radius:12px;background:var(--card);overflow:hidden;cursor:pointer;text-align:left;transition:transform .2s,border-color .2s}
+.vs-picks button:hover{transform:translateY(-3px)}
+.vs-picks button.on{border-color:var(--acc)}
+.vs-picks img{display:block;width:100%;aspect-ratio:16/9;object-fit:cover}
+.vs-picks span{display:block;padding:6px 8px;font-size:12px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.vs-picks small{display:block;padding:0 8px 7px;margin-top:-4px;color:var(--muted);font-size:11px}
+@media (max-width:960px){.vshow .wrap{grid-template-columns:minmax(0,1fr)}.vshow{padding:56px 0}}

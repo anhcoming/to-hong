@@ -376,7 +376,7 @@ function bind() {
     return;
   }
   $('#ledLink').href = '/sua-led/' + CARD_ID;
-  $('#ledLink').hidden = !(card.led && card.led.created); // màn LED không còn bán riêng, chỉ giữ cho thiệp đã tạo
+  if (!(card.led && card.led.created)) $('#ledLink').style.display = 'none'; // màn LED không còn bán riêng, chỉ giữ cho thiệp đã tạo (thuộc tính hidden bị .btn ghi đè)
   $('#videoLink').href = '/sua-video/' + CARD_ID;
   bind();
   renderHeader();

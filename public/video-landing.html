@@ -24,15 +24,10 @@
 .vt .pic iframe{position:absolute;left:0;top:0;width:1280px;height:720px;border:0;pointer-events:none;transform-origin:0 0;opacity:0;transition:opacity .4s}
 .vt .pic iframe.on{opacity:1}
 .vt .tag{position:absolute;top:12px;left:12px;z-index:2;padding:4px 11px;border-radius:999px;background:var(--red);color:#fff;font-size:12px;font-weight:700}
-.vt .play{position:absolute;right:12px;bottom:12px;z-index:2;padding:5px 12px;border-radius:999px;background:rgba(0,0,0,.55);color:#fff;font-size:12px;font-weight:600;transition:opacity .3s}
-.vt:hover .play{opacity:0}
-.vt .body{display:flex;flex-direction:column;gap:6px;padding:16px 18px 18px;flex:1}
-.vt h3{margin:0;font-size:18px}
-.vt p{margin:0;color:var(--muted);font-size:14px}
-.vt .feat{display:flex;gap:6px;flex-wrap:wrap;margin:4px 0 6px}
-.vt .feat span{padding:3px 10px;border-radius:999px;background:var(--bg2);font-size:12px;color:var(--ink)}
-.vt .acts{display:flex;gap:8px;margin-top:auto;padding-top:8px}
-.vt .acts .btn{flex:1;min-width:0;justify-content:center;padding:10px 12px;font-size:14px}
+.vt .body{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:14px 16px}
+.vt h3{margin:0;font-size:17px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.vt .body .btn{flex:none}
+.vt .tag.soft{background:rgba(0,0,0,.55)}
 .steps3{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;max-width:900px;margin:0 auto}
 .steps3 div{padding:22px;border-radius:18px;background:var(--card);border:1px solid var(--line);text-align:center}
 .steps3 b{display:grid;place-items:center;width:42px;height:42px;margin:0 auto 10px;border-radius:50%;background:var(--red);color:#fff;font-size:18px}
@@ -89,10 +84,10 @@
     var list = (ev.detail.video && ev.detail.video.templates || []).slice().sort(function (a, b) { return (b.photos ? 1 : 0) - (a.photos ? 1 : 0); });
     var g = document.getElementById('vgal');
     g.innerHTML = list.map(function (t) {
+      // thẻ gọn: ảnh xem trước (bấm để xem toàn màn) + tên mẫu + nút Dùng mẫu
       return '<article class="vt" data-id="' + t.id + '"><a class="pic" href="/video/demo?template=' + t.id + '" aria-label="Xem thử mẫu ' + esc(t.name) + '">' +
-        (t.photos ? '<span class="tag">' + t.slots + ' ảnh</span>' : '') + '<img src="/demo/vposter-' + t.id + '.jpg" alt="Mẫu video ' + esc(t.name) + '" loading="lazy"><span class="play">▶ Rê chuột để xem</span></a>' +
-        '<div class="body"><h3>' + esc(t.name) + '</h3><p>' + esc(t.desc) + '</p><div class="feat">' + (t.tags || []).map(function (f) { return '<span>' + esc(f) + '</span>'; }).join('') + '</div>' +
-        '<div class="acts"><a class="btn btn-ghost" href="/video/demo?template=' + t.id + '">Xem toàn màn</a><a class="btn btn-main" href="/thiep-cua-toi?tao-video=1&amp;mau=' + t.id + '">Dùng mẫu</a></div></div></article>';
+        (t.photos ? '<span class="tag">' + t.slots + ' ảnh</span>' : '<span class="tag soft">Chữ</span>') + '<img src="/demo/vposter-' + t.id + '.jpg" alt="Mẫu video ' + esc(t.name) + '" loading="lazy"></a>' +
+        '<div class="body"><h3>' + esc(t.name) + '</h3><a class="btn btn-main btn-sm" href="/thiep-cua-toi?tao-video=1&amp;mau=' + t.id + '">Dùng mẫu</a></div></article>';
     }).join('');
     // rê chuột: phát thử video thật trong khung, thu nhỏ từ 1280×720
     if (!matchMedia('(hover:hover)').matches) return;

@@ -19,13 +19,13 @@
 <body data-page="home">
 <header class="hnav" id="hnav"><div class="wrap">
   <a class="logo" href="/" id="hlogo"><svg viewBox="0 0 32 32" fill="none" aria-hidden="true"><path d="M16 27C6.5 20 3 15 3 10.5 3 6.9 5.8 4 9.4 4c2.6 0 4.6 1.4 6.6 3.9C18 5.4 20 4 22.6 4 26.2 4 29 6.9 29 10.5 29 15 25.5 20 16 27z" stroke="currentColor" stroke-width="2.4"/></svg><span data-brand>Cưới Nha</span></a>
-  <nav class="menu" aria-label="Menu chính"><a class="on" href="/" aria-current="page">Trang chủ</a><a href="/mau-thiep">Mẫu thiệp</a><a href="/video-cuoi">Video cưới</a><a href="/so-tay-cuoi">Sổ tay cưới</a></nav>
+  <nav class="menu" aria-label="Menu chính"><a href="/mau-thiep">Thiệp cưới</a><a href="/video-cuoi">Video cưới</a><a href="/so-tay-cuoi">Sổ tay cưới</a></nav>
   <span id="themeSlot"></span>
   <div class="hacts" id="hacts"><a class="login" href="/dang-nhap">Đăng nhập</a><a class="btn btn-main btn-sm" href="/mau-thiep">Tạo thiệp</a></div>
   <button class="burger" id="burger" type="button" aria-label="Mở menu" aria-expanded="false" aria-controls="mpanel"><i></i></button>
 </div>
 <nav class="mpanel" id="mpanel" aria-label="Menu">
-  <a href="/mau-thiep"><i>💌</i>Thiệp cưới online</a><a href="/video-cuoi"><i>🎬</i>Video cưới</a><a href="/so-tay-cuoi"><i>📒</i>Sổ tay cưới</a><a href="#gia"><i>🏷️</i>Bảng giá</a><a href="/dang-nhap" id="mLogin"><i>👤</i>Đăng nhập</a><a href="#" onclick="toggleTheme();return false"><i>🌓</i>Đổi nền sáng / tối</a>
+  <a href="/mau-thiep"><i>💌</i>Thiệp cưới</a><a href="/video-cuoi"><i>🎬</i>Video cưới</a><a href="/so-tay-cuoi"><i>📒</i>Sổ tay cưới</a><a href="/dang-nhap" id="mLogin"><i>👤</i>Đăng nhập</a><a href="#" onclick="toggleTheme();return false"><i>🌓</i>Đổi nền sáng / tối</a>
 </nav></header>
 
 <section class="bb">
@@ -39,7 +39,43 @@
   <div class="rate">♥ <span data-price-k>129k</span> · dùng thử <span data-trial-days>7</span> ngày</div>
 </section>
 
+<!-- ba chức năng chính -->
+<section class="trio3"><div class="wrap">
+  <h2 class="t3h">Mọi thứ cho đám cưới, <em>gói trong ba món</em></h2>
+  <div class="t3">
+    <a class="t3c" href="/mau-thiep">
+      <div class="vis v-cards"><img src="/demo/cover-songhy-do.jpg" alt=""><img src="/demo/cover-dodam-do-ruou.jpg" alt=""><img src="/demo/cover-hanthu-nau-kem.jpg" alt=""></div>
+      <div class="body"><h3>💌 Thiệp cưới online</h3><p>Mỗi khách một đường link mang tên riêng — có nhạc, bản đồ, xác nhận tham dự, mừng cưới QR.</p><span class="go">Chọn trong 29 mẫu thiệp →</span></div></a>
+    <a class="t3c" href="#video">
+      <div class="vis v-video" data-fit><span class="badge">Mới</span><iframe src="/video/demo?preview=1&amp;template=polaroid" loading="lazy" tabindex="-1" title="Video cưới mẫu"></iframe><span class="play">▶</span></div>
+      <div class="body"><h3>🎬 Video cưới</h3><p>Thả ảnh cưới vào là có video chuyển cảnh như CapCut — chiếu TV ngày cưới hoặc tải MP4.</p><span class="go">Xem 10 mẫu video →</span></div></a>
+    <a class="t3c" href="/so-tay-cuoi">
+      <div class="vis v-plan"><ul><li class="d"><i>✓</i><span>Đặt cọc nhà hàng</span></li><li class="d"><i>✓</i><span>Chụp ảnh cưới</span></li><li><i></i><span>Chuẩn bị tráp ăn hỏi</span><em>21/10</em></li><li><i></i><span>Gửi thiệp cho khách</span><em>10/11</em></li></ul></div>
+      <div class="body"><h3>📒 Sổ tay cưới</h3><p>Việc cần làm theo phong tục, ngân sách, khách mời &amp; tiền mừng — cả nhà cùng đánh dấu.</p><span class="go">Miễn phí mãi mãi →</span></div></a>
+  </div>
+</div></section>
+
 <main class="rows" id="mau"></main>
+
+<!-- khu video cưới -->
+<section class="vshow" id="video"><div class="wrap">
+  <div class="vs-copy">
+    <span class="kick">🎬 VIDEO CƯỚI</span>
+    <h2>Thả ảnh cưới vào,<em>video tự dựng</em></h2>
+    <p class="lead">Chọn một mẫu, chèn ảnh và lời chào — chuyển cảnh, chữ bay, ngày âm lịch đều có sẵn. Chiếu trên TV ở sảnh tiệc, lễ dạm ngõ, ăn hỏi, hoặc tải MP4 Full HD gửi người thân.</p>
+    <ol class="vs-steps">
+      <li><b>1</b><span>Chọn mẫu<small>10 phong cách: phim cũ, polaroid, điện ảnh, song hỷ…</small></span></li>
+      <li><b>2</b><span>Chèn ảnh &amp; chữ<small>Mỗi mẫu 6–12 ảnh, tên đôi lấy sẵn từ thiệp</small></span></li>
+      <li><b>3</b><span>Chiếu TV hoặc tải MP4<small>Mở link trên Smart TV, hoặc chép USB</small></span></li>
+    </ol>
+    <div class="vs-acts"><a class="btn btn-main" href="/video-cuoi">Làm video cưới</a><a class="btn btn-ghost" id="vsFull" href="/video/demo?template=polaroid">⛶ Xem toàn màn</a></div>
+  </div>
+  <div class="vs-tv">
+    <div class="vs-screen" id="vsScreen"><span class="vs-name" id="vsName">Polaroid</span><iframe id="vsFrame" src="/video/demo?preview=1&amp;template=polaroid" title="Video cưới mẫu" tabindex="-1"></iframe></div>
+    <div class="vs-stand"></div>
+    <div class="vs-picks" id="vsPicks"></div>
+  </div>
+</div></section>
 
 <section class="sec"><div class="wrap">
   <div class="pain-head"><span>Đám cưới<br>mời hơn</span><span class="big">300+</span><span>khách<br>mời?</span></div>
@@ -186,10 +222,7 @@
     rows.innerHTML =
       row('Top 5 mẫu được chọn nhiều nhất tuần này', top.map((t, i) => card(t, `<span class="num">${i + 1}</span>`)), 'top')
       + row('Mới ra mắt', T.filter((t) => t.badge === 'Mới').map((t) => card(t)), '', '/mau-thiep?nhan=M%E1%BB%9Bi')
-      // video cưới: ảnh xem trước từng mẫu (bấm vào là tới trang chọn mẫu video)
-      + row('Video cưới chiếu TV', [['album', 'Album kỷ niệm', 'Ghép ảnh, chuyển cảnh đa dạng'], ['dienanh', 'Điện ảnh', 'Ảnh tràn màn như phim rạp'], ['phimcu', 'Phim cũ', 'Dải phim hoài cổ'], ['polaroid', 'Polaroid', 'Ảnh rơi chồng lên nhau'], ['songhy', 'Song Hỷ đỏ', 'Hợp dạm ngõ, ăn hỏi'], ['traitim', 'Trái tim', 'Lãng mạn, ngọt ngào'], ['hoadao', 'Vòm hoa đào', 'Cánh đào rơi'], ['tapchi', 'Tạp chí', 'Hiện đại, thời trang']].map(([id, name, sub]) =>
-        `<div class="ncard"><a class="pic" href="/video-cuoi"><img src="/demo/vposter-${id}.jpg" alt="Mẫu video ${name}" loading="lazy"><span class="lbl">${name}<small>${sub} · ${esc(K(ev.detail.videoPrice))}</small></span></a></div>`)
-        .concat([`<div class="ncard"><a class="pic" href="/so-tay-cuoi"><img src="/demo/longphung-5.jpg" alt="" loading="lazy"><span class="lbl">Sổ tay cưới<small>Miễn phí · cả nhà cùng dùng</small></span></a></div>`]), 'wide', '/video-cuoi')
+
       + used.map((g) => row(esc(g.name), T.filter((t) => t.group === g.id).map((t) => card(t)), '', `/mau-thiep?phong-cach=${g.id}`)).join('')
       + row('Tất cả mẫu thiệp', T.map((t) => card(t)));
 
@@ -241,6 +274,28 @@
     // mở thẳng /#mau: cuộn lại sau khi các hàng đã dựng xong
     if (location.hash === '#mau') requestAnimationFrame(() => rows.scrollIntoView({ behavior: 'instant' }));
   });
+})();
+</script>
+
+<script>
+// khu video — đổi mẫu khi bấm, tự chuyển mẫu sau mỗi 14 giây cho tới khi người xem bấm chọn
+(function () {
+  var L = [['polaroid','Polaroid','8 ảnh'],['phimcu','Phim cũ','10 ảnh'],['dienanh','Điện ảnh','8 ảnh'],['songhy','Song Hỷ đỏ','10 ảnh'],['traitim','Trái tim','6 ảnh'],['album','Album kỷ niệm','12 ảnh'],['tapchi','Tạp chí','10 ảnh'],['hoadao','Vòm hoa đào','8 ảnh'],['laxanh','Lá xanh','9 ảnh'],['toigian','Tối giản','12 ảnh']];
+  var box = document.getElementById('vsPicks'), fr = document.getElementById('vsFrame'), nm = document.getElementById('vsName'), full = document.getElementById('vsFull'), scr = document.getElementById('vsScreen');
+  box.innerHTML = L.map(function (t, i) { return '<button type="button" data-id="' + t[0] + '"' + (i ? '' : ' class="on"') + '><img src="/demo/vposter-' + t[0] + '.jpg" alt=""><span>' + t[1] + '</span><small>' + t[2] + '</small></button>'; }).join('');
+  var cur = 0, auto = true;
+  function pick(i) {
+    cur = i; var t = L[i];
+    fr.src = '/video/demo?preview=1&template=' + t[0]; nm.textContent = t[1]; full.href = '/video/demo?template=' + t[0];
+    box.querySelectorAll('button').forEach(function (b, k) { b.classList.toggle('on', k === i); });
+  }
+  box.addEventListener('click', function (e) { var b = e.target.closest('button'); if (!b) return; auto = false; pick([].indexOf.call(box.children, b)); });
+  setInterval(function () { if (auto && document.visibilityState === 'visible') pick((cur + 1) % L.length); }, 14000);
+  function fit() {
+    fr.style.transform = 'scale(' + scr.clientWidth / 1280 + ')';
+    document.querySelectorAll('.v-video').forEach(function (v) { var f = v.querySelector('iframe'); if (f) f.style.transform = 'scale(' + v.clientWidth / 1280 + ')'; });
+  }
+  fit(); addEventListener('resize', fit);
 })();
 </script>
 </body>

@@ -11,7 +11,8 @@
 .head{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;margin:32px 0 20px;flex-wrap:wrap}
 .head h1{font-family:var(--serif);font-weight:600;margin:0;font-size:32px}
 .list{display:grid;gap:14px}
-.item{display:grid;grid-template-columns:120px 1fr;overflow:hidden}
+.item{display:grid;grid-template-columns:120px 1fr} /* không cắt overflow: menu ⋯ cần tràn ra ngoài */
+.item>.thumb{border-radius:inherit;border-top-right-radius:0;border-bottom-right-radius:0}
 .thumb{background:linear-gradient(150deg,#e9cfd3,#d7b07a) center/cover;min-height:150px;display:grid;place-items:center;color:#fff;font-size:34px}
 .info{padding:16px 18px;display:flex;flex-direction:column;gap:8px;min-width:0}
 .top{display:flex;justify-content:space-between;gap:10px;align-items:flex-start}
@@ -19,7 +20,13 @@
 .meta{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
 .stats{display:flex;gap:16px;font-size:13px;color:var(--muted);flex-wrap:wrap}
 .stats b{color:var(--ink)}
-.acts{display:flex;gap:6px;flex-wrap:wrap;margin-top:4px}
+.acts{display:flex;gap:6px;flex-wrap:wrap;margin-top:4px;align-items:center}
+.vitem{grid-template-columns:220px 1fr}.vitem .thumb{min-height:124px;background-size:cover;background-position:center}
+.more{position:relative}.more summary{list-style:none;cursor:pointer}.more summary::-webkit-details-marker{display:none}
+.more>div{position:absolute;right:0;top:calc(100% + 6px);z-index:5;min-width:170px;padding:6px;border-radius:12px;background:var(--surface);border:1px solid var(--line);box-shadow:0 14px 34px rgba(0,0,0,.14)}
+.more button{display:block;width:100%;text-align:left;padding:8px 10px;border:0;border-radius:8px;background:none;color:var(--ink);font:inherit;font-size:14px;cursor:pointer}
+.more button:hover{background:var(--primary-soft)}.more button.danger{color:#c0392b}
+@media (max-width:560px){.vitem{grid-template-columns:120px 1fr}}
 .link{font-size:13px;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 @media (max-width:560px){.item{grid-template-columns:84px 1fr}.thumb{min-height:120px}}
 </style>
@@ -27,7 +34,7 @@
 <body>
 <main class="wrap" style="padding-bottom:60px">
   <div class="head">
-    <div><h1>Thiệp của tôi</h1><p class="muted" style="margin:4px 0 0">Quản lý thiệp, khách mời và phản hồi</p></div>
+    <div><h1 id="pageTitle">Thiệp của tôi</h1><p class="muted" style="margin:4px 0 0" id="pageSub">Quản lý thiệp, khách mời và phản hồi</p></div>
     <button class="btn lg" id="newBtn">+ Tạo thiệp mới</button>
   </div>
   <div class="list" id="list"><div class="skeleton" style="height:150px"></div></div>
@@ -36,6 +43,8 @@
 <script src="/js/pay.js"></script>
 <script>
 let META;
+// cùng một trang cho hai danh sách: /thiep-cua-toi (thiệp) và /video-cua-toi (video cưới)
+const VIDEOS = location.pathname === '/video-cua-toi';
 const tplName = (id) => (META.templates.find(t => t.id === id) || {}).name || id;
 
 function stateChip(c) {
@@ -49,12 +58,13 @@ function stateChip(c) {
 function ledChip(c) {
   const one = (s, n) => !s.created ? '' : s.paid ? `<span class="chip ok">${n} · đã kích hoạt</span>`
     : s.expired ? `<span class="chip red">${n} · hết dùng thử</span>` : `<span class="chip warn">${n} · dùng thử</span>`;
-  return one(c.led, 'Màn LED') + one(c.video, 'Video');
+  return one(c.led, 'Màn LED');
 }
 
 async function load() {
   const { cards } = await api('/api/cards');
   const el = $('#list');
+  if (VIDEOS) return loadVideos(cards, el);
   if (!cards.length) {
     el.innerHTML = `<div class="panel empty"><p style="font-size:40px;margin:0">💌</p><h3 style="color:var(--ink)">Bạn chưa có thiệp nào</h3><p>Tạo thiệp đầu tiên — miễn phí, xem trước ngay khi gõ.</p><button class="btn" onclick="newCard()">Tạo thiệp đầu tiên</button></div>`;
     return;
@@ -71,20 +81,50 @@ async function load() {
         <div class="stats"><span>👁 <b>${c.views}</b> lượt xem</span><span>✉ <b>${c.guests}</b> khách mời</span><span>✓ <b>${c.rsvpYes}</b> người sẽ đến</span><span>♥ <b>${c.wishes}</b> lời chúc</span></div>
         <div class="acts">
           ${c.status === 'published' ? `<button class="btn sm soft" data-a="share">Sao chép link</button><a class="btn sm plain" target="_blank" href="${esc(c.url)}">Mở thiệp</a>` : ''}
-          ${!c.paid ? `<button class="btn sm" data-a="pay">Kích hoạt · ${money(META.price)}</button>` : ''}
+          ${!c.paid ? `<button class="btn sm plain" data-a="pay">Kích hoạt · ${money(META.price)}</button>` : ''}
           ${c.led.created ? `<a class="btn sm plain" href="/sua-led/${c.id}">✨ Màn LED</a>` : ''}
-          <a class="btn sm plain" href="/sua-video/${c.id}">🎬 ${c.video.created ? 'Video cưới' : 'Làm video cưới'}</a>
-          <button class="btn sm plain" data-a="dup">Nhân bản</button>
-          <button class="btn sm danger" data-a="del">Xoá</button>
+          <details class="more"><summary class="btn sm plain" aria-label="Thêm">⋯</summary><div><button data-a="dup">Nhân bản thiệp</button><button data-a="del" class="danger">Xoá thiệp</button></div></details>
         </div>
       </div>
     </article>`).join('');
   $$('[data-a]').forEach(b => b.onclick = () => act(b.dataset.a, b.closest('.item').dataset.id, cards.find(c => c.id === b.closest('.item').dataset.id)));
 }
 
+// danh sách video cưới: mỗi đám cưới (thiệp) một video
+function videoChip(v) {
+  return v.paid ? '<span class="chip ok">● Đã kích hoạt</span>' : v.expired ? '<span class="chip red">Hết hạn dùng thử</span>'
+    : `<span class="chip warn">Dùng thử · còn ${Math.max(0, Math.ceil((v.trialEndsAt - Date.now()) / 864e5))} ngày</span>`;
+}
+function loadVideos(cards, el) {
+  const vids = cards.filter((c) => c.video.created);
+  if (!vids.length) {
+    el.innerHTML = `<div class="panel empty"><p style="font-size:40px;margin:0">🎬</p><h3 style="color:var(--ink)">Bạn chưa có video cưới nào</h3><p>Chọn một mẫu, chèn ảnh và chữ — video tự dựng, xem thử miễn phí.</p><a class="btn" href="/video-cuoi">Chọn mẫu video</a></div>`;
+    return;
+  }
+  const tname = (id) => ((META.video.templates || []).find((t) => t.id === id) || {}).name || 'Video';
+  el.innerHTML = vids.map((c) => `
+    <article class="item vitem panel" data-id="${c.id}">
+      <a class="thumb" href="/sua-video/${c.id}" style="background-image:url('/demo/vposter-${esc(c.video.template || 'sen')}.jpg')"></a>
+      <div class="info">
+        <div class="top">
+          <div style="min-width:0"><h3>${esc(c.video.kind || 'Video cưới')} · ${esc(c.names || c.title)}</h3><div class="link">Mẫu ${esc(tname(c.video.template))}</div></div>
+          <a class="btn sm" href="/sua-video/${c.id}">Sửa video</a>
+        </div>
+        <div class="meta">${videoChip(c.video)}</div>
+        <div class="acts">
+          <button class="btn sm soft" data-a="vshare">Chép link chiếu TV</button><a class="btn sm plain" target="_blank" href="${esc(c.video.url)}">Mở trình chiếu</a>
+          ${c.video.paid ? (c.video.mp4 ? `<a class="btn sm plain" href="${esc(c.video.mp4)}" download>⬇ Tải MP4</a>` : '') : `<button class="btn sm plain" data-a="vpay">Kích hoạt · ${money(META.videoPrice)}</button>`}
+        </div>
+      </div>
+    </article>`).join('');
+  $$('[data-a]').forEach((b) => b.onclick = () => act(b.dataset.a, b.closest('.item').dataset.id, cards.find((c) => c.id === b.closest('.item').dataset.id)));
+}
+
 async function act(a, id, c) {
   try {
     if (a === 'share') copyText(c.url, 'Đã sao chép link thiệp');
+    if (a === 'vshare') copyText(c.video.url, 'Đã chép link — mở trên Smart TV hoặc máy tính nối TV');
+    if (a === 'vpay') openPayModal(id, load, 'video');
     if (a === 'pay') openPayModal(id, load);
     if (a === 'dup') { await api(`/api/cards/${id}/duplicate`, { method: 'POST' }); toast('Đã nhân bản thiệp'); load(); }
     if (a === 'del') {
@@ -107,11 +147,16 @@ window.newCard = function () {
 };
 
 (async () => {
-  const { meta, user } = await renderTopbar('cards');
+  const { meta, user } = await renderTopbar(VIDEOS ? 'videos' : 'cards');
   META = meta;
   if (!user) return (location.href = '/dang-nhap?next=' + encodeURIComponent(location.pathname + location.search));
-  document.title = 'Thiệp của tôi — ' + meta.brand;
-  $('#newBtn').onclick = newCard;
+  document.title = (VIDEOS ? 'Video của tôi — ' : 'Thiệp của tôi — ') + meta.brand;
+  if (VIDEOS) {
+    $('#pageTitle').textContent = 'Video của tôi';
+    $('#pageSub').textContent = 'Video cưới chiếu TV — sửa ảnh, chữ, tải MP4';
+    $('#newBtn').textContent = '+ Tạo video mới';
+    $('#newBtn').onclick = () => (location.href = '/video-cuoi');
+  } else $('#newBtn').onclick = newCard;
   const q = new URLSearchParams(location.search);
   if (q.get('tao')) return create(q.get('tao'), q.get('mau'));
   const want = q.get('tao-led') ? 'sua-led' : q.get('tao-video') ? 'sua-video' : null;

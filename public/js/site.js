@@ -1,10 +1,9 @@
 // Phần chung của các trang giới thiệu: thanh trên, chân trang, giá từ cấu hình, hiệu ứng hiện dần.
 (function () {
   'use strict';
-  var LOGO = '<svg viewBox="0 0 40 40" aria-hidden="true"><defs><linearGradient id="lgx" x1="0" x2="1"><stop offset="0" stop-color="#d6334a"/><stop offset="1" stop-color="#e8b65a"/></linearGradient></defs>' +
-    '<path d="M20 33s-11-6.8-11-14.4C9 14.6 11.8 12 15.2 12c2.1 0 3.8 1.1 4.8 2.7 1-1.6 2.7-2.7 4.8-2.7 3.4 0 6.2 2.6 6.2 6.6C31 26.2 20 33 20 33z" fill="none" stroke="url(#lgx)" stroke-width="2.4" stroke-linejoin="round"/>' +
-    '<path d="M2 30c6-1 9-4 13-9" fill="none" stroke="#d6334a" stroke-width="1.6" stroke-linecap="round"/></svg>';
-  var MENU = [['/mau-thiep', 'Mẫu thiệp', 'tpl'], ['/video-cuoi', 'Video cưới', 'video'], ['/so-tay-cuoi', 'Sổ tay cưới', 'planner'], ['/#gia', 'Bảng giá', 'price']];
+  // logo giống trang chủ: tim viền + chữ in hoa màu hồng
+  var LOGO = '<svg viewBox="0 0 32 32" fill="none" aria-hidden="true"><path d="M16 27C6.5 20 3 15 3 10.5 3 6.9 5.8 4 9.4 4c2.6 0 4.6 1.4 6.6 3.9C18 5.4 20 4 22.6 4 26.2 4 29 6.9 29 10.5 29 15 25.5 20 16 27z" stroke="currentColor" stroke-width="2.4"/></svg>';
+  var MENU = [['/mau-thiep', 'Thiệp cưới', 'tpl'], ['/video-cuoi', 'Video cưới', 'video'], ['/so-tay-cuoi', 'Sổ tay cưới', 'planner']]; // 3 chức năng chính
   var page = document.body.getAttribute('data-page') || '';
 
   var nav = document.getElementById('nav');
@@ -12,7 +11,13 @@
     nav.className = 'nav' + (document.body.hasAttribute('data-solid') ? ' always' : '');
     nav.innerHTML = '<div class="wrap"><a class="logo" href="/">' + LOGO + '<span data-brand>Cưới Nha</span></a>' +
       '<nav class="menu">' + MENU.map(function (m) { return '<a href="' + m[0] + '"' + (m[2] === page ? ' class="on"' : '') + '>' + m[1] + '</a>'; }).join('') + '</nav>' +
-      (window.themeBtn ? themeBtn() : '') + '<div class="acts" id="navActs"><a class="btn btn-ghost btn-sm login" href="/dang-nhap">Đăng nhập</a><a class="btn btn-main btn-sm" href="/mau-thiep">Tạo thiệp</a></div></div>';
+      (window.themeBtn ? themeBtn() : '') + '<div class="acts" id="navActs"><a class="btn btn-ghost btn-sm login" href="/dang-nhap">Đăng nhập</a><a class="btn btn-main btn-sm" href="/mau-thiep">Tạo thiệp</a></div>' +
+      '<button class="burger" id="burger" type="button" aria-label="Mở menu" aria-expanded="false"><i></i></button></div>' +
+      // bảng menu điện thoại: 3 chức năng + đăng nhập + đổi nền
+      '<nav class="mpanel" aria-label="Menu">' + MENU.map(function (m, i) { return '<a href="' + m[0] + '"><i>' + ['💌', '🎬', '📒'][i] + '</i>' + m[1] + '</a>'; }).join('') +
+      '<a href="/dang-nhap" id="mLogin"><i>👤</i>Đăng nhập</a><a href="#" onclick="toggleTheme();return false"><i>🌓</i>Đổi nền sáng / tối</a></nav>';
+    var burger = document.getElementById('burger');
+    burger.addEventListener('click', function () { var on = !nav.classList.contains('mopen'); nav.classList.toggle('mopen', on); burger.setAttribute('aria-expanded', on); });
     var onScroll = function () { nav.classList.toggle('solid', window.scrollY > 40); };
     window.addEventListener('scroll', onScroll, { passive: true });
     onScroll();
@@ -49,6 +54,8 @@
   fetch('/api/me').then(function (r) { return r.json(); }).then(function (me) {
     var a = document.getElementById('navActs');
     if (me.user && a) a.innerHTML = '<a class="btn btn-main btn-sm" href="/thiep-cua-toi">Thiệp của tôi</a>';
+    var ml = document.getElementById('mLogin');
+    if (me.user && ml) ml.outerHTML = '<a href="/thiep-cua-toi"><i>👤</i>Thiệp &amp; video của tôi</a>';
   }).catch(function () {});
 
   // khung 16:9 chứa trang 1280×720 (video, màn LED)

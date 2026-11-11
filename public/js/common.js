@@ -101,14 +101,15 @@ window.renderTopbar = async function (active) {
   const bar = document.createElement('header');
   bar.className = 'topbar';
   bar.innerHTML = `<div class="wrap">
-    <a class="logo" href="/"><svg viewBox="0 0 40 40" aria-hidden="true"><defs><linearGradient id="lga" x1="0" x2="1"><stop offset="0" stop-color="#d6334a"/><stop offset="1" stop-color="#e8b65a"/></linearGradient></defs><path d="M20 33s-11-6.8-11-14.4C9 14.6 11.8 12 15.2 12c2.1 0 3.8 1.1 4.8 2.7 1-1.6 2.7-2.7 4.8-2.7 3.4 0 6.2 2.6 6.2 6.6C31 26.2 20 33 20 33z" fill="none" stroke="url(#lga)" stroke-width="2.4" stroke-linejoin="round"/><path d="M2 30c6-1 9-4 13-9" fill="none" stroke="#d6334a" stroke-width="1.6" stroke-linecap="round"/></svg>${esc(meta.brand)}</a>
+    <a class="logo" href="/"><svg viewBox="0 0 32 32" fill="none" aria-hidden="true"><path d="M16 27C6.5 20 3 15 3 10.5 3 6.9 5.8 4 9.4 4c2.6 0 4.6 1.4 6.6 3.9C18 5.4 20 4 22.6 4 26.2 4 29 6.9 29 10.5 29 15 25.5 20 16 27z" stroke="currentColor" stroke-width="2.4"/></svg><span class="lt">${esc(meta.brand)}</span></a>
     <nav class="nav">
       ${me.user ? `
-        <a href="/mau-thiep" class="hide-sm">Mẫu thiệp</a>
+        <a href="/thiep-cua-toi" class="${active === 'cards' ? 'on' : ''}">Thiệp<span class="hide-xs"> cưới</span></a>
+        <a href="/video-cua-toi" class="${active === 'videos' ? 'on' : ''}">Video<span class="hide-xs"> cưới</span></a>
         <a href="/so-tay" class="${active === 'planner' ? 'on' : ''}">Sổ tay<span class="hide-xs"> cưới</span></a>
         ${window.themeBtn ? themeBtn() : ''}
-        <div class="acct" id="acct"><a href="/thiep-cua-toi">Thiệp<span class="hide-xs"> của tôi</span></a><button type="button" aria-label="Tài khoản" aria-expanded="false"></button>
-          <div class="acct-menu"><div class="who"><b>${esc(me.user.name || '')}</b>${esc(me.user.email)}</div><a href="/thiep-cua-toi">Thiệp &amp; sản phẩm của tôi</a><a href="/so-tay">Sổ tay cưới của tôi</a><a href="/">Trang chủ</a><a href="#" id="logoutBtn">Đăng xuất</a></div></div>` : `${window.themeBtn ? themeBtn() : ''}<a href="/dang-nhap" class="btn sm">Đăng nhập</a>`}
+        <div class="acct" id="acct"><a href="/thiep-cua-toi"><span class="hide-xs">Thiệp của tôi</span><span class="show-xs">Của tôi</span></a><button type="button" aria-label="Tài khoản" aria-expanded="false"></button>
+          <div class="acct-menu"><div class="who"><b>${esc(me.user.name || '')}</b>${esc(me.user.email)}</div><a href="/">Trang chủ</a><a href="#" class="theme-item" onclick="toggleTheme();return false">Đổi nền sáng / tối</a><a href="#" id="logoutBtn">Đăng xuất</a></div></div>` : `${window.themeBtn ? themeBtn() : ''}<a href="/dang-nhap" class="btn sm">Đăng nhập</a>`}
     </nav></div>`;
   document.body.prepend(bar);
   const lo = $('#logoutBtn');
