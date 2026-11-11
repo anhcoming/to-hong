@@ -154,6 +154,29 @@
     if (a) e.preventDefault();
   }, true);
 
+  // ---------- trang sửa báo đổi chữ → đổi ngay trên thiệp, không chờ lưu & vẽ lại ----------
+  function patch(key, val) {
+    var f = FIELDS.filter(function (x) { return x[0] === key; })[0];
+    if (!f || !String(val || '').trim()) return; // xoá trắng → để bản vẽ lại lo (mẫu có thể ẩn cả dòng)
+    var from = String(f[1] || ''), re = new RegExp(escRx(from.normalize('NFC').trim()), 'giu');
+    Array.prototype.forEach.call(document.querySelectorAll('[data-ce-key="' + key + '"]'), function (el) {
+      var hit = false, w = document.createTreeWalker(el, NodeFilter.SHOW_TEXT), n;
+      while ((n = w.nextNode())) {
+        re.lastIndex = 0;
+        if (re.test(n.nodeValue)) { re.lastIndex = 0; n.nodeValue = n.nodeValue.replace(re, function () { return val; }); hit = true; }
+      }
+      if (!hit) el.textContent = val;
+      el.classList.remove('ce-ph');
+    });
+    f[1] = val; f[2] = 0;
+    re = new RegExp(escRx(String(val).normalize('NFC').trim()), 'giu');
+    RX.forEach(function (r) { if (r.f.key === key) { r.f.raw = val; r.re = re; } });
+  }
+  window.addEventListener('message', function (e) {
+    if (e.origin !== location.origin || !e.data || !e.data.cePatch) return;
+    patch(e.data.key, e.data.value);
+  });
+
   function init() {
     markPhotos(); markText();
     tell({ type: 'ready' });

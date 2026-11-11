@@ -203,13 +203,23 @@ function refreshPreview() {
   const old = $('#frameNext'); if (old) old.remove(); // lần lưu trước chưa tải xong → bỏ, tải bản mới nhất
   const nf = document.createElement('iframe');
   nf.id = 'frameNext'; nf.title = fr.title; nf.className = 'buf';
-  nf.onload = () => {
+  let done = false;
+  const swap = () => {
+    if (done || !nf.isConnected) return;
+    done = true;
     const cur = $('#frame');
     try { nf.contentWindow.scrollTo({ top: cur.contentWindow.scrollY || 0, behavior: 'instant' }); } catch (e) { /* bỏ qua */ }
     requestAnimationFrame(() => { cur.remove(); nf.id = 'frame'; nf.className = ''; });
   };
+  // chế độ sửa: khung mới báo "ready" ngay khi dựng xong trang (không chờ tải hết ảnh — ảnh đa phần đã có sẵn trong bộ nhớ đệm)
+  nf.onload = swap;
+  nf._ready = () => { const fo = nf.contentDocument && nf.contentDocument.fonts; (fo ? fo.ready : Promise.resolve()).then(swap, swap); };
   nf.src = src;
   fr.parentNode.appendChild(nf);
+}
+// đổi chữ ngay trên khung đang xem (chưa cần chờ lưu xong rồi vẽ lại)
+function livePatch(key, value) {
+  try { $('#frame').contentWindow.postMessage({ cePatch: 1, key, value }, location.origin); } catch (e) { /* bỏ qua */ }
 }
 
 // ---------- tiêu đề + phát hành ----------
@@ -342,6 +352,7 @@ function bind() {
     const k = e.target.dataset.k;
     if (!k) return;
     setP(card.data, k, e.target.type === 'checkbox' ? e.target.checked : e.target.value);
+    if (typeof e.target.value === 'string' && e.target.type !== 'checkbox') livePatch(k, e.target.value.trim());
     scheduleSave(e.target.type === 'checkbox' || e.target.tagName === 'SELECT' ? 50 : 700);
     if (k.endsWith('.name') && (k.startsWith('groom') || k.startsWith('bride'))) renderHeader();
   });
@@ -547,7 +558,7 @@ function textModal(key) {
     <button class="btn block" id="ceOk">Lưu</button>`, (box, close) => {
     const inp = $('#ceIn', box);
     setTimeout(() => { inp.focus(); inp.select(); }, 30);
-    const ok = () => { setP(card.data, key, inp.value.trim()); close(); applyLive(); };
+    const ok = () => { const v = inp.value.trim(); setP(card.data, key, v); livePatch(key, v); close(); applyLive(); };
     $('#ceOk', box).onclick = ok;
     inp.addEventListener('keydown', (e) => { if (e.key === 'Enter' && !long) ok(); });
   });
@@ -582,6 +593,7 @@ function eventModal(i) {
 window.addEventListener('message', (e) => {
   if (e.origin !== location.origin || !e.data || !e.data.ce) return;
   const m = e.data;
+  if (m.type === 'ready') { const nf = $('#frameNext'); if (nf && e.source === nf.contentWindow && nf._ready) nf._ready(); return; }
   if (m.type === 'photo') { if (m.empty || !photoGet(m.key)) livePhotoUpload(m.key, m.ratio); else photoActions(m.key, m.ratio); return; }
   if (m.type !== 'text') return;
   if (/^events\.\d+\./.test(m.key)) eventModal(+m.key.split('.')[1]);
