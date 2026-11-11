@@ -152,7 +152,7 @@ async function save() {
   saving = true;
   status('Đang lưu…');
   try {
-    const r = await api(`/api/cards/${CARD_ID}`, { method: 'PUT', body: { video } });
+    const r = await api(`/api/cards/${CARD_ID}`, { method: 'PUT', body: { video }, quiet: true });
     card.video = r.card.video;
     status('Đã lưu ✓');
     renderHeader();
@@ -193,9 +193,9 @@ async function saveCopy(blob) {
   if (META.blobUpload) {
     if (!window.BlobClient) await loadScript('/vendor/blob-client.js');
     const up = await BlobClient.upload(`videos/${CARD_ID}.mp4`, blob, { access: 'public', contentType: 'video/mp4', handleUploadUrl: `/api/cards/${CARD_ID}/video/blob`, clientPayload: CARD_ID, multipart: blob.size > 50e6 });
-    return (await api(`/api/cards/${CARD_ID}/video/saved`, { method: 'POST', body: { url: up.url } })).url;
+    return (await api(`/api/cards/${CARD_ID}/video/saved`, { method: 'POST', body: { url: up.url }, quiet: true })).url;
   }
-  return (await api(`/api/cards/${CARD_ID}/video/saved-file`, { method: 'POST', body: blob })).url;
+  return (await api(`/api/cards/${CARD_ID}/video/saved-file`, { method: 'POST', body: blob, quiet: true })).url;
 }
 
 async function exportMp4() {
@@ -289,8 +289,11 @@ function bind() {
       const files = [...e.target.files];
       if (files.length > empty.length) toast(`Mẫu này còn ${empty.length} ô trống — chỉ lấy ${empty.length} ảnh đầu`);
       try {
-        for (let k = 0; k < Math.min(files.length, empty.length); k++) { status(`Đang tải ảnh ${k + 1}/${Math.min(files.length, empty.length)}…`); list[empty[k]] = await uploadFile(files[k]); }
+        let failed = null;
+        const urls = await uploadFiles(files.slice(0, empty.length), { onProgress: (d, n) => status(`Đang tải ảnh ${d}/${n}…`), onError: (e) => { failed = e; } });
+        urls.forEach((u, k) => { if (u) list[empty[k]] = u; });
         writeSlots(list);
+        if (failed) toast(failed.message, true);
       } catch (err) { toast(err.message, true); status(''); }
       return;
     }

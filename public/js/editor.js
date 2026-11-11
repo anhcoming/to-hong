@@ -28,6 +28,21 @@ function person(who, label) {
 }
 
 // ---------- các tab ----------
+// Chọn mẫu: lọc theo nhóm (chip) + lưới ảnh bìa nhỏ; ảnh của mẫu đang dùng hiện theo bảng màu đang chọn
+let tplGroup = null;
+const tplCover = (t) => `/demo/cover-${t.id}-${(t.id === card.template && card.palette) || (t.palettes[0] && t.palettes[0].id)}.jpg`;
+function tplPicker(cur) {
+  const groups = (META.templateGroups || []).filter((g) => META.templates.some((t) => t.group === g.id));
+  if (tplGroup === null) tplGroup = cur.group || '';
+  const list = META.templates.filter((t) => !tplGroup || t.group === tplGroup);
+  const chip = (id, name) => `<button data-tg="${id}" class="${tplGroup === id ? 'on' : ''}">${esc(name)}</button>`;
+  return `<p class="muted tplnow">Đang dùng: <b>${esc(cur.name)}</b></p>
+      ${groups.length > 1 ? `<div class="tgchips">${chip('', 'Tất cả')}${groups.map((g) => chip(g.id, g.name)).join('')}</div>` : ''}
+      <div class="tplpick">${list.map((t) => `<button data-tpl="${t.id}" class="${t.id === card.template ? 'on' : ''}" title="${esc(t.desc)}" aria-pressed="${t.id === card.template}">
+        <img src="${tplCover(t)}" alt="" loading="lazy"><span>${esc(t.name)}</span></button>`).join('')}</div>
+`;
+}
+
 const panes = {
   info: () => `
     ${person('groom', 'Chú rể')}
@@ -105,11 +120,7 @@ const panes = {
     const tpl = META.templates.find((t) => t.id === card.template) || META.templates[0];
     return `
     <section class="group panel"><h3>Mẫu thiệp</h3>
-      <div class="tplwrap">${(META.templateGroups || [{ id: '', name: '' }]).map((g) => {
-        const list = META.templates.filter((t) => !g.id || t.group === g.id);
-        return list.length ? `${g.name ? `<p class="tplgroup">${esc(g.name)}</p>` : ''}<div class="tplpick">${list.map((t) => `<button data-tpl="${t.id}" class="${t.id === card.template ? 'on' : ''}"><b>${esc(t.name)}</b><br><span class="muted" style="font-size:13px">${esc(t.desc)}</span></button>`).join('')}</div>` : '';
-      }).join('')}</div>
-      <p class="muted" style="font-size:12px;margin:0;text-align:center">Cuộn trong khung để xem thêm mẫu ↓</p>
+      ${tplPicker(tpl)}
       <h3 style="margin:18px 0 10px">Bảng màu</h3>
       <div class="pals">${tpl.palettes.map((p) => `<button data-pal="${p.id}" class="${p.id === card.palette ? 'on' : ''}"><i style="background:linear-gradient(135deg,${p.swatch[0]} 50%,${p.swatch[1]} 50%)"></i>${esc(p.name)}</button>`).join('')}</div>
     </section>
@@ -153,7 +164,7 @@ async function save() {
   saving = true;
   status('Đang lưu…');
   try {
-    const r = await api(`/api/cards/${CARD_ID}`, { method: 'PUT', body: { data: card.data, title: card.title, template: card.template, palette: card.palette } });
+    const r = await api(`/api/cards/${CARD_ID}`, { method: 'PUT', body: { data: card.data, title: card.title, template: card.template, palette: card.palette }, quiet: true });
     Object.assign(card, { ...r.card, data: card.data }); // giữ nguyên dữ liệu đang gõ
     status('Đã lưu ✓');
     refreshPreview();
@@ -288,11 +299,11 @@ async function loadResponses() {
 
 // ---------- sự kiện giao diện ----------
 async function uploadMany(files, onUrl) {
-  status('Đang tải ảnh lên…');
-  for (const file of files) {
-    try { onUrl(await uploadFile(file)); }
-    catch (e) { toast(e.message, true); }
-  }
+  const urls = await uploadFiles(files, {
+    onProgress: (d, n) => status(n > 1 ? `Đang tải ảnh lên ${d}/${n}…` : 'Đang tải ảnh lên…'),
+    onError: (e) => toast(e.message, true),
+  });
+  urls.filter(Boolean).forEach(onUrl);
   rerender();
   save();
 }
@@ -333,6 +344,7 @@ function bind() {
     else if (ds.phUp !== undefined) { const i = +ds.phUp; [d.photos[i - 1], d.photos[i]] = [d.photos[i], d.photos[i - 1]]; }
     else if (ds.coverDel !== undefined) d.cover = '';
     else if (ds.musicDel !== undefined) d.music = '';
+    else if (ds.tg !== undefined) { tplGroup = ds.tg; rerender(); return; }
     else if (ds.tpl) { if (card.template !== ds.tpl) { card.template = ds.tpl; card.palette = ''; } }
     else if (ds.pal) card.palette = ds.pal;
     else if (b.id === 'slugSave') {

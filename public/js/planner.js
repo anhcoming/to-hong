@@ -608,7 +608,7 @@ function refreshDetail() {
   render();
 }
 async function saveTask(t, body) {
-  const r = await api(`/api/tasks/${t.id}`, { method: 'PUT', body });
+  const r = await api(`/api/tasks/${t.id}`, { method: 'PUT', body, quiet: true }); // tích việc / việc con: lưu ngầm
   Object.assign(t, r.task);
 }
 
@@ -698,9 +698,9 @@ function bind() {
     clearTimeout(moneyTimer[key]);
     moneyTimer[key] = setTimeout(async () => {
       try {
-        if (t.id === 'btotal') { S.ov = await api('/api/wedding', { method: 'PUT', body: { budgetTotal: n } }); S.budget.total = n; }
-        else if (t.dataset.gift) { const g = S.guests.guests.find((x) => x.id === t.dataset.gift); g.gift = n; await api(`/api/guests/${g.id}`, { method: 'PUT', body: { gift: n } }); S.guests.stats = (await api('/api/wedding/guests')).stats; }
-        else { const id = t.closest('[data-b]').dataset.b; const it = S.budget.items.find((x) => x.id === id); it[t.dataset.k] = n; await api(`/api/budget/${id}`, { method: 'PUT', body: { [t.dataset.k]: n } }); }
+        if (t.id === 'btotal') { S.ov = await api('/api/wedding', { method: 'PUT', body: { budgetTotal: n }, quiet: true }); S.budget.total = n; }
+        else if (t.dataset.gift) { const g = S.guests.guests.find((x) => x.id === t.dataset.gift); g.gift = n; await api(`/api/guests/${g.id}`, { method: 'PUT', body: { gift: n }, quiet: true }); S.guests.stats = (await api('/api/wedding/guests')).stats; }
+        else { const id = t.closest('[data-b]').dataset.b; const it = S.budget.items.find((x) => x.id === id); it[t.dataset.k] = n; await api(`/api/budget/${id}`, { method: 'PUT', body: { [t.dataset.k]: n }, quiet: true }); }
         toast('Đã lưu');
         await loadOverview(); renderHero();
         const a = document.activeElement;
