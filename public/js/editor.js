@@ -545,11 +545,40 @@ function textModal(key) {
     inp.addEventListener('keydown', (e) => { if (e.key === 'Enter' && !long) ok(); });
   });
 }
+// một lễ trong lịch trình: bấm tên / giờ / nơi / địa chỉ trên thiệp (hoặc dòng "+ Thêm lễ") → sửa đủ thông tin của lễ đó
+function eventModal(i) {
+  const d = card.data, isNew = i >= d.events.length;
+  if (isNew && d.events.length >= 6) return toast('Tối đa 6 lễ', true);
+  const e = isNew ? { name: '', date: d.date, time: '', place: '', address: '', mapUrl: '' } : d.events[i];
+  const inp = (id, label, v, o = {}) => `<label class="field"><span>${label}</span><input id="${id}" type="${o.type || 'text'}" value="${esc(v || '')}" ${o.ph ? `placeholder="${esc(o.ph)}"` : ''} ${o.max ? `maxlength="${o.max}"` : ''}></label>`;
+  openModal(`<h2 style="margin-top:0">${isNew ? 'Thêm lễ' : esc(e.name || `Lễ ${i + 1}`)}</h2>
+    ${inp('evName', 'Tên lễ', e.name, { ph: 'Lễ Vu Quy / Lễ Thành Hôn / Tiệc Cưới', max: 60 })}
+    <div class="grid2">${inp('evDate', 'Ngày', e.date, { type: 'date' })}${inp('evTime', 'Giờ', e.time, { type: 'time' })}</div>
+    ${inp('evPlace', 'Nơi tổ chức', e.place, { ph: 'Nhà hàng Hoa Sen — Sảnh A', max: 120 })}
+    ${inp('evAddr', 'Địa chỉ (hiện bản đồ)', e.address, { ph: 'Số nhà, đường, phường, tỉnh/thành', max: 200 })}
+    ${inp('evMap', 'Link Google Maps (không bắt buộc)', e.mapUrl, { ph: 'https://maps.app.goo.gl/…' })}
+    <div style="display:flex;gap:8px;margin-top:6px">${isNew ? '' : '<button class="btn plain" id="evDel" style="color:#c0392b">Xoá lễ</button>'}<button class="btn" id="evOk" style="flex:1">${isNew ? 'Thêm vào lịch trình' : 'Lưu'}</button></div>`, (box, close) => {
+    setTimeout(() => { const n = $('#evName', box); if (isNew) n.focus(); }, 30);
+    $('#evOk', box).onclick = () => {
+      const v = (id) => $(id, box).value.trim();
+      if (!v('#evName')) return toast('Nhập tên lễ nhé', true);
+      Object.assign(e, { name: v('#evName'), date: v('#evDate'), time: v('#evTime'), place: v('#evPlace'), address: v('#evAddr'), mapUrl: v('#evMap') });
+      if (isNew) d.events.push(e);
+      close(); applyLive();
+    };
+    const del = $('#evDel', box);
+    if (del) del.onclick = () => { if (!confirm(`Xoá "${e.name || 'lễ này'}" khỏi lịch trình?`)) return; d.events.splice(i, 1); close(); applyLive(); };
+  });
+}
 window.addEventListener('message', (e) => {
   if (e.origin !== location.origin || !e.data || !e.data.ce) return;
   const m = e.data;
-  if (m.type === 'photo') { if (m.empty || !photoGet(m.key)) livePhotoUpload(m.key, m.ratio); else photoActions(m.key, m.ratio); }
-  else if (m.type === 'text') textModal(m.key);
+  if (m.type === 'photo') { if (m.empty || !photoGet(m.key)) livePhotoUpload(m.key, m.ratio); else photoActions(m.key, m.ratio); return; }
+  if (m.type !== 'text') return;
+  if (/^events\.\d+\./.test(m.key)) eventModal(+m.key.split('.')[1]);
+  else if (m.key === 'time') showTab('date');
+  else if (m.key.startsWith('gifts.')) showTab('gift');
+  else textModal(m.key);
 });
 
 (async () => {
