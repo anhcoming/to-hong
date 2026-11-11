@@ -105,7 +105,7 @@ async function save() {
   try {
     const body = { led };
     if (withData) body.data = card.data;
-    const r = await api(`/api/cards/${CARD_ID}`, { method: 'PUT', body });
+    const r = await api(`/api/cards/${CARD_ID}`, { method: 'PUT', body, quiet: true });
     card.led = r.card.led;
     card.slug = r.card.slug;
     status('Đã lưu ✓');
