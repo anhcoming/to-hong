@@ -2,13 +2,14 @@
 <html lang="vi">
 <head>
 <meta charset="utf-8">
+<script src="/js/theme.js"></script>
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Video dạm ngõ</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Charm:wght@400;700&amp;family=Fraunces:ital,opsz,wght@0,9..144,300..700;1,9..144,300..700&amp;family=Hanken+Grotesk:wght@300..700&amp;family=Be+Vietnam+Pro:wght@400;500;600;700;800&amp;family=Dancing+Script:wght@600;700&amp;display=swap">
 <link rel="stylesheet" href="/css/app.css">
 <style>
 body{height:100vh;display:flex;flex-direction:column;overflow:hidden}
-.ebar{display:flex;align-items:center;gap:10px;padding:10px 16px;border-bottom:1px solid var(--line);background:#fff;flex-wrap:wrap}
+.ebar{display:flex;align-items:center;gap:10px;padding:10px 16px;border-bottom:1px solid var(--line);background:var(--surface);flex-wrap:wrap}
 .ebar .back{text-decoration:none;color:var(--muted);font-size:20px;padding:4px 8px}
 .ebar h1{margin:0;font-size:17px;flex:1;min-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .saved{font-size:13px;color:var(--muted)}
@@ -18,20 +19,20 @@ body{height:100vh;display:flex;flex-direction:column;overflow:hidden}
 .group h3{margin:0 0 12px;font-size:15px;display:flex;justify-content:space-between;align-items:center;gap:8px}
 .group h3 small{font-weight:400;color:var(--muted);font-size:12px}
 .opts{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
-.opt{border:2px solid var(--line);background:#fff;border-radius:12px;padding:10px;text-align:left;cursor:pointer;font-size:12px}
+.opt{border:2px solid var(--line);background:var(--surface);border-radius:12px;padding:10px;text-align:left;cursor:pointer;font-size:12px}
 .opt b{display:block;font-size:14px;margin-bottom:2px}
 .opt span{color:var(--muted)}
 .opt.on{border-color:var(--primary);background:var(--primary-soft)}
 .opt i{display:block;height:34px;border-radius:6px;margin-bottom:8px}
-.ln{display:grid;grid-template-columns:1fr auto;gap:6px;padding:10px;border:1px solid var(--line);border-radius:10px;background:#fff;margin-bottom:8px}
+.ln{display:grid;grid-template-columns:1fr auto;gap:6px;padding:10px;border:1px solid var(--line);border-radius:10px;background:var(--surface);margin-bottom:8px}
 .ln input[type=text]{grid-column:1/-1;width:100%;padding:8px 10px;border:1px solid var(--line);border-radius:8px;font-size:15px}
 .ln input[type=text]:focus{outline:none;border-color:var(--primary)}
 .ln .row{display:flex;gap:6px;align-items:center;flex-wrap:wrap;font-size:12px;color:var(--muted)}
-.ln select,.ln input[type=number]{padding:5px 6px;border:1px solid var(--line);border-radius:6px;font-size:13px;background:#fff}
+.ln select,.ln input[type=number]{padding:5px 6px;border:1px solid var(--line);border-radius:6px;font-size:13px;background:var(--surface)}
 .ln input[type=number]{width:62px}
-.ln input[type=color]{width:30px;height:28px;border:1px solid var(--line);border-radius:6px;padding:1px;background:#fff}
+.ln input[type=color]{width:30px;height:28px;border:1px solid var(--line);border-radius:6px;padding:1px;background:var(--surface)}
 .ln .tools{display:flex;gap:4px}
-.ln .tools button{border:1px solid var(--line);background:#fff;border-radius:6px;width:28px;height:28px;cursor:pointer;color:var(--muted)}
+.ln .tools button{border:1px solid var(--line);background:var(--surface);border-radius:6px;width:28px;height:28px;cursor:pointer;color:var(--muted)}
 .ln .tools button:hover{color:var(--primary);border-color:var(--primary)}
 .scene{border-left:3px solid var(--gold);padding-left:12px;margin-bottom:18px}
 .scene-h{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;font-weight:600;font-size:14px}

@@ -2,6 +2,7 @@
 <html lang="vi">
 <head>
 <meta charset="utf-8">
+<script src="/js/theme.js"></script>
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Mẫu thiệp cưới online — truyền thống, tối giản, hoa lá | Cưới Nha</title>
 <meta name="description" content="Bộ sưu tập mẫu thiệp cưới online: truyền thống chữ Hỷ, tối giản, hoa lá, chất liệu giấy. Lọc theo phong cách, màu sắc, xem trước như khách mời nhìn thấy và tạo thiệp miễn phí.">
@@ -15,19 +16,34 @@
 <link rel="stylesheet" href="/css/site.css">
 <style>
 /* Trang bộ sưu tập mẫu: thanh lọc (tìm, phong cách, màu, nhãn, sắp xếp) + lưới ảnh bìa; bộ lọc ghi lên URL để gửi link được */
-.phero{padding-bottom:26px}
-.filters{margin:0 auto 26px;padding:14px 16px;border-radius:18px;background:rgba(255,255,255,.96);backdrop-filter:blur(12px);box-shadow:0 10px 30px rgba(120,40,50,.08);border:1px solid var(--line);display:grid;gap:12px}
-.frow{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
-.frow>b{flex:none;width:92px;font-size:13px;color:var(--muted);font-weight:600}
-.search{flex:1;min-width:180px;display:flex;align-items:center;gap:8px;padding:0 14px;border:1px solid var(--line);border-radius:999px;background:#fff}
-.search input{flex:1;min-width:0;border:0;outline:0;padding:11px 0;font:15px var(--sans);background:none;color:var(--ink)}
-.sort{padding:10px 36px 10px 14px;border:1px solid var(--line);border-radius:999px;font:500 14px var(--sans);color:var(--ink);-webkit-appearance:none;appearance:none;background:#fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%236f6668' stroke-width='2.2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E") right 12px center/14px no-repeat;cursor:pointer}
-.chip{display:inline-flex;align-items:center;gap:7px;padding:7px 14px;border:1px solid var(--line);border-radius:999px;background:#fff;font:500 14px var(--sans);color:var(--ink);cursor:pointer;white-space:nowrap}
-.chip:hover{border-color:#f2b6bf}
-.chip[aria-pressed="true"]{border-color:var(--red);background:var(--red);color:#fff}
-.chip[data-n="0"]:not([aria-pressed="true"]){opacity:.45}
-.chip i{width:14px;height:14px;border-radius:50%;box-shadow:0 0 0 1px rgba(0,0,0,.12)}
-.chip small{font-size:12px;opacity:.7}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+/* bỏ phần giới thiệu: thanh lọc nằm ngay dưới thanh menu nổi */
+main.wrap{padding-top:104px}
+/* thanh lọc một hàng: tìm (icon bung ra ô gõ), phong cách dạng nút tròn + "Xem thêm", bên phải: nhãn dạng công tắc, màu & sắp xếp dạng menu thả */
+.fbar{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:10px 12px;margin:0 0 22px;padding-bottom:18px;border-bottom:1px solid var(--line)}
+.fside{display:flex;align-items:center;gap:8px;min-width:0}
+#fRight{margin-left:auto}
+.seg,.pill,.ddb{flex:none}
+.srch{display:flex;align-items:center;flex:none;height:40px;width:40px;border:1px solid var(--line);border-radius:999px;background:var(--card);overflow:hidden;transition:width .25s}
+.srch.open{width:230px;border-color:#f2b6bf}
+.srch button{flex:none;width:38px;height:38px;border:0;background:none;display:grid;place-items:center;cursor:pointer}
+.srch input{flex:1;min-width:0;border:0;outline:0;padding:0 12px 0 0;font:14px var(--sans);background:none;color:var(--ink)}
+.pill,.ddb{display:inline-flex;align-items:center;gap:7px;height:40px;padding:0 16px;border:1px solid var(--line);border-radius:999px;background:var(--card);font:500 14px var(--sans);color:var(--ink);cursor:pointer;white-space:nowrap}
+.pill:hover,.ddb:hover{border-color:#f2b6bf}
+.pill[aria-pressed="true"],.ddb.on{border-color:var(--red);background:#fff0f2;color:var(--red)}
+.ddb::after{content:"";width:6px;height:6px;margin-left:2px;border-right:1.6px solid currentColor;border-bottom:1.6px solid currentColor;transform:translateY(-2px) rotate(45deg);opacity:.7}
+.ddb i,.ddm i{width:12px;height:12px;border-radius:50%;box-shadow:0 0 0 1px rgba(0,0,0,.12)}
+.seg{display:flex;height:40px;padding:3px;border-radius:999px;background:#f5eff0}
+.seg button{border:0;background:none;padding:0 14px;border-radius:999px;font:500 14px var(--sans);color:var(--muted);cursor:pointer;white-space:nowrap}
+.seg button[aria-pressed="true"]{background:var(--card);color:var(--ink);box-shadow:0 1px 4px rgba(120,40,50,.14)}
+.dd{position:relative;flex:none}
+/* menu thả đặt position:fixed theo nút để không bị khung cuộn ngang (điện thoại) cắt mất */
+.ddm{position:fixed;z-index:60;min-width:190px;padding:6px;border-radius:14px;background:var(--card);box-shadow:0 20px 50px rgba(120,40,50,.18);display:none}
+.dd.open .ddm{display:block}
+.ddm button{display:flex;align-items:center;gap:10px;width:100%;padding:9px 10px;border:0;border-radius:10px;background:none;font:14px var(--sans);color:var(--ink);text-align:left;cursor:pointer}
+.ddm button:hover{background:var(--bg2)}
+.ddm button[aria-pressed="true"]{color:var(--red);font-weight:600}
+.ddm small{margin-left:auto;color:var(--muted);font-size:12px}
 .meta{display:flex;justify-content:space-between;align-items:center;gap:10px;margin:0 0 16px;color:var(--muted);font-size:14px}
 .meta button{border:0;background:none;color:var(--red);font:600 14px var(--sans);cursor:pointer}
 .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:26px 22px;padding-bottom:80px}
@@ -51,36 +67,36 @@
 .chon{display:none;margin:0 auto 18px;max-width:640px;padding:12px 18px;border-radius:14px;background:#fff0f2;color:var(--ink);font-size:15px;text-align:center}
 .chon.show{display:block}
 @media (max-width:700px){
-  .filters{padding:12px;gap:10px}
-  .frow>b{width:100%}
-  .frow.scroll{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;margin:0 -12px;padding:0 12px}
-  .frow.scroll::-webkit-scrollbar{display:none}
-  .frow.scroll>b{display:none}
+  .fbar{flex-direction:column;flex-wrap:nowrap;align-items:stretch;gap:10px}
+  #fRight{margin-left:-16px}
+  .fside{overflow-x:auto;scrollbar-width:none;margin:0 -16px;padding:0 16px}
+  .fside::-webkit-scrollbar{display:none}
+  .srch.open{width:180px}
   .grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:20px 12px}
   .tc .row{flex-direction:column;align-items:flex-start;gap:2px}
   .tc .use{font-size:13px;order:3}
 }
+/* nền tối */
+[data-theme="dark"] .seg{background:#2a2124}
+[data-theme="dark"] .pill[aria-pressed="true"],[data-theme="dark"] .ddb.on,[data-theme="dark"] .chon{background:#3a1f26}
+[data-theme="dark"] .ddm{box-shadow:0 20px 50px rgba(0,0,0,.45)}
+[data-theme="dark"] .ddm button:hover{background:#2a2023}
+[data-theme="dark"] .srch.open,[data-theme="dark"] .pill:hover,[data-theme="dark"] .ddb:hover{border-color:#5a3540}
 </style>
 </head>
 <body data-page="tpl">
 <header id="nav"></header>
 
-<section class="phero"><div class="wrap center">
-  <span class="eyebrow" id="count">Bộ sưu tập mẫu</span>
-  <h1>Mẫu thiệp <em>cưới online</em></h1>
-  <p class="sub">Bấm vào mẫu để xem như khách mời nhìn thấy, chấm màu để đổi bảng màu, rồi bấm <b>Dùng mẫu →</b> để tạo thiệp. Đổi mẫu, đổi màu lúc nào cũng được.</p>
-</div></section>
+<h1 class="sr">Mẫu thiệp cưới online</h1>
 
 <main class="wrap">
   <p class="chon" id="chon"><b>Chọn một mẫu để tạo thiệp mới</b> — bấm vào mẫu để xem trước, rồi bấm <b>Dùng mẫu →</b>.</p>
-  <div class="filters" role="search">
-    <div class="frow">
-      <label class="search"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#6f6668" stroke-width="2.2" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg><input id="q" type="search" placeholder="Tìm mẫu theo tên, ví dụ: Song Hỷ" aria-label="Tìm mẫu"></label>
-      <select class="sort" id="sort" aria-label="Sắp xếp"><option value="">Nổi bật</option><option value="new">Mới nhất</option><option value="az">Tên A → Z</option></select>
+  <div class="fbar" role="search">
+    <div class="fside" id="fLeft">
+      <div class="srch" id="srch"><button type="button" id="srchBtn" aria-label="Tìm mẫu"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#6f6668" stroke-width="2.2" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg></button><input id="q" type="search" placeholder="Tìm mẫu…" aria-label="Tìm mẫu theo tên"></div>
+      <div class="fside" id="fStyle" style="margin:0;padding:0;overflow:visible"></div>
     </div>
-    <div class="frow scroll" id="fStyle"><b>Phong cách</b></div>
-    <div class="frow scroll" id="fColor"><b>Màu chủ đạo</b></div>
-    <div class="frow scroll" id="fTag"><b>Nhãn</b></div>
+    <div class="fside" id="fRight"></div>
   </div>
   <div class="meta"><span id="shown"></span><button id="clear" hidden>Xoá bộ lọc</button></div>
   <div class="grid" id="grid"></div>
@@ -111,12 +127,44 @@
     if (F.sort) u.set('sap-xep', F.sort);
     history.replaceState(null, '', location.pathname + (u.toString() ? '?' + u : ''));
   }
-  const chips = (box, items, key) => {
-    box.querySelectorAll('.chip').forEach((c) => c.remove());
-    box.insertAdjacentHTML('beforeend', [{ id: '', name: 'Tất cả' }, ...items].map((it) =>
-      `<button type="button" class="chip" data-v="${esc(it.id)}" data-n="${it.n === undefined ? '' : it.n}" aria-pressed="${F[key] === it.id}">${it.dot ? `<i style="background:${it.dot}"></i>` : ''}${esc(it.name)}${it.n !== undefined ? ` <small>${it.n}</small>` : ''}</button>`).join(''));
-    box.onclick = (e) => { const b = e.target.closest('.chip'); if (!b) return; F[key] = b.dataset.v; render(); };
-  };
+  const SHOW = 3; // số phong cách hiện thẳng, còn lại vào "Xem thêm"
+  const SORTS = [['', 'Nổi bật'], ['new', 'Mới nhất'], ['az', 'Tên A → Z']];
+  const opt = (k, v, label, extra = '') => `<button type="button" data-k="${k}" data-v="${esc(v)}" aria-pressed="${F[k] === v}">${label}${extra}</button>`;
+  const dd = (id, label, on, items) => `<div class="dd" id="${id}"><button type="button" class="ddb${on ? ' on' : ''}" aria-expanded="false">${label}</button><div class="ddm">${items}</div></div>`;
+  function bar(base) {
+    const used = G.filter((g) => T.some((t) => t.group === g.id));
+    const shown = used.slice(0, SHOW), more = used.slice(SHOW);
+    const moreOn = more.find((g) => g.id === F.style);
+    const n = (k, test) => `<small>${base(k).filter(test).length}</small>`;
+    $('#fStyle').innerHTML = [{ id: '', name: 'Tất cả' }, ...shown].map((g) => `<button type="button" class="pill" data-k="style" data-v="${esc(g.id)}" aria-pressed="${F.style === g.id}">${esc(g.name)}</button>`).join('')
+      + (more.length ? dd('ddMore', moreOn ? esc(moreOn.name) : 'Xem thêm', !!moreOn, more.map((g) => opt('style', g.id, esc(g.name), n('style', (t) => t.group === g.id))).join('')) : '');
+    const fams = [];
+    T.forEach((t) => t.palettes.forEach((p) => { if (!fams.some((f) => f.id === fam(p))) fams.push({ id: fam(p), name: FAMILY[fam(p)] || p.name, dot: p.swatch[1] }); }));
+    const cur = fams.find((f) => f.id === F.color);
+    $('#fRight').innerHTML = `<div class="seg" role="group" aria-label="Nhãn">${[['', 'Tất cả'], ['Hot', '🔥 Hot'], ['Mới', '✨ Mới']].map(([v, l]) => `<button type="button" data-k="tag" data-v="${v}" aria-pressed="${F.tag === v}">${l}</button>`).join('')}</div>`
+      + dd('ddColor', cur ? `<i style="background:${cur.dot}"></i>${esc(cur.name)}` : 'Màu sắc', !!cur, opt('color', '', 'Tất cả màu') + fams.map((f) => opt('color', f.id, `<i style="background:${f.dot}"></i>${esc(f.name)}`, n('color', (t) => t.palettes.some((p) => fam(p) === f.id)))).join(''))
+      + dd('ddSort', SORTS.find(([v]) => v === F.sort)[1], false, SORTS.map(([v, l]) => opt('sort', v, l)).join(''));
+  }
+  function closeMenus(except) { document.querySelectorAll('.dd.open').forEach((d) => { if (d !== except) { d.classList.remove('open'); d.querySelector('.ddb').setAttribute('aria-expanded', false); } }); }
+  document.querySelector('.fbar').addEventListener('click', (e) => {
+    const t = e.target.closest('.ddb');
+    if (t) {
+      const d = t.parentElement, on = !d.classList.contains('open');
+      closeMenus(d); d.classList.toggle('open', on); t.setAttribute('aria-expanded', on);
+      if (on) { const r = t.getBoundingClientRect(), m = d.querySelector('.ddm'); m.style.top = r.bottom + 8 + 'px'; m.style.left = Math.max(8, Math.min(r.left, innerWidth - m.offsetWidth - 8)) + 'px'; }
+      return;
+    }
+    const b = e.target.closest('[data-k]'); if (!b) return;
+    F[b.dataset.k] = b.dataset.v; closeMenus(); render();
+  });
+  document.addEventListener('click', (e) => { if (!e.target.closest('.dd')) closeMenus(); });
+  addEventListener('scroll', () => closeMenus(), { passive: true });
+  document.querySelectorAll('.fside').forEach((x) => x.addEventListener('scroll', () => closeMenus(), { passive: true }));
+  document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeMenus(); });
+  // tìm: bấm icon thì bung ô gõ
+  const srch = $('#srch');
+  $('#srchBtn').onclick = () => { srch.classList.add('open'); $('#q').focus(); };
+  $('#q').addEventListener('blur', () => { if (!F.q) srch.classList.remove('open'); });
 
   function render() {
     sync();
@@ -128,13 +176,9 @@
     if (F.sort === 'new') list = list.slice().sort((a, b) => (b.badge === 'Mới') - (a.badge === 'Mới'));
     if (F.sort === 'az') list = list.slice().sort((a, b) => a.name.localeCompare(b.name, 'vi'));
 
-    // số đếm cạnh mỗi lựa chọn tính trên các bộ lọc còn lại
+    // số đếm trong menu tính trên các bộ lọc còn lại
     const base = (skip) => T.filter((t) => (skip === 'style' || !F.style || t.group === F.style) && (skip === 'color' || !F.color || t.palettes.some((p) => fam(p) === F.color)) && (skip === 'tag' || !F.tag || t.badge === F.tag) && (!q || (t.name + ' ' + t.desc).toLowerCase().includes(q)));
-    chips($('#fStyle'), G.filter((g) => T.some((t) => t.group === g.id)).map((g) => ({ ...g, n: base('style').filter((t) => t.group === g.id).length })), 'style');
-    const fams = [];
-    T.forEach((t) => t.palettes.forEach((p) => { if (!fams.some((f) => f.id === fam(p))) fams.push({ id: fam(p), name: FAMILY[fam(p)] || p.name, dot: p.swatch[1] }); }));
-    chips($('#fColor'), fams.map((f) => ({ ...f, n: base('color').filter((t) => t.palettes.some((p) => fam(p) === f.id)).length })), 'color');
-    chips($('#fTag'), ['Hot', 'Mới'].map((x) => ({ id: x, name: x === 'Hot' ? '🔥 Hot' : '✨ Mới', n: base('tag').filter((t) => t.badge === x).length })), 'tag');
+    bar(base);
 
     $('#shown').textContent = list.length === T.length ? `${T.length} mẫu` : `${list.length} / ${T.length} mẫu`;
     $('#clear').hidden = !(F.q || F.style || F.color || F.tag);
@@ -151,13 +195,11 @@
     }).join('') : '<div class="none"><p style="font-size:40px;margin:0">🔍</p><p>Chưa có mẫu khớp bộ lọc.</p><button class="btn btn-ghost" id="clear2">Xoá bộ lọc</button></div>';
     const c2 = $('#clear2'); if (c2) c2.onclick = clear;
   }
-  function clear() { Object.assign(F, { q: '', style: '', color: '', tag: '' }); $('#q').value = ''; render(); }
+  function clear() { Object.assign(F, { q: '', style: '', color: '', tag: '' }); $('#q').value = ''; srch.classList.remove('open'); render(); }
 
-  if (matchMedia('(max-width:700px)').matches) $('#q').placeholder = 'Tìm mẫu…';
   $('#q').value = F.q;
-  $('#sort').value = F.sort;
+  if (F.q) srch.classList.add('open');
   $('#q').addEventListener('input', (e) => { F.q = e.target.value; render(); });
-  $('#sort').addEventListener('change', (e) => { F.sort = e.target.value; render(); });
   $('#clear').onclick = clear;
   $('#grid').addEventListener('click', (e) => {
     const b = e.target.closest('.sw button'); if (!b) return;
@@ -169,7 +211,6 @@
   });
   document.addEventListener('meta', (e) => {
     T = e.detail.templates; G = e.detail.templateGroups || [];
-    $('#count').textContent = `Bộ sưu tập · ${T.length} mẫu`;
     render();
   });
 })();

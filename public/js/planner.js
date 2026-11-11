@@ -549,14 +549,24 @@ function bind() {
   });
 }
 
+// Không tải được (mất mạng, máy chủ đang khởi động lại): báo rõ và cho thử lại, thay vì để trang trắng
+function offline() {
+  $('#hero').innerHTML = '';
+  $('main').innerHTML = `<div class="panel empty" style="margin-top:30px"><p style="font-size:40px;margin:0">📡</p>
+    <h3 style="color:var(--ink)">Chưa kết nối được máy chủ</h3><p>Kiểm tra mạng rồi thử lại nhé — dữ liệu sổ tay của bạn vẫn an toàn.</p>
+    <button class="btn" onclick="location.reload()">Thử lại</button></div>`;
+}
+
 (async () => {
-  const { user, meta } = await renderTopbar('planner');
+  let top;
+  try { top = await renderTopbar('planner'); } catch { return offline(); }
+  const { user, meta } = top;
   if (!user) return (location.href = '/dang-nhap?dang-ky=1&next=/so-tay');
   S.me = user;
   document.title = 'Sổ tay cưới — ' + meta.brand;
   const h = location.hash.slice(1);
   if (['home', 'tasks', 'budget', 'guests', 'cal'].includes(h)) S.tab = h;
-  await Promise.all([loadOverview(), loadTasks()]);
+  try { await Promise.all([loadOverview(), loadTasks()]); } catch (e) { if (!e.status) return offline(); throw e; }
   bind();
   render();
   if ('serviceWorker' in navigator) navigator.serviceWorker.register('/sw.js').catch(() => {});

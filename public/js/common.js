@@ -106,8 +106,9 @@ window.renderTopbar = async function (active) {
       ${me.user ? `
         <a href="/mau-thiep" class="hide-sm">Mẫu thiệp</a>
         <a href="/so-tay" class="${active === 'planner' ? 'on' : ''}">Sổ tay<span class="hide-xs"> cưới</span></a>
+        ${window.themeBtn ? themeBtn() : ''}
         <div class="acct" id="acct"><a href="/thiep-cua-toi">Thiệp<span class="hide-xs"> của tôi</span></a><button type="button" aria-label="Tài khoản" aria-expanded="false"></button>
-          <div class="acct-menu"><div class="who"><b>${esc(me.user.name || '')}</b>${esc(me.user.email)}</div><a href="/thiep-cua-toi">Thiệp &amp; sản phẩm của tôi</a><a href="/so-tay">Sổ tay cưới của tôi</a><a href="/">Trang chủ</a><a href="#" id="logoutBtn">Đăng xuất</a></div></div>` : '<a href="/dang-nhap" class="btn sm">Đăng nhập</a>'}
+          <div class="acct-menu"><div class="who"><b>${esc(me.user.name || '')}</b>${esc(me.user.email)}</div><a href="/thiep-cua-toi">Thiệp &amp; sản phẩm của tôi</a><a href="/so-tay">Sổ tay cưới của tôi</a><a href="/">Trang chủ</a><a href="#" id="logoutBtn">Đăng xuất</a></div></div>` : `${window.themeBtn ? themeBtn() : ''}<a href="/dang-nhap" class="btn sm">Đăng nhập</a>`}
     </nav></div>`;
   document.body.prepend(bar);
   const lo = $('#logoutBtn');

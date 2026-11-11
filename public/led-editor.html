@@ -2,13 +2,14 @@
 <html lang="vi">
 <head>
 <meta charset="utf-8">
+<script src="/js/theme.js"></script>
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Màn hình LED</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&amp;family=Dancing+Script:wght@600;700&amp;display=swap">
 <link rel="stylesheet" href="/css/app.css">
 <style>
 body{height:100vh;display:flex;flex-direction:column;overflow:hidden}
-.ebar{display:flex;align-items:center;gap:10px;padding:10px 16px;border-bottom:1px solid var(--line);background:#fff;flex-wrap:wrap}
+.ebar{display:flex;align-items:center;gap:10px;padding:10px 16px;border-bottom:1px solid var(--line);background:var(--surface);flex-wrap:wrap}
 .ebar .back{text-decoration:none;color:var(--muted);font-size:20px;padding:4px 8px}
 .ebar h1{margin:0;font-size:17px;flex:1;min-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .saved{font-size:13px;color:var(--muted)}
@@ -18,7 +19,7 @@ body{height:100vh;display:flex;flex-direction:column;overflow:hidden}
 .group h3{margin:0 0 12px;font-size:15px}
 .group h3 small{font-weight:400;color:var(--muted);font-size:12px;margin-left:4px}
 .opts{display:grid;grid-template-columns:1fr 1fr;gap:8px}
-.opt{border:2px solid var(--line);background:#fff;border-radius:12px;padding:10px;text-align:left;cursor:pointer;font-size:13px}
+.opt{border:2px solid var(--line);background:var(--surface);border-radius:12px;padding:10px;text-align:left;cursor:pointer;font-size:13px}
 .opt b{display:block;font-size:14px}
 .opt span{color:var(--muted)}
 .opt.on{border-color:var(--primary);background:var(--primary-soft)}
