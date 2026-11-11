@@ -178,13 +178,13 @@ const eq = (a, b, msg) => { assert.deepEqual(a, b, msg); n++; };
   // ---------- sửa trực tiếp trên thiệp ----------
   {
     const c = (await call('a', 'GET', `/api/cards/${id}`)).json.card;
-    const data = { ...c.data, cover: '/demo/dodam-2.jpg#p=20,70', photos: ['/demo/dodam-1.jpg', '/demo/dodam-3.jpg#p=0,100', '/demo/dodam-4.jpg#p=1,2,3'] };
+    const data = { ...c.data, cover: '/demo/dodam-2.jpg#p=20,70', photos: ['/demo/dodam-1.jpg', '/demo/dodam-3.jpg#p=0,100,2.25', '/demo/dodam-4.jpg#p=1,2,9', '/demo/dodam-5.jpg#p=1,2,3,4'] };
     const u = (await call('a', 'PUT', `/api/cards/${id}`, { data })).json.card.data;
     eq(u.cover, '/demo/dodam-2.jpg#p=20,70', 'lưu được điểm lấy nét của ảnh bìa');
-    eq(u.photos.length, 2, 'bỏ ảnh có điểm lấy nét sai định dạng');
-    eq(u.photos[1], '/demo/dodam-3.jpg#p=0,100', 'lưu được điểm lấy nét của ảnh album');
+    eq(u.photos.length, 2, 'bỏ ảnh có mức phóng to / định dạng căn ảnh sai');
+    eq(u.photos[1], '/demo/dodam-3.jpg#p=0,100,2.25', 'lưu được điểm lấy nét và mức phóng to của ảnh album');
     let h = (await call('a', 'GET', `/t/${c.slug}?preview=1&edit=1`)).text;
-    ok(h.includes('/card/edit.js') && /#p=20,70(&amp;|&)k=cover/.test(h) && h.includes('/card/slot.svg#k=photos.'), 'chủ thiệp: khung sửa trực tiếp có ô ảnh và ô trống');
+    ok(h.includes('/card/edit.js') && /#p=0,100,2.25(&amp;|&)k=photos\.1/.test(h) && h.includes('/card/slot.svg#k=photos.'), 'chủ thiệp: khung sửa trực tiếp có ô ảnh và ô trống');
     ok(!(await call('a', 'GET', `/t/${c.slug}?preview=1`)).text.includes('/card/edit.js'), 'xem trước thường không bật chế độ sửa');
     h = (await call('anon', 'GET', `/t/${c.slug}?preview=1&edit=1`)).text;
     ok(!h.includes('/card/edit.js') && !h.includes('slot.svg'), 'khách không mở được chế độ sửa');

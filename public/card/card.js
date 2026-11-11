@@ -165,12 +165,40 @@
       .then(function () { btn.disabled = false; });
   });
 
-  // ----- điểm lấy nét của ảnh: link ảnh có "#p=x,y" → căn phần ảnh hiện trong khung (ảnh thẻ <img> và ảnh nền) -----
-  function focusOf(u) { var m = /#p=([\d.]+),([\d.]+)/.exec(u || ''); return m ? m[1] + '% ' + m[2] + '%' : ''; }
-  function applyFocus(root) {
-    $$('img[src*="#p="]', root).forEach(function (im) { var f = focusOf(im.getAttribute('src')); if (f) im.style.objectPosition = f; });
-    $$('[style*="#p="]', root).forEach(function (el) { var f = focusOf(el.getAttribute('style')); if (f) el.style.backgroundPosition = f; });
+  // ----- căn ảnh trong khung: link ảnh có "#p=x,y[,z]" → điểm lấy nét x%,y% và phóng to z lần -----
+  // Ảnh <img>: object-position + phóng to quanh điểm lấy nét, cắt đúng bằng khung cũ (clip-path) nên không tràn ra ngoài.
+  // Ảnh nền: tính lại kích thước "cover × z" theo cỡ thật của ảnh.
+  function focusOf(u) { var m = /#p=([\d.]+),([\d.]+)(?:,([\d.]+))?/.exec(u || ''); return m ? { x: +m[1], y: +m[2], z: Math.max(1, +m[3] || 1) } : null; }
+  function zoomImg(im, f) {
+    im.style.objectPosition = f.x + '% ' + f.y + '%';
+    if (f.z <= 1) return;
+    var k = 1 - 1 / f.z;
+    im.style.transformOrigin = f.x + '% ' + f.y + '%';
+    im.style.scale = String(f.z); // thuộc tính "scale" riêng: không đè lên transform (xoay, hiệu ứng) sẵn có của mẫu
+    im.style.clipPath = 'inset(' + (f.y * k) + '% ' + ((100 - f.x) * k) + '% ' + ((100 - f.y) * k) + '% ' + (f.x * k) + '%)';
   }
+  var bgs = [];
+  function sizeBg(b) {
+    var W = b.el.clientWidth, H = b.el.clientHeight;
+    if (!W || !H || !b.iw) return;
+    var s = Math.max(W / b.iw, H / b.ih) * b.f.z;
+    b.el.style.backgroundSize = Math.ceil(b.iw * s) + 'px ' + Math.ceil(b.ih * s) + 'px';
+  }
+  function applyFocus(root) {
+    $$('img[src*="#p="]', root).forEach(function (im) { var f = focusOf(im.getAttribute('src')); if (f) zoomImg(im, f); });
+    $$('[style*="#p="]', root).forEach(function (el) {
+      var st = el.getAttribute('style'), f = focusOf(st);
+      if (!f) return;
+      el.style.backgroundPosition = f.x + '% ' + f.y + '%';
+      if (f.z <= 1) return;
+      var m = /url\(['"]?([^'")]+)/.exec(st); if (!m) return;
+      var b = { el: el, f: f }, img = new Image();
+      img.onload = function () { b.iw = img.naturalWidth; b.ih = img.naturalHeight; sizeBg(b); };
+      img.src = m[1];
+      bgs.push(b);
+    });
+  }
+  window.addEventListener('resize', function () { bgs.forEach(sizeBg); });
   applyFocus(document);
   window.__applyFocus = applyFocus;
 })();

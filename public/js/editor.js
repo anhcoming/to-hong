@@ -392,8 +392,13 @@ function bind() {
 // ---------- sửa trực tiếp trên thiệp (kiểu Canva) ----------
 // Khung xem trước báo lại người dùng bấm vào ô ảnh nào / dòng chữ nào (public/card/edit.js).
 const baseUrl = (u) => String(u || '').split('#')[0];
-const focusOf = (u) => { const m = /#p=([\d.]+),([\d.]+)/.exec(u || ''); return m ? [+m[1], +m[2]] : [50, 50]; };
-const withFocus = (u, x, y) => (Math.round(x) === 50 && Math.round(y) === 50 ? baseUrl(u) : `${baseUrl(u)}#p=${Math.round(x)},${Math.round(y)}`);
+// "#p=x,y[,z]": điểm lấy nét (phần trăm) + mức phóng to (1–4)
+const focusOf = (u) => { const m = /#p=([\d.]+),([\d.]+)(?:,([\d.]+))?/.exec(u || ''); return m ? [+m[1], +m[2], Math.max(1, +m[3] || 1)] : [50, 50, 1]; };
+const withFocus = (u, x, y, z = 1) => {
+  x = Math.round(x); y = Math.round(y); z = Math.round(Math.min(4, Math.max(1, z)) * 100) / 100;
+  if (x === 50 && y === 50 && z === 1) return baseUrl(u);
+  return `${baseUrl(u)}#p=${x},${y}${z > 1 ? ',' + z : ''}`;
+};
 function photoGet(key) {
   if (key === 'cover') return card.data.cover;
   const i = +key.split('.')[1];
@@ -428,7 +433,7 @@ async function livePhotoUpload(key, ratio) {
 function photoActions(key, ratio) {
   const u = photoGet(key);
   openModal(`<h2 style="margin-top:0">${key === 'cover' ? 'Ảnh bìa' : `Ảnh ${+key.split('.')[1] + 1}`}</h2>
-    <div style="border-radius:12px;height:180px;background:#eee url('${esc(baseUrl(u))}') ${focusOf(u).join('% ')}%/cover;margin-bottom:14px"></div>
+    <div style="border-radius:12px;height:180px;background:#eee url('${esc(baseUrl(u))}') ${focusOf(u)[0]}% ${focusOf(u)[1]}%/cover;margin-bottom:14px"></div>
     <div style="display:grid;gap:8px">
       <button class="btn block" data-pa="replace">Đổi ảnh khác</button>
       <button class="btn block plain" data-pa="crop">Căn chỉnh phần ảnh hiện trong khung</button>
@@ -447,34 +452,63 @@ function photoActions(key, ratio) {
 function cropModal(key, ratio = 1, fresh = false) {
   const u = photoGet(key);
   if (!u) return;
-  let [x, y] = focusOf(u);
-  const W = 300, H = Math.round(Math.min(420, Math.max(170, W / (ratio || 1))));
+  let [x, y, z] = focusOf(u);
+  const W = Math.min(300, window.innerWidth - 80), H = Math.round(Math.min(380, Math.max(170, W / (ratio || 1))));
   const FW = Math.round(H * (ratio || 1) > W ? W : H * (ratio || 1));
   openModal(`<h2 style="margin-top:0">Căn chỉnh ảnh</h2>
-    <p class="muted" style="margin:-4px 0 12px">${fresh ? 'Ảnh đã tải lên. ' : ''}Kéo ảnh để chọn phần hiện trong khung của mẫu.</p>
-    <div id="cropF" style="position:relative;margin:0 auto;width:${FW}px;height:${H}px;border-radius:12px;overflow:hidden;touch-action:none;cursor:grab;background:#eee url('${esc(baseUrl(u))}') ${x}% ${y}%/cover;box-shadow:inset 0 0 0 2px var(--primary)"></div>
-    <div style="display:flex;gap:8px;margin-top:16px"><button class="btn plain" data-c="reset" style="flex:1">Về giữa</button><button class="btn" data-c="ok" style="flex:2">Xong</button></div>`, (box, close) => {
-    const fr = $('#cropF', box);
+    <p class="muted" style="margin:-4px 0 12px">${fresh ? 'Ảnh đã tải lên. ' : ''}Kéo để chọn phần hiện ra, phóng to bằng thanh trượt${matchMedia('(pointer:coarse)').matches ? ' hoặc chụm hai ngón' : ' hoặc lăn chuột'}.</p>
+    <div id="cropF" style="position:relative;margin:0 auto;width:${FW}px;height:${H}px;border-radius:12px;overflow:hidden;touch-action:none;cursor:grab;background:#eee url('${esc(baseUrl(u))}') ${x}% ${y}%/cover no-repeat;box-shadow:inset 0 0 0 2px var(--primary)"></div>
+    <label style="display:flex;align-items:center;gap:10px;margin:16px auto 0;max-width:${Math.max(FW, 240)}px">
+      <span aria-hidden="true" style="font-size:13px">−</span>
+      <input type="range" id="cropZ" min="1" max="4" step="0.01" value="${z}" aria-label="Phóng to" style="flex:1;accent-color:var(--primary)">
+      <span aria-hidden="true" style="font-size:18px">+</span>
+      <b id="cropZv" style="min-width:42px;text-align:right;font-size:13px">${z.toFixed(1)}×</b>
+    </label>
+    <div style="display:flex;gap:8px;margin-top:16px"><button class="btn plain" data-c="reset" style="flex:1">Đặt lại</button><button class="btn" data-c="ok" style="flex:2">Xong</button></div>`, (box, close) => {
+    const fr = $('#cropF', box), zr = $('#cropZ', box), zv = $('#cropZv', box);
     const img = new Image();
-    let iw = 1, ih = 1;
-    img.onload = () => { iw = img.naturalWidth; ih = img.naturalHeight; };
+    let iw = 0, ih = 0;
+    // ảnh hiện cỡ "cover × z", vị trí x% y% — đúng như trên thiệp (card.js)
+    const paint = () => {
+      fr.style.backgroundPosition = `${x}% ${y}%`;
+      if (iw) { const s = Math.max(FW / iw, H / ih) * z; fr.style.backgroundSize = `${Math.ceil(iw * s)}px ${Math.ceil(ih * s)}px`; }
+      zr.value = z; zv.textContent = `${z.toFixed(1)}×`;
+    };
+    img.onload = () => { iw = img.naturalWidth; ih = img.naturalHeight; paint(); };
     img.src = baseUrl(u);
-    let drag = null;
-    const paint = () => { fr.style.backgroundPosition = `${x}% ${y}%`; };
-    fr.addEventListener('pointerdown', (e) => { drag = { sx: e.clientX, sy: e.clientY, x, y }; fr.setPointerCapture(e.pointerId); fr.style.cursor = 'grabbing'; });
+    const extra = () => { const s = Math.max(FW / iw, H / ih) * z; return [iw * s - FW, ih * s - H]; }; // phần ảnh thừa ra ngoài khung
+    const setZ = (nz) => { z = Math.min(4, Math.max(1, nz)); paint(); };
+    zr.addEventListener('input', () => setZ(+zr.value));
+    fr.addEventListener('wheel', (e) => { e.preventDefault(); setZ(z * (e.deltaY < 0 ? 1.08 : 1 / 1.08)); }, { passive: false });
+    // kéo một ngón / chuột để dời; chụm hai ngón để phóng to
+    const pts = new Map();
+    let drag = null, pinch = null;
+    const dist = () => { const [a, b] = [...pts.values()]; return Math.hypot(a.x - b.x, a.y - b.y); };
+    fr.addEventListener('pointerdown', (e) => {
+      try { fr.setPointerCapture(e.pointerId); } catch (_) { /* bỏ qua */ }
+      pts.set(e.pointerId, { x: e.clientX, y: e.clientY });
+      if (pts.size === 2) { drag = null; pinch = { d: dist(), z }; } else { drag = { sx: e.clientX, sy: e.clientY, x, y }; fr.style.cursor = 'grabbing'; }
+    });
     fr.addEventListener('pointermove', (e) => {
+      if (!pts.has(e.pointerId) || !iw) return;
+      pts.set(e.pointerId, { x: e.clientX, y: e.clientY });
+      if (pinch && pts.size === 2) { setZ(pinch.z * (dist() / Math.max(1, pinch.d))); return; }
       if (!drag) return;
-      const s = Math.max(FW / iw, H / ih), extraX = iw * s - FW, extraY = ih * s - H; // phần ảnh thừa ra ngoài khung
-      if (extraX > 1) x = Math.min(100, Math.max(0, drag.x - ((e.clientX - drag.sx) / extraX) * 100));
-      if (extraY > 1) y = Math.min(100, Math.max(0, drag.y - ((e.clientY - drag.sy) / extraY) * 100));
+      const [ex, ey] = extra();
+      if (ex > 1) x = Math.min(100, Math.max(0, drag.x - ((e.clientX - drag.sx) / ex) * 100));
+      if (ey > 1) y = Math.min(100, Math.max(0, drag.y - ((e.clientY - drag.sy) / ey) * 100));
       paint();
     });
-    const end = () => { drag = null; fr.style.cursor = 'grab'; };
+    const end = (e) => {
+      pts.delete(e.pointerId);
+      if (pts.size < 2) pinch = null;
+      if (pts.size === 1) { const p = [...pts.values()][0]; drag = { sx: p.x, sy: p.y, x, y }; } else { drag = null; fr.style.cursor = 'grab'; }
+    };
     fr.addEventListener('pointerup', end); fr.addEventListener('pointercancel', end);
     box.addEventListener('click', (e) => {
       const b = e.target.closest('[data-c]'); if (!b) return;
-      if (b.dataset.c === 'reset') { x = 50; y = 50; paint(); return; }
-      photoSet(key, withFocus(u, x, y));
+      if (b.dataset.c === 'reset') { x = 50; y = 50; z = 1; paint(); return; }
+      photoSet(key, withFocus(u, x, y, z));
       close();
       applyLive();
     });
