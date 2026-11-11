@@ -4,71 +4,113 @@
 <meta charset="utf-8">
 <script src="/js/theme.js"></script>
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Video dạm ngõ, ăn hỏi chiếu TV — tự làm trong 5 phút, tải MP4 Full HD | Cưới Nha</title>
-<meta name="description" content="Tự làm video dạm ngõ, ăn hỏi chiếu TV: tên cô dâu chú rể, lời cảm ơn hai họ, ngày giờ kèm âm lịch. Mẫu sen vàng, hoa đào, mây cung đình, dùng ảnh cưới làm nền. Xem thử miễn phí, tải MP4 Full HD cắm USB.">
-<meta property="og:title" content="Video dạm ngõ chiếu TV — tự làm trong 5 phút">
-<meta property="og:description" content="Mẫu sen vàng, hoa đào, mây cung đình. Ngày âm lịch tự tính. Tải MP4 Full HD.">
+<title>Video cưới chiếu TV — chọn mẫu, chèn ảnh và chữ, tải MP4 Full HD | Cưới Nha</title>
+<meta name="description" content="Làm video cưới, dạm ngõ, ăn hỏi chiếu TV: chọn mẫu, chèn ảnh cưới và lời chào, video tự dựng hiệu ứng chuyển cảnh. Ngày âm lịch tự tính. Xem thử miễn phí, tải MP4 Full HD cắm USB.">
+<meta property="og:title" content="Video cưới chiếu TV — chọn mẫu, chèn ảnh là xong">
+<meta property="og:description" content="Chọn mẫu, chèn ảnh và chữ, video tự dựng. Tải MP4 Full HD.">
+<meta property="og:image" content="/demo/vposter-album.jpg">
 <meta name="theme-color" content="#fffafa">
-<link rel="canonical" href="/video-dam-ngo">
+<link rel="canonical" href="/video-cuoi">
 <link rel="icon" href="/favicon.svg">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&amp;family=Dancing+Script:wght@600;700&amp;display=swap">
 <link rel="stylesheet" href="/css/site.css">
+<style>
+/* bộ sưu tập mẫu video: ảnh xem trước 16:9, rê chuột thì phát thử ngay trong thẻ */
+.vgal{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:20px;margin-top:8px}
+.vt{display:flex;flex-direction:column;border-radius:18px;overflow:hidden;background:var(--card);border:1px solid var(--line);box-shadow:0 14px 34px rgba(120,40,50,.07);transition:transform .25s,box-shadow .25s}
+.vt:hover{transform:translateY(-4px);box-shadow:0 22px 44px rgba(120,40,50,.14)}
+.vt .pic{position:relative;display:block;aspect-ratio:16/9;background:#1a1012;overflow:hidden}
+.vt .pic img{width:100%;height:100%;object-fit:cover;display:block}
+.vt .pic iframe{position:absolute;left:0;top:0;width:1280px;height:720px;border:0;pointer-events:none;transform-origin:0 0;opacity:0;transition:opacity .4s}
+.vt .pic iframe.on{opacity:1}
+.vt .tag{position:absolute;top:12px;left:12px;z-index:2;padding:4px 11px;border-radius:999px;background:var(--red);color:#fff;font-size:12px;font-weight:700}
+.vt .play{position:absolute;right:12px;bottom:12px;z-index:2;padding:5px 12px;border-radius:999px;background:rgba(0,0,0,.55);color:#fff;font-size:12px;font-weight:600;transition:opacity .3s}
+.vt:hover .play{opacity:0}
+.vt .body{display:flex;flex-direction:column;gap:6px;padding:16px 18px 18px;flex:1}
+.vt h3{margin:0;font-size:18px}
+.vt p{margin:0;color:var(--muted);font-size:14px}
+.vt .feat{display:flex;gap:6px;flex-wrap:wrap;margin:4px 0 6px}
+.vt .feat span{padding:3px 10px;border-radius:999px;background:var(--bg2);font-size:12px;color:var(--ink)}
+.vt .acts{display:flex;gap:8px;margin-top:auto;padding-top:8px}
+.vt .acts .btn{flex:1;min-width:0;justify-content:center;padding:10px 12px;font-size:14px}
+.steps3{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;max-width:900px;margin:0 auto}
+.steps3 div{padding:22px;border-radius:18px;background:var(--card);border:1px solid var(--line);text-align:center}
+.steps3 b{display:grid;place-items:center;width:42px;height:42px;margin:0 auto 10px;border-radius:50%;background:var(--red);color:#fff;font-size:18px}
+.steps3 h3{margin:0 0 4px;font-size:17px}
+.steps3 p{margin:0;color:var(--muted);font-size:14px}
+@media (max-width:720px){.steps3{grid-template-columns:1fr}}
+</style>
 </head>
 <body data-page="video">
 <header id="nav"></header>
 
 <section class="phero"><div class="wrap center">
   <span class="eyebrow">Xem thử miễn phí · Tải MP4 Full HD</span>
-  <h1>Video <em>dạm ngõ, ăn hỏi</em> chiếu TV</h1>
-  <p class="sub">Giới thiệu cô dâu chú rể, lời cảm ơn hai họ, ngày giờ buổi lễ kèm âm lịch — lặp liên tục suốt buổi lễ. Sửa từng dòng chữ, đổi font, đổi màu, dùng ảnh cưới làm nền.</p>
-  <div class="cta"><a class="btn btn-main btn-lg" href="/thiep-cua-toi?tao-video=1">Làm video miễn phí →</a><a class="btn btn-ghost btn-lg" id="full" href="/video/demo?template=sen" target="_blank">⛶ Xem toàn màn hình</a></div>
-  <div class="tv rv in"><iframe id="demo" src="/video/demo?preview=1&template=sen" title="Video mẫu"></iframe></div>
-  <div class="pick" data-target="#demo" data-path="/video/demo" data-full="#full">
-    <button class="on" data-q="template=sen">Sen vàng</button>
-    <button data-q="template=dao">Hoa đào</button>
-    <button data-q="template=may">Mây cung đình</button>
-    <button data-q="template=sen&photo=1">Ảnh cưới làm nền</button>
+  <h1>Video <em>cưới</em> chiếu TV</h1>
+  <p class="sub">Chọn một mẫu, chèn ảnh cưới và lời chào — video tự dựng hiệu ứng, chuyển cảnh, ngày âm lịch. Dùng cho dạm ngõ, ăn hỏi, vu quy, thành hôn.</p>
+  <div class="vgal" id="vgal" aria-live="polite"></div>
+</div></section>
+
+<section class="block alt"><div class="wrap">
+  <div class="head center rv"><div class="center"><span class="eyebrow">Không cần biết dựng phim</span><h2 class="h2">Ba bước <em>là có video</em></h2></div></div>
+  <div class="steps3">
+    <div class="rv"><b>1</b><h3>Chọn mẫu</h3><p>Album ảnh chuyển cảnh, sen vàng, hoa đào hay mây cung đình — đổi mẫu lúc nào cũng được.</p></div>
+    <div class="rv"><b>2</b><h3>Chèn ảnh &amp; chữ</h3><p>Thả ảnh cưới, sửa lời chào, tên, ngày giờ. Ảnh và tên lấy sẵn từ thiệp của bạn.</p></div>
+    <div class="rv"><b>3</b><h3>Chiếu hoặc tải về</h3><p>Mở link trên Smart TV, hoặc tải MP4 Full HD chép USB cắm TV.</p></div>
   </div>
 </div></section>
 
-<section class="block"><div class="wrap">
-  <div class="head center rv"><div class="center"><span class="eyebrow">Không cần biết dựng phim</span><h2 class="h2">Điền thông tin, <em>video tự dựng</em></h2></div></div>
-  <div class="cards">
-    <div class="c rv"><div class="ic">☾</div><h3>Ngày âm lịch tự tính</h3><p>Chọn ngày dương, video tự hiện "nhằm ngày… tháng… năm Bính Ngọ". Đổi ngày là chữ tự cập nhật.</p></div>
-    <div class="c rv"><div class="ic">✎</div><h3>Sửa từng dòng chữ</h3><p>Thêm, bớt, đổi thứ tự dòng; chọn kiểu chữ bay bướm, có chân, in hoa; đổi cỡ và màu riêng.</p></div>
-    <div class="c rv"><div class="ic">❀</div><h3>Đổi mẫu không mất chữ</h3><p>Thử sen vàng, hoa đào, mây cung đình hay ảnh cưới làm nền — nội dung giữ nguyên.</p></div>
-    <div class="c rv"><div class="ic">▶</div><h3>Chiếu bằng link</h3><p>Smart TV hoặc máy tính nối TV: mở link, bấm F là toàn màn hình, video lặp liên tục.</p></div>
-    <div class="c rv"><div class="ic">⬇</div><h3>MP4 Full HD cắm USB</h3><p>Tải về 1920×1080, chọn độ dài 1 vòng, 3 phút hoặc 10 phút. Có kèm nhạc nền nếu thiệp có nhạc.</p></div>
-    <div class="c rv"><div class="ic">♥</div><h3>Dùng chung thông tin</h3><p>Tên, bố mẹ hai bên, ảnh cưới lấy từ thiệp và sổ tay cưới — khỏi nhập lại.</p></div>
-  </div>
-</div></section>
-
-<section class="block alt" id="gia"><div class="wrap">
+<section class="block" id="gia"><div class="wrap">
   <div class="head center rv"><div class="center"><span class="eyebrow">Bảng giá</span><h2 class="h2">Giá <em>rõ ràng</em></h2><p class="lead">Làm và xem thử miễn phí, ưng thì kích hoạt để tải video.</p></div></div>
   <div class="prices one">
-    <div class="price hot rv" data-tag="Một lần, xuất thoải mái"><h3>Video dạm ngõ</h3><div class="amt" data-video-price>69.000đ</div><span class="muted">mỗi video · trả một lần</span>
-      <ul><li>Tải MP4 Full HD 1920×1080, xuất lại thoải mái</li><li>Bỏ dòng "Bản dùng thử"</li><li>Trình chiếu bằng link không giới hạn</li><li>Dùng cho dạm ngõ, ăn hỏi, vu quy, thành hôn</li></ul>
-      <a class="btn btn-main" href="/thiep-cua-toi?tao-video=1">Làm video ngay</a></div>
+    <div class="price hot rv" data-tag="Một lần, xuất thoải mái"><h3>Video cưới</h3><div class="amt" data-video-price>69.000đ</div><span class="muted">mỗi video · trả một lần</span>
+      <ul><li>Mọi mẫu, đổi mẫu thoải mái</li><li>Tải MP4 Full HD 1920×1080, xuất lại thoải mái</li><li>Bỏ dòng "Bản dùng thử"</li><li>Trình chiếu bằng link không giới hạn</li></ul>
+      <a class="btn btn-main" href="#vgal">Chọn mẫu</a></div>
   </div>
 </div></section>
 
-<section class="block"><div class="wrap">
+<section class="block alt"><div class="wrap">
   <div class="head center rv"><div class="center"><span class="eyebrow">Hỏi đáp</span><h2 class="h2">Câu hỏi <em>thường gặp</em></h2></div></div>
   <div class="faq rv">
+    <details><summary>Chèn được bao nhiêu ảnh?</summary><p>Mỗi mẫu có số ô ảnh riêng, ghi ngay trên ảnh xem trước (từ 6 đến 12 ảnh). Bạn chọn ảnh cho từng ô, đổi hay xoá ảnh ở ô nào thì chỉ ô đó thay đổi. Các mẫu chữ (Sen vàng, Hoa đào, Mây cung đình) dùng một ảnh cưới làm nền.</p></details>
     <details><summary>TV nhà tôi không có mạng thì sao?</summary><p>Kích hoạt rồi tải MP4 về, chép vào USB và cắm vào TV. Hầu hết TV đời mới đều phát được MP4 H.264.</p></details>
-    <details><summary>Xuất video mất bao lâu?</summary><p>Thường dưới một phút trên Chrome hoặc Edge bản mới: trình duyệt dựng video, máy chủ chuyển sang MP4 Full HD.</p></details>
+    <details><summary>Có nhạc nền không?</summary><p>Có — tải nhạc MP3 ở tab "Ảnh &amp; nhạc" của thiệp, video MP4 xuất ra sẽ kèm nhạc.</p></details>
     <details><summary>Một video dùng cho cả ăn hỏi và cưới được không?</summary><p>Được. Đổi tên buổi lễ, ngày giờ, địa điểm rồi xuất lại — bạn tải bao nhiêu lần cũng được.</p></details>
   </div>
 </div></section>
 
-<section class="final"><div class="wrap">
-  <span class="eyebrow">Ngày hai họ gặp mặt</span>
-  <h2 class="h2">Một thước phim nhỏ <em>cho ngày trọng đại</em></h2>
-  <p class="lead" style="margin:0 auto 30px">Xem thử miễn phí, ưng mới trả.</p>
-  <a class="btn btn-main btn-lg" href="/thiep-cua-toi?tao-video=1">Làm video →</a>
-</div></section>
-
 <footer id="foot"></footer>
 <script src="/js/site.js"></script>
+<script>
+(function () {
+  var esc = function (s) { return String(s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); };
+  // mẫu video ảnh (chèn nhiều ảnh) đứng đầu, rồi tới các mẫu chữ
+  document.addEventListener('meta', function (ev) {
+    var list = (ev.detail.video && ev.detail.video.templates || []).slice().sort(function (a, b) { return (b.photos ? 1 : 0) - (a.photos ? 1 : 0); });
+    var g = document.getElementById('vgal');
+    g.innerHTML = list.map(function (t) {
+      return '<article class="vt" data-id="' + t.id + '"><a class="pic" href="/video/demo?template=' + t.id + '" aria-label="Xem thử mẫu ' + esc(t.name) + '">' +
+        (t.photos ? '<span class="tag">' + t.slots + ' ảnh</span>' : '') + '<img src="/demo/vposter-' + t.id + '.jpg" alt="Mẫu video ' + esc(t.name) + '" loading="lazy"><span class="play">▶ Rê chuột để xem</span></a>' +
+        '<div class="body"><h3>' + esc(t.name) + '</h3><p>' + esc(t.desc) + '</p><div class="feat">' + (t.tags || []).map(function (f) { return '<span>' + esc(f) + '</span>'; }).join('') + '</div>' +
+        '<div class="acts"><a class="btn btn-ghost" href="/video/demo?template=' + t.id + '">Xem toàn màn</a><a class="btn btn-main" href="/thiep-cua-toi?tao-video=1&amp;mau=' + t.id + '">Dùng mẫu</a></div></div></article>';
+    }).join('');
+    // rê chuột: phát thử video thật trong khung, thu nhỏ từ 1280×720
+    if (!matchMedia('(hover:hover)').matches) return;
+    g.querySelectorAll('.vt').forEach(function (c) {
+      var pic = c.querySelector('.pic'), f = null, tm = 0;
+      c.addEventListener('mouseenter', function () {
+        tm = setTimeout(function () {
+          f = document.createElement('iframe');
+          f.src = '/video/demo?preview=1&template=' + c.dataset.id; f.tabIndex = -1; f.title = 'Xem trước';
+          f.style.transform = 'scale(' + pic.clientWidth / 1280 + ')';
+          f.onload = function () { setTimeout(function () { if (f) f.classList.add('on'); }, 300); };
+          pic.appendChild(f);
+        }, 250);
+      });
+      c.addEventListener('mouseleave', function () { clearTimeout(tm); if (f) { f.remove(); f = null; } });
+    });
+  });
+})();
+</script>
 </body>
 </html>

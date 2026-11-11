@@ -26,7 +26,7 @@ store.onLoad(() => Wd.migrate()); // dữ liệu từ trước khi có sổ tay 
 const PRODUCTS = {
   card: { name: 'Thiệp cưới online', price: () => config.price, coupons: true, prefix: 'TH', sub: (c) => c },
   led: { name: 'Màn hình LED tiệc cưới', price: () => config.ledPrice, coupons: false, prefix: 'LD', sub: (c) => c.led },
-  video: { name: 'Video dạm ngõ', price: () => config.videoPrice, coupons: false, prefix: 'VD', sub: (c) => c.video },
+  video: { name: 'Video cưới', price: () => config.videoPrice, coupons: false, prefix: 'VD', sub: (c) => c.video },
 };
 
 const PORT = +process.env.PORT || config.port;
@@ -576,7 +576,22 @@ route('GET', '/video/:slug', async (req, res, ctx) => {
   if (slug === 'demo') {
     const q = Object.fromEntries(ctx.query);
     const card = { data: cd.normalize(cd.sample()) };
-    const v = videoLib.normalize({ template: q.template, photoBg: q.photo === '1', event: { kind: 'Lễ Dạm Ngõ', date: '2026-11-22', time: '09:00', place: 'Tư gia nhà gái' } });
+    // mẫu album xem thử với một bộ ảnh cưới đầy đủ
+    const P = (pool, ns, ext = 'jpg') => ns.map((n) => `/demo/${pool}-${n}.${ext}`);
+    const SETS = { // bộ ảnh xem thử hợp từng mẫu
+      album: P('longphung', [2, 5, 1, 3, 6, 4, 8, 7, 9, 10]).concat(P('dodam', [1, 2, 4, 3])),
+      songhy: P('longphung', [3, 1, 6, 2, 8, 4, 9, 5, 10, 7]),
+      dienanh: P('tim', [2, 6, 1, 5, 3, 8, 4, 7]),
+      phimcu: P('nau', [2, 4, 6, 1, 5, 8, 3, 7]),
+      polaroid: P('hoamoc', [2, 5, 3, 7, 4, 8, 6], 'webp'),
+      tapchi: P('naudam', [7, 5, 6, 9, 3, 4, 10, 8]),
+      traitim: P('toduyen', [3, 1, 4, 2, 5, 6, 7], 'webp'),
+      hoadao: P('toduyen', [2, 5, 3, 6, 1, 4, 7], 'webp'),
+      laxanh: P('hoamoc', [6, 2, 7, 3, 1, 4, 8, 5], 'webp'),
+      toigian: P('xanhla', [1, 3, 2, 5, 4, 6, 8, 7, 9]),
+    };
+    const photos = SETS[q.template] || [];
+    const v = videoLib.normalize({ template: q.template, photoBg: q.photo === '1', photos, event: { kind: 'Lễ Dạm Ngõ', date: '2026-11-22', time: '09:00', place: 'Tư gia nhà gái' } });
     return html(res, 200, videoLib.renderVideo(card, v, { preview: q.preview === '1' }));
   }
   const card = db.cards.find((c) => c.slug === slug);
@@ -659,8 +674,7 @@ route('POST', '/api/cards/:id/video/export', async (req, res, ctx) => {
 // ---------------- trang tĩnh ----------------
 const PAGES = {
   '/': 'index.html', '/dang-nhap': 'auth.html', '/thiep-cua-toi': 'dashboard.html', '/admin': 'admin.html', '/mau-thiep': 'templates.html',
-  '/man-hinh-led-dam-cuoi': 'led-landing.html',
-  '/video-dam-ngo': 'video-landing.html',
+  '/video-cuoi': 'video-landing.html',
   '/so-tay': 'planner.html',
   '/so-tay-cuoi': 'planner-landing.html',
 };
@@ -683,7 +697,11 @@ function serveFile(res, file, cache) {
   });
 }
 
+// trang cũ gộp vào "Video cưới" (màn LED không còn bán riêng; khách cũ vẫn sửa & chiếu ở /sua-led, /led/…)
+const MOVED = { '/video-dam-ngo': '/video-cuoi', '/man-hinh-led-dam-cuoi': '/video-cuoi' };
+
 function serveStatic(req, res, pathname) {
+  if (MOVED[pathname]) { res.writeHead(301, { Location: MOVED[pathname] }); return res.end(); }
   if (PAGES[pathname]) return serveFile(res, path.join(PUBLIC_DIR, PAGES[pathname]), 'no-cache');
   if (pathname === '/favicon.ico') return serveFile(res, path.join(PUBLIC_DIR, 'favicon.svg'), 'public, max-age=86400');
   if (/^\/sua\/[\w-]+$/.test(pathname)) return serveFile(res, path.join(PUBLIC_DIR, 'editor.html'), 'no-cache');

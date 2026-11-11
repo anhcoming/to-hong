@@ -72,8 +72,8 @@ async function load() {
         <div class="acts">
           ${c.status === 'published' ? `<button class="btn sm soft" data-a="share">Sao chép link</button><a class="btn sm plain" target="_blank" href="${esc(c.url)}">Mở thiệp</a>` : ''}
           ${!c.paid ? `<button class="btn sm" data-a="pay">Kích hoạt · ${money(META.price)}</button>` : ''}
-          <a class="btn sm plain" href="/sua-led/${c.id}">✨ ${c.led.created ? 'Màn LED' : 'Tạo màn LED'}</a>
-          <a class="btn sm plain" href="/sua-video/${c.id}">🎬 ${c.video.created ? 'Video dạm ngõ' : 'Tạo video dạm ngõ'}</a>
+          ${c.led.created ? `<a class="btn sm plain" href="/sua-led/${c.id}">✨ Màn LED</a>` : ''}
+          <a class="btn sm plain" href="/sua-video/${c.id}">🎬 ${c.video.created ? 'Video cưới' : 'Làm video cưới'}</a>
           <button class="btn sm plain" data-a="dup">Nhân bản</button>
           <button class="btn sm danger" data-a="del">Xoá</button>
         </div>
@@ -118,9 +118,11 @@ window.newCard = function () {
   if (want) {
     // từ trang giới thiệu sản phẩm: dùng thiệp gần nhất, chưa có thì tạo thiệp mới
     const { cards } = await api('/api/cards');
-    if (cards[0]) return (location.href = `/${want}/${cards[0].id}`);
+    // từ trang "Video cưới": mang theo mẫu đã chọn sang trình sửa
+    const mau = want === 'sua-video' && q.get('mau') ? `?mau=${encodeURIComponent(q.get('mau'))}` : '';
+    if (cards[0]) return (location.href = `/${want}/${cards[0].id}${mau}`);
     const { card } = await api('/api/cards', { method: 'POST', body: { template: 'dodam' } });
-    return (location.href = `/${want}/${card.id}`);
+    return (location.href = `/${want}/${card.id}${mau}`);
   }
   load().catch(e => toast(e.message, true));
 })();

@@ -4,10 +4,48 @@
 <meta charset="utf-8">
 <script src="/js/theme.js"></script>
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Video dạm ngõ</title>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Charm:wght@400;700&amp;family=Fraunces:ital,opsz,wght@0,9..144,300..700;1,9..144,300..700&amp;family=Hanken+Grotesk:wght@300..700&amp;family=Be+Vietnam+Pro:wght@400;500;600;700;800&amp;family=Dancing+Script:wght@600;700&amp;display=swap">
+<title>Video cưới</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Charm:wght@400;700&amp;family=Fraunces:ital,opsz,wght@0,9..144,300..700;1,9..144,300..700&amp;family=Hanken+Grotesk:wght@300..700&amp;family=Be+Vietnam+Pro:wght@400;500;600;700;800&amp;family=Dancing+Script:wght@500..700&amp;family=Playfair+Display:ital,wght@0,400..700;1,400..700&amp;display=swap">
 <link rel="stylesheet" href="/css/app.css">
 <style>
+/* ô ảnh cố định: bấm ảnh để đổi, × xoá ảnh giữ ô, kéo thả đổi chỗ */
+.vslots{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.vslot{position:relative;aspect-ratio:3/4;border-radius:12px;overflow:hidden;border:1px solid var(--line)}
+.vslot .vpic{position:absolute;inset:0;width:100%;height:100%;padding:0;border:0;background:rgba(127,127,127,.08) center/cover;cursor:pointer;color:var(--muted);font-size:22px;display:grid;place-content:center;justify-items:center}
+.vslot .vpic small{font-size:11px}
+.vslot .vre{position:absolute;left:6px;right:6px;bottom:6px;padding:5px 0;border-radius:999px;background:rgba(0,0,0,.6);color:#fff;font-size:12px;font-weight:600;opacity:0;transition:.2s}
+.vslot:hover .vre,.vslot:focus-within .vre{opacity:1}
+.vslot .vno{position:absolute;top:6px;left:6px;min-width:22px;padding:0 6px;border-radius:999px;background:rgba(0,0,0,.6);color:#fff;font-size:11px;line-height:22px;text-align:center;pointer-events:none}
+.vslot .vx{position:absolute;top:5px;right:5px;width:26px;height:26px;padding:0;border:0;border-radius:50%;background:rgba(255,255,255,.92);color:#222;font-size:15px;line-height:1;cursor:pointer;box-shadow:0 2px 6px rgba(0,0,0,.2)}
+.vslot .vx:hover{background:#fff;color:var(--danger,#c0392b)}
+.vslot.empty{border:2px dashed var(--line)}
+.vslot.empty .vpic{background:none}
+.vslot.add{display:grid;place-content:center;justify-items:center;gap:2px;cursor:pointer;color:var(--primary);font-size:24px;border:2px dashed var(--primary);background:var(--primary-soft)}
+.vslot.add small{font-size:11px;font-weight:600}
+.vslot[draggable=true]{cursor:grab}
+@media (hover:none){.vslot .vre{opacity:1}}
+/* chữ: mỗi cảnh một ô gõ, kiểu chữ từng dòng giấu sau "Aa Kiểu chữ" */
+.stext{display:block;width:100%;min-height:64px;padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:var(--surface);color:var(--ink);font:15px/1.7 inherit;font-family:inherit;resize:none;overflow:hidden}
+.stext:focus{outline:none;border-color:var(--primary);box-shadow:0 0 0 3px var(--primary-soft)}
+.scene-acts{display:flex;gap:4px}
+.lnk{border:0;background:none;color:var(--muted);font-size:12px;font-weight:600;padding:4px 8px;border-radius:999px;cursor:pointer}
+.lnk:hover,.lnk.on{background:var(--primary-soft);color:var(--primary)}
+.sstyle{margin-top:8px;padding:8px;border-radius:10px;background:rgba(127,127,127,.08);border:1px solid var(--line)}
+.sstyle .ln{display:grid;grid-template-columns:minmax(0,1fr) auto 58px auto;gap:6px;align-items:center;padding:4px 2px;border:0;background:none;margin:0}
+.sstyle .lt{font-size:13px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.sstyle .lc{display:flex;align-items:center;gap:3px}
+
+/* ô ảnh trình chiếu (mẫu Album kỷ niệm) */
+.vthumbs{display:grid;grid-template-columns:repeat(auto-fill,minmax(78px,1fr));gap:8px}
+.vthumb{position:relative;aspect-ratio:3/4;border-radius:10px;background:var(--soft,#f3eded) center/cover;overflow:hidden;border:1px solid var(--line,#eee)}
+.vthumb>span{position:absolute;top:4px;left:4px;min-width:20px;padding:0 5px;border-radius:999px;background:rgba(0,0,0,.6);color:#fff;font-size:11px;line-height:20px;text-align:center}
+.vthumb>div{position:absolute;left:0;right:0;bottom:0;display:flex;justify-content:center;gap:2px;padding:4px;background:linear-gradient(0deg,rgba(0,0,0,.6),transparent);opacity:0;transition:.2s}
+.vthumb:hover>div,.vthumb:focus-within>div{opacity:1}
+.vthumb button{width:24px;height:24px;padding:0;border:0;border-radius:50%;background:rgba(255,255,255,.9);color:#222;font-size:13px;cursor:pointer}
+.vthumb.add{display:grid;place-content:center;justify-items:center;gap:2px;cursor:pointer;color:var(--primary,#d6455d);font-size:22px;border-style:dashed;background:none}
+.vthumb.add small{font-size:11px}
+@media (hover:none){.vthumb>div{opacity:1}}
+
 body{height:100vh;display:flex;flex-direction:column;overflow:hidden}
 .ebar{display:flex;align-items:center;gap:10px;padding:10px 16px;border-bottom:1px solid var(--line);background:var(--surface);flex-wrap:wrap}
 .ebar .back{text-decoration:none;color:var(--muted);font-size:20px;padding:4px 8px}
@@ -20,12 +58,21 @@ body{height:100vh;display:flex;flex-direction:column;overflow:hidden}
 .group h3 small{font-weight:400;color:var(--muted);font-size:12px}
 .opts{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
 .opt{border:2px solid var(--line);background:var(--surface);border-radius:12px;padding:10px;text-align:left;cursor:pointer;font-size:12px}
-.opt b{display:block;font-size:14px;margin-bottom:2px}
+.opt b{display:block;font-size:13px;margin-bottom:2px}
 .opt span{color:var(--muted)}
 .opt.on{border-color:var(--primary);background:var(--primary-soft)}
-.opt i{display:block;height:34px;border-radius:6px;margin-bottom:8px}
-.ln{display:grid;grid-template-columns:1fr auto;gap:6px;padding:10px;border:1px solid var(--line);border-radius:10px;background:var(--surface);margin-bottom:8px}
-.ln input[type=text]{grid-column:1/-1;width:100%;padding:8px 10px;border:1px solid var(--line);border-radius:8px;font-size:15px}
+.opt i{display:block;aspect-ratio:16/9;border-radius:6px;margin-bottom:6px;background-size:cover!important;background-position:center!important}
+.ln{padding:6px;border:1px solid var(--line);border-radius:10px;background:var(--surface);margin-bottom:6px}
+.ln-top{display:flex;gap:4px;align-items:center}
+.ln-b{flex:none;width:32px;height:34px;border:0;border-radius:8px;background:none;color:var(--muted);cursor:pointer;font-weight:600}
+.ln-b:hover{background:var(--primary-soft);color:var(--primary)}
+.ln-adv{display:none;gap:6px;align-items:center;flex-wrap:wrap;padding:8px 2px 2px;font-size:12px;color:var(--muted)}
+.ln.open .ln-adv{display:flex}
+.ln.open [data-a=style]{background:var(--primary-soft);color:var(--primary)}
+.stepn{display:inline-grid;place-items:center;width:22px;height:22px;margin-right:8px;border-radius:50%;background:var(--primary);color:#fff;font-size:12px}
+.range{display:grid;grid-template-columns:110px 1fr 40px;align-items:center;gap:10px;margin-top:14px;font-size:14px}
+.range input{accent-color:var(--primary)}
+.ln input[type=text]{flex:1;min-width:0;padding:8px 10px;border:1px solid transparent;border-radius:8px;font-size:15px;background:transparent;color:inherit}
 .ln input[type=text]:focus{outline:none;border-color:var(--primary)}
 .ln .row{display:flex;gap:6px;align-items:center;flex-wrap:wrap;font-size:12px;color:var(--muted)}
 .ln select,.ln input[type=number]{padding:5px 6px;border:1px solid var(--line);border-radius:6px;font-size:13px;background:var(--surface)}
@@ -41,6 +88,14 @@ body{height:100vh;display:flex;flex-direction:column;overflow:hidden}
 .stage{background:#1a1416;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;padding:24px;min-height:0;overflow:hidden}
 #cv{width:100%;max-width:1100px;aspect-ratio:16/9;height:auto;border:8px solid #2b2326;border-radius:8px;box-shadow:0 20px 60px rgba(0,0,0,.5);background:#000}
 .jump{display:flex;gap:8px;flex-wrap:wrap;justify-content:center}
+/* thanh tua: phát/dừng, kéo để tua, vạch đánh dấu đầu mỗi cảnh chữ */
+.scrub{display:flex;align-items:center;gap:12px;width:100%;max-width:1100px;color:#ddd;font-size:13px}
+.scrub #pp{flex:none;width:38px;height:38px;border:0;border-radius:50%;background:#fff;color:#1a1416;font-size:13px;font-weight:700;cursor:pointer}
+.scrub .track{position:relative;flex:1;height:22px;display:flex;align-items:center}
+.scrub input{width:100%;margin:0;accent-color:var(--primary);cursor:pointer}
+.scrub .marks{position:absolute;left:0;right:0;top:50%;height:0;pointer-events:none}
+.scrub .marks i{position:absolute;top:-9px;width:2px;height:18px;border-radius:2px;background:rgba(255,255,255,.5)}
+.scrub #tm{flex:none;min-width:92px;text-align:right;font-variant-numeric:tabular-nums}
 .jump button{border:1px solid rgba(255,255,255,.2);background:transparent;color:#ddd;border-radius:999px;padding:6px 14px;cursor:pointer;font-size:13px}
 .jump button:hover{background:rgba(255,255,255,.1)}
 .intro{max-width:560px;margin:60px auto;padding:28px;text-align:center}
@@ -52,7 +107,7 @@ body{height:100vh;display:flex;flex-direction:column;overflow:hidden}
 <body>
 <header class="ebar">
   <a class="back" id="back" href="/thiep-cua-toi" title="Quay lại">←</a>
-  <h1 id="ttl">Video dạm ngõ</h1>
+  <h1 id="ttl">Video cưới</h1>
   <span id="chip"></span>
   <span class="saved" id="saved"></span>
   <span id="acts"></span>
@@ -61,6 +116,7 @@ body{height:100vh;display:flex;flex-direction:column;overflow:hidden}
   <div class="side" id="side"></div>
   <div class="stage">
     <canvas id="cv" width="1920" height="1080"></canvas>
+    <div class="scrub" id="scrub"><button type="button" id="pp" aria-label="Tạm dừng">❚❚</button><div class="track"><input type="range" id="seek" min="0" max="1000" step="1" value="0" aria-label="Tua video"><div class="marks" id="marks"></div></div><span id="tm">0:00 / 0:00</span></div>
     <div class="jump" id="jump"></div>
   </div>
 </div>

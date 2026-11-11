@@ -83,8 +83,8 @@ function productBox() {
   const cardSt = c ? (c.paid ? '<span class="chip ok">Đã kích hoạt</span>' : c.status === 'published' ? '<span class="chip warn">Đã phát hành · dùng thử</span>' : '<span class="chip">Bản nháp</span>') : '<span class="chip">Chưa tạo</span>';
   return `<div class="grid g3">
     <div class="prod panel"><h3>💌 Thiệp cưới online</h3>${cardSt}<p>Link mời riêng từng khách, khách xác nhận là danh sách tự cập nhật.</p><button class="btn sm" data-cta="card">${c ? 'Mở thiệp' : 'Tạo thiệp'}</button></div>
-    <div class="prod panel"><h3>✨ Màn hình LED</h3>${st(c && c.led)}<p>Trình chiếu tên đôi, ngày cưới, bố mẹ hai bên ở sảnh tiệc.</p><button class="btn sm plain" data-cta="led">${c && c.led.created ? 'Mở màn LED' : 'Tạo màn LED'}</button></div>
-    <div class="prod panel"><h3>🎬 Video dạm ngõ</h3>${st(c && c.video)}<p>Video chiếu TV lặp liên tục, tải MP4 Full HD cắm USB.</p><button class="btn sm plain" data-cta="video">${c && c.video.created ? 'Mở video' : 'Làm video'}</button></div>
+    ${c && c.led && c.led.created ? `<div class="prod panel"><h3>✨ Màn hình LED</h3>${st(c.led)}<p>Trình chiếu tên đôi, ngày cưới ở sảnh tiệc.</p><button class="btn sm plain" data-cta="led">Mở màn LED</button></div>` : ''}
+    <div class="prod panel"><h3>🎬 Video cưới</h3>${st(c && c.video)}<p>Chọn mẫu, chèn ảnh và chữ — chiếu TV hoặc tải MP4 Full HD.</p><button class="btn sm plain" data-cta="video">${c && c.video.created ? 'Mở video' : 'Làm video'}</button></div>
   </div>`;
 }
 

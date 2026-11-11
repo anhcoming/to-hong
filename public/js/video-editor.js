@@ -1,9 +1,9 @@
-// Trình sửa video dạm ngõ: chỉnh nội dung từng cảnh, xem trước trực tiếp trên canvas, quay & xuất MP4.
+// Trình sửa video cưới: chỉnh nội dung từng cảnh, xem trước trực tiếp trên canvas, quay & xuất MP4.
 const CARD_ID = location.pathname.split('/').pop();
 let card, META, video, engine;
 let saveTimer = null, saving = false, again = false, lastInput = null;
 
-const SWATCH = { sen: 'linear-gradient(135deg,#6a0d16,#2a0308)', dao: 'linear-gradient(135deg,#fffaf6,#f0c9cf)', may: 'linear-gradient(135deg,#86121b,#3d0509)' };
+const SWATCH = { album: 'linear-gradient(135deg,#3a2326,#0d0809)', sen: 'linear-gradient(135deg,#6a0d16,#2a0308)', dao: 'linear-gradient(135deg,#fffaf6,#f0c9cf)', may: 'linear-gradient(135deg,#86121b,#3d0509)' };
 
 function info() {
   const fam = (p) => [p.father, p.mother].filter(Boolean).join(' – ');
@@ -11,62 +11,106 @@ function info() {
   return { chu_re: d.groom.name, co_dau: d.bride.name, bo_me_trai: fam(d.groom), bo_me_gai: fam(d.bride) };
 }
 function status(t) { $('#saved').textContent = t; }
-function refresh() { engine.set(video, info()); renderJump(); }
+// ảnh trình chiếu của mẫu video ảnh: các ô ảnh cố định vị trí ('' = ô trống). Chưa chọn riêng thì dùng ảnh bìa + album của thiệp.
+function cardPhotos() { const d = card.data; return [d.cover, ...(d.photos || [])].filter((u, i, a) => u && a.indexOf(u) === i).slice(0, 20); }
+const tplOf = () => META.video.templates.find((t) => t.id === video.template) || {};
+const isAlbum = () => !!tplOf().photos; // mẫu video ảnh (chèn nhiều ảnh)
+const slotCount = () => tplOf().slots || 20; // mỗi mẫu có số ô ảnh riêng
+// toàn bộ ảnh đã chọn (giữ cả ảnh ở các ô sau để đổi sang mẫu nhiều ô hơn vẫn còn), đệm ô trống cho đủ số ô của mẫu
+function allSlots() {
+  const base = (video.photos && video.photos.length ? video.photos : cardPhotos()).slice();
+  while (base.length < slotCount()) base.push('');
+  return base;
+}
+function slots() { return allSlots().slice(0, slotCount()); } // các ô hiện trong mẫu này
+function slidePhotos() { return slots().filter(Boolean); }
+// ghi lại ô i..: sửa trên bộ ảnh đầy đủ rồi lưu (bỏ ô trống thừa ở cuối)
+function writeSlots(view) {
+  const all = allSlots();
+  view.forEach((u, i) => { all[i] = u; });
+  while (all.length && !all[all.length - 1]) all.pop();
+  setSlides(all.length ? all : ['']);
+}
+let pickSlot = -1, dragSlot = -1;
+function photoBox() {
+  const own = video.photos && video.photos.length, list = slots(), filled = list.filter(Boolean).length, n = slotCount();
+  const extra = allSlots().slice(n).filter(Boolean).length;
+  return `<section class="group panel" id="photoBox"><h3><span><b class="stepn">2</b>Ảnh</span><span class="muted" style="font-size:13px;font-weight:400">${filled}/${n} ảnh</span></h3>
+    <p class="muted" style="font-size:13px;margin:-4px 0 12px">Mẫu <b>${esc(tplOf().name || '')}</b> dùng <b>${n} ảnh</b>. Bấm vào ô để chọn hoặc đổi ảnh ở đúng vị trí đó, kéo thả để đổi chỗ. ${own ? '' : 'Đang dùng ảnh của thiệp.'}${extra ? ` <br>Còn ${extra} ảnh đã chọn nằm ngoài ${n} ô — đổi sang mẫu nhiều ô hơn là dùng lại.` : ''}</p>
+    <div class="vslots">${list.map((u, i) => u
+      ? `<div class="vslot" draggable="true" data-slot="${i}"><button class="vpic" data-ph="pick" data-i="${i}" style="background-image:url('${esc(u)}')" title="Đổi ảnh số ${i + 1}"><span class="vre">↻ Đổi ảnh</span></button><span class="vno">${i + 1}</span><button class="vx" data-ph="x" data-i="${i}" title="Xoá ảnh này (giữ ô trống)">×</button></div>`
+      : `<div class="vslot empty" data-slot="${i}"><button class="vpic" data-ph="pick" data-i="${i}" title="Chọn ảnh cho ô ${i + 1}">＋<small>Ảnh ${i + 1}</small></button></div>`).join('')}
+      </div>
+    <input type="file" accept="image/*" id="slotIn" hidden>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px">${filled < n ? `<label class="btn sm soft">＋ Chọn nhiều ảnh (${n - filled} ô trống)<input type="file" accept="image/*" multiple id="slideIn" hidden></label>` : ''}${own ? '<button class="btn sm plain" id="useCard">Dùng lại ảnh của thiệp</button>' : ''}</div>
+    <label class="range"><span>Mỗi ảnh</span><input type="range" id="psec" min="2" max="6" step="0.5" value="${video.photoSec || 3}"><output id="psecOut">${video.photoSec || 3}s</output></label>
+  </section>`;
+}
+function setSlides(list) { video.photos = list.slice(0, 20); engine.setPhotos(slidePhotos()); renderSide(); refresh(); schedule(200); }
+// chữ: biến {chu_re} hiện thành [Tên chú rể] cho dễ đọc, lưu lại thì đổi ngược
+function toLabel(t) { const T = META.video.tokens; return String(t || '').replace(/\{(\w+)\}/g, (m, k) => (T[k] ? `[${T[k]}]` : m)); }
+function fromLabel(t) {
+  const T = META.video.tokens;
+  return t.replace(/\[([^\]]+)\]/g, (m, lab) => { const k = Object.keys(T).find((x) => T[x].toLowerCase() === lab.trim().toLowerCase()); return k ? `{${k}}` : m; });
+}
+function grow(el) { el.style.height = 'auto'; el.style.height = el.scrollHeight + 2 + 'px'; }
+function refresh() { engine.set(video, info()); renderJump(); if ($('#exportBox')) renderExport(); }
 
 // ---------- giao diện ----------
 function renderSide() {
   const ev = video.event;
   const fontSel = (v) => META.video.fonts.map((f) => `<option value="${f.id}" ${v === f.id ? 'selected' : ''}>${esc(f.name)}</option>`).join('');
-  const lineRow = (l, si, li) => `
-    <div class="ln" data-si="${si}" data-li="${li}">
-      <input type="text" data-f="text" value="${esc(l.text)}" maxlength="120" placeholder="Nội dung dòng chữ">
-      <div class="row">
-        <select data-f="font" title="Kiểu chữ">${fontSel(l.font)}</select>
-        cỡ <input type="number" data-f="size" min="20" max="220" step="2" value="${l.size}">
-        <label title="Màu chữ — bỏ chọn để dùng màu của mẫu" style="display:flex;align-items:center;gap:4px"><input type="checkbox" data-f="custom" ${l.color ? 'checked' : ''}>màu riêng</label>
-        <input type="color" data-f="color" value="${l.color || '#ffffff'}" ${l.color ? '' : 'disabled'}>
-      </div>
-      <div class="tools" style="grid-row:2;grid-column:2">
-        <button data-a="up" title="Lên trên">↑</button><button data-a="down" title="Xuống dưới">↓</button><button data-a="del" title="Xoá dòng">×</button>
-      </div>
-    </div>`;
+  // mỗi dòng chữ: ô nhập + nút "Aa" mở phần kiểu chữ (font, cỡ, màu, thứ tự) — mặc định ẩn cho gọn
+  const range = (id, label, min, max, step, val) => `<label class="range"><span>${label}</span><input type="range" id="${id}" min="${min}" max="${max}" step="${step}" value="${val}"><output id="${id}Out">${val}s</output></label>`;
   $('#side').innerHTML = `
-    <section class="group panel"><h3>Buổi lễ</h3>
+    <section class="group panel"><h3><span><b class="stepn">1</b>Mẫu video</span><a class="muted" style="font-size:13px;font-weight:500" href="/video-cuoi">Xem các mẫu ↗</a></h3>
+      <div class="opts">${META.video.templates.map((t) => `<button class="opt ${video.template === t.id ? 'on' : ''}" data-tpl="${t.id}"><i style="background:${SWATCH[t.id]};background-image:url('/demo/vposter-${t.id}.jpg')"></i><b>${esc(t.name)}</b></button>`).join('')}</div>
+    </section>
+    ${isAlbum() ? photoBox() : `<section class="group panel"><h3><span><b class="stepn">2</b>Ảnh nền</span></h3>
+      <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+        ${card.data.cover ? `<span style="width:56px;height:56px;border-radius:10px;background:center/cover url('${esc(card.data.cover)}')"></span>` : ''}
+        <label class="check"><input type="checkbox" id="photoBg" ${video.photoBg ? 'checked' : ''}>Dùng ảnh cưới làm nền</label>
+        <label class="btn sm soft">${card.data.cover ? 'Đổi ảnh' : 'Chọn ảnh'}<input type="file" accept="image/*" id="coverIn" hidden></label>
+      </div></section>`}
+    <section class="group panel"><h3><span><b class="stepn">3</b>Chữ</span><button class="btn sm plain" id="resetAll">Khôi phục mặc định</button></h3>
       <div class="grid2">
         <label class="field"><span>Tên buổi lễ</span><input list="kinds" data-e="kind" value="${esc(ev.kind)}" maxlength="40"><datalist id="kinds">${META.video.kinds.map((k) => `<option value="${esc(k)}">`).join('')}</datalist></label>
         <label class="field"><span>Địa điểm</span><input data-e="place" value="${esc(ev.place)}" maxlength="100" placeholder="Tư gia nhà gái"></label>
         <label class="field"><span>Ngày (dương lịch)</span><input type="date" data-e="date" value="${esc(ev.date)}"></label>
         <label class="field"><span>Giờ</span><input type="time" data-e="time" value="${esc(ev.time)}"></label>
       </div>
-      <p class="muted" style="font-size:13px;margin:0">Ngày âm lịch tự tính. Tên cô dâu chú rể, bố mẹ lấy từ thiệp: <b>${esc(info().chu_re || '(chưa nhập)')}</b> &amp; <b>${esc(info().co_dau || '(chưa nhập)')}</b> — <a href="/sua/${CARD_ID}">sửa ở trang thiệp</a>.</p>
-    </section>
-    <section class="group panel"><h3>Mẫu video</h3>
-      <div class="opts">${META.video.templates.map((t) => `<button class="opt ${video.template === t.id ? 'on' : ''}" data-tpl="${t.id}"><i style="background:${SWATCH[t.id]}"></i><b>${esc(t.name)}</b><span>${esc(t.desc)}</span></button>`).join('')}</div>
-      <div style="display:flex;align-items:center;gap:12px;margin-top:14px;flex-wrap:wrap">
-        <label class="check"><input type="checkbox" id="photoBg" ${video.photoBg ? 'checked' : ''}>Dùng ảnh cưới làm nền</label>
-        <label class="btn sm soft">${card.data.cover ? 'Đổi ảnh' : 'Chọn ảnh'}<input type="file" accept="image/*" id="coverIn" hidden></label>
-        ${card.data.cover ? `<span style="width:40px;height:40px;border-radius:8px;background:center/cover url('${esc(card.data.cover)}')"></span>` : ''}
-      </div>
-      <label class="range" style="display:grid;grid-template-columns:120px 1fr 40px;align-items:center;gap:10px;margin-top:14px;font-size:14px"><span>Mỗi cảnh</span><input type="range" id="secs" min="4" max="15" step="1" value="${video.seconds}" style="accent-color:var(--primary)"><output id="secsOut">${video.seconds}s</output></label>
-    </section>
-    <section class="group panel"><h3>Nội dung các cảnh <button class="btn sm plain" id="resetAll">Khôi phục mặc định</button></h3>
-      <p class="muted" style="font-size:13px;margin:-4px 0 8px">Bấm để chèn thông tin tự động — dòng nào thiếu thông tin sẽ tự ẩn:</p>
-      <div class="tokens">${Object.entries(META.video.tokens).map(([k, n]) => `<button data-tok="${k}" title="${esc(n)}">${esc(n)}</button>`).join('')}</div>
-      ${video.scenes.map((s, si) => `
+      <p class="muted" style="font-size:13px;margin:0 0 14px">Ngày âm lịch tự tính. Tên cô dâu chú rể, bố mẹ lấy từ thiệp: <b>${esc(info().chu_re || '(chưa nhập)')}</b> &amp; <b>${esc(info().co_dau || '(chưa nhập)')}</b> — <a href="/sua/${CARD_ID}">sửa ở trang thiệp</a>.</p>
+      <p class="muted" style="font-size:13px;margin:0 0 8px">Mỗi dòng một hàng chữ. Chữ trong <b>[ngoặc vuông]</b> tự lấy từ thiệp — ví dụ [Tên chú rể] → <b>${esc(info().chu_re || 'tên chú rể')}</b>; dòng nào thiếu thông tin sẽ tự ẩn.</p>
+      <div class="tokens"><span class="muted" style="font-size:12px">Chèn:</span>${Object.entries(META.video.tokens).map(([k, n]) => `<button data-tok="${k}" title="Chèn ${esc(n)} vào dòng đang sửa">${esc(n)}</button>`).join('')}</div>
+      ${video.scenes.map((sc, si) => `
         <div class="scene" data-scene="${si}">
-          <div class="scene-h"><span>Cảnh ${si + 1}</span><span>${video.scenes.length > 1 ? `<button class="btn sm danger" data-del-scene="${si}">Xoá cảnh</button>` : ''}</span></div>
-          ${s.lines.map((l, li) => lineRow(l, si, li)).join('')}
-          ${s.lines.length < 8 ? `<button class="btn sm soft" data-add-line="${si}">+ Thêm dòng</button>` : ''}
+          <div class="scene-h"><span>${isAlbum() ? (si === 0 ? 'Mở đầu' : `Kết thúc${video.scenes.length > 2 ? ' ' + si : ''}`) : `Cảnh ${si + 1}`}</span>
+            <span class="scene-acts"><button class="lnk" data-style-scene="${si}">Aa Kiểu chữ</button>${video.scenes.length > 1 ? `<button class="lnk" data-del-scene="${si}">Xoá cảnh</button>` : ''}</span></div>
+          <textarea class="stext" data-scene-text="${si}" rows="${Math.max(2, sc.lines.length)}" placeholder="Mỗi dòng một hàng chữ">${esc(sc.lines.map((l) => toLabel(l.text)).join('\n'))}</textarea>
+          <div class="sstyle" id="sstyle${si}" hidden>${renderStyleRows(si)}</div>
         </div>`).join('')}
-      ${video.scenes.length < 5 ? '<button class="btn plain" id="addScene">+ Thêm cảnh</button>' : ''}
+      ${video.scenes.length < 5 ? `<button class="btn sm plain" id="addScene">+ Thêm ${isAlbum() ? 'thẻ chữ' : 'cảnh'}</button>` : ''}
+      ${range('secs', isAlbum() ? 'Mỗi thẻ chữ' : 'Mỗi cảnh', 4, 15, 1, video.seconds)}
     </section>
     <section class="group panel" id="exportBox"></section>`;
+  document.querySelectorAll('.stext').forEach(grow);
   renderExport();
+}
+
+function renderStyleRows(si) {
+  const fontSel = (v) => META.video.fonts.map((f) => `<option value="${f.id}" ${v === f.id ? 'selected' : ''}>${esc(f.name)}</option>`).join('');
+  return video.scenes[si].lines.map((l, li) => `
+    <div class="ln" data-si="${si}" data-li="${li}">
+      <span class="lt">${esc(toLabel(l.text) || '(dòng trống)')}</span>
+      <select data-f="font" title="Kiểu chữ">${fontSel(l.font)}</select>
+      <input type="number" data-f="size" min="20" max="220" step="2" value="${l.size}" title="Cỡ chữ">
+      <label title="Màu riêng — bỏ chọn để dùng màu của mẫu" class="lc"><input type="checkbox" data-f="custom" ${l.color ? 'checked' : ''}><input type="color" data-f="color" value="${l.color || '#ffffff'}" ${l.color ? '' : 'disabled'}></label>
+    </div>`).join('');
 }
 
 function renderExport() {
   const s = card.video;
-  const total = video.scenes.length * video.seconds;
+  const total = Math.round(engine ? engine.duration() : video.scenes.length * video.seconds);
   $('#exportBox').innerHTML = `<h3>Tải video MP4 Full HD</h3>
     <p class="muted" style="font-size:14px;margin:0 0 12px">Chép vào USB cắm TV, hoặc gửi qua Zalo. ${card.data.music ? 'Có kèm nhạc nền của thiệp.' : 'Muốn có nhạc nền: tải nhạc MP3 ở tab "Ảnh & nhạc" của thiệp.'}</p>
     <label class="field"><span>Độ dài</span><select id="loops" class="input">
@@ -93,7 +137,8 @@ function renderHeader() {
 }
 
 function renderJump() {
-  const n = video.scenes.length;
+  const n = video.scenes.length, D = engine.duration();
+  $('#marks').innerHTML = Array.from({ length: n }, (_, i) => `<i style="left:${(engine.sceneTime(i) / D * 100).toFixed(2)}%"></i>`).join('');
   $('#jump').innerHTML = Array.from({ length: n }, (_, i) => `<button data-j="${i}">Cảnh ${i + 1}</button>`).join('');
 }
 
@@ -138,12 +183,12 @@ async function exportMp4() {
   try {
     const off = document.createElement('canvas');
     off.width = 1920; off.height = 1080;
-    const rec = VideoEngine.create(off, { photo: card.data.cover || card.data.photos[0] || '', trial: false });
+    const rec = VideoEngine.create(off, { photo: card.data.cover || card.data.photos[0] || '', photos: slidePhotos(), trial: false });
     rec.set(video, info());
-    await new Promise((r) => setTimeout(r, 600)); // chờ ảnh nền tải xong
+    await rec.ready(); // chờ chữ và ảnh tải xong
     const blob = await rec.record((p) => {
       $('#pg').style.width = Math.round(p * 80) + '%';
-      $('#pgText').textContent = `Đang dựng ${Math.round(p * video.scenes.length * video.seconds)}/${video.scenes.length * video.seconds} giây video`;
+      $('#pgText').textContent = `Đang dựng ${Math.round(p * rec.duration())}/${Math.round(rec.duration())} giây video`;
     });
     $('#pg').style.width = '85%';
     $('#pgText').textContent = 'Đang chuyển sang MP4 Full HD trên máy chủ…';
@@ -169,16 +214,28 @@ function lineAt(el) {
 function bind() {
   const side = $('#side');
   side.addEventListener('focusin', (e) => {
-    if (e.target.matches('.ln input[type=text]')) {
+    if (e.target.matches('.stext')) {
       lastInput = e.target;
-      const si = +e.target.closest('.ln').dataset.si;
-      engine.seek(si * video.seconds + 2); // nhảy tới cảnh đang sửa
+      const si = +e.target.dataset.sceneText;
+      engine.seek(engine.sceneTime(si) + 2); // nhảy tới cảnh đang sửa
     }
   });
   side.addEventListener('input', (e) => {
     const t = e.target;
     if (t.dataset.e) { video.event[t.dataset.e] = t.value; refresh(); renderHeader(); return schedule(); }
+    if (t.id === 'psec') { video.photoSec = +t.value; $('#psecOut').textContent = t.value + 's'; refresh(); renderExport(); return schedule(400); }
     if (t.id === 'secs') { video.seconds = +t.value; $('#secsOut').textContent = t.value + 's'; refresh(); return schedule(400); }
+    if (t.dataset.sceneText !== undefined) { // gõ trong ô chữ của cảnh: mỗi dòng một hàng, giữ kiểu chữ theo vị trí dòng
+      const si = +t.dataset.sceneText, rows = t.value.split('\n');
+      if (rows.length > 8) toast('Mỗi cảnh tối đa 8 dòng');
+      const old = video.scenes[si].lines, base = { font: 'serif', size: 56, tone: 'main', color: '' };
+      video.scenes[si].lines = rows.slice(0, 8).map((r, i) => ({ ...(old[i] || old[old.length - 1] || base), text: fromLabel(r) }));
+      grow(t);
+      const box = $('#sstyle' + si);
+      if (box && !box.hidden) box.innerHTML = renderStyleRows(si);
+      refresh();
+      return schedule();
+    }
     const l = lineAt(t);
     if (!l) return;
     const f = t.dataset.f;
@@ -191,6 +248,22 @@ function bind() {
     schedule();
   });
   side.addEventListener('change', async (e) => {
+    if (e.target.id === 'slotIn' && e.target.files[0] && pickSlot >= 0) { // thay ảnh đúng ô đã bấm
+      const list = slots(), i = pickSlot;
+      pickSlot = -1;
+      try { status('Đang tải ảnh…'); list[i] = await uploadFile(e.target.files[0]); writeSlots(list); } catch (err) { toast(err.message, true); status(''); }
+      return;
+    }
+    if (e.target.id === 'slideIn' && e.target.files.length) { // chọn nhiều ảnh: điền lần lượt vào các ô trống của mẫu
+      const list = slots(), empty = list.map((u, i) => (u ? -1 : i)).filter((i) => i >= 0);
+      const files = [...e.target.files];
+      if (files.length > empty.length) toast(`Mẫu này còn ${empty.length} ô trống — chỉ lấy ${empty.length} ảnh đầu`);
+      try {
+        for (let k = 0; k < Math.min(files.length, empty.length); k++) { status(`Đang tải ảnh ${k + 1}/${Math.min(files.length, empty.length)}…`); list[empty[k]] = await uploadFile(files[k]); }
+        writeSlots(list);
+      } catch (err) { toast(err.message, true); status(''); }
+      return;
+    }
     if (e.target.id === 'photoBg') { video.photoBg = e.target.checked; refresh(); return schedule(100); }
     if (e.target.id === 'coverIn' && e.target.files[0]) {
       status('Đang tải ảnh…');
@@ -207,24 +280,24 @@ function bind() {
     const b = e.target.closest('button');
     if (!b) return;
     const d = b.dataset;
+    if (d.ph) {
+      const list = slots(), i = +d.i;
+      if (d.ph === 'pick') { pickSlot = i; const inp = $('#slotIn'); inp.value = ''; return inp.click(); }
+      if (d.ph === 'x') list[i] = ''; // xoá ảnh nhưng giữ ô, các ảnh khác đứng yên
+      return writeSlots(list);
+    }
+    if (b.id === 'useCard') return setSlides([]);
+    if (d.styleScene !== undefined) { const box = $('#sstyle' + d.styleScene); box.hidden = !box.hidden; if (!box.hidden) box.innerHTML = renderStyleRows(+d.styleScene); b.classList.toggle('on', !box.hidden); return; }
     if (d.tok) {
-      if (!lastInput || !document.body.contains(lastInput)) return toast('Bấm vào một dòng chữ trước, rồi chọn thông tin để chèn');
+      if (!lastInput || !document.body.contains(lastInput)) return toast('Bấm vào ô chữ của một cảnh trước, rồi chọn thông tin để chèn');
       const s = lastInput.selectionStart ?? lastInput.value.length;
-      lastInput.value = lastInput.value.slice(0, s) + `{${d.tok}}` + lastInput.value.slice(lastInput.selectionEnd ?? s);
+      lastInput.value = lastInput.value.slice(0, s) + `[${META.video.tokens[d.tok]}]` + lastInput.value.slice(lastInput.selectionEnd ?? s);
       lastInput.dispatchEvent(new Event('input', { bubbles: true }));
       lastInput.focus();
       return;
     }
     let changed = true;
-    if (d.tpl) video.template = d.tpl;
-    else if (d.a) {
-      const box = b.closest('.ln');
-      const lines = video.scenes[+box.dataset.si].lines;
-      const i = +box.dataset.li;
-      if (d.a === 'del') lines.splice(i, 1);
-      if (d.a === 'up' && i > 0) [lines[i - 1], lines[i]] = [lines[i], lines[i - 1]];
-      if (d.a === 'down' && i < lines.length - 1) [lines[i + 1], lines[i]] = [lines[i], lines[i + 1]];
-    } else if (d.addLine !== undefined) video.scenes[+d.addLine].lines.push({ text: '', font: 'serif', size: 56, tone: 'main', color: '' });
+    if (d.tpl) { video.template = d.tpl; if (isAlbum()) engine.setPhotos(slidePhotos()); }
     else if (d.delScene !== undefined) { if (!confirm('Xoá cảnh này?')) return; video.scenes.splice(+d.delScene, 1); }
     else if (b.id === 'addScene') video.scenes.push({ lines: [{ text: 'Dòng chữ mới', font: 'script', size: 110, tone: 'main', color: '' }] });
     else if (b.id === 'resetAll') {
@@ -238,13 +311,43 @@ function bind() {
     refresh();
     schedule(200);
   });
-  $('#jump').addEventListener('click', (e) => { const j = e.target.dataset.j; if (j !== undefined) engine.seek(+j * video.seconds + 0.01); });
+  side.addEventListener('dragstart', (e) => { const s = e.target.closest('.vslot[data-slot]'); if (s) { dragSlot = +s.dataset.slot; e.dataTransfer.effectAllowed = 'move'; } });
+  side.addEventListener('dragover', (e) => { if (dragSlot >= 0 && e.target.closest('.vslot[data-slot]')) e.preventDefault(); });
+  side.addEventListener('drop', (e) => {
+    const s = e.target.closest('.vslot[data-slot]');
+    if (!s || dragSlot < 0) return;
+    e.preventDefault();
+    const to = +s.dataset.slot, from = dragSlot, list = slots();
+    dragSlot = -1;
+    if (to === from) return;
+    [list[from], list[to]] = [list[to], list[from]];
+    writeSlots(list);
+  });
+  side.addEventListener('dragend', () => { dragSlot = -1; });
+  $('#jump').addEventListener('click', (e) => { const j = e.target.dataset.j; if (j !== undefined) engine.seek(engine.sceneTime(+j) + 0.01); });
+  // thanh tua: kéo để tua (đang phát thì phát tiếp từ chỗ mới), nút phát/dừng, cập nhật theo từng khung hình
+  const seekEl = $('#seek'), pp = $('#pp');
+  let dragging = false;
+  const fmt = (t) => `${Math.floor(t / 60)}:${String(Math.floor(t % 60)).padStart(2, '0')}`;
+  seekEl.addEventListener('input', () => { dragging = true; engine.seek(seekEl.value / 1000 * engine.duration()); });
+  seekEl.addEventListener('change', () => { dragging = false; });
+  pp.addEventListener('click', () => {
+    if (engine.paused()) engine.resume(); else engine.pause();
+    pp.textContent = engine.paused() ? '▶' : '❚❚';
+    pp.setAttribute('aria-label', engine.paused() ? 'Phát' : 'Tạm dừng');
+  });
+  (function tick() {
+    const D = engine.duration(), t = engine.time();
+    if (!dragging) seekEl.value = Math.round(t / D * 1000);
+    $('#tm').textContent = `${fmt(t)} / ${fmt(D)}`;
+    requestAnimationFrame(tick);
+  })();
 }
 
 function start() {
   $('#introBox').innerHTML = '';
   $('#layout').hidden = false;
-  engine = VideoEngine.create($('#cv'), { photo: card.data.cover || card.data.photos[0] || '', trial: false });
+  engine = VideoEngine.create($('#cv'), { photo: card.data.cover || card.data.photos[0] || '', photos: slidePhotos(), trial: false });
   renderSide();
   renderHeader();
   bind();
@@ -258,20 +361,34 @@ function start() {
     const [meta, r] = await Promise.all([fetch('/api/meta').then((x) => x.json()), api(`/api/cards/${CARD_ID}`)]);
     META = meta;
     card = r.card;
-    document.title = 'Video dạm ngõ — ' + meta.brand;
+    document.title = 'Video cưới — ' + meta.brand;
   } catch (e) {
     $('#ttl').textContent = 'Không tìm thấy thiệp';
     return;
   }
-  if (card.videoConfig) { video = card.videoConfig; return start(); }
+  const mau = new URLSearchParams(location.search).get('mau');
+  const pick = META.video.templates.some((t) => t.id === mau) ? mau : null;
+  if (mau) history.replaceState(null, '', location.pathname);
+  if (card.videoConfig) {
+    video = card.videoConfig;
+    if (pick && video.template !== pick) { video.template = pick; start(); return schedule(100); }
+    return start();
+  }
+  if (pick) {
+    try {
+      const r = await api(`/api/cards/${CARD_ID}`, { method: 'PUT', body: { video: { template: pick } } });
+      card = r.card; video = card.videoConfig;
+      return start();
+    } catch (e) { toast(e.message, true); }
+  }
   backTo($('#back'), '/sua/' + CARD_ID);
   $('#introBox').innerHTML = `<div class="intro panel">
     <p style="font-size:44px;margin:0">🎬</p>
-    <h2 style="font-family:var(--serif);margin:8px 0">Video dạm ngõ, ăn hỏi chiếu TV</h2>
-    <p class="muted">Video 16:9 lặp liên tục: giới thiệu cô dâu chú rể, lời cảm ơn hai họ, ngày giờ buổi lễ kèm âm lịch. Chọn mẫu sen vàng, hoa đào, mây cung đình; sửa từng dòng chữ, đổi font, màu.</p>
+    <h2 style="font-family:var(--serif);margin:8px 0">Video cưới chiếu TV</h2>
+    <p class="muted">Chọn mẫu, chèn ảnh cưới và lời chào — video tự dựng chuyển cảnh, ngày âm lịch. Dùng cho dạm ngõ, ăn hỏi, vu quy, thành hôn.</p>
     <p class="muted" style="font-size:14px">Xem & trình chiếu miễn phí ${META.trialDays} ngày · Kích hoạt ${money(META.videoPrice)} để tải MP4 Full HD, bỏ dòng "Bản dùng thử".</p>
     <button class="btn lg" id="startBtn">Tạo video từ thiệp này</button>
-    <p style="margin:14px 0 0"><a href="/video/demo" target="_blank">Xem video mẫu ↗</a></p>
+    <p style="margin:14px 0 0"><a href="/video-cuoi">Xem các mẫu video</a></p>
   </div>`;
   $('#startBtn').onclick = async () => {
     try {

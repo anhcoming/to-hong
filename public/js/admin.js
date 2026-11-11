@@ -192,7 +192,7 @@ function prodModal(c) {
   const row = (k, name, s, created) => `<div class="prodrow"><span><b>${name}</b><br>${created ? (s.paid ? '<span class="chip ok">Đã kích hoạt</span>' : '<span class="chip warn">Chưa kích hoạt</span>') : '<span class="muted" style="font-size:13px">Khách chưa tạo</span>'}</span>
     ${created ? `<button class="btn sm ${s.paid ? 'danger' : ''}" data-p="${k}" data-v="${s.paid ? 0 : 1}">${s.paid ? 'Huỷ kích hoạt' : 'Kích hoạt'}</button>` : ''}</div>`;
   openModal(`<h2>Kích hoạt tay</h2><p class="muted" style="margin:0 0 10px">${esc(c.names || c.title)} · ${esc(c.ownerEmail)}<br>Dùng khi tặng khách, sửa sai hoặc đã hoàn tiền. Mọi thao tác được ghi nhật ký.</p>
-    ${row('card', 'Thiệp cưới', { paid: c.paid }, true)}${row('led', 'Màn hình LED', c.led, c.led.created)}${row('video', 'Video dạm ngõ', c.video, c.video.created)}`,
+    ${row('card', 'Thiệp cưới', { paid: c.paid }, true)}${row('led', 'Màn hình LED', c.led, c.led.created)}${row('video', 'Video cưới', c.video, c.video.created)}`,
   (box, close) => {
     box.addEventListener('click', async (e) => {
       const b = e.target.closest('[data-p]');
@@ -216,7 +216,7 @@ async function settings() {
       <section class="panel" style="padding:18px"><h3 style="margin-top:0">Giá bán (đồng)</h3>
         <label class="field"><span>Thiệp cưới trọn gói</span><input name="price" inputmode="numeric" value="${s.price}"></label>
         <label class="field"><span>Màn hình LED</span><input name="ledPrice" inputmode="numeric" value="${s.ledPrice}"></label>
-        <label class="field"><span>Video dạm ngõ</span><input name="videoPrice" inputmode="numeric" value="${s.videoPrice}"></label>
+        <label class="field"><span>Video cưới</span><input name="videoPrice" inputmode="numeric" value="${s.videoPrice}"></label>
         <div class="grid2"><label class="field"><span>Số ngày dùng thử</span><input name="trialDays" inputmode="numeric" value="${s.trialDays}"></label>
         <label class="field"><span>Khách có link riêng (dùng thử)</span><input name="trialGuestLimit" inputmode="numeric" value="${s.trialGuestLimit}"></label></div>
         <p class="muted" style="font-size:12px;margin:0">Giá mới áp dụng cho đơn tạo từ bây giờ; đơn đang chờ giữ giá cũ.</p>
