@@ -61,10 +61,13 @@ body{height:100vh;display:flex;flex-direction:column;overflow:hidden}
 .mobile-prev{display:none}
 @media (max-width:960px){
   .layout{grid-template-columns:1fr}
-  .prev{display:none;position:fixed;inset:0;z-index:60;padding:12px}
-  .prev.show{display:grid}
-  .prev .close{position:fixed;top:12px;right:12px;z-index:61}
-  .phone{width:min(375px,100%);height:calc(100vh - 24px)}
+  /* xem trước trên điện thoại/máy tính bảng: tràn toàn màn hình như khi mở link thật, không khung điện thoại */
+  .prev{display:none;position:fixed;inset:0;z-index:60;padding:0;background:var(--surface)}
+  .prev.show{display:block}
+  .prev .close{position:fixed;top:max(10px,env(safe-area-inset-top));right:10px;z-index:61;background:rgba(20,12,14,.55);color:#fff;border:0;box-shadow:0 4px 14px rgba(0,0,0,.25);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px)}
+  .phone{width:100%;height:100vh;height:100dvh;border-radius:0;padding:0;background:none;box-shadow:none}
+  .phone iframe{border-radius:0}
+  body:has(.prev.show){overflow:hidden}
   .mobile-prev{display:inline-flex}
 }
 @media (min-width:961px){.prev .close{display:none}}
@@ -94,7 +97,7 @@ body{height:100vh;display:flex;flex-direction:column;overflow:hidden}
     <div id="panes"></div>
   </div>
   <div class="prev" id="prev">
-    <button class="btn sm close" id="pvClose">Đóng xem trước</button>
+    <button class="btn sm close" id="pvClose">✕ Đóng</button>
     <div class="phone"><iframe id="frame" title="Xem trước thiệp"></iframe></div>
   </div>
 </div>
