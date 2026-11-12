@@ -18,6 +18,8 @@
     '.ce-hl b{position:absolute;top:6px;left:6px;padding:3px 9px;border-radius:999px;background:#d6455d;color:#fff;font:600 12px/1.4 system-ui,sans-serif;white-space:nowrap}',
     '.ce-map{position:absolute;inset:0;z-index:5;border:0;margin:0;padding:0;background:rgba(0,0,0,0);cursor:pointer;outline:none!important}',
     '.ce-map b{position:absolute;left:50%;bottom:12px;translate:-50% 0;padding:6px 12px;border-radius:999px;background:#d6455d;color:#fff;font:600 13px/1.3 system-ui,sans-serif;white-space:nowrap;box-shadow:0 4px 12px rgba(0,0,0,.2)}',
+    '.ce-lock{position:absolute;inset:0;z-index:5;cursor:not-allowed;display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,.35);border-radius:inherit}',
+    '.ce-lock b{padding:6px 12px;border-radius:999px;background:rgba(20,12,14,.72);color:#fff;font:600 13px/1.3 system-ui,sans-serif;white-space:nowrap}',
     '.ce-tip{position:fixed;left:50%;bottom:14px;translate:-50% 0;z-index:2147483001;padding:8px 14px;border-radius:999px;background:rgba(20,12,14,.78);color:#fff;font:600 13px/1.3 system-ui,sans-serif;white-space:nowrap;pointer-events:none;transition:opacity .4s}',
   ].join('\n');
   document.head.appendChild(st);
@@ -130,6 +132,19 @@
     });
   }
 
+  // ---------- ô dành cho khách (lời chúc, xác nhận tham dự…): trong trình sửa không cho nhập ----------
+  function lockForms() {
+    Array.prototype.forEach.call(document.querySelectorAll('form'), function (f) {
+      if (f.querySelector('.ce-lock')) return;
+      Array.prototype.forEach.call(f.querySelectorAll('input,textarea,select,button'), function (x) { x.tabIndex = -1; x.setAttribute('aria-disabled', 'true'); });
+      if (getComputedStyle(f).position === 'static') f.style.position = 'relative';
+      var o = document.createElement('div');
+      o.className = 'ce-lock';
+      o.innerHTML = '<b>Khách mời sẽ điền ở đây</b>';
+      f.appendChild(o);
+    });
+  }
+
   // ---------- khung đánh dấu ảnh khi rê chuột ----------
   var hl = document.createElement('div'); hl.className = 'ce-hl'; hl.style.display = 'none'; hl.innerHTML = '<b></b>';
   document.body.appendChild(hl);
@@ -195,7 +210,7 @@
   });
 
   function init() {
-    markPhotos(); markText(); markMaps();
+    markPhotos(); markText(); markMaps(); lockForms();
     tell({ type: 'ready' });
     // gợi ý chỉ hiện lần đầu, không hiện lại mỗi lần thiệp vẽ lại sau khi lưu
     try { if (sessionStorage.getItem('ceTip')) return; sessionStorage.setItem('ceTip', '1'); } catch (e) { /* bỏ qua */ }
