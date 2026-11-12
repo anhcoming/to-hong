@@ -16,8 +16,11 @@
     '[data-ce-key].ce-ph{opacity:.55;font-style:italic}',
     '.ce-hl{position:fixed;z-index:2147483000;pointer-events:none;border:3px solid #d6455d;border-radius:6px;box-shadow:0 0 0 9999px rgba(0,0,0,0);transition:all .08s}',
     '.ce-hl b{position:absolute;top:6px;left:6px;padding:3px 9px;border-radius:999px;background:#d6455d;color:#fff;font:600 12px/1.4 system-ui,sans-serif;white-space:nowrap}',
-    '.ce-map{position:absolute;inset:0;z-index:5;border:0;margin:0;padding:0;background:rgba(0,0,0,0);cursor:pointer;outline:none!important}',
-    '.ce-map b{position:absolute;left:50%;bottom:12px;translate:-50% 0;padding:6px 12px;border-radius:999px;background:#d6455d;color:#fff;font:600 13px/1.3 system-ui,sans-serif;white-space:nowrap;box-shadow:0 4px 12px rgba(0,0,0,.2)}',
+    '.ce-map{position:absolute;inset:-6px;z-index:6;border:2px dashed rgba(214,69,93,.55);border-radius:12px;margin:0;padding:0;background:rgba(0,0,0,0);cursor:pointer;outline:none!important}',
+    '.ce-map:hover{border-style:solid;border-color:#d6455d;background:rgba(214,69,93,.05)!important}',
+    '.ce-venue [data-ce-key]:not(.ce-map){outline:none}',
+    '.ce-mapph{display:flex;align-items:center;justify-content:center;min-height:180px;height:100%;width:100%;background:repeating-linear-gradient(45deg,rgba(0,0,0,.035) 0 12px,rgba(0,0,0,.06) 12px 24px);border-radius:12px;color:#8a6a70;font:600 14px/1.4 system-ui,sans-serif;text-align:center;padding:16px;box-sizing:border-box}',
+    '.ce-map b{position:absolute;left:50%;top:-13px;translate:-50% 0;padding:6px 12px;border-radius:999px;background:#d6455d;color:#fff;font:600 13px/1.3 system-ui,sans-serif;white-space:nowrap;box-shadow:0 4px 12px rgba(0,0,0,.2)}',
     '.ce-lock{position:absolute;inset:0;z-index:5;cursor:default}',
     '.ce-tip{position:fixed;left:50%;bottom:14px;translate:-50% 0;z-index:2147483001;padding:8px 14px;border-radius:999px;background:rgba(20,12,14,.78);color:#fff;font:600 13px/1.3 system-ui,sans-serif;white-space:nowrap;pointer-events:none;transition:opacity .4s}',
   ].join('\n');
@@ -117,17 +120,27 @@
     });
   }
 
-  // ---------- bản đồ: khung Google nhúng nuốt mất cú bấm → phủ một lớp trong suốt, bấm vào mở bảng sửa lễ ----------
+  // ---------- khu địa điểm (nơi tổ chức, địa chỉ, bản đồ, chỉ đường) = một khối: bấm đâu cũng mở bảng sửa địa điểm ----------
+  function evOf(el) { var m = /^events\.(\d+)\./.exec(el.dataset.ceKey || ''); return m ? +m[1] : -1; }
   function markMaps() {
-    Array.prototype.forEach.call(document.querySelectorAll('iframe[src*="google.com/maps"]'), function (fr) {
-      var q = ''; try { var U = new URL(fr.src); q = (/[#&]a=([^&]*)/.exec(U.hash) || [])[1]; q = q ? decodeURIComponent(q) : U.searchParams.get('q') || ''; } catch (e) { /* bỏ qua */ }
-      var f = FIELDS.filter(function (x) { return /^events\.\d+\.address$/.test(x[0]) && !x[2] && norm(q).indexOf(norm(x[1])) >= 0; })[0];
-      var box = fr.parentElement; if (!f || !box || box.querySelector('.ce-map')) return;
+    var root = document.querySelector('main.card') || document.body;
+    Array.prototype.forEach.call(document.querySelectorAll('[data-ev]'), function (mp) {
+      var i = +mp.dataset.ev, box = mp;
+      // leo lên cha chừng nào cha chưa chứa chữ của lễ khác / bản đồ khác
+      for (var p = mp.parentElement; p && p !== root && p !== document.body; p = p.parentElement) {
+        var other = Array.prototype.some.call(p.querySelectorAll('[data-ce-key^="events."]'), function (k) { var j = evOf(k); return j >= 0 && j !== i; })
+          || Array.prototype.some.call(p.querySelectorAll('[data-ev]'), function (x) { return +x.dataset.ev !== i; })
+          || p.querySelector('[data-ce-photo]');
+        if (other) break;
+        box = p;
+      }
+      if (box.querySelector(':scope > .ce-map')) return;
       if (getComputedStyle(box).position === 'static') box.style.position = 'relative';
       var o = document.createElement('button');
-      o.type = 'button'; o.className = 'ce-map'; o.dataset.ceKey = f[0];
-      o.innerHTML = '<b>📍 Dán link Google Maps</b>';
+      o.type = 'button'; o.className = 'ce-map'; o.dataset.ceKey = 'events.' + i + '.address';
+      o.innerHTML = '<b>📍 Sửa địa điểm</b>';
       box.appendChild(o);
+      box.classList.add('ce-venue');
     });
   }
 

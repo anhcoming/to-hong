@@ -367,7 +367,6 @@ function bind() {
         const r = await api(`/api/maplink?url=${encodeURIComponent(url)}`, { quiet: true });
         if (ev.mapUrl !== url) return;
         ev.mapPin = r.pin || '';
-        if (r.name && !ev.address) ev.address = r.name;
         if (r.name && !ev.place) ev.place = r.name;
         rerender();
         toast(ev.mapPin ? `Đã ghim vị trí${r.name ? ': ' + r.name : ''}` : 'Đã lưu link cho nút "Chỉ đường"');
@@ -592,7 +591,7 @@ function eventModal(i, focus) {
     ${inp('evPlace', 'Nơi tổ chức', e.place, { ph: 'Nhà hàng Hoa Sen — Sảnh A', max: 120 })}
     ${inp('evMap', '📍 Link Google Maps (để bản đồ chỉ đúng chỗ)', e.mapUrl, { ph: 'Dán link vào đây', attr: 'inputmode="url" autocomplete="off"' })}
     <p class="muted" id="evMapSt" style="font-size:13px;margin:-6px 0 12px">Mở Google Maps → tìm nhà hàng → <b>Chia sẻ</b> → <b>Sao chép đường liên kết</b> → dán vào ô trên.</p>
-    ${inp('evAddr', 'Địa chỉ (hiện trên thiệp)', e.address, { ph: 'Số nhà, đường, phường, tỉnh/thành', max: 200 })}
+    ${inp('evAddr', 'Địa chỉ (không bắt buộc)', e.address, { ph: 'Số nhà, đường, phường, tỉnh/thành', max: 200 })}
     <div style="display:flex;gap:8px;margin-top:6px">${isNew ? '' : '<button class="btn plain" id="evDel" style="color:#c0392b">Xoá lễ</button>'}<button class="btn" id="evOk" style="flex:1">${isNew ? 'Thêm vào lịch trình' : 'Lưu'}</button></div>`, (box, close) => {
     const mapIn = $('#evMap', box), st = $('#evMapSt', box);
     let pin = e.mapUrl ? e.mapPin || '' : '', readUrl = e.mapUrl || '', reading = null;
@@ -608,8 +607,7 @@ function eventModal(i, focus) {
       return (reading = api(`/api/maplink?url=${encodeURIComponent(url)}`, { quiet: true }).then((r) => {
         if (url !== readUrl) return;
         pin = r.pin || '';
-        const ad = $('#evAddr', box), pl = $('#evPlace', box);
-        if (r.name && !ad.value.trim()) ad.value = r.name;
+        const pl = $('#evPlace', box);
         if (r.name && !pl.value.trim()) pl.value = r.name;
         st.innerHTML = pin ? `✓ Đã ghim vị trí${r.name ? `: <b>${esc(r.name)}</b>` : ''}` : 'Đã lưu link cho nút "Chỉ đường". Bản đồ sẽ tìm theo địa chỉ bên dưới.';
       }).catch((err) => { if (url === readUrl) st.textContent = err.message || 'Không đọc được link này'; }));
