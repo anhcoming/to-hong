@@ -609,7 +609,7 @@ function eventModal(i, focus) {
         pin = r.pin || '';
         const pl = $('#evPlace', box);
         if (r.name && !pl.value.trim()) pl.value = r.name;
-        st.innerHTML = pin ? `✓ Đã ghim vị trí${r.name ? `: <b>${esc(r.name)}</b>` : ''}` : 'Đã lưu link cho nút "Chỉ đường". Bản đồ sẽ tìm theo địa chỉ bên dưới.';
+        st.innerHTML = pin ? `✓ Đã ghim vị trí${r.name ? `: <b>${esc(r.name)}</b>` : ''}` : 'Chưa đọc được vị trí từ link này. Link vẫn dùng cho nút "Chỉ đường", bản đồ sẽ tìm theo địa chỉ bên dưới.';
       }).catch((err) => { if (url === readUrl) st.textContent = err.message || 'Không đọc được link này'; }));
     };
     mapIn.addEventListener('paste', () => setTimeout(readLink, 0));
@@ -661,4 +661,12 @@ window.addEventListener('message', (e) => {
   showTab(want in OLD ? OLD[want] : want);
   refreshPreview();
   status('Đã lưu ✓');
+  // lễ có link Google Maps nhưng chưa đọc được vị trí (link dán từ trước) → đọc lại một lần
+  const todo = (card.data.events || []).filter((e) => e.mapUrl && !e.mapPin);
+  if (todo.length) {
+    const rs = await Promise.all(todo.map((e) => api(`/api/maplink?url=${encodeURIComponent(e.mapUrl)}`, { quiet: true }).catch(() => null)));
+    let changed = false;
+    todo.forEach((e, k) => { if (rs[k] && rs[k].pin) { e.mapPin = rs[k].pin; changed = true; } });
+    if (changed) save();
+  }
 })();

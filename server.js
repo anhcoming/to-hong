@@ -366,8 +366,11 @@ route('GET', '/api/maplink', async (req, res, ctx) => {
   rateLimit('map:' + user.id, 60, 36e5);
   const url = String(ctx.query.get('url') || '').trim().slice(0, 500);
   if (!maplink.isMaps(url)) throw httpError(400, 'Đây không phải link Google Maps');
-  const r = await maplink.resolve(url);
-  json(res, 200, { pin: r && r.lat != null ? `${r.lat},${r.lng}` : '', name: (r && r.name) || '' });
+  const r = await maplink.resolve(url) || {};
+  const pin = r.lat != null ? `${r.lat},${r.lng}` : r.query ? 'q:' + r.query : '';
+  console.log('maplink', JSON.stringify({ pin, name: r.name, chain: r.chain }));
+  // chain: các bước chuyển hướng (để xem link được đọc ra sao khi bản đồ chưa đúng chỗ)
+  json(res, 200, { pin, exact: r.lat != null, name: r.name || '', chain: r.chain || [] });
 });
 
 // ---------------- API: tải ảnh / nhạc ----------------
