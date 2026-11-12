@@ -363,6 +363,8 @@ function bind() {
       const ev = card.data.events[+mk[1]], url = t.value.trim();
       ev.mapPin = '';
       if (!url) return scheduleSave(50);
+      const co = /^(-?\d{1,2}\.\d{3,})\s*,\s*(-?\d{1,3}\.\d{3,})$/.exec(url);
+      if (co) { ev.mapPin = `${+co[1]},${+co[2]}`; ev.mapUrl = `https://www.google.com/maps?q=${ev.mapPin}`; rerender(); toast('Đã ghim vị trí theo toạ độ'); return scheduleSave(50); }
       try {
         const r = await api(`/api/maplink?url=${encodeURIComponent(url)}`, { quiet: true });
         if (ev.mapUrl !== url) return;
@@ -589,8 +591,8 @@ function eventModal(i, focus) {
     ${inp('evName', 'Tên lễ', e.name, { ph: 'Lễ Vu Quy / Lễ Thành Hôn / Tiệc Cưới', max: 60 })}
     <div class="grid2">${inp('evDate', 'Ngày', e.date, { type: 'date' })}${inp('evTime', 'Giờ', e.time, { type: 'time' })}</div>
     ${inp('evPlace', 'Nơi tổ chức', e.place, { ph: 'Nhà hàng Hoa Sen — Sảnh A', max: 120 })}
-    ${inp('evMap', '📍 Link Google Maps (để bản đồ chỉ đúng chỗ)', e.mapUrl, { ph: 'Dán link vào đây', attr: 'inputmode="url" autocomplete="off"' })}
-    <p class="muted" id="evMapSt" style="font-size:13px;margin:-6px 0 12px">Mở Google Maps → tìm nhà hàng → <b>Chia sẻ</b> → <b>Sao chép đường liên kết</b> → dán vào ô trên.</p>
+    ${inp('evMap', '📍 Link Google Maps (để bản đồ chỉ đúng chỗ)', e.mapUrl, { ph: 'Dán link hoặc toạ độ vào đây', attr: 'autocomplete="off"' })}
+    <p class="muted" id="evMapSt" style="font-size:13px;margin:-6px 0 12px">Mở Google Maps → tìm nhà hàng → <b>Chia sẻ</b> → <b>Sao chép đường liên kết</b> → dán vào ô trên. Hoặc giữ ngón tay lên đúng điểm trên bản đồ, chép dãy toạ độ (vd. <i>21.0285, 105.8542</i>) rồi dán vào.</p>
     ${inp('evAddr', 'Địa chỉ (không bắt buộc)', e.address, { ph: 'Số nhà, đường, phường, tỉnh/thành', max: 200 })}
     <div style="display:flex;gap:8px;margin-top:6px">${isNew ? '' : '<button class="btn plain" id="evDel" style="color:#c0392b">Xoá lễ</button>'}<button class="btn" id="evOk" style="flex:1">${isNew ? 'Thêm vào lịch trình' : 'Lưu'}</button></div>`, (box, close) => {
     const mapIn = $('#evMap', box), st = $('#evMapSt', box);
@@ -598,6 +600,14 @@ function eventModal(i, focus) {
     setTimeout(() => { if (focus === 'map') mapIn.focus(); else if (isNew) $('#evName', box).focus(); }, 30);
     // dán link → hỏi máy chủ đọc ra toạ độ + tên địa điểm (link rút gọn cần mở qua máy chủ)
     const readLink = () => {
+      // dán toạ độ "21.0285, 105.8542" (giữ ngón tay lên điểm trên Google Maps để chép) → ghim luôn, không cần đọc link
+      const co = /^\s*(-?\d{1,2}\.\d{3,})\s*,\s*(-?\d{1,3}\.\d{3,})\s*$/.exec(mapIn.value);
+      if (co) {
+        const url = `https://www.google.com/maps?q=${+co[1]},${+co[2]}`;
+        mapIn.value = url; readUrl = url; pin = `${+co[1]},${+co[2]}`;
+        st.innerHTML = '✓ Đã ghim vị trí theo toạ độ';
+        return (reading = null);
+      }
       const url = (mapIn.value.match(/https:\/\/\S+/) || [''])[0]; // dán cả đoạn "Tên quán https://maps.app.goo.gl/…" cũng được
       if (url && url !== mapIn.value.trim()) mapIn.value = url;
       if (url === readUrl) return reading;
