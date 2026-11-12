@@ -16,6 +16,8 @@
     '[data-ce-key].ce-ph{opacity:.55;font-style:italic}',
     '.ce-hl{position:fixed;z-index:2147483000;pointer-events:none;border:3px solid #d6455d;border-radius:6px;box-shadow:0 0 0 9999px rgba(0,0,0,0);transition:all .08s}',
     '.ce-hl b{position:absolute;top:6px;left:6px;padding:3px 9px;border-radius:999px;background:#d6455d;color:#fff;font:600 12px/1.4 system-ui,sans-serif;white-space:nowrap}',
+    '.ce-map{position:absolute;inset:0;z-index:5;border:0;margin:0;padding:0;background:rgba(0,0,0,0);cursor:pointer;outline:none!important}',
+    '.ce-map b{position:absolute;left:50%;bottom:12px;translate:-50% 0;padding:6px 12px;border-radius:999px;background:#d6455d;color:#fff;font:600 13px/1.3 system-ui,sans-serif;white-space:nowrap;box-shadow:0 4px 12px rgba(0,0,0,.2)}',
     '.ce-tip{position:fixed;left:50%;bottom:14px;translate:-50% 0;z-index:2147483001;padding:8px 14px;border-radius:999px;background:rgba(20,12,14,.78);color:#fff;font:600 13px/1.3 system-ui,sans-serif;white-space:nowrap;pointer-events:none;transition:opacity .4s}',
   ].join('\n');
   document.head.appendChild(st);
@@ -114,6 +116,20 @@
     });
   }
 
+  // ---------- bản đồ: khung Google nhúng nuốt mất cú bấm → phủ một lớp trong suốt, bấm vào mở bảng sửa lễ ----------
+  function markMaps() {
+    Array.prototype.forEach.call(document.querySelectorAll('iframe[src*="google.com/maps"]'), function (fr) {
+      var q = ''; try { q = new URL(fr.src).searchParams.get('q') || ''; } catch (e) { /* bỏ qua */ }
+      var f = FIELDS.filter(function (x) { return /^events\.\d+\.address$/.test(x[0]) && norm(x[1]) === norm(q); })[0];
+      var box = fr.parentElement; if (!f || !box || box.querySelector('.ce-map')) return;
+      if (getComputedStyle(box).position === 'static') box.style.position = 'relative';
+      var o = document.createElement('button');
+      o.type = 'button'; o.className = 'ce-map'; o.dataset.ceKey = f[0];
+      o.innerHTML = '<b>✎ Sửa địa chỉ bản đồ</b>';
+      box.appendChild(o);
+    });
+  }
+
   // ---------- khung đánh dấu ảnh khi rê chuột ----------
   var hl = document.createElement('div'); hl.className = 'ce-hl'; hl.style.display = 'none'; hl.innerHTML = '<b></b>';
   document.body.appendChild(hl);
@@ -160,6 +176,7 @@
     if (!f || !String(val || '').trim()) return; // xoá trắng → để bản vẽ lại lo (mẫu có thể ẩn cả dòng)
     var from = String(f[1] || ''), re = new RegExp(escRx(from.normalize('NFC').trim()), 'giu');
     Array.prototype.forEach.call(document.querySelectorAll('[data-ce-key="' + key + '"]'), function (el) {
+      if (el.classList.contains('ce-map')) return; // lớp phủ bản đồ: bản đồ đổi theo khi vẽ lại
       var hit = false, w = document.createTreeWalker(el, NodeFilter.SHOW_TEXT), n;
       while ((n = w.nextNode())) {
         re.lastIndex = 0;
@@ -178,7 +195,7 @@
   });
 
   function init() {
-    markPhotos(); markText();
+    markPhotos(); markText(); markMaps();
     tell({ type: 'ready' });
     // gợi ý chỉ hiện lần đầu, không hiện lại mỗi lần thiệp vẽ lại sau khi lưu
     try { if (sessionStorage.getItem('ceTip')) return; sessionStorage.setItem('ceTip', '1'); } catch (e) { /* bỏ qua */ }
