@@ -18,8 +18,7 @@
     '.ce-hl b{position:absolute;top:6px;left:6px;padding:3px 9px;border-radius:999px;background:#d6455d;color:#fff;font:600 12px/1.4 system-ui,sans-serif;white-space:nowrap}',
     '.ce-map{position:absolute;inset:0;z-index:5;border:0;margin:0;padding:0;background:rgba(0,0,0,0);cursor:pointer;outline:none!important}',
     '.ce-map b{position:absolute;left:50%;bottom:12px;translate:-50% 0;padding:6px 12px;border-radius:999px;background:#d6455d;color:#fff;font:600 13px/1.3 system-ui,sans-serif;white-space:nowrap;box-shadow:0 4px 12px rgba(0,0,0,.2)}',
-    '.ce-lock{position:absolute;inset:0;z-index:5;cursor:not-allowed;display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,.35);border-radius:inherit}',
-    '.ce-lock b{padding:6px 12px;border-radius:999px;background:rgba(20,12,14,.72);color:#fff;font:600 13px/1.3 system-ui,sans-serif;white-space:nowrap}',
+    '.ce-lock{position:absolute;inset:0;z-index:5;cursor:default}',
     '.ce-tip{position:fixed;left:50%;bottom:14px;translate:-50% 0;z-index:2147483001;padding:8px 14px;border-radius:999px;background:rgba(20,12,14,.78);color:#fff;font:600 13px/1.3 system-ui,sans-serif;white-space:nowrap;pointer-events:none;transition:opacity .4s}',
   ].join('\n');
   document.head.appendChild(st);
@@ -121,13 +120,13 @@
   // ---------- bản đồ: khung Google nhúng nuốt mất cú bấm → phủ một lớp trong suốt, bấm vào mở bảng sửa lễ ----------
   function markMaps() {
     Array.prototype.forEach.call(document.querySelectorAll('iframe[src*="google.com/maps"]'), function (fr) {
-      var q = ''; try { q = new URL(fr.src).searchParams.get('q') || ''; } catch (e) { /* bỏ qua */ }
-      var f = FIELDS.filter(function (x) { return /^events\.\d+\.address$/.test(x[0]) && norm(x[1]) === norm(q); })[0];
+      var q = ''; try { var U = new URL(fr.src); q = (/[#&]a=([^&]*)/.exec(U.hash) || [])[1]; q = q ? decodeURIComponent(q) : U.searchParams.get('q') || ''; } catch (e) { /* bỏ qua */ }
+      var f = FIELDS.filter(function (x) { return /^events\.\d+\.address$/.test(x[0]) && !x[2] && norm(q).indexOf(norm(x[1])) >= 0; })[0];
       var box = fr.parentElement; if (!f || !box || box.querySelector('.ce-map')) return;
       if (getComputedStyle(box).position === 'static') box.style.position = 'relative';
       var o = document.createElement('button');
       o.type = 'button'; o.className = 'ce-map'; o.dataset.ceKey = f[0];
-      o.innerHTML = '<b>✎ Sửa địa chỉ bản đồ</b>';
+      o.innerHTML = '<b>📍 Dán link Google Maps</b>';
       box.appendChild(o);
     });
   }
@@ -140,7 +139,6 @@
       if (getComputedStyle(f).position === 'static') f.style.position = 'relative';
       var o = document.createElement('div');
       o.className = 'ce-lock';
-      o.innerHTML = '<b>Khách mời sẽ điền ở đây</b>';
       f.appendChild(o);
     });
   }
@@ -170,7 +168,7 @@
       document.querySelectorAll('.ce-on').forEach(function (x) { x.classList.remove('ce-on'); });
       t.classList.add('ce-on');
       var f = FIELDS.filter(function (x) { return x[0] === t.dataset.ceKey; })[0];
-      tell({ type: 'text', key: t.dataset.ceKey, value: f ? f[1] : '' });
+      tell({ type: 'text', key: t.dataset.ceKey, value: f ? f[1] : '', map: t.classList.contains('ce-map') });
       return;
     }
     var ph = photoAt(e.clientX, e.clientY);

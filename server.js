@@ -8,6 +8,7 @@ const { db, save, UPLOAD_DIR } = store;
 const { rid, json, send, readJson, readBody, httpError, slugify, str, cookies } = require('./lib/util');
 const auth = require('./lib/auth');
 const google = require('./lib/google');
+const maplink = require('./lib/maplink');
 const adminLib = require('./lib/admin');
 const adminAuth = require('./lib/adminauth');
 adminLib.applySettings(); // giá, mã giảm giá… sửa trên trang quản trị đè lên config.json
@@ -356,6 +357,17 @@ route('POST', '/api/wishes/:wid/toggle', async (req, res, ctx) => {
   w.hidden = !w.hidden;
   save();
   json(res, 200, { hidden: w.hidden });
+});
+
+// ---------------- API: đọc link Google Maps (link rút gọn → toạ độ + tên địa điểm) ----------------
+// GET (không giữ khoá dữ liệu trong lúc chờ Google trả lời)
+route('GET', '/api/maplink', async (req, res, ctx) => {
+  const user = needUser(ctx);
+  rateLimit('map:' + user.id, 60, 36e5);
+  const url = String(ctx.query.get('url') || '').trim().slice(0, 500);
+  if (!maplink.isMaps(url)) throw httpError(400, 'Đây không phải link Google Maps');
+  const r = await maplink.resolve(url);
+  json(res, 200, { pin: r && r.lat != null ? `${r.lat},${r.lng}` : '', name: (r && r.name) || '' });
 });
 
 // ---------------- API: tải ảnh / nhạc ----------------

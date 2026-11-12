@@ -79,7 +79,7 @@ const panes = {
           <div class="grid2">${f(`events.${i}.date`, 'Ngày', { type: 'date' })}${f(`events.${i}.time`, 'Giờ', { type: 'time' })}</div>
           ${f(`events.${i}.place`, 'Nơi tổ chức', { ph: 'Nhà hàng Hoa Sen — Sảnh A', max: 120 })}
           ${f(`events.${i}.address`, 'Địa chỉ (hiện bản đồ)', { ph: 'Số nhà, đường, phường, tỉnh/thành', max: 200 })}
-          ${f(`events.${i}.mapUrl`, 'Link Google Maps (không bắt buộc)', { ph: 'https://maps.app.goo.gl/…', hint: 'Dán link nếu bản đồ theo địa chỉ chưa đúng chỗ' })}
+          ${f(`events.${i}.mapUrl`, '📍 Link Google Maps', { ph: 'Dán link vào đây', hint: 'Google Maps → tìm nhà hàng → Chia sẻ → Sao chép đường liên kết. Bản đồ trên thiệp sẽ ghim đúng chỗ.' })}
         </div>`).join('') || '<p class="muted">Chưa có lễ nào.</p>'}</div>
       ${card.data.events.length < 6 ? '<button class="btn soft block" id="evAdd">+ Thêm lễ</button>' : ''}
     </section>`,
@@ -358,6 +358,23 @@ function bind() {
   });
   panesEl.addEventListener('change', async (e) => {
     const t = e.target;
+    const mk = /^events\.(\d+)\.mapUrl$/.exec(t.dataset.k || '');
+    if (mk) { // link Google Maps trong bảng "Ngày & lễ" → đọc toạ độ để bản đồ ghim đúng chỗ
+      const ev = card.data.events[+mk[1]], url = t.value.trim();
+      ev.mapPin = '';
+      if (!url) return scheduleSave(50);
+      try {
+        const r = await api(`/api/maplink?url=${encodeURIComponent(url)}`, { quiet: true });
+        if (ev.mapUrl !== url) return;
+        ev.mapPin = r.pin || '';
+        if (r.name && !ev.address) ev.address = r.name;
+        if (r.name && !ev.place) ev.place = r.name;
+        rerender();
+        toast(ev.mapPin ? `Đã ghim vị trí${r.name ? ': ' + r.name : ''}` : 'Đã lưu link cho nút "Chỉ đường"');
+      } catch (err) { toast(err.message, true); }
+      scheduleSave(50);
+      return;
+    }
     if (t.id === 'titleIn') { card.title = t.value; scheduleSave(50); }
     if (t.id === 'coverIn' && t.files[0]) uploadMany([t.files[0]], (u) => (card.data.cover = u));
     if (t.id === 'photosIn' && t.files.length) {
@@ -564,23 +581,49 @@ function textModal(key) {
   });
 }
 // một lễ trong lịch trình: bấm tên / giờ / nơi / địa chỉ trên thiệp (hoặc dòng "+ Thêm lễ") → sửa đủ thông tin của lễ đó
-function eventModal(i) {
+function eventModal(i, focus) {
   const d = card.data, isNew = i >= d.events.length;
   if (isNew && d.events.length >= 6) return toast('Tối đa 6 lễ', true);
-  const e = isNew ? { name: '', date: d.date, time: '', place: '', address: '', mapUrl: '' } : d.events[i];
-  const inp = (id, label, v, o = {}) => `<label class="field"><span>${label}</span><input id="${id}" type="${o.type || 'text'}" value="${esc(v || '')}" ${o.ph ? `placeholder="${esc(o.ph)}"` : ''} ${o.max ? `maxlength="${o.max}"` : ''}></label>`;
+  const e = isNew ? { name: '', date: d.date, time: '', place: '', address: '', mapUrl: '', mapPin: '' } : d.events[i];
+  const inp = (id, label, v, o = {}) => `<label class="field"><span>${label}</span><input id="${id}" type="${o.type || 'text'}" value="${esc(v || '')}" ${o.ph ? `placeholder="${esc(o.ph)}"` : ''} ${o.max ? `maxlength="${o.max}"` : ''} ${o.attr || ''}></label>`;
   openModal(`<h2 style="margin-top:0">${isNew ? 'Thêm lễ' : esc(e.name || `Lễ ${i + 1}`)}</h2>
     ${inp('evName', 'Tên lễ', e.name, { ph: 'Lễ Vu Quy / Lễ Thành Hôn / Tiệc Cưới', max: 60 })}
     <div class="grid2">${inp('evDate', 'Ngày', e.date, { type: 'date' })}${inp('evTime', 'Giờ', e.time, { type: 'time' })}</div>
     ${inp('evPlace', 'Nơi tổ chức', e.place, { ph: 'Nhà hàng Hoa Sen — Sảnh A', max: 120 })}
-    ${inp('evAddr', 'Địa chỉ (hiện bản đồ)', e.address, { ph: 'Số nhà, đường, phường, tỉnh/thành', max: 200 })}
-    ${inp('evMap', 'Link Google Maps (không bắt buộc)', e.mapUrl, { ph: 'https://maps.app.goo.gl/…' })}
+    ${inp('evMap', '📍 Link Google Maps (để bản đồ chỉ đúng chỗ)', e.mapUrl, { ph: 'Dán link vào đây', attr: 'inputmode="url" autocomplete="off"' })}
+    <p class="muted" id="evMapSt" style="font-size:13px;margin:-6px 0 12px">Mở Google Maps → tìm nhà hàng → <b>Chia sẻ</b> → <b>Sao chép đường liên kết</b> → dán vào ô trên.</p>
+    ${inp('evAddr', 'Địa chỉ (hiện trên thiệp)', e.address, { ph: 'Số nhà, đường, phường, tỉnh/thành', max: 200 })}
     <div style="display:flex;gap:8px;margin-top:6px">${isNew ? '' : '<button class="btn plain" id="evDel" style="color:#c0392b">Xoá lễ</button>'}<button class="btn" id="evOk" style="flex:1">${isNew ? 'Thêm vào lịch trình' : 'Lưu'}</button></div>`, (box, close) => {
-    setTimeout(() => { const n = $('#evName', box); if (isNew) n.focus(); }, 30);
-    $('#evOk', box).onclick = () => {
+    const mapIn = $('#evMap', box), st = $('#evMapSt', box);
+    let pin = e.mapUrl ? e.mapPin || '' : '', readUrl = e.mapUrl || '', reading = null;
+    setTimeout(() => { if (focus === 'map') mapIn.focus(); else if (isNew) $('#evName', box).focus(); }, 30);
+    // dán link → hỏi máy chủ đọc ra toạ độ + tên địa điểm (link rút gọn cần mở qua máy chủ)
+    const readLink = () => {
+      const url = (mapIn.value.match(/https:\/\/\S+/) || [''])[0]; // dán cả đoạn "Tên quán https://maps.app.goo.gl/…" cũng được
+      if (url && url !== mapIn.value.trim()) mapIn.value = url;
+      if (url === readUrl) return reading;
+      readUrl = url; pin = '';
+      if (!url) { st.textContent = 'Không có link: bản đồ sẽ tìm theo địa chỉ bên dưới.'; return (reading = null); }
+      st.textContent = 'Đang đọc link…';
+      return (reading = api(`/api/maplink?url=${encodeURIComponent(url)}`, { quiet: true }).then((r) => {
+        if (url !== readUrl) return;
+        pin = r.pin || '';
+        const ad = $('#evAddr', box), pl = $('#evPlace', box);
+        if (r.name && !ad.value.trim()) ad.value = r.name;
+        if (r.name && !pl.value.trim()) pl.value = r.name;
+        st.innerHTML = pin ? `✓ Đã ghim vị trí${r.name ? `: <b>${esc(r.name)}</b>` : ''}` : 'Đã lưu link cho nút "Chỉ đường". Bản đồ sẽ tìm theo địa chỉ bên dưới.';
+      }).catch((err) => { if (url === readUrl) st.textContent = err.message || 'Không đọc được link này'; }));
+    };
+    mapIn.addEventListener('paste', () => setTimeout(readLink, 0));
+    mapIn.addEventListener('change', readLink);
+    if (e.mapUrl && pin) st.textContent = '✓ Đã ghim vị trí theo link Google Maps.';
+    $('#evOk', box).onclick = async () => {
       const v = (id) => $(id, box).value.trim();
       if (!v('#evName')) return toast('Nhập tên lễ nhé', true);
-      Object.assign(e, { name: v('#evName'), date: v('#evDate'), time: v('#evTime'), place: v('#evPlace'), address: v('#evAddr'), mapUrl: v('#evMap') });
+      const b = $('#evOk', box); b.disabled = true;
+      await readLink();
+      b.disabled = false;
+      Object.assign(e, { name: v('#evName'), date: v('#evDate'), time: v('#evTime'), place: v('#evPlace'), address: v('#evAddr'), mapUrl: v('#evMap'), mapPin: v('#evMap') ? pin : '' });
       if (isNew) d.events.push(e);
       // lịch trình xếp theo ngày giờ (lễ chưa có giờ đứng sau cùng trong ngày)
       d.events.sort((a, b) => (a.date || '9999').localeCompare(b.date || '9999') || (a.time || '99').localeCompare(b.time || '99'));
@@ -596,7 +639,7 @@ window.addEventListener('message', (e) => {
   if (m.type === 'ready') { const nf = $('#frameNext'); if (nf && e.source === nf.contentWindow && nf._ready) nf._ready(); return; }
   if (m.type === 'photo') { if (m.empty || !photoGet(m.key)) livePhotoUpload(m.key, m.ratio); else photoActions(m.key, m.ratio); return; }
   if (m.type !== 'text') return;
-  if (/^events\.\d+\./.test(m.key)) eventModal(+m.key.split('.')[1]);
+  if (/^events\.\d+\./.test(m.key)) eventModal(+m.key.split('.')[1], m.map ? 'map' : '');
   else if (m.key === 'time') showTab('date');
   else if (m.key.startsWith('gifts.')) showTab('gift');
   else textModal(m.key);
