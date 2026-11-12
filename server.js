@@ -36,10 +36,11 @@ const DAY = 864e5;
 
 // ---------------- router tối giản ----------------
 const routes = [];
-function route(method, pattern, handler) {
+// opts.noDb: route không đọc/ghi dữ liệu (vd. /api/meta) → không chờ kho, trang vẫn chạy khi kho trục trặc
+function route(method, pattern, handler, opts = {}) {
   const keys = [];
   const re = new RegExp('^' + pattern.replace(/:(\w+)/g, (_, k) => { keys.push(k); return '([^/]+)'; }) + '/?$');
-  routes.push({ method, re, keys, handler });
+  routes.push({ method, re, keys, handler, noDb: !!opts.noDb });
 }
 
 // ---------------- tiện ích nghiệp vụ ----------------
@@ -197,7 +198,7 @@ route('GET', '/api/meta', async (req, res) => {
     videoPrice: config.videoPrice, video: videoLib.options(), blobUpload: !!process.env.BLOB_READ_WRITE_TOKEN,
     googleLogin: google.enabled(),
   });
-});
+}, { noDb: true });
 
 // ---------------- API: thiệp ----------------
 route('GET', '/api/cards', async (req, res, ctx) => {
@@ -814,7 +815,7 @@ const server = http.createServer(async (req, res) => {
   }
   // Kho từ xa: nạp dữ liệu mới nhất, và ghi lại trước khi trả lời (res.end chờ ghi xong).
   // Chỉ làm khi có route xử lý — file tĩnh và trang HTML không đụng tới dữ liệu nên không phải chờ kho.
-  if (store.remote && matched) {
+  if (store.remote && matched && !matched.noDb) {
     let finish;
     try { finish = await store.begin(req.method, pathname); } catch (e) {
       console.error(e);
@@ -833,7 +834,7 @@ const server = http.createServer(async (req, res) => {
     if (matched) {
       const ctx = {
         query: url.searchParams,
-        user: auth.currentUser(req),
+        user: matched.noDb ? null : auth.currentUser(req),
         admin: adminAuth.check(req),
         ip: (req.headers['x-forwarded-for'] || '').split(',')[0].trim() || req.socket.remoteAddress,
         params,
