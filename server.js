@@ -819,7 +819,15 @@ const server = http.createServer(async (req, res) => {
     let finish;
     try { finish = await store.begin(req.method, pathname); } catch (e) {
       console.error(e);
-      return json(res, 503, { error: 'Không kết nối được cơ sở dữ liệu, vui lòng thử lại' });
+      // gợi ý nguyên nhân (không lộ chuỗi kết nối) để chủ web tự sửa cấu hình
+      const m = String(e && e.message || '');
+      const why = /password authentication/i.test(m) ? 'sai mật khẩu trong POSTGRES_URL'
+        : /tenant|user .* not found/i.test(m) ? 'sai tên người dùng/mã dự án trong POSTGRES_URL (phải là postgres.<mã dự án mới>)'
+        : /ENOTFOUND|EAI_AGAIN|ENETUNREACH|getaddrinfo/i.test(m) ? 'sai địa chỉ máy chủ trong POSTGRES_URL (dùng Transaction pooler)'
+        : /timeout|ETIMEDOUT|ECONNREFUSED/i.test(m) ? 'máy chủ cơ sở dữ liệu không trả lời (sai cổng hoặc dự án đang tạm dừng)'
+        : /invalid url|URI|URL/i.test(m) ? 'chuỗi POSTGRES_URL không hợp lệ (mật khẩu có ký tự đặc biệt?)'
+        : 'lỗi khác, xem Logs trên Vercel';
+      return json(res, 503, { error: 'Không kết nối được cơ sở dữ liệu, vui lòng thử lại', why });
     }
     const end = res.end.bind(res);
     let ending = false;
