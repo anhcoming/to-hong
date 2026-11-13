@@ -235,17 +235,20 @@
       <div class="info"><b>${esc(t.name)}</b><a class="use" href="/thiep-cua-toi?tao=${t.id}&mau=${t.palettes[0].id}">Dùng mẫu</a></div></div></div>`;
     const row = (title, list, cls = '', more = '/mau-thiep', moreText = 'Xem tất cả') => list.length ? `<section class="nrow ${cls}"><h2>${title}<a href="${more}">${moreText} ›</a></h2>
       <div class="track"><button class="arrow l" type="button" aria-label="Trước">‹</button><div class="slider">${list.join('')}</div><button class="arrow r" type="button" aria-label="Sau">›</button></div></section>` : '';
+    // khối "một lớn, bốn nhỏ" cho video và màn LED: mẫu đứng đầu chiếm ô lớn bên trái, bốn mẫu còn lại xếp lưới 2×2 (không cuộn ngang, không số thứ hạng — số 1–5 chỉ còn ở hàng thiệp)
+    const PILL = '<span class="tag hot"><svg viewBox="0 0 100 26" preserveAspectRatio="none" aria-hidden="true"><path d="M0 0h88l12 13-12 13H0z"/></svg>Chọn nhiều nhất</span>'; // cùng ruy băng đỏ với nhãn Hot của thẻ thiệp
+    const block = (title, list, more, moreText = 'Xem tất cả') => list.length ? `<section class="nrow fblock"><h2>${title}<a href="${more}">${moreText} ›</a></h2><div class="fgrid wide">${list.join('')}</div></section>` : '';
     // thẻ video 16:9: poster + tên + số ảnh, rê chuột phát thử video thật (xem bên dưới)
     const V = (ev.detail.video && ev.detail.video.templates) || [];
     const TOP_VIDEO = ['polaroid', 'phimcu', 'dienanh', 'songhy', 'traitim']; // 5 mẫu video được chọn nhiều, cùng thứ tự với khu video bên dưới
     const topVideo = [...TOP_VIDEO.map((id) => V.find((t) => t.id === id)).filter(Boolean), ...V.filter((t) => t.photos && !TOP_VIDEO.includes(t.id))].slice(0, 5);
-    const vcard = (t, i) => `<div class="ncard" data-video="${t.id}"><span class="num">${i + 1}</span><div class="pic"><a href="/video/demo?template=${t.id}" aria-label="Xem thử video ${esc(t.name)}"><img src="/demo/vposter-${t.id}.jpg" alt="${esc(t.name)}" loading="lazy"></a><span class="lbl">${esc(t.name)}<small>${t.photos ? t.slots + ' ảnh' : 'Mẫu chữ'} · chiếu TV, tải MP4</small></span>
+    const vcard = (t, i) => `<div class="ncard" data-video="${t.id}">${i ? '' : PILL}<div class="pic"><a href="/video/demo?template=${t.id}" aria-label="Xem thử video ${esc(t.name)}"><img src="/demo/vposter-${t.id}.jpg" alt="${esc(t.name)}" loading="lazy"></a><span class="lbl">${esc(t.name)}<small>${t.photos ? t.slots + ' ảnh' : 'Mẫu chữ'} · chiếu TV, tải MP4</small></span>
       <div class="info"><b>${esc(t.name)}</b><a class="use" href="/thiep-cua-toi?tao-video=1&mau=${t.id}">Dùng mẫu</a></div></div></div>`;
     // thẻ màn LED 16:9: mỗi "mẫu" là một cặp bảng màu + hiệu ứng nền; poster chụp sẵn (npm run previews -- <địa chỉ> led), rê chuột chạy màn thật
     const L = ev.detail.led || { palettes: [], effects: [] };
     const TOP_LED = [['do', 'sao'], ['dem', 'sao'], ['hong', 'hoa'], ['ngoc', 'domdom'], ['kem', 'lua']]; // cùng danh sách với tools/previews.js
     const topLed = TOP_LED.map(([p, e]) => ({ p: L.palettes.find((x) => x.id === p), e: L.effects.find((x) => x.id === e) })).filter((x) => x.p && x.e);
-    const lcard = ({ p, e }, i) => { const q = `palette=${p.id}&effect=${e.id}`; return `<div class="ncard" data-led="${q}"><span class="num">${i + 1}</span><div class="pic"><a href="/led/demo?${q}" aria-label="Xem thử màn LED ${esc(p.name)}"><img src="/demo/lposter-${p.id}-${e.id}.jpg" alt="Màn hình LED ${esc(p.name)}" loading="lazy"></a><span class="lbl one">${esc(p.name)}<small>${esc(e.name)}</small></span>
+    const lcard = ({ p, e }, i) => { const q = `palette=${p.id}&effect=${e.id}`; return `<div class="ncard" data-led="${q}">${i ? '' : PILL}<div class="pic"><a href="/led/demo?${q}" aria-label="Xem thử màn LED ${esc(p.name)}"><img src="/demo/lposter-${p.id}-${e.id}.jpg" alt="Màn hình LED ${esc(p.name)}" loading="lazy"></a><span class="lbl one">${esc(p.name)}<small>${esc(e.name)}</small></span>
       <div class="info"><b>${esc(p.name)}</b><a class="use" href="/thiep-cua-toi?tao-led=1&${q}">Dùng mẫu</a></div></div></div>`; };
     const hot = T.filter((t) => t.badge === 'Hot');
     const top = [...hot, ...T.filter((t) => !hot.includes(t))].slice(0, 5); // top 5: mẫu Hot trước, thiếu thì lấy thêm mẫu kế tiếp
@@ -253,15 +256,15 @@
     const rows = document.getElementById('mau');
     rows.innerHTML =
       row('Top 5 mẫu thiệp được chọn nhiều nhất tuần này', top.map((t, i) => card(t, `<span class="num">${i + 1}</span>`)), 'top')
-      + row('Top 5 mẫu video cưới', topVideo.map(vcard), 'top wide', '/video-cuoi')
-      + row('Top 5 màn hình LED tiệc cưới', topLed.map(lcard), 'top wide', '/thiep-cua-toi?tao-led=1', 'Tạo màn LED')
+      + block('Video cưới chiếu TV', topVideo.map(vcard), '/video-cuoi')
+      + block('Màn hình LED tiệc cưới', topLed.map(lcard), '/thiep-cua-toi?tao-led=1', 'Tạo màn LED')
       + row('Mới ra mắt', T.filter((t) => t.badge === 'Mới').map((t) => card(t)))
 
       + used.map((g) => row(esc(g.name), T.filter((t) => t.group === g.id).map((t) => card(t)), '', `/mau-thiep?phong-cach=${g.id}`)).join('')
       + row('Tất cả mẫu thiệp', T.map((t) => card(t)));
 
     // khung LED / video 1280×720 thu nhỏ vừa thẻ 16:9
-    const fit = () => rows.querySelectorAll('.wide .pic').forEach((p) => { const f = p.querySelector('iframe'); if (f) f.style.transform = `scale(${p.clientWidth / 1280})`; });
+    const fit = () => rows.querySelectorAll('.wide .pic').forEach((p) => { const f = p.querySelector('iframe'); if (f) f.style.transform = `scale(${Math.max(p.clientWidth / 1280, p.clientHeight / 720)})`; });
     fit(); addEventListener('resize', fit);
     rows.addEventListener('click', (e) => {
       const a = e.target.closest('.arrow'); if (!a) return;
@@ -289,7 +292,7 @@
         st.t = setTimeout(() => {
           const pic = c.querySelector('.pic'), video = !!(c.dataset.video || c.dataset.led);
           if (!video) return scrollImage(st, c, pic);
-          const base = 1280, s = pic.clientWidth / base;
+          const base = 1280, s = Math.max(pic.clientWidth / base, pic.clientHeight / 720); // phủ kín ô: ô lớn của khối cao hơn 16:9 vài px
           const f = document.createElement('iframe');
           f.className = 'live'; f.tabIndex = -1; f.title = 'Xem trước';
           f.style.width = base + 'px'; f.style.height = '720px'; f.style.transform = `scale(${s})`;

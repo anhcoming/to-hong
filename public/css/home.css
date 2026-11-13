@@ -149,11 +149,26 @@ img{display:block;max-width:100%}
 .wide .lbl{position:absolute;left:12px;bottom:10px;z-index:2;color:#fff;font:800 18px var(--sans);text-shadow:0 2px 10px rgba(0,0,0,.8);transition:opacity .2s}
 .ncard:hover .lbl{opacity:0} /* rê chuột: nhãn nhường chỗ cho tên + nút Dùng mẫu */
 /* top 5 video: thẻ 16:9 có số xếp hạng, 3 thẻ trọn + một phần thẻ thứ 4 trong khung 1180px */
-.top.wide .ncard{width:clamp(240px,calc((min(100vw,1240px) - 2 * var(--fade) - 60px) / 3.3),380px)}
-.top.wide .num{bottom:-10px}
 .wide .lbl small{display:block;font-weight:500;font-size:12px;color:#e0d6d2}
 .wide .lbl.one{right:12px;bottom:8px;font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis} /* màn LED: nhãn một dòng sát đáy, không đè tên cô dâu chú rể giữa poster */
 .wide .lbl.one small{display:inline;margin-left:7px}
+/* khối "một lớn, bốn nhỏ" (video cưới, màn LED): lưới 4 cột, thẻ đầu chiếm 2 cột × 2 hàng nên vẫn gần đúng 16:9 */
+.fblock{margin-bottom:max(3.2vw,30px)}
+.fblock h2{padding-right:var(--fade)}
+.fgrid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:16px;padding:6px var(--fade) 0}
+.fgrid .ncard{width:auto}
+.fgrid .ncard:first-child{grid-column:span 2;grid-row:span 2}
+.fgrid .ncard:first-child .pic{height:100%;aspect-ratio:auto}
+.fgrid .ncard:first-child .lbl{left:20px;bottom:16px;font-size:26px}
+.fgrid .ncard:first-child .lbl small{font-size:14px}
+@media (max-width:760px){
+  .fgrid{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+  .fgrid .ncard:first-child{grid-row:auto}
+  .fgrid .ncard:first-child .pic{height:auto;aspect-ratio:16/9}
+  .fgrid .ncard:first-child .lbl{left:12px;bottom:10px;font-size:20px}
+  .fgrid .ncard:not(:first-child) .lbl{right:10px;left:10px;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .fgrid .ncard:not(:first-child) .lbl small{display:none}
+}
 @media (max-width:700px){
   .bb{height:78vh}
   .bb .wall{grid-template-columns:repeat(3,1fr);opacity:.6}
