@@ -34,6 +34,8 @@
 .trialbar{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:8px 12px;margin:10px 0 2px;padding:10px 12px;border-radius:12px;background:var(--warn-soft);color:var(--warn);font-size:14px}
 .trialbar b.cd{font-variant-numeric:tabular-nums;white-space:nowrap}
 .trialbar.soon,.trialbar.over{background:#fde8e6;color:var(--danger)}
+.upbar{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:8px 12px;margin:10px 0 2px;padding:10px 12px;border-radius:12px;background:var(--primary-soft);font-size:14px}
+.upbar b{color:var(--primary)}
 </style>
 </head>
 <body>
@@ -52,12 +54,21 @@ let META;
 const VIDEOS = location.pathname === '/video-cua-toi';
 const tplName = (id) => (META.templates.find(t => t.id === id) || {}).name || id;
 
+const isCombo = (c) => c.paid && c.led.paid && c.video.paid;
 function stateChip(c) {
-  if (c.paid) return '<span class="chip ok">● Đã kích hoạt</span>';
+  if (isCombo(c)) return '<span class="chip ok">● Trọn bộ đã kích hoạt</span><span class="chip ok">Thiệp</span><span class="chip ok">Màn LED</span><span class="chip ok">Video</span>';
+  if (c.paid) return '<span class="chip ok">● Thiệp đã kích hoạt</span>';
   if (c.status !== 'published') return '<span class="chip">Bản nháp</span>';
   if (c.expired) return '<span class="chip red">Hết hạn dùng thử</span>';
   const days = Math.max(0, Math.ceil((c.trialEndsAt - Date.now()) / 864e5));
   return `<span class="chip warn">Dùng thử · còn ${days} ngày</span>`;
+}
+
+// Thiệp đã kích hoạt lẻ, chưa có LED / video: gợi ý nâng lên Trọn bộ (chỉ trả phần chênh)
+function upgradeBar(c) {
+  if (!c.paid || c.led.paid || c.video.paid || !META.comboPrice) return '';
+  const add = Math.max(0, META.comboPrice - META.price), retail = META.ledPrice + META.videoPrice;
+  return `<div class="upbar"><span>✨ Thêm <b>màn LED tiệc cưới + video MP4</b> chỉ <b>${money(add)}</b> <span class="muted">(mua lẻ ${money(retail)})</span></span><button class="btn sm" data-a="combo">Nâng lên Trọn bộ</button></div>`;
 }
 
 // Thiệp đã phát hành, chưa kích hoạt: thanh đếm ngược tới lúc link bị khoá (chạy từng giây)
@@ -84,6 +95,7 @@ setInterval(() => {
 }, 1000);
 
 function ledChip(c) {
+  if (isCombo(c)) return '';
   const one = (s, n) => !s.created ? '' : s.paid ? `<span class="chip ok">${n} · đã kích hoạt</span>`
     : s.expired ? `<span class="chip red">${n} · hết dùng thử</span>` : `<span class="chip warn">${n} · dùng thử</span>`;
   return one(c.led, 'Màn LED');
@@ -106,12 +118,13 @@ async function load() {
           <a class="btn sm" href="/sua/${c.id}">Sửa thiệp</a>
         </div>
         <div class="meta">${stateChip(c)}${ledChip(c)}</div>
-        ${trialBar(c)}
+        ${trialBar(c)}${upgradeBar(c)}
         <div class="stats"><span>👁 <b>${c.views}</b> lượt xem</span><span>✉ <b>${c.guests}</b> khách mời</span><span>✓ <b>${c.rsvpYes}</b> người sẽ đến</span><span>♥ <b>${c.wishes}</b> lời chúc</span></div>
         <div class="acts">
           ${c.status === 'published' ? `<button class="btn sm soft" data-a="share">Sao chép link</button><a class="btn sm plain" target="_blank" href="${esc(c.url)}">Mở thiệp</a>` : ''}
           ${!c.paid ? `<button class="btn sm plain" data-a="pay">Kích hoạt · ${money(META.price)}</button>` : ''}
           ${c.led.created ? `<a class="btn sm plain" href="/sua-led/${c.id}">✨ Màn LED</a>` : ''}
+          ${c.video.created && isCombo(c) ? `<a class="btn sm plain" href="/sua-video/${c.id}">🎬 Video</a>` : ''}
           <details class="more"><summary class="btn sm plain" aria-label="Thêm">⋯</summary><div><button data-a="dup">Nhân bản thiệp</button><button data-a="del" class="danger">Xoá thiệp</button></div></details>
         </div>
       </div>
@@ -164,6 +177,7 @@ async function act(a, id, c) {
     if (a === 'vshare') copyText(c.video.url, 'Đã chép link — mở trên Smart TV hoặc máy tính nối TV');
     if (a === 'vpay') openPayModal(id, load, 'video');
     if (a === 'pay') openPayModal(id, load);
+    if (a === 'combo') openPayModal(id, load, 'combo');
     if (a === 'dup') { await api(`/api/cards/${id}/duplicate`, { method: 'POST' }); toast('Đã nhân bản thiệp'); load(); }
     if (a === 'del') {
       if (!confirm(`Xoá thiệp "${c.names || c.title}"? Danh sách khách, xác nhận và lời chúc của thiệp này cũng bị xoá và không khôi phục được.`)) return;

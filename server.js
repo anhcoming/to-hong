@@ -24,21 +24,35 @@ const stats = require('./lib/stats');
 
 store.onLoad(() => Wd.migrate()); // dữ liệu từ trước khi có sổ tay cưới → gắn vào đám cưới
 
-// Sản phẩm bán: thiệp, màn LED, video dạm ngõ (đều gắn với một thiệp)
+// Sản phẩm bán: thiệp, màn LED, video dạm ngõ (đều gắn với một thiệp) và combo "Trọn bộ" = cả ba.
+// Combo cho thiệp đã kích hoạt = nâng cấp, chỉ trả phần chênh (giá combo − giá thiệp).
 const PRODUCTS = {
   card: { name: 'Thiệp cưới online', price: () => cardPrice(), coupons: true, prefix: 'TH', sub: (c) => c },
   led: { name: 'Màn hình LED tiệc cưới', price: () => config.ledPrice, coupons: false, prefix: 'LD', sub: (c) => c.led },
   video: { name: 'Video cưới', price: () => config.videoPrice, coupons: false, prefix: 'VD', sub: (c) => c.video },
+  combo: {
+    name: 'Trọn bộ ngày cưới', coupons: false, prefix: 'CB',
+    price: (c) => (c && c.paid ? Math.max(0, comboPrice() - cardPrice()) : comboPrice()),
+    sub: (c) => ({ paid: !!(c.paid && c.led && c.led.paid && c.video && c.video.paid) }),
+  },
 };
+// Combo kích hoạt cả ba; màn LED / video chưa tạo thì tạo sẵn bản mặc định (đã trả tiền) để mở là dùng ngay
+function activateCombo(card, at) {
+  card.paid = true; card.paidAt = card.paidAt || at;
+  if (!card.led) card.led = ledLib.normalize({}, {});
+  if (!card.video) card.video = videoLib.normalize({}, {});
+  for (const x of [card.led, card.video]) { x.paid = true; x.paidAt = x.paidAt || at; }
+}
 
 // Giá thiệp: `price` là giá mở bán đang thu, `listPrice` là giá gốc (hiện gạch ngang) tới hết ngày `promoEndsAt`
 // (giờ Việt Nam). Qua ngày đó web tự thu theo giá gốc — không phải sửa gì.
 const promoEnd = () => (/^\d{4}-\d{2}-\d{2}$/.test(config.promoEndsAt || '') ? Date.parse(`${config.promoEndsAt}T23:59:59.999+07:00`) : 0);
 const promoActive = () => config.listPrice > config.price && Date.now() <= promoEnd();
-function cardPrice() {
-  if (config.listPrice > config.price && promoEnd() && Date.now() > promoEnd()) return config.listPrice;
-  return config.price;
-}
+// Combo theo cùng hạn: `comboPrice` giá mở bán, `comboListPrice` giá gốc.
+const promoOver = () => !!promoEnd() && Date.now() > promoEnd();
+const cardPrice = () => (config.listPrice > config.price && promoOver() ? config.listPrice : config.price);
+const comboPrice = () => (config.comboListPrice > config.comboPrice && promoOver() ? config.comboListPrice : config.comboPrice);
+const comboPromo = () => config.comboListPrice > config.comboPrice && !!promoEnd() && !promoOver();
 const promoInfo = () => (promoActive() ? { listPrice: config.listPrice, promoEndsAt: promoEnd() } : { listPrice: null, promoEndsAt: null });
 
 const PORT = +process.env.PORT || config.port;
@@ -149,6 +163,15 @@ function qrPay(amount, code) {
   const p = config.payment;
   return `https://img.vietqr.io/image/${p.bankBin}-${p.accountNo}-compact2.png?amount=${amount}&addInfo=${encodeURIComponent(code)}&accountName=${encodeURIComponent(p.accountName)}`;
 }
+// Giá gạch ngang trong cửa sổ thanh toán: thiệp / combo đang theo giá mở bán; nâng cấp combo so với mua lẻ LED + video
+function wasPrice(o, product) {
+  if (o.status !== 'pending') return {};
+  const end = promoEnd();
+  if (product === 'card' && promoActive() && o.amount + (o.coupon ? config.coupons[o.coupon] || 0 : 0) === config.price) return { wasPrice: config.listPrice, promoEndsAt: end };
+  if (product === 'combo' && o.upgrade) return { wasPrice: config.ledPrice + config.videoPrice, promoEndsAt: comboPromo() ? end : null };
+  if (product === 'combo' && comboPromo() && o.amount === config.comboPrice) return { wasPrice: config.comboListPrice, promoEndsAt: end };
+  return {};
+}
 function orderView(o) {
   const card = db.cards.find((c) => c.id === o.cardId);
   const product = o.product || 'card';
@@ -156,8 +179,7 @@ function orderView(o) {
     product, productName: PRODUCTS[product].name,
     code: o.code, amount: o.amount, coupon: o.coupon || null, status: o.status, claimedAt: o.claimedAt || null,
     createdAt: o.createdAt, paidAt: o.paidAt || null, paidVia: o.paidVia || null, bankNote: o.bankNote || null,
-    // giá gốc gạch ngang trong cửa sổ thanh toán: chỉ đơn thiệp đang theo giá mở bán
-    ...(product === 'card' && o.status === 'pending' && promoActive() && o.amount + (o.coupon ? config.coupons[o.coupon] || 0 : 0) === config.price ? promoInfo() : {}),
+    upgrade: !!o.upgrade, ...wasPrice(o, product),
     qr: qrPay(o.amount, o.code),
     bank: { name: config.payment.bankName, accountNo: config.payment.accountNo, accountName: config.payment.accountName },
     card: card ? { id: card.id, title: card.title, names: [card.data.groom.name, card.data.bride.name].filter(Boolean).join(' & ') } : null,
@@ -240,7 +262,8 @@ route('GET', '/api/meta', async (req, res) => {
     brand: config.brand, tagline: config.tagline, price: cardPrice(), ...promoInfo(), trialDays: config.trialDays,
     trialGuestLimit: config.trialGuestLimit, banks, templates: templateList(), templateGroups, baseUrl: BASE_URL, support: config.support,
     ledPrice: config.ledPrice, led: ledLib.options(),
-    videoPrice: config.videoPrice, video: videoLib.options(), blobUpload: !!process.env.BLOB_READ_WRITE_TOKEN,
+    videoPrice: config.videoPrice, video: videoLib.options(),
+    comboPrice: comboPrice(), comboListPrice: comboPromo() ? config.comboListPrice : null, promoEndsAt: promoActive() || comboPromo() ? promoEnd() : null, blobUpload: !!process.env.BLOB_READ_WRITE_TOKEN,
     googleLogin: google.enabled(),
   });
 }, { noDb: true });
@@ -557,12 +580,15 @@ route('POST', '/api/cards/:id/order', async (req, res, ctx) => {
   const target = P.sub(card);
   if (!target) throw httpError(400, `Hãy tạo ${P.name.toLowerCase()} trước`);
   if (target.paid) throw httpError(400, `${P.name} này đã được kích hoạt`);
+  if (product === 'combo' && ((card.led && card.led.paid) || (card.video && card.video.paid))) throw httpError(400, 'Màn LED hoặc video đã kích hoạt riêng — kích hoạt lẻ phần còn lại nhé');
   const isThis = (o) => o.cardId === card.id && (o.product || 'card') === product && o.status === 'pending';
   let order = db.orders.find(isThis);
   if (!order) {
-    order = { id: rid(12), code: P.prefix + rid(6).toUpperCase(), product, cardId: card.id, userId: card.userId, amount: P.price(), status: 'pending', createdAt: Date.now() };
+    order = { id: rid(12), code: P.prefix + rid(6).toUpperCase(), product, cardId: card.id, userId: card.userId, amount: P.price(card), status: 'pending', createdAt: Date.now() };
     db.orders.push(order);
   }
+  // combo: giá tuỳ thiệp đã kích hoạt chưa (nâng cấp) → tính lại mỗi lần mở
+  if (product === 'combo') { order.amount = P.price(card); order.upgrade = !!card.paid; }
   if (b.coupon !== undefined) {
     const code = str(b.coupon, 30).toUpperCase();
     if (code) {
@@ -570,10 +596,10 @@ route('POST', '/api/cards/:id/order', async (req, res, ctx) => {
       if (!off) throw httpError(400, 'Mã giảm giá không đúng hoặc đã hết hạn');
       if (!P.coupons) throw httpError(400, 'Mã giảm giá chỉ áp dụng cho thiệp cưới');
       order.coupon = code;
-      order.amount = Math.max(0, P.price() - off);
+      order.amount = Math.max(0, P.price(card) - off);
     } else {
       delete order.coupon;
-      order.amount = P.price();
+      order.amount = P.price(card);
     }
   }
   save();
@@ -604,6 +630,7 @@ function markPaid(o, via) {
   o.paidAt = Date.now();
   o.paidVia = via;
   const card = db.cards.find((c) => c.id === o.cardId);
+  if (card && o.product === 'combo') return activateCombo(card, o.paidAt);
   const target = card && PRODUCTS[o.product || 'card'].sub(card);
   if (target) { target.paid = true; target.paidAt = o.paidAt; }
 }
@@ -634,8 +661,9 @@ route('POST', '/api/pay/sepay', async (req, res, ctx) => {
   const text = `${t.code || ''} ${t.content || ''} ${t.description || ''}`.toUpperCase().replace(/[^A-Z0-9]/g, '');
   const prefixes = Object.values(PRODUCTS).map((p) => p.prefix).join('|');
   let o = null;
-  for (const m of text.matchAll(new RegExp(`(?:${prefixes})[A-Z0-9]{6}`, 'g'))) {
-    o = db.orders.find((x) => x.code === m[0]);
+  // dò mọi vị trí (kể cả chồng lấn): mã ngân hàng kiểu "MBVCB.123…" có thể nuốt mất đầu mã đơn nếu dò kiểu thường
+  for (const m of text.matchAll(new RegExp(`(?=((?:${prefixes})[A-Z0-9]{6}))`, 'g'))) {
+    o = db.orders.find((x) => x.code === m[1]);
     if (o) break;
   }
   let result;

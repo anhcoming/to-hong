@@ -41,10 +41,20 @@
     set('[data-brand]', m.brand);
     set('[data-price]', money(m.price));
     set('[data-price-k]', k(m.price));
+    // Trọn bộ: giá, giá gốc, tiết kiệm so với mua lẻ cả ba
+    if (m.comboPrice) {
+      set('[data-combo-k]', k(m.comboPrice));
+      set('[data-combo-save]', k(m.price + m.ledPrice + m.videoPrice - m.comboPrice));
+      if (m.comboListPrice) {
+        set('[data-combo-list-k]', k(m.comboListPrice));
+        document.querySelectorAll('[data-combo-promo]').forEach(function (e) { e.hidden = false; });
+      }
+    }
     // giá mở bán: hiện giá gốc gạch ngang + đếm ngược tới hết hạn
     if (m.listPrice && m.promoEndsAt) {
       set('[data-list-price]', money(m.listPrice));
       set('[data-list-price-k]', k(m.listPrice));
+      set('[data-promo-after]', new Date(m.promoEndsAt + 1).toLocaleDateString('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh', day: '2-digit', month: '2-digit', year: 'numeric' }));
       document.querySelectorAll('[data-promo]').forEach(function (e) { e.hidden = false; });
       var pad = function (n) { return (n < 10 ? '0' : '') + n; };
       var tick = function () {

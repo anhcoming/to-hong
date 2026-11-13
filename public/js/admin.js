@@ -1,6 +1,6 @@
 // Trang quản trị: tổng quan, đơn hàng, người dùng, thiệp & sản phẩm, cài đặt, nhật ký.
 const A = { tab: 'home', me: null, meta: null, f: {} };
-const PROD = { card: 'Thiệp', led: 'Màn LED', video: 'Video' };
+const PROD = { card: 'Thiệp', combo: 'Trọn bộ', led: 'Màn LED', video: 'Video' };
 const ago = (t) => {
   if (!t) return '—';
   const m = Math.round((Date.now() - t) / 6e4);
@@ -268,6 +268,8 @@ async function settings() {
         <label class="field"><span>Giá mở bán đến hết ngày</span><input name="promoEndsAt" type="date" value="${esc(s.promoEndsAt || '')}"><small>Qua ngày này web tự thu theo giá gốc. Bỏ trống = không có hạn, không hiện giá gạch.</small></label>
         <label class="field"><span>Màn hình LED</span><input name="ledPrice" inputmode="numeric" value="${s.ledPrice}"></label>
         <label class="field"><span>Video cưới</span><input name="videoPrice" inputmode="numeric" value="${s.videoPrice}"></label>
+        <div class="grid2"><label class="field"><span>Trọn bộ (thiệp + LED + video)</span><input name="comboPrice" inputmode="numeric" value="${s.comboPrice || ''}"></label>
+        <label class="field"><span>Trọn bộ — giá gốc (gạch ngang)</span><input name="comboListPrice" inputmode="numeric" value="${s.comboListPrice || ''}"></label></div>
         <div class="grid2"><label class="field"><span>Số ngày dùng thử</span><input name="trialDays" inputmode="numeric" value="${s.trialDays}"></label>
         <label class="field"><span>Khách có link riêng (dùng thử)</span><input name="trialGuestLimit" inputmode="numeric" value="${s.trialGuestLimit}"></label></div>
         <p class="muted" style="font-size:12px;margin:0">Giá mới áp dụng cho đơn tạo từ bây giờ; đơn đang chờ giữ giá cũ.</p>
@@ -294,7 +296,7 @@ async function settings() {
     $$('.coupon').forEach((r) => { const c = $('[data-cc]', r).value.trim(); if (c) coupons[c] = $('[data-cv]', r).value; });
     try {
       await api('/api/admin/settings', { method: 'PUT', body: {
-        price: v('price'), listPrice: v('listPrice'), promoEndsAt: v('promoEndsAt'), ledPrice: v('ledPrice'), videoPrice: v('videoPrice'), trialDays: v('trialDays'), trialGuestLimit: v('trialGuestLimit'),
+        price: v('price'), listPrice: v('listPrice'), promoEndsAt: v('promoEndsAt'), ledPrice: v('ledPrice'), videoPrice: v('videoPrice'), comboPrice: v('comboPrice'), comboListPrice: v('comboListPrice'), trialDays: v('trialDays'), trialGuestLimit: v('trialGuestLimit'),
         coupons, brand: v('brand'), tagline: v('tagline'),
         support: { zalo: v('sup.zalo'), email: v('sup.email') },
       } });
