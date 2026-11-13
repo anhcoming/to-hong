@@ -81,8 +81,35 @@
     var cells = { d: [], h: [], m: [], s: [] };
     $$('[data-cd]').forEach(function (el) { var k = el.getAttribute('data-cd'); if (cells[k]) cells[k].push(el); });
     var set = function (k, v) { cells[k].forEach(function (el) { el.textContent = v; }); };
+    // còn dưới 1 ngày thì ẩn hẳn ô "0 ngày". Ô ngày = khung bao riêng của số ngày (kiểu ô vuông), hoặc — với kiểu chữ
+    // liền "<b>0</b> ngày <b>22</b> giờ" — gói số + chữ "ngày" theo sau vào một span để ẩn cùng nhau.
+    var dayUnits = cells.d.map(function (el) {
+      var p = el.parentElement;
+      if (p && p.querySelectorAll('[data-cd]').length === 1 && !p.hasAttribute('role')) return p;
+      var w = document.createElement('span'), nx = el.nextSibling;
+      el.parentNode.insertBefore(w, el);
+      w.appendChild(el);
+      if (nx && nx.nodeType === 3) w.appendChild(nx);
+      return w;
+    });
+    var noDays = null;
+    var hideDays = function (hide) {
+      if (hide === noDays) return;
+      noDays = hide;
+      dayUnits.forEach(function (u) {
+        u.style.display = hide ? 'none' : '';
+        // khung lưới chia sẵn 4 cột (ngày/giờ/phút/giây) → còn 3 ô thì chia 3 cột cho cân
+        var box = u.parentElement;
+        if (!box) return;
+        if (hide) {
+          var cols = getComputedStyle(box).gridTemplateColumns;
+          if (cols && cols !== 'none' && cols.split(' ').length === 4) { box.dataset.cdCols = box.style.gridTemplateColumns || ' '; box.style.gridTemplateColumns = 'repeat(3,1fr)'; }
+        } else if (box.dataset.cdCols) { box.style.gridTemplateColumns = box.dataset.cdCols.trim(); delete box.dataset.cdCols; }
+      });
+    };
     var tick = function () {
       var s = Math.max(0, Math.floor((target - Date.now()) / 1000));
+      hideDays(s > 0 && s < 86400);
       set('d', Math.floor(s / 86400));
       set('h', Math.floor(s % 86400 / 3600));
       set('m', Math.floor(s % 3600 / 60));
