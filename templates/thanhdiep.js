@@ -164,7 +164,7 @@ module.exports = {
       function go(i){k=(i+n)%n;ct.textContent=k+1;cs.forEach(function(c,j){var o=j-k;if(o>n/2)o-=n;if(o<-n/2)o+=n;var a=Math.abs(o);
         c.style.transform='translateX('+o*60+'%) translateZ('+(-150*a)+'px) rotateY('+o*45+'deg) scale('+SC[Math.min(a,2)]+')';
         c.style.opacity=OP[Math.min(a,3)];c.style.zIndex=100-a;c.classList.toggle('on',!a);});}
-      function auto(){clearInterval(t);t=setInterval(function(){go(k+1)},4000);}
+      function auto(){clearInterval(t);if(!document.body.classList.contains('is-edit'))t=setInterval(function(){go(k+1)},4000);}
       // chạm ảnh bên cạnh thì chuyển tới ảnh đó, chỉ ảnh giữa mới mở xem lớn
       st.addEventListener('click',function(e){var c=e.target.closest('.ph');if(c&&!c.classList.contains('on')){e.stopPropagation();go(cs.indexOf(c));auto();}},true);
       s.querySelector('.prev').onclick=function(){go(k-1);auto()};s.querySelector('.next').onclick=function(){go(k+1);auto()};

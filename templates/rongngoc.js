@@ -151,7 +151,7 @@ module.exports = {
     <script>(function(){
       var s=document.currentScript.parentNode,sl=[].slice.call(s.querySelectorAll('.rn-slide')),th=[].slice.call(s.querySelectorAll('.rn-thumbs button')),full=s.querySelector('.rn-full'),cnt=s.querySelector('.rn-count b'),k=0,n=sl.length,t;
       function go(i){k=(i+n)%n;sl.forEach(function(e,j){e.classList.toggle('on',j===k)});th.forEach(function(e,j){e.classList.toggle('on',j===k)});full.setAttribute('data-i',k);cnt.textContent=k+1;var b=th[k];if(b&&b.parentNode.scrollTo)b.parentNode.scrollTo({left:b.offsetLeft-b.parentNode.clientWidth/2+b.clientWidth/2,behavior:'smooth'});auto();}
-      function auto(){clearTimeout(t);if(!matchMedia('(prefers-reduced-motion: reduce)').matches)t=setTimeout(function(){go(k+1)},4500);}
+      function auto(){clearTimeout(t);if(!document.body.classList.contains('is-edit')&&!matchMedia('(prefers-reduced-motion: reduce)').matches)t=setTimeout(function(){go(k+1)},4500);}
       s.querySelector('.prev').onclick=function(){go(k-1)};s.querySelector('.next').onclick=function(){go(k+1)};
       th.forEach(function(b,j){b.onclick=function(){go(j)}});
       var st=s.querySelector('.rn-stage'),x0=null;st.addEventListener('pointerdown',function(e){x0=e.clientX});

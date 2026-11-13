@@ -199,7 +199,7 @@ module.exports = {
       st.addEventListener('pointerup',function(e){if(x0!==null&&Math.abs(e.clientX-x0)>40){go(k+(e.clientX<x0?1:-1));}x0=null});
       go(0);
       // tự chuyển ảnh mỗi ~1,4s khi album đang trên màn hình (như bản gốc); bấm/vuốt thì đếm lại từ đầu
-      var on=false,t;function run(){clearInterval(t);t=setInterval(function(){if(on&&!document.hidden)go(k+1)},1400);}
+      var on=false,t;function run(){clearInterval(t);if(!document.body.classList.contains('is-edit'))t=setInterval(function(){if(on&&!document.hidden)go(k+1)},1400);}
       if('IntersectionObserver' in window)new IntersectionObserver(function(es){on=es[0].isIntersecting}).observe(st);
       st.addEventListener('pointerdown',run);s.querySelectorAll('.sh-cf-nav').forEach(function(b){b.addEventListener('click',run)});run();
     })()</script>

@@ -168,7 +168,7 @@ module.exports = {
       var s=document.currentScript.parentNode,st=s.querySelector('.sh-cf-stage'),cs=[].slice.call(st.querySelectorAll('.ph')),ds=[].slice.call(s.querySelectorAll('.sh-dots button')),k=0,n=cs.length,tm;
       // khung ảnh theo tỉ lệ ảnh thật như bản gốc
       cs.forEach(function(c){var im=c.querySelector('img');function r(){if(im.naturalWidth)c.style.aspectRatio=im.naturalWidth+'/'+im.naturalHeight}im.complete?r():im.addEventListener('load',r)});
-      function go(i){k=(i+n)%n;cs.forEach(function(c,j){var o=j-k;if(o>n/2)o-=n;if(o<-n/2)o+=n;c.dataset.o=Math.abs(o)>3?'far':o;});ds.forEach(function(d,j){d.className=j===k?'on':'';});clearInterval(tm);tm=setInterval(function(){go(k+1)},3500);}
+      function go(i){k=(i+n)%n;cs.forEach(function(c,j){var o=j-k;if(o>n/2)o-=n;if(o<-n/2)o+=n;c.dataset.o=Math.abs(o)>3?'far':o;});ds.forEach(function(d,j){d.className=j===k?'on':'';});clearInterval(tm);if(!document.body.classList.contains('is-edit'))tm=setInterval(function(){go(k+1)},3500);}
       // chạm ảnh bên cạnh thì chuyển tới ảnh đó, chỉ ảnh giữa mới mở xem lớn
       st.addEventListener('click',function(e){var c=e.target.closest('.ph');if(c&&c.dataset.o!=='0'){e.stopPropagation();go(cs.indexOf(c));}},true);
       s.querySelector('.prev').onclick=function(){go(k-1)};s.querySelector('.next').onclick=function(){go(k+1)};
