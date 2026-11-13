@@ -119,6 +119,36 @@
     setInterval(tick, 1000);
   }
 
+  // ----- hộp thoại: tiêu đề + nút đóng đứng yên khi cuộn nội dung -----
+  // Hộp có sẵn thanh đầu (…-dlg-head, vd. Hộp quà mừng) thì card.css cho dính trên cùng. Hộp chỉ có nút × đặt nổi
+  // (vd. Xác nhận tham dự: tiêu đề nằm trong nội dung) → gom tiêu đề + nút × vào một thanh dính; không có tiêu đề thì giữ nút ×.
+  $$('dialog').forEach(function (dlg) {
+    var x = null;
+    for (var c = dlg.firstElementChild; c; c = c.nextElementSibling) {
+      if (c.tagName === 'BUTTON' && c.getAttribute('aria-label') === 'Đóng') { x = c; break; }
+    }
+    if (!x) return;
+    var bar = document.createElement('div');
+    bar.className = 'dlg-bar';
+    var sec = x.nextElementSibling;
+    var h = sec && sec.firstElementChild && /^H[23]$/.test(sec.firstElementChild.tagName) ? sec.firstElementChild : null;
+    dlg.insertBefore(bar, dlg.firstChild);
+    if (h) {
+      var cs = getComputedStyle(sec), hs = getComputedStyle(h);
+      bar.style.background = getComputedStyle(dlg).backgroundColor;
+      bar.style.paddingLeft = cs.paddingLeft;
+      if (hs.textAlign === 'center') h.style.paddingLeft = '44px'; // tiêu đề căn giữa: chừa bên trái bằng nút × cho cân
+      bar.appendChild(h);
+      bar.appendChild(x);
+      sec.style.paddingTop = '0';
+      dlg.style.paddingTop = '0';
+      dlg.addEventListener('scroll', function () { bar.classList.toggle('stuck', dlg.scrollTop > 2); }, { passive: true });
+    } else {
+      bar.classList.add('only-x');
+      bar.appendChild(x);
+    }
+  });
+
   // ----- album ảnh -----
   var lb = $('#lightbox');
   $$('.ph').forEach(function (b) {

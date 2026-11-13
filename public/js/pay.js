@@ -146,6 +146,7 @@ window.openPayModal = async function (cardId, onDone, product = 'card') {
         <button class="btn plain">Áp dụng</button>
       </form>
       <button class="btn block lg" id="claim">Tôi đã chuyển khoản</button>`;
+    modalHead(box); // nút × đứng yên khi cuộn
     $$('[data-sel]', box).forEach((b) => (b.onclick = () => { sel = b.dataset.sel; render(); }));
     $('#cp', box).onsubmit = async (e) => {
       e.preventDefault();

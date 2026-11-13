@@ -93,6 +93,13 @@ h1,h2,h3{line-height:1.2}
 .modal-box{background:var(--surface);border-radius:20px;width:min(520px,100%);max-height:92vh;max-height:92dvh;overflow:auto;overscroll-behavior:contain;padding:24px;position:relative;box-shadow:0 30px 80px rgba(0,0,0,.25)}
 .modal-x{position:absolute;top:14px;right:14px;width:36px;height:36px;border-radius:50%;border:0;background:var(--primary-soft);color:var(--primary);cursor:pointer;font-size:20px;line-height:1}
 .modal h2{margin:0 0 4px;font-family:var(--serif);font-weight:800;letter-spacing:-.01em;padding-right:40px}
+/* đầu cửa sổ dính trên cùng khi cuộn (common.js → modalHead) */
+.modal-head{position:sticky;top:-24px;z-index:5;display:flex;align-items:flex-start;gap:12px;margin:-24px -24px 4px;padding:18px 14px 10px 24px;background:var(--surface);transition:box-shadow .2s}
+.modal-head h2{flex:1;min-width:0;margin:6px 0 0!important;padding-right:0}
+.modal-head .modal-x{position:static;flex:none}
+.modal-head.stuck{box-shadow:0 10px 14px -12px rgba(0,0,0,.35)}
+.modal-head.only-x{height:0;margin:-24px -24px 24px;padding:0 14px;background:none;justify-content:flex-end;box-shadow:none}
+.modal-head.only-x .modal-x{position:relative;top:14px}
 @keyframes fade{from{opacity:0}}
 
 .toast{position:fixed;left:50%;bottom:24px;transform:translate(-50%,20px);background:#2e2226;color:#fff;padding:10px 18px;border-radius:999px;font-size:14px;opacity:0;transition:.25s;pointer-events:none;z-index:99;max-width:90vw;text-align:center}
