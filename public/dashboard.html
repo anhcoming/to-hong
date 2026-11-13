@@ -31,6 +31,9 @@
 @media (max-width:560px){.vitem{grid-template-columns:120px 1fr}}
 .link{font-size:13px;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 @media (max-width:560px){.item{grid-template-columns:84px 1fr}.thumb{min-height:120px}}
+.trialbar{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:8px 12px;margin:10px 0 2px;padding:10px 12px;border-radius:12px;background:var(--warn-soft);color:var(--warn);font-size:14px}
+.trialbar b.cd{font-variant-numeric:tabular-nums;white-space:nowrap}
+.trialbar.soon,.trialbar.over{background:#fde8e6;color:var(--danger)}
 </style>
 </head>
 <body>
@@ -57,6 +60,29 @@ function stateChip(c) {
   return `<span class="chip warn">Dùng thử · còn ${days} ngày</span>`;
 }
 
+// Thiệp đã phát hành, chưa kích hoạt: thanh đếm ngược tới lúc link bị khoá (chạy từng giây)
+function trialBar(c) {
+  if (c.paid || c.status !== 'published') return '';
+  if (c.expired) return `<div class="trialbar over"><span>🔒 <b>Link đã bị khoá</b> — khách mở thiệp sẽ thấy "Thiệp đang tạm khoá". Kích hoạt để mở lại ngay.</span><button class="btn sm" data-a="pay">Kích hoạt</button></div>`;
+  return `<div class="trialbar" data-end="${c.trialEndsAt}"><span>⏳ Link sẽ bị khoá sau <b class="cd">${countdown(c.trialEndsAt)}</b></span><button class="btn sm" data-a="pay">Kích hoạt</button></div>`;
+}
+function countdown(end) {
+  const s = Math.max(0, Math.floor((end - Date.now()) / 1000));
+  const d = Math.floor(s / 86400), p = (n) => String(n).padStart(2, '0');
+  const hms = `${p(Math.floor(s % 86400 / 3600))}:${p(Math.floor(s % 3600 / 60))}:${p(s % 60)}`;
+  return d ? `${d} ngày ${hms}` : hms;
+}
+setInterval(() => {
+  let ended = false;
+  $$('.trialbar[data-end]').forEach((el) => {
+    const end = +el.dataset.end;
+    el.querySelector('.cd').textContent = countdown(end);
+    el.classList.toggle('soon', end - Date.now() < 864e5);
+    if (end <= Date.now()) ended = true;
+  });
+  if (ended) load(); // hết giờ → tải lại để hiện "Link đã bị khoá"
+}, 1000);
+
 function ledChip(c) {
   const one = (s, n) => !s.created ? '' : s.paid ? `<span class="chip ok">${n} · đã kích hoạt</span>`
     : s.expired ? `<span class="chip red">${n} · hết dùng thử</span>` : `<span class="chip warn">${n} · dùng thử</span>`;
@@ -80,6 +106,7 @@ async function load() {
           <a class="btn sm" href="/sua/${c.id}">Sửa thiệp</a>
         </div>
         <div class="meta">${stateChip(c)}${ledChip(c)}</div>
+        ${trialBar(c)}
         <div class="stats"><span>👁 <b>${c.views}</b> lượt xem</span><span>✉ <b>${c.guests}</b> khách mời</span><span>✓ <b>${c.rsvpYes}</b> người sẽ đến</span><span>♥ <b>${c.wishes}</b> lời chúc</span></div>
         <div class="acts">
           ${c.status === 'published' ? `<button class="btn sm soft" data-a="share">Sao chép link</button><a class="btn sm plain" target="_blank" href="${esc(c.url)}">Mở thiệp</a>` : ''}
