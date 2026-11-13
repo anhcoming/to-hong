@@ -2,6 +2,7 @@
 // Kích thước lấy theo bản gốc (Tailwind): số đầu cho điện thoại, khối @media (min-width:640/768/1024px) cho màn rộng.
 // Bản xanh dùng cùng ảnh trang trí với bản đỏ, chỉ đổi màu bằng filter (hue-rotate) như bản gốc; hộp quà có ảnh riêng.
 const { esc } = require('../lib/util');
+const { inviteWord } = require('../lib/carddata');
 
 const A = (n) => `/demo/songhy-${n}`; // ảnh trang trí của bản gốc
 const hyMark = (cls) => `<img class="${cls}" src="${A('chu-hy.png')}" alt="">`;
@@ -86,7 +87,7 @@ module.exports = {
       <h1 class="sh-onames"><span>${esc(ctx.g)}</span><i>&amp;</i><span>${esc(ctx.b)}</span></h1>
       <p class="sh-rule" aria-hidden="true"><span></span><b>❦</b><span></span></p>
       ${p ? `<p class="sh-odate">${+p.d} tháng ${+p.m}, ${p.y}</p>` : ''}
-      <p class="sh-oto">${ctx.guest ? `Thân mời ${esc(ctx.guest.name)}` : 'Thân Mời'}</p>
+      <p class="sh-oto">${ctx.guest ? `${esc(inviteWord(ctx.d, 'Thân mời'))} ${esc(ctx.guest.name)}` : esc(inviteWord(ctx.d, 'Thân Mời'))}</p>
       <button class="sh-obtn" id="openBtn">Mở thiệp<i></i></button>
     </div>
   </div>

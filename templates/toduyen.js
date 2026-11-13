@@ -1,6 +1,7 @@
 // Mẫu "Tơ Duyên" — tối giản trên nền trắng: chữ xanh lá, hoa rum trắng và dải lụa xanh vắt ngang giữa các phần.
 // Kích thước lấy theo bản gốc (Tailwind): số đầu cho điện thoại, khối @media (min-width:768px) cho màn rộng.
 const { esc } = require('../lib/util');
+const { inviteWord } = require('../lib/carddata');
 
 const A = (n) => `/demo/toduyen-${n}.webp`; // ảnh trang trí của mẫu
 
@@ -98,7 +99,7 @@ module.exports = {
         <h1 class="td-onames"><span>${esc(ctx.g)}</span><i>&amp;</i><span>${esc(ctx.b)}</span></h1>
         <p class="td-rule" aria-hidden="true"><span></span><b>❦</b><span></span></p>
         ${p ? `<p class="td-odate">${+p.d} tháng ${+p.m}, ${p.y}</p>` : ''}
-        <div class="td-oto"><p>${ctx.guest ? `Thân mời ${esc(ctx.guest.name)}` : 'Thân Mời'}</p></div>
+        <div class="td-oto"><p>${ctx.guest ? `${esc(inviteWord(ctx.d, 'Thân mời'))} ${esc(ctx.guest.name)}` : esc(inviteWord(ctx.d, 'Thân Mời'))}</p></div>
         <button class="td-obtn" id="openBtn"><span>Mở thiệp</span><i aria-hidden="true"></i></button>
       </div>
     </div>

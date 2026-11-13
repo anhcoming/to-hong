@@ -3,6 +3,7 @@
 // Ảnh trang trí lấy từ bản gốc (hoa, mây, nhẫn, ly, bánh, phong bao) trong /demo/songhy2-*.webp;
 // khung giấy (songhy2-panel.svg) và đường cong đỏ vẽ lại, chữ 囍 dùng ký tự thay ảnh song hỷ.
 const { esc } = require('../lib/util');
+const { inviteWord } = require('../lib/carddata');
 const banks = require('../lib/banks');
 
 const A = (n) => `/demo/songhy2-${n}`;
@@ -95,7 +96,7 @@ module.exports = {
         <h1 class="sh-onames"><span>${esc(ctx.g)}</span><i>&amp;</i><span>${esc(ctx.b)}</span></h1>
         <p class="sh-rule" aria-hidden="true"><span></span>❦<span></span></p>
         ${p ? `<p class="sh-odate">${+p.d} tháng ${+p.m}, ${p.y}</p>` : ''}
-        <p class="sh-oto">${ctx.guest ? `Thân mời ${esc(ctx.guest.name)}` : 'Thân Mời'}</p>
+        <p class="sh-oto">${ctx.guest ? `${esc(inviteWord(ctx.d, 'Thân mời'))} ${esc(ctx.guest.name)}` : esc(inviteWord(ctx.d, 'Thân Mời'))}</p>
         <button class="sh-obtn" id="openBtn">Mở thiệp<i aria-hidden="true"></i></button>
       </div>
     </div>

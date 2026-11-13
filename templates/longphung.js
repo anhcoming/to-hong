@@ -3,6 +3,7 @@
 // Ảnh trang trí (rồng, phượng, chữ Hỷ, chim én) là ảnh của bản gốc ở public/demo/longphung-*.webp.
 // Khung tiêu đề, khung ảnh bìa và khung lịch vẽ lại bằng SVG ngay trong mẫu.
 const { esc } = require('../lib/util');
+const { inviteWord } = require('../lib/carddata');
 
 const A = (n) => `/demo/longphung-${n}`; // ảnh của mẫu
 const PEACH = '#FFBE89';
@@ -94,7 +95,7 @@ module.exports = {
         <h1 class="lp-onames"><span>${esc(ctx.g)}</span><i>&amp;</i><span>${esc(ctx.b)}</span></h1>
         <p class="lp-rule" aria-hidden="true"><span></span>❦<span></span></p>
         ${p ? `<p class="lp-odate">${+p.d} tháng ${+p.m}, ${p.y}</p>` : ''}
-        <div class="lp-oto"><p>Thân Mời</p>${ctx.guest ? `<div class="lp-guest">${esc(ctx.guest.name)}</div>` : ''}</div>
+        <div class="lp-oto"><p>${esc(inviteWord(ctx.d, 'Thân Mời'))}</p>${ctx.guest ? `<div class="lp-guest">${esc(ctx.guest.name)}</div>` : ''}</div>
         <button class="lp-obtn" id="openBtn">Mở thiệp<i></i></button>
       </div>
     </div>

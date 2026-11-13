@@ -1,6 +1,7 @@
 // Mẫu "Thanh Diệp" — xanh lá thanh lịch: nền trắng, khối xanh rừng, lá màu nước trôi theo cuộn trang, chữ song ngữ Việt / Anh.
 // Kích thước lấy theo bản gốc (Tailwind): số đầu cho điện thoại, khối @media (min-width:768px / 1024px) cho màn rộng.
 const { esc } = require('../lib/util');
+const { inviteWord } = require('../lib/carddata');
 
 const A = (n) => `/demo/thanhdiep-${n}.webp`; // ảnh trang trí của mẫu
 
@@ -111,7 +112,7 @@ module.exports = {
       <h1 class="td-onames"><span>${esc(ctx.g)}</span><i>&amp;</i><span>${esc(ctx.b)}</span></h1>
       <p class="td-rule" aria-hidden="true"><span></span><b>❦</b><span></span></p>
       ${p ? `<p class="td-odate">${bi(`${+p.d} tháng ${+p.m}, ${p.y}`, `${MON_EN[+p.m - 1]} ${+p.d}, ${p.y}`)}</p>` : ''}
-      <p class="td-oto">Thân Mời / Cordially Invites</p>
+      <p class="td-oto">${esc(inviteWord(ctx.d, 'Thân Mời / Cordially Invites'))}</p>
       ${ctx.guest ? `<div class="td-oguest"><h2>${esc(ctx.guest.name)}</h2></div>` : ''}
       <p class="td-ojoin">${bi('đến dự buổi tiệc chung vui cùng gia đình', 'to celebrate with our family')}</p>
       <button class="td-obtn" id="openBtn"><span>Mở thiệp / Open</span><i></i></button>

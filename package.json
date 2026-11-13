@@ -7,7 +7,7 @@
   "scripts": {
     "start": "node server.js",
     "previews": "node tools/previews.js",
-    "test": "node test/smoke.js && node test/migrate.js && node test/admin.js && node test/full.js",
+    "test": "node test/smoke.js && node test/migrate.js && node test/admin.js && node test/full.js && node test/invite.js",
     "vendor": "cp node_modules/mp4-muxer/build/mp4-muxer.js public/vendor/mp4-muxer.js && esbuild tools/blob-client-entry.js --bundle --minify --format=iife --global-name=BlobClient --platform=browser --outfile=public/vendor/blob-client.js"
   },
   "engines": {

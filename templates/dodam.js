@@ -1,6 +1,7 @@
 // Mẫu "Đỏ Đậm" — tối giản sang trọng: nền giấy kem, khối đỏ rượu vang, phong bì sáp niêm & hoa mẫu đơn.
 // Kích thước lấy theo bản gốc (Tailwind): số đầu cho điện thoại, khối @media (min-width:768px) cho màn rộng.
 const { esc } = require('../lib/util');
+const { inviteWord } = require('../lib/carddata');
 
 const A = (n) => `/demo/dodam-${n}.webp`; // ảnh trang trí của mẫu
 
@@ -63,7 +64,7 @@ module.exports = {
       <h1 class="dd-onames"><span>${esc(ctx.g)}</span><i>&amp;</i><span>${esc(ctx.b)}</span></h1>
       <p class="dd-rule" aria-hidden="true"><span></span>❦<span></span></p>
       ${p ? `<p class="dd-odate">${+p.d} tháng ${+p.m}, ${p.y}</p>` : ''}
-      <p class="dd-oto">${ctx.guest ? `Thân mời ${esc(ctx.guest.name)}` : 'Thân Mời'}</p>
+      <p class="dd-oto">${ctx.guest ? `${esc(inviteWord(ctx.d, 'Thân mời'))} ${esc(ctx.guest.name)}` : esc(inviteWord(ctx.d, 'Thân Mời'))}</p>
       <button class="dd-obtn" id="openBtn">Mở thiệp</button>
     </div>
   </div>

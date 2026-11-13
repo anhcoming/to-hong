@@ -1,6 +1,7 @@
 // Mẫu "Xanh Lá" (Minimalism Xanh) — thanh lịch: nền trắng, hoa cỏ xanh mờ, khung lời mời hình vòm, phong bì hai ảnh.
 // Kích thước lấy theo bản gốc (Tailwind): số đầu cho điện thoại, khối @media (min-width:768px) cho màn rộng.
 const { esc } = require('../lib/util');
+const { inviteWord } = require('../lib/carddata');
 
 const A = (n) => `/demo/xanhla-${n}.webp`; // ảnh trang trí của mẫu
 
@@ -77,7 +78,7 @@ module.exports = {
       <h1 class="mn-onames"><span>${esc(ctx.g)}</span><i>&amp;</i><span>${esc(ctx.b)}</span></h1>
       <p class="mn-rule" aria-hidden="true"><span></span><b>❦</b><span></span></p>
       ${p ? `<p class="mn-odate">${+p.d} tháng ${+p.m}, ${p.y}</p>` : ''}
-      <p class="mn-oto">${ctx.guest ? `Thân mời ${esc(ctx.guest.name)}` : 'Thân Mời'}</p>
+      <p class="mn-oto">${ctx.guest ? `${esc(inviteWord(ctx.d, 'Thân mời'))} ${esc(ctx.guest.name)}` : esc(inviteWord(ctx.d, 'Thân Mời'))}</p>
       <button class="mn-obtn" id="openBtn"><span>Mở thiệp</span><i></i></button>
     </div>
   </div>

@@ -1,6 +1,7 @@
 // Mẫu "Hoa Mộc" — boho xanh lá: nền kem, hoa mộc trắng màu nước rải khắp trang, hai khung ảnh chân dung xoay nghiêng.
 // Kích thước lấy theo bản gốc (Tailwind): số đầu cho điện thoại, @media 768px / 1024px cho màn rộng.
 const { esc } = require('../lib/util');
+const { inviteWord } = require('../lib/carddata');
 
 const A = (n) => `/demo/hoamoc-${n}.webp`; // ảnh trang trí của mẫu
 
@@ -95,7 +96,7 @@ module.exports = {
       <h1 class="hm-onames"><span>${esc(ctx.g)}</span><i>&amp;</i><span>${esc(ctx.b)}</span></h1>
       <p class="hm-rule" aria-hidden="true"><span></span><em>❦</em><span></span></p>
       ${p ? `<p class="hm-odate">${+p.d} tháng ${+p.m}, ${p.y}</p>` : ''}
-      <p class="hm-oto">${ctx.guest ? `Thân mời ${esc(ctx.guest.name)}` : 'Thân Mời'}</p>
+      <p class="hm-oto">${ctx.guest ? `${esc(inviteWord(ctx.d, 'Thân mời'))} ${esc(ctx.guest.name)}` : esc(inviteWord(ctx.d, 'Thân Mời'))}</p>
       <button class="hm-obtn" id="openBtn">Mở thiệp<i></i></button>
     </div>
   </div>
