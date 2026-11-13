@@ -20,6 +20,9 @@
 .vslot .vx{position:absolute;top:5px;right:5px;width:26px;height:26px;padding:0;border:0;border-radius:50%;background:rgba(255,255,255,.92);color:#222;font-size:15px;line-height:1;cursor:pointer;box-shadow:0 2px 6px rgba(0,0,0,.2)}
 .vslot .vx:hover{background:#fff;color:var(--danger,#c0392b)}
 .vslot.empty{border:2px dashed var(--line)}
+.vslot.up .vpic{opacity:.7}
+.vslot .vspin{position:absolute;left:50%;top:50%;width:24px;height:24px;margin:-12px 0 0 -12px;border-radius:50%;border:3px solid rgba(214,69,93,.25);border-top-color:#d6455d;animation:vspin .8s linear infinite}
+@keyframes vspin{to{transform:rotate(360deg)}}
 .vslot.empty .vpic{background:none}
 .vslot.add{display:grid;place-content:center;justify-items:center;gap:2px;cursor:pointer;color:var(--primary);font-size:24px;border:2px dashed var(--primary);background:var(--primary-soft)}
 .vslot.add small{font-size:11px;font-weight:600}

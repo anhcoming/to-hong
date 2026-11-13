@@ -11,8 +11,12 @@ function info() {
   return { chu_re: d.groom.name, co_dau: d.bride.name, bo_me_trai: fam(d.groom), bo_me_gai: fam(d.bride) };
 }
 function status(t) { $('#saved').textContent = t; }
+const busyUp = () => vPending.size + (coverUp ? 1 : 0);
+function upStatus() { status(busyUp() ? `Đang tải ${busyUp()} ảnh lên…` : 'Đã lưu ✓'); }
+let coverUp = false;
 // ảnh trình chiếu của mẫu video ảnh: các ô ảnh cố định vị trí ('' = ô trống). Chưa chọn riêng thì dùng ảnh bìa + album của thiệp.
 function cardPhotos() { const d = card.data; return [d.cover, ...(d.photos || [])].filter((u, i, a) => u && a.indexOf(u) === i).slice(0, 20); }
+function renderPhotoBox() { const el = $('#photoBox'); if (el) el.outerHTML = photoBox(); }
 const tplOf = () => META.video.templates.find((t) => t.id === video.template) || {};
 const isAlbum = () => !!tplOf().photos; // mẫu video ảnh (chèn nhiều ảnh)
 const slotCount = () => tplOf().slots || 20; // mỗi mẫu có số ô ảnh riêng
@@ -23,7 +27,9 @@ function allSlots() {
   return base;
 }
 function slots() { return allSlots().slice(0, slotCount()); } // các ô hiện trong mẫu này
-function slidePhotos() { return slots().filter(Boolean); }
+// ô đang chờ tải: xem trước dùng ảnh trong máy (video.photos chưa đổi tới khi tải xong)
+const vPending = new Map(); // vị trí ô → link ảnh tạm trong máy ('' = đang nén)
+function slidePhotos() { return slots().map((u, i) => (vPending.has(i) && vPending.get(i)) || u).filter(Boolean); }
 // ghi lại ô i..: sửa trên bộ ảnh đầy đủ rồi lưu (bỏ ô trống thừa ở cuối)
 function writeSlots(view) {
   const all = allSlots();
@@ -33,11 +39,13 @@ function writeSlots(view) {
 }
 let pickSlot = -1, dragSlot = -1;
 function photoBox() {
-  const own = video.photos && video.photos.length, list = slots(), filled = list.filter(Boolean).length, n = slotCount();
+  const own = video.photos && video.photos.length, list = slots(), filled = list.filter((u, i) => u || vPending.has(i)).length, n = slotCount();
   const extra = allSlots().slice(n).filter(Boolean).length;
   return `<section class="group panel" id="photoBox"><h3><span><b class="stepn">2</b>Ảnh</span><span class="muted" style="font-size:13px;font-weight:400">${filled}/${n} ảnh</span></h3>
     <p class="muted" style="font-size:13px;margin:-4px 0 12px">Mẫu <b>${esc(tplOf().name || '')}</b> dùng <b>${n} ảnh</b>. Bấm vào ô để chọn hoặc đổi ảnh ở đúng vị trí đó, kéo thả để đổi chỗ. ${own ? '' : 'Đang dùng ảnh của thiệp.'}${extra ? ` <br>Còn ${extra} ảnh đã chọn nằm ngoài ${n} ô — đổi sang mẫu nhiều ô hơn là dùng lại.` : ''}</p>
-    <div class="vslots">${list.map((u, i) => u
+    <div class="vslots">${list.map((u, i) => vPending.has(i)
+      ? `<div class="vslot up" data-slot="${i}"><span class="vpic"${vPending.get(i) ? ` style="background-image:url('${vPending.get(i)}')"` : ''}></span><i class="vspin"></i><span class="vno">${i + 1}</span></div>`
+      : u
       ? `<div class="vslot" draggable="true" data-slot="${i}"><button class="vpic" data-ph="pick" data-i="${i}" style="background-image:url('${esc(u)}')" title="Đổi ảnh số ${i + 1}"><span class="vre">↻ Đổi ảnh</span></button><span class="vno">${i + 1}</span><button class="vx" data-ph="x" data-i="${i}" title="Xoá ảnh này (giữ ô trống)">×</button></div>`
       : `<div class="vslot empty" data-slot="${i}"><button class="vpic" data-ph="pick" data-i="${i}" title="Chọn ảnh cho ô ${i + 1}">＋<small>Ảnh ${i + 1}</small></button></div>`).join('')}
       </div>
@@ -45,6 +53,35 @@ function photoBox() {
     <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px">${filled < n ? `<label class="btn sm soft">＋ Chọn nhiều ảnh (${n - filled} ô trống)<input type="file" accept="image/*" multiple id="slideIn" hidden></label>` : ''}${own ? '<button class="btn sm plain" id="useCard">Dùng lại ảnh của thiệp</button>' : ''}</div>
     <label class="range"><span>Mỗi ảnh</span><input type="range" id="psec" min="2" max="6" step="0.5" value="${video.photoSec || 3}"><output id="psecOut">${video.photoSec || 3}s</output></label>
   </section>`;
+}
+// Tải ảnh vào các ô mà không che màn hình: ô hiện vòng chờ ngay, nén xong hiện ảnh trong máy (cả ở ô lẫn
+// khung xem trước), tải ngầm 3 ảnh một lúc, xong ảnh nào ghi ảnh đó vào đúng ô rồi lưu.
+let vQueue = [], vRunning = 0;
+function queueSlots(files, idx) {
+  idx.forEach((i, k) => { vPending.set(i, ''); vQueue.push({ i, file: files[k] }); });
+  renderPhotoBox(); upStatus();
+  for (let k = 0; k < 3; k++) pumpSlots();
+}
+async function pumpSlots() {
+  if (vRunning >= 3 || !vQueue.length) return;
+  vRunning++;
+  const { i, file } = vQueue.shift();
+  let local = '', url = '';
+  try {
+    const small = await resizeImage(file);
+    local = URL.createObjectURL(small);
+    vPending.set(i, local);
+    engine.setPhotos(slidePhotos()); renderPhotoBox(); refresh();
+    url = await uploadFile(small, { quiet: true, resized: true });
+    await new Promise((ok) => { const im = new Image(); im.onload = im.onerror = ok; im.src = url; setTimeout(ok, 8000); });
+  } catch (e) { toast(e.message, true); }
+  vPending.delete(i);
+  if (url) { const all = allSlots(); all[i] = url; while (all.length && !all[all.length - 1]) all.pop(); video.photos = all.slice(0, 20); }
+  engine.setPhotos(slidePhotos()); renderPhotoBox(); refresh();
+  if (url) schedule(400); else upStatus();
+  if (local) setTimeout(() => URL.revokeObjectURL(local), 60000);
+  vRunning--;
+  pumpSlots();
 }
 function setSlides(list) { video.photos = list.slice(0, 20); engine.setPhotos(slidePhotos()); renderSide(); refresh(); schedule(200); }
 // chữ: biến {chu_re} hiện thành [Tên chú rể] cho dễ đọc, lưu lại thì đổi ngược
@@ -154,7 +191,7 @@ async function save() {
   try {
     const r = await api(`/api/cards/${CARD_ID}`, { method: 'PUT', body: { video }, quiet: true });
     card.video = r.card.video;
-    status('Đã lưu ✓');
+    upStatus();
     renderHeader();
   } catch (e) {
     status('Lưu thất bại');
@@ -279,34 +316,42 @@ function bind() {
   });
   side.addEventListener('change', async (e) => {
     if (e.target.id === 'slotIn' && e.target.files[0] && pickSlot >= 0) { // thay ảnh đúng ô đã bấm
-      const list = slots(), i = pickSlot;
+      const i = pickSlot;
       pickSlot = -1;
-      try { status('Đang tải ảnh…'); list[i] = await uploadFile(e.target.files[0]); writeSlots(list); } catch (err) { toast(err.message, true); status(''); }
+      queueSlots([e.target.files[0]], [i]);
       return;
     }
     if (e.target.id === 'slideIn' && e.target.files.length) { // chọn nhiều ảnh: điền lần lượt vào các ô trống của mẫu
-      const list = slots(), empty = list.map((u, i) => (u ? -1 : i)).filter((i) => i >= 0);
+      const empty = slots().map((u, i) => (u || vPending.has(i) ? -1 : i)).filter((i) => i >= 0);
       const files = [...e.target.files];
       if (files.length > empty.length) toast(`Mẫu này còn ${empty.length} ô trống — chỉ lấy ${empty.length} ảnh đầu`);
-      try {
-        let failed = null;
-        const urls = await uploadFiles(files.slice(0, empty.length), { onProgress: (d, n) => status(`Đang tải ảnh ${d}/${n}…`), onError: (e) => { failed = e; } });
-        urls.forEach((u, k) => { if (u) list[empty[k]] = u; });
-        writeSlots(list);
-        if (failed) toast(failed.message, true);
-      } catch (err) { toast(err.message, true); status(''); }
+      queueSlots(files.slice(0, empty.length), empty.slice(0, files.length));
       return;
     }
     if (e.target.id === 'photoBg') { video.photoBg = e.target.checked; refresh(); return schedule(100); }
-    if (e.target.id === 'coverIn' && e.target.files[0]) {
-      status('Đang tải ảnh…');
+    if (e.target.id === 'coverIn' && e.target.files[0]) { // ảnh nền: hiện ngay ảnh trong máy, tải + lưu ngầm
+      const f = e.target.files[0];
+      coverUp = true; upStatus();
+      let local = '';
       try {
-        card.data.cover = await uploadFile(e.target.files[0]);
-        await api(`/api/cards/${CARD_ID}`, { method: 'PUT', body: { data: card.data } });
-        engine.setPhoto(card.data.cover);
+        const small = await resizeImage(f);
+        local = URL.createObjectURL(small);
+        engine.setPhoto(local);
         video.photoBg = true;
-        renderSide(); refresh(); schedule(100);
-      } catch (err) { toast(err.message, true); status(''); }
+        const bg = $('#photoBg'); if (bg) bg.checked = true;
+        refresh();
+        const url = await uploadFile(small, { quiet: true, resized: true });
+        card.data.cover = url;
+        await api(`/api/cards/${CARD_ID}`, { method: 'PUT', body: { data: card.data }, quiet: true });
+        engine.setPhoto(url);
+        coverUp = false;
+        refresh(); schedule(100);
+      } catch (err) {
+        coverUp = false;
+        toast(err.message, true);
+        engine.setPhoto(card.data.cover || card.data.photos.find(Boolean) || '');
+        refresh(); upStatus();
+      } finally { if (local) setTimeout(() => URL.revokeObjectURL(local), 60000); }
     }
   });
   side.addEventListener('click', (e) => {
