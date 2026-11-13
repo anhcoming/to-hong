@@ -19,6 +19,14 @@
     '.ce-map{position:absolute;inset:-6px;z-index:6;border:2px dashed rgba(214,69,93,.55);border-radius:12px;margin:0;padding:0;background:rgba(0,0,0,0);cursor:pointer;outline:none!important}',
     '.ce-map:hover{border-style:solid;border-color:#d6455d;background:rgba(214,69,93,.05)!important}',
     '.ce-venue [data-ce-key]:not(.ce-map){outline:none}',
+    '.ce-evbox [data-ce-key]:not(.ce-map):not(.ce-ev){outline:none;background:none}',
+    '.ce-evbox,.ce-evbox *{cursor:pointer}',
+    // khung khối lễ: chặn mọi kiểu "button" của mẫu (vị trí, nền, viền, cỡ…) đè lên
+    '.ce-ev{position:absolute!important;z-index:5!important;display:block!important;box-sizing:border-box!important;border:2px dashed rgba(214,69,93,.55)!important;border-radius:12px!important;margin:0!important;padding:0!important;min-width:0!important;max-width:none!important;min-height:0!important;background:rgba(0,0,0,0)!important;box-shadow:none!important;transform:none!important;opacity:1!important;cursor:pointer;outline:none!important}',
+    '.ce-ev:hover{border-style:solid!important;border-color:#d6455d!important;background:rgba(214,69,93,.05)!important}',
+    '.ce-ev b{position:absolute;left:50%;top:-13px;translate:-50% 0;max-width:calc(100% - 16px);overflow:hidden;text-overflow:ellipsis;padding:6px 12px;border-radius:999px;background:#d6455d;color:#fff;font:600 13px/1.3 system-ui,sans-serif;white-space:nowrap;box-shadow:0 4px 12px rgba(0,0,0,.2)}',
+    '.ce-ev.sm b{left:auto;right:-8px;top:-11px;translate:none;max-width:none;padding:2px 7px;font-size:12px;font-size:0}',
+    '.ce-ev.sm b::before{content:"✎";font-size:13px}',
     '.ce-mapph{display:flex;align-items:center;justify-content:center;min-height:180px;height:100%;width:100%;background:repeating-linear-gradient(45deg,rgba(0,0,0,.035) 0 12px,rgba(0,0,0,.06) 12px 24px);border-radius:12px;color:#8a6a70;font:600 14px/1.4 system-ui,sans-serif;text-align:center;padding:16px;box-sizing:border-box}',
     '.ce-map b{position:absolute;left:50%;top:-13px;translate:-50% 0;padding:6px 12px;border-radius:999px;background:#d6455d;color:#fff;font:600 13px/1.3 system-ui,sans-serif;white-space:nowrap;box-shadow:0 4px 12px rgba(0,0,0,.2)}',
     '.ce-lock{position:absolute;inset:0;z-index:5;cursor:default}',
@@ -171,6 +179,93 @@
     });
   }
 
+  // ---------- khối thông tin một lễ (tên lễ, giờ, ngày, âm lịch, đếm ngược, lịch tháng…) = một khối ----------
+  // Mọi thứ trong khối đều sửa chung bảng "Sửa lễ" → viền cả khối + nhãn, bấm đâu trong khối cũng mở bảng đó
+  // (thay vì vài chữ lẻ có viền, còn ngày tháng / đếm ngược thì không — dễ tưởng không sửa được).
+  // Khối = các phần tử liền nhau chỉ chứa nội dung của lễ đó (hoặc phần chung như đếm ngược, lịch), dừng khi đụng
+  // nội dung khác (lễ khác, tên đôi, ảnh, khu địa điểm…). Nhiều phần tử liền nhau thì khung phủ đúng vùng của chúng.
+  var evBoxes = [];
+  function markEvents() {
+    var root = document.querySelector('main.card') || document.body;
+    var byEv = {};
+    Array.prototype.forEach.call(document.querySelectorAll('[data-ce-key^="events."]'), function (el) {
+      var m = /^events\.(\d+)\.(name|time)$/.exec(el.dataset.ceKey || '');
+      if (!m || el.closest('.ce-venue')) return;
+      if ((el.textContent || '').indexOf('+ Thêm lễ') >= 0) return; // dòng thêm lễ mới
+      (byEv[m[1]] = byEv[m[1]] || []).push(el);
+    });
+    var foreign = function (p, i) {
+      // ảnh, khu địa điểm, form, link / nút bấm của thiệp (xác nhận tham dự, thêm vào lịch…) là ranh giới
+      var STOP = '[data-ce-photo],.ce-venue,form,[data-ev],a[href],input,textarea,select,button:not(.ce-ev):not(.ce-map)';
+      if (p.matches(STOP + ',script,style')) return true;
+      return Array.prototype.some.call(p.querySelectorAll('[data-ce-key]'), function (k) {
+        var mm = /^events\.(\d+)\./.exec(k.dataset.ceKey || '');
+        return mm ? +mm[1] !== i || (k.textContent || '').indexOf('+ Thêm lễ') >= 0 : k.dataset.ceKey !== 'time';
+      }) || !!p.querySelector(STOP);
+    };
+    Object.keys(byEv).forEach(function (k) {
+      var i = +k, runs = [];
+      byEv[k].forEach(function (el) {
+        var box = el;
+        for (var p = el.parentElement; p && p !== root && p !== document.body && !foreign(p, i); p = p.parentElement) box = p;
+        var C = box.parentElement;
+        if (!C || box === root) return;
+        // gom thêm các phần tử anh em liền kề không chứa nội dung khác
+        var kids = Array.prototype.slice.call(C.children), a = kids.indexOf(box), z = a;
+        while (a > 0 && !foreign(kids[a - 1], i)) a--;
+        while (z < kids.length - 1 && !foreign(kids[z + 1], i)) z++;
+        var els = kids.slice(a, z + 1).filter(function (x) { return !/^(SCRIPT|STYLE)$/.test(x.tagName) && !x.classList.contains('ce-ev'); });
+        var has = function (f) { return els.some(function (x) { return x.matches('[data-ce-key="events.' + i + '.' + f + '"]') || x.querySelector('[data-ce-key="events.' + i + '.' + f + '"]'); }); };
+        if (!has('name') || !has('time')) return; // chữ lẻ trong câu: giữ viền chữ như cũ
+        if (els.length === 1 && /^(SPAN|B|I|STRONG|EM)$/.test(els[0].tagName)) return;
+        if (runs.some(function (r) { return r.C === C && r.els[0] === els[0]; })) return;
+        runs.push({ C: C, els: els });
+      });
+      // bỏ khối nằm trong khối lớn hơn của cùng lễ
+      runs = runs.filter(function (r) { return !runs.some(function (o) { return o !== r && o.els.some(function (x) { return x !== r.C && x.contains(r.C) || x === r.C; }); }); });
+      var f = FIELDS.filter(function (x) { return x[0] === 'events.' + i + '.name' && !x[2]; })[0];
+      runs.forEach(function (r) {
+        var host = r.els.length === 1 ? r.els[0] : r.C;
+        if (getComputedStyle(host).position === 'static') host.style.position = 'relative';
+        var o = document.createElement('button');
+        o.type = 'button'; o.className = 'ce-ev'; o.dataset.ceKey = 'events.' + i + '.time';
+        o.title = 'Sửa ' + (f ? f[1] : 'lễ');
+        o.innerHTML = '<b>✎ Sửa ' + (f ? String(f[1]).replace(/[<>&]/g, '') : 'ngày giờ') + '</b>';
+        host.appendChild(o);
+        r.els.forEach(function (x) { x.classList.add('ce-evbox'); x._ceEv = o; });
+        evBoxes.push({ o: o, host: host, els: r.els });
+      });
+    });
+    layoutEvents();
+  }
+  // khung phủ đúng vùng các phần tử của khối (tính lại khi chữ / ảnh / cỡ màn hình đổi)
+  function layoutEvents() {
+    var photos = Array.prototype.slice.call(document.querySelectorAll('[data-ce-photo]'));
+    evBoxes.forEach(function (b) {
+      if (b.off) return;
+      var hr = b.host.getBoundingClientRect(), t = Infinity, l = Infinity, btm = -Infinity, rt = -Infinity;
+      // chỉ tính phần có chữ (bỏ lớp trang trí phủ rộng)
+      b.els.forEach(function (x) { if (!(x.textContent || '').trim()) return; var r = x.getBoundingClientRect(); if (!r.height && !r.width) return; t = Math.min(t, r.top); l = Math.min(l, r.left); btm = Math.max(btm, r.bottom); rt = Math.max(rt, r.right); });
+      if (t === Infinity || btm - t < 8) { b.o.style.display = 'none'; return; }
+      // khung đè lên ô ảnh → bỏ khung (để còn bấm được ảnh), trả lại viền từng chữ như cũ
+      var hitsPhoto = photos.some(function (ph) {
+        var r = ph.getBoundingClientRect(), w = Math.min(rt, r.right) - Math.max(l, r.left), h = Math.min(btm, r.bottom) - Math.max(t, r.top);
+        return w > 24 && h > 24 && r.width > 40;
+      });
+      if (hitsPhoto) { b.off = true; b.o.remove(); b.els.forEach(function (x) { x.classList.remove('ce-evbox'); }); return; }
+      b.o.style.display = '';
+      {
+        b.o.style.inset = 'auto';
+        b.o.style.top = (t - hr.top - b.host.clientTop - 6) + 'px'; b.o.style.left = (l - hr.left - b.host.clientLeft - 6) + 'px';
+        b.o.style.width = (rt - l + 12) + 'px'; b.o.style.height = (btm - t + 12) + 'px';
+      }
+      b.o.classList.toggle('sm', rt - l < 200 || btm - t < 70); // ô nhỏ (dòng lịch trình): chỉ nút ✎ ở góc
+    });
+  }
+  window.addEventListener('resize', layoutEvents);
+  window.addEventListener('load', layoutEvents);
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(layoutEvents);
+
   // ---------- ô dành cho khách (lời chúc, xác nhận tham dự…): trong trình sửa không cho nhập ----------
   function lockForms() {
     Array.prototype.forEach.call(document.querySelectorAll('form'), function (f) {
@@ -203,6 +298,9 @@
   function tell(msg) { try { window.parent.postMessage(Object.assign({ ce: 1 }, msg), location.origin); } catch (e) { /* không ở trong khung */ } }
   document.addEventListener('click', function (e) {
     var t = e.target.closest && e.target.closest('[data-ce-key]');
+    // bấm vào bất kỳ đâu trong khối thông tin lễ (kể cả ngày tháng, đếm ngược, lịch) = bấm khung "Sửa lễ"
+    var eb = e.target.closest && e.target.closest('.ce-evbox');
+    if (eb && eb._ceEv && eb._ceEv.isConnected && !(t && t.classList.contains('ce-map'))) t = eb._ceEv;
     if (t) {
       e.preventDefault(); e.stopPropagation();
       document.querySelectorAll('.ce-on').forEach(function (x) { x.classList.remove('ce-on'); });
@@ -267,7 +365,7 @@
   });
 
   function init() {
-    markPhotos(); markText(); markMaps(); lockForms();
+    markPhotos(); markText(); markMaps(); markEvents(); lockForms();
     freezePhotos();
     window.addEventListener('load', freezePhotos); // hiệu ứng bắt đầu khi ảnh tải xong
     tell({ type: 'ready' });
