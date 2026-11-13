@@ -48,6 +48,12 @@ body.active{cursor:default}
 #stage.portrait .msg{font-size:68px}
 .sign{font-family:'Charm',cursive;font-weight:700;font-size:84px;color:var(--accent);margin-top:46px!important;white-space:nowrap}
 
+.cd{font-family:'Fraunces',Georgia,serif;font-size:190px;line-height:1.1;font-weight:500;white-space:nowrap;margin:20px 0!important;font-variant-numeric:tabular-nums}
+.cd b{font-weight:500}
+.cd small{font-family:'Hanken Grotesk',sans-serif;font-size:.24em;font-weight:300;letter-spacing:.2em;text-transform:uppercase;color:var(--accent);margin:0 .9em 0 .25em}
+.cd small:last-child{margin-right:0}
+.cd i{font-style:normal;color:var(--accent);margin:0 .08em}
+.cd-sub{font-size:44px;font-weight:300;opacity:.85}
 .wm{position:absolute;right:60px;bottom:52px;font-size:24px;color:var(--text);opacity:.45;letter-spacing:.05em}
 
 .ctl{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);display:flex;gap:8px;padding:8px;border-radius:999px;background:rgba(0,0,0,.55);backdrop-filter:blur(6px);opacity:0;transition:opacity .3s;z-index:5}

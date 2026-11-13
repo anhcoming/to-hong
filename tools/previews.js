@@ -64,7 +64,7 @@ const kb = (f) => Math.round(fs.statSync(f).size / 1024) + 'KB';
   }
   // poster màn LED 16:9 cho hàng "Top 5 màn hình LED" ở trang chủ: lposter-<màu>-<hiệu ứng>.jpg (chỉ chụp riêng: tham số cuối = led)
   if (!ONLY || ONLY === 'led') {
-    const TOP_LED = [['do', 'sao'], ['dem', 'sao'], ['hong', 'hoa'], ['ngoc', 'domdom'], ['kem', 'lua']]; // cùng danh sách với public/index.html
+    const TOP_LED = [['do', 'sao'], ['den', 'remphale'], ['dem', 'phaohoa'], ['tim', 'hoadang'], ['hong', 'tim']]; // cùng danh sách với public/index.html
     await send('Emulation.setDeviceMetricsOverride', { width: 1280, height: 720, deviceScaleFactor: 1, mobile: false });
     for (const [p, e] of TOP_LED) try {
       await send('Page.navigate', { url: `${BASE}/led/demo?preview=1&palette=${p}&effect=${e}` });
@@ -74,6 +74,23 @@ const kb = (f) => Math.round(fs.statSync(f).size / 1024) + 'KB';
       fs.writeFileSync(file, Buffer.from(r.result.data, 'base64'));
       console.log(`✓ LED ${p} / ${e}: ${kb(file)}`);
     } catch (err) { console.error(`✗ LED ${p} / ${e}: ${err.message}`); }
+  }
+  // poster mẫu video 960×540: vposter-<mẫu>.jpg (tham số cuối = video → mọi mẫu, video:<mẫu> → một mẫu)
+  // AT: giây chụp của từng mẫu (mặc định giây thứ 9 — khung ảnh đầu tiên sau thẻ chữ mở đầu)
+  if (ONLY === 'video' || /^video:/.test(ONLY || '')) {
+    const AT = { lichhen: 3.2, baocuoi: 3.2, saodem: 12 };
+    const one = (ONLY || '').split(':')[1];
+    const vt = meta.video.templates.filter((t) => t.photos && (!one || t.id === one));
+    await send('Emulation.setDeviceMetricsOverride', { width: 960, height: 540, deviceScaleFactor: 1, mobile: false });
+    for (const t of vt) try {
+      await send('Page.navigate', { url: `${BASE}/video/demo?preview=1&template=${t.id}` });
+      await sleep(3000); // chờ font + ảnh
+      await evaluate(`(async()=>{await document.fonts.ready; window.__engine.pause(); window.__engine.seek(${AT[t.id] || 9}); await new Promise(r=>setTimeout(r,400)); return 1})()`);
+      const file = path.join(OUT, `vposter-${t.id}.jpg`);
+      const r = await send('Page.captureScreenshot', { format: 'jpeg', quality: 80, clip: { x: 0, y: 0, width: 960, height: 540, scale: 1 } });
+      fs.writeFileSync(file, Buffer.from(r.result.data, 'base64'));
+      console.log(`✓ video ${t.id}: ${kb(file)}`);
+    } catch (err) { console.error(`✗ video ${t.id}: ${err.message}`); }
   }
   ws.close(); done(0);
 })().catch((e) => { console.error(e); process.exit(1); });

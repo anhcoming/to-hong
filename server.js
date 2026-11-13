@@ -853,6 +853,9 @@ route('GET', '/video/:slug', async (req, res, ctx) => {
       hoadao: P('toduyen', [2, 5, 3, 6, 1, 4, 7], 'webp'),
       laxanh: P('hoamoc', [6, 2, 7, 3, 1, 4, 8, 5], 'webp'),
       toigian: P('xanhla', [1, 3, 2, 5, 4, 6, 8, 7, 9]),
+      baocuoi: P('nau', [1, 3, 5, 2, 6, 4, 7, 8]),
+      lichhen: P('toduyen', [1, 4, 2, 6, 3, 5, 7], 'webp'),
+      saodem: P('tim', [1, 3, 5, 2, 7, 4, 6, 8]),
     };
     const photos = SETS[q.template] || [];
     await demoView(req, ctx, 'video:' + (videoLib.options().templates.some((t) => t.id === q.template) ? q.template : 'chung'));

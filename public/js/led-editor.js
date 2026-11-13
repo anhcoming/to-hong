@@ -39,7 +39,7 @@ function renderSide() {
       <div class="sws">${META.led.palettes.map((p) => `<button class="sw ${led.palette === p.id ? 'on' : ''}" title="${esc(p.name)}" data-set="palette" data-v="${p.id}" style="background:radial-gradient(circle at 50% 40%,${p.bg[1]} 0 45%,${p.bg[0]} 46% 70%,${p.accent} 71%)"></button>`).join('')}</div>
     </section>
     <section class="group panel"><h3>Các cảnh trình chiếu</h3>
-      <div class="checks">${chk('names', 'Tên cô dâu chú rể')}${chk('date', 'Ngày cưới + âm lịch')}${chk('parents', 'Bố mẹ hai bên')}${chk('photo', 'Ảnh cưới')}${chk('message', 'Lời cảm ơn')}<label class="check"><input type="checkbox" data-l="hy" ${led.hy ? 'checked' : ''}>Chữ Hỷ 囍</label></div>
+      <div class="checks">${chk('names', 'Tên cô dâu chú rể')}${chk('date', 'Ngày cưới + âm lịch')}${chk('countdown', 'Đếm ngược tới giờ lễ')}${chk('parents', 'Bố mẹ hai bên')}${chk('photo', 'Ảnh cưới')}${chk('message', 'Lời cảm ơn')}<label class="check"><input type="checkbox" data-l="hy" ${led.hy ? 'checked' : ''}>Chữ Hỷ 囍</label></div>
       ${range('seconds', 'Mỗi cảnh', 4, 30, 1, 's')}
       <label class="field"><span>Dòng tiêu đề</span><input data-l="kicker" value="${esc(led.kicker)}" maxlength="40" placeholder="Lễ Thành Hôn / Lễ Vu Quy / Tiệc Cưới"></label>
       <label class="field"><span>Lời cảm ơn</span><textarea data-l="message" maxlength="200" rows="3">${esc(led.message)}</textarea></label>

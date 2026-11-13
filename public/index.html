@@ -75,7 +75,7 @@
     <h2>Thả ảnh cưới vào,<em>video tự dựng</em></h2>
     <p class="lead">Chọn một mẫu, chèn ảnh và lời chào — chuyển cảnh, chữ bay, ngày âm lịch đều có sẵn. Chiếu trên TV ở sảnh tiệc, lễ dạm ngõ, ăn hỏi, hoặc tải MP4 Full HD gửi người thân.</p>
     <ol class="vs-steps">
-      <li><b>1</b><span>Chọn mẫu<small>10 phong cách: phim cũ, polaroid, điện ảnh, song hỷ…</small></span></li>
+      <li><b>1</b><span>Chọn mẫu<small>13 phong cách: phim cũ, polaroid, báo cưới, trời sao…</small></span></li>
       <li><b>2</b><span>Chèn ảnh &amp; chữ<small>Mỗi mẫu 6–12 ảnh, tên đôi lấy sẵn từ thiệp</small></span></li>
       <li><b>3</b><span>Chiếu TV hoặc tải MP4<small>Mở link trên Smart TV, hoặc chép USB</small></span></li>
     </ol>
@@ -254,13 +254,13 @@
     const block = (title, list, more, moreText = 'Xem tất cả') => list.length ? `<section class="nrow fblock"><h2>${title}<a href="${more}">${moreText} ›</a></h2><div class="fgrid wide">${list.join('')}</div></section>` : '';
     // thẻ video 16:9: poster + tên + số ảnh, rê chuột phát thử video thật (xem bên dưới)
     const V = (ev.detail.video && ev.detail.video.templates) || [];
-    const TOP_VIDEO = ['polaroid', 'phimcu', 'dienanh', 'songhy', 'traitim']; // 5 mẫu video được chọn nhiều, cùng thứ tự với khu video bên dưới
+    const TOP_VIDEO = ['polaroid', 'saodem', 'phimcu', 'lichhen', 'songhy']; // 5 mẫu video được chọn nhiều, cùng thứ tự với khu video bên dưới
     const topVideo = [...TOP_VIDEO.map((id) => V.find((t) => t.id === id)).filter(Boolean), ...V.filter((t) => t.photos && !TOP_VIDEO.includes(t.id))].slice(0, 5);
     const vcard = (t, i) => `<div class="ncard" data-video="${t.id}">${i ? '' : PILL}<div class="pic"><a href="/video/demo?template=${t.id}" aria-label="Xem thử video ${esc(t.name)}"><img src="/demo/vposter-${t.id}.jpg" alt="${esc(t.name)}" loading="lazy"></a><span class="lbl">${esc(t.name)}<small>${t.photos ? t.slots + ' ảnh' : 'Mẫu chữ'} · chiếu TV, tải MP4</small></span>
       <div class="info"><b>${esc(t.name)}</b><a class="use" href="/thiep-cua-toi?tao-video=1&mau=${t.id}">Dùng mẫu</a></div></div></div>`;
     // thẻ màn LED 16:9: mỗi "mẫu" là một cặp bảng màu + hiệu ứng nền; poster chụp sẵn (npm run previews -- <địa chỉ> led), rê chuột chạy màn thật
     const L = ev.detail.led || { palettes: [], effects: [] };
-    const TOP_LED = [['do', 'sao'], ['dem', 'sao'], ['hong', 'hoa'], ['ngoc', 'domdom'], ['kem', 'lua']]; // cùng danh sách với tools/previews.js
+    const TOP_LED = [['do', 'sao'], ['den', 'remphale'], ['dem', 'phaohoa'], ['tim', 'hoadang'], ['hong', 'tim']]; // cùng danh sách với tools/previews.js
     const topLed = TOP_LED.map(([p, e]) => ({ p: L.palettes.find((x) => x.id === p), e: L.effects.find((x) => x.id === e) })).filter((x) => x.p && x.e);
     const lcard = ({ p, e }, i) => { const q = `palette=${p.id}&effect=${e.id}`; return `<div class="ncard" data-led="${q}">${i ? '' : PILL}<div class="pic"><a href="/led/demo?${q}" aria-label="Xem thử màn LED ${esc(p.name)}"><img src="/demo/lposter-${p.id}-${e.id}.jpg" alt="Màn hình LED ${esc(p.name)}" loading="lazy"></a><span class="lbl one">${esc(p.name)}<small>${esc(e.name)}</small></span>
       <div class="info"><b>${esc(p.name)}</b><a class="use" href="/thiep-cua-toi?tao-led=1&${q}">Dùng mẫu</a></div></div></div>`; };
@@ -379,7 +379,7 @@
 <script>
 // khu video — đổi mẫu khi bấm, tự chuyển mẫu sau mỗi 14 giây cho tới khi người xem bấm chọn
 (function () {
-  var L = [['polaroid','Polaroid','8 ảnh'],['phimcu','Phim cũ','10 ảnh'],['dienanh','Điện ảnh','8 ảnh'],['songhy','Song Hỷ đỏ','10 ảnh'],['traitim','Trái tim','6 ảnh'],['album','Album kỷ niệm','12 ảnh'],['tapchi','Tạp chí','10 ảnh'],['hoadao','Vòm hoa đào','8 ảnh'],['laxanh','Lá xanh','9 ảnh'],['toigian','Tối giản','12 ảnh']];
+  var L = [['polaroid','Polaroid','8 ảnh'],['phimcu','Phim cũ','10 ảnh'],['dienanh','Điện ảnh','8 ảnh'],['songhy','Song Hỷ đỏ','10 ảnh'],['traitim','Trái tim','6 ảnh'],['saodem','Trời sao','10 ảnh'],['lichhen','Lịch hẹn','8 ảnh'],['baocuoi','Báo cưới','10 ảnh'],['album','Album kỷ niệm','12 ảnh'],['tapchi','Tạp chí','10 ảnh'],['hoadao','Vòm hoa đào','8 ảnh'],['laxanh','Lá xanh','9 ảnh'],['toigian','Tối giản','12 ảnh']];
   var box = document.getElementById('vsPicks'), fr = document.getElementById('vsFrame'), nm = document.getElementById('vsName'), full = document.getElementById('vsFull'), scr = document.getElementById('vsScreen');
   box.innerHTML = L.map(function (t, i) { return '<button type="button" data-id="' + t[0] + '"' + (i ? '' : ' class="on"') + '><img src="/demo/vposter-' + t[0] + '.jpg" alt=""><span>' + t[1] + '</span><small>' + t[2] + '</small></button>'; }).join('');
   var cur = 0, auto = true;

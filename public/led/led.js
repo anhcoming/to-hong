@@ -182,6 +182,249 @@
         }
       },
     },
+    // ngân hà: dải sao mờ chéo màn quay rất chậm, sao gần lấp lánh, thỉnh thoảng một sao băng
+    nganha: {
+      init: function () {
+        var n = Math.round(900 * L.density * AREA);
+        for (var i = 0; i < n; i++) {
+          var u = rnd(-1, 1), v = (Math.random() + Math.random() + Math.random() - 1.5) * 0.22; // dồn về giữa dải
+          parts.push({ u: u, v: v, r: rnd(0.4, 1.6), ph: rnd(0, 6.28), sp: rnd(0.5, 1.8) });
+        }
+        var m = Math.round(140 * L.density * AREA);
+        for (var j = 0; j < m; j++) extra.push({ x: rnd(0, W), y: rnd(0, H), r: rnd(0.8, 2.4), ph: rnd(0, 6.28), sp: rnd(0.5, 1.5) });
+        this.met = null;
+      },
+      draw: function (dt, t) {
+        var cx = W / 2, cy = H / 2, R = Math.hypot(W, H) * 0.62, ang = -0.5 + t * 0.006 * L.speed, ca = Math.cos(ang), sa = Math.sin(ang);
+        ctx.save(); ctx.translate(cx, cy); ctx.rotate(ang);
+        var glow = ctx.createLinearGradient(0, -R * 0.3, 0, R * 0.3);
+        glow.addColorStop(0, rgba(pal.particle, 0)); glow.addColorStop(0.5, rgba(pal.particle, 0.13)); glow.addColorStop(1, rgba(pal.particle, 0));
+        ctx.fillStyle = glow; ctx.globalAlpha = 1; ctx.fillRect(-R, -R * 0.3, R * 2, R * 0.6);
+        ctx.restore();
+        var i, p;
+        for (i = 0; i < parts.length; i++) {
+          p = parts[i];
+          var x = cx + (p.u * R) * ca - (p.v * R) * sa, y = cy + (p.u * R) * sa + (p.v * R) * ca;
+          if (x < -10 || x > W + 10 || y < -10 || y > H + 10) continue;
+          ctx.globalAlpha = 0.25 + 0.5 * (0.5 + 0.5 * Math.sin(p.ph + t * p.sp * L.speed));
+          var s = p.r * 4; ctx.drawImage(sprite, x - s / 2, y - s / 2, s, s);
+        }
+        for (i = 0; i < extra.length; i++) {
+          p = extra[i];
+          ctx.globalAlpha = 0.3 + 0.7 * Math.pow(0.5 + 0.5 * Math.sin(p.ph + t * p.sp * L.speed), 3);
+          var ss = p.r * 6; ctx.drawImage(sprite, p.x - ss / 2, p.y - ss / 2, ss, ss);
+        }
+        if (!this.met && Math.random() < dt * 0.18 * L.speed) this.met = { x: rnd(W * 0.3, W), y: rnd(0, H * 0.3), life: 0 };
+        if (this.met) {
+          var m = this.met; m.life += dt * L.speed; var k = m.life / 1.1;
+          if (k >= 1) this.met = null;
+          else {
+            var hx = m.x - k * 900, hy = m.y + k * 500, gr = ctx.createLinearGradient(hx, hy, hx + 260, hy - 145);
+            gr.addColorStop(0, rgba(pal.particle, 0.9 * (1 - k))); gr.addColorStop(1, rgba(pal.particle, 0));
+            ctx.globalAlpha = 1; ctx.strokeStyle = gr; ctx.lineWidth = 3; ctx.lineCap = 'round';
+            ctx.beginPath(); ctx.moveTo(hx, hy); ctx.lineTo(hx + 260, hy - 145); ctx.stroke();
+          }
+        }
+      },
+    },
+    // rèm pha lê: dây hạt pha lê treo từ mép trên, đung đưa nhẹ, hạt loé sáng lần lượt — kiểu phông sảnh tiệc
+    remphale: {
+      init: function () {
+        var n = Math.round(64 * Math.sqrt(L.density) * (W / 1920));
+        for (var i = 0; i < n; i++) {
+          var x = (i + 0.5) * W / n + rnd(-6, 6), u = Math.abs((x / W) - 0.5) * 2; // dây hai bên dài hơn ở giữa: rèm vén hình vòm
+          parts.push({ x: x, len: H * (0.18 + 0.5 * Math.pow(u, 1.6)) + rnd(-20, 20), ph: rnd(0, 6.28), gap: rnd(26, 34) });
+        }
+        var m = Math.round(36 * L.density * AREA);
+        for (var j = 0; j < m; j++) extra.push({ x: rnd(0, W), y: rnd(0, H), r: rnd(40, 110), a: rnd(0.04, 0.12), ph: rnd(0, 6.28) });
+      },
+      draw: function (dt, t) {
+        var i, p;
+        for (i = 0; i < extra.length; i++) { // ánh đèn mờ phía sau
+          p = extra[i]; ctx.globalAlpha = p.a * (0.6 + 0.4 * Math.sin(p.ph + t * 0.5 * L.speed));
+          ctx.drawImage(sprite, p.x - p.r, p.y - p.r, p.r * 2, p.r * 2);
+        }
+        ctx.lineWidth = 1;
+        for (i = 0; i < parts.length; i++) {
+          p = parts[i];
+          var sway = Math.sin(p.ph + t * 0.6 * L.speed) * 0.012; // góc lắc (radian), dây dài lắc nhiều ở đầu dưới
+          var ex = p.x + Math.sin(sway) * p.len, ey = Math.cos(sway) * p.len;
+          ctx.globalAlpha = 0.22; ctx.strokeStyle = pal.particle;
+          ctx.beginPath(); ctx.moveTo(p.x, 0); ctx.lineTo(ex, ey); ctx.stroke();
+          for (var d = p.gap; d <= p.len; d += p.gap) {
+            var k = d / p.len, bx = p.x + (ex - p.x) * k, by = ey * k;
+            var sh = Math.pow(0.5 + 0.5 * Math.sin(t * 1.6 * L.speed - d * 0.02 + p.ph * 3), 8); // sóng loé sáng chạy dọc dây
+            ctx.globalAlpha = 0.35 + 0.65 * sh;
+            var s = 7 + 12 * sh + (d + p.gap > p.len ? 8 : 0); // hạt cuối dây to hơn
+            ctx.drawImage(sprite, bx - s, by - s, s * 2, s * 2);
+          }
+        }
+      },
+    },
+    // ánh đèn bokeh: những đốm sáng tròn, mờ, to nhỏ khác nhau trôi rất chậm — kiểu phông sân khấu tiệc cưới
+    bokeh: {
+      init: function () {
+        var d = this.disc = document.createElement('canvas');
+        d.width = d.height = 128;
+        var g = d.getContext('2d'), gr = g.createRadialGradient(64, 64, 0, 64, 64, 64);
+        gr.addColorStop(0, rgba(pal.particle, 0.55)); gr.addColorStop(0.72, rgba(pal.particle, 0.5)); gr.addColorStop(0.86, rgba(pal.particle, 0.75)); gr.addColorStop(1, rgba(pal.particle, 0));
+        g.fillStyle = gr; g.fillRect(0, 0, 128, 128);
+        var n = Math.round(46 * L.density * AREA);
+        for (var i = 0; i < n; i++) parts.push({ x: rnd(0, W), y: rnd(0, H), r: rnd(30, 150), a: rnd(0.05, 0.22), vx: rnd(-10, 10), vy: rnd(-16, -4), ph: rnd(0, 6.28), sp: rnd(0.3, 0.9) });
+        parts.sort(function (p, q) { return q.r - p.r; }); // đốm to (xa, mờ) vẽ trước
+      },
+      draw: function (dt, t) {
+        for (var i = 0; i < parts.length; i++) {
+          var p = parts[i];
+          p.x += p.vx * dt * L.speed; p.y += p.vy * dt * L.speed;
+          if (p.y < -p.r) { p.y = H + p.r; p.x = rnd(0, W); }
+          if (p.x < -p.r) p.x = W + p.r; if (p.x > W + p.r) p.x = -p.r;
+          ctx.globalAlpha = p.a * (0.55 + 0.45 * Math.sin(p.ph + t * p.sp * L.speed));
+          ctx.drawImage(this.disc, p.x - p.r, p.y - p.r, p.r * 2, p.r * 2);
+        }
+      },
+    },
+    // pháo hoa: từng chùm nổ toả tròn rồi rơi dần, nền có sao lấp lánh thưa
+    phaohoa: {
+      init: function () {
+        var n = Math.round(70 * L.density * AREA);
+        for (var i = 0; i < n; i++) parts.push({ x: rnd(0, W), y: rnd(0, H * 0.8), r: rnd(0.6, 1.8), ph: rnd(0, 6.28), sp: rnd(0.6, 1.8) });
+        this.next = 0.3;
+      },
+      burst: function () {
+        // né vùng chữ ở giữa màn: nổ ở hai bên hoặc dải trên cùng
+        var side = Math.random() < 0.5 ? rnd(0.08, 0.3) : rnd(0.7, 0.92);
+        var cx = W * (Math.random() < 0.25 ? rnd(0.3, 0.7) : side), cy = rnd(H * 0.12, H * 0.42);
+        var n = Math.round(rnd(70, 110)), v0 = rnd(380, 620) * Math.sqrt(AREA), ring = Math.random() < 0.35;
+        for (var i = 0; i < n; i++) {
+          var a = (i / n) * 6.283 + rnd(-0.05, 0.05), v = ring ? v0 * rnd(0.92, 1) : v0 * Math.sqrt(rnd(0.08, 1));
+          extra.push({ x: cx, y: cy, px: cx, py: cy, vx: Math.cos(a) * v, vy: Math.sin(a) * v, life: 0, max: rnd(1.6, 2.4), s: rnd(8, 15) });
+        }
+        extra.push({ flash: 1, x: cx, y: cy, life: 0, max: 0.35, s: v0 * 0.55 }); // loé sáng lúc nổ
+      },
+      draw: function (dt, t) {
+        var i, p;
+        for (i = 0; i < parts.length; i++) {
+          p = parts[i];
+          ctx.globalAlpha = 0.2 + 0.5 * (0.5 + 0.5 * Math.sin(p.ph + t * p.sp * L.speed));
+          ctx.drawImage(sprite, p.x - p.r * 3, p.y - p.r * 3, p.r * 6, p.r * 6);
+        }
+        this.next -= dt * L.speed * Math.max(0.4, L.density);
+        if (this.next <= 0 && extra.length < 1200) { this.burst(); this.next = rnd(0.45, 1.1); }
+        var k = dt * L.speed;
+        for (i = extra.length - 1; i >= 0; i--) {
+          p = extra[i];
+          p.life += k;
+          if (p.life >= p.max) { extra.splice(i, 1); continue; }
+          var f = 1 - p.life / p.max, s;
+          if (p.flash) { ctx.globalAlpha = f * 0.8; s = p.s * (0.4 + 0.6 * (1 - f)); ctx.drawImage(sprite, p.x - s, p.y - s, s * 2, s * 2); continue; }
+          p.px = p.x; p.py = p.y;
+          p.vx *= 1 - 1.4 * k; p.vy = p.vy * (1 - 1.4 * k) + 110 * k; // cản không khí + rơi
+          p.x += p.vx * k; p.y += p.vy * k;
+          var a = Math.min(1, f * 1.8) * (0.7 + 0.3 * Math.sin(t * 30 + i));
+          // vệt đuôi
+          ctx.globalAlpha = a * 0.55; ctx.strokeStyle = pal.particle; ctx.lineWidth = 2.5;
+          ctx.beginPath(); ctx.moveTo(p.x, p.y); ctx.lineTo(p.x - (p.x - p.px) * 5, p.y - (p.y - p.py) * 5); ctx.stroke();
+          ctx.globalAlpha = a;
+          s = p.s * (0.5 + 0.7 * f);
+          ctx.drawImage(sprite, p.x - s, p.y - s, s * 2, s * 2);
+        }
+      },
+    },
+    // kim tuyến rơi: mảnh giấy ánh kim nhỏ xoay lật, loé sáng khi quay đúng mặt
+    kimtuyen: {
+      init: function () {
+        var n = Math.round(150 * L.density * AREA);
+        for (var i = 0; i < n; i++) parts.push(this.make(true));
+      },
+      make: function (any) {
+        return { x: rnd(-40, W + 40), y: any ? rnd(-40, H) : rnd(-80, -20), w: rnd(6, 16), h: rnd(4, 10), rot: rnd(0, 6.28), vr: rnd(-2.5, 2.5), vy: rnd(60, 150), sw: rnd(10, 45), ph: rnd(0, 6.28), flip: rnd(0, 6.28), vf: rnd(2.5, 6) };
+      },
+      draw: function (dt, t) {
+        ctx.fillStyle = pal.particle;
+        for (var i = 0; i < parts.length; i++) {
+          var p = parts[i];
+          p.y += p.vy * dt * L.speed; p.rot += p.vr * dt * L.speed; p.flip += p.vf * dt * L.speed;
+          if (p.y > H + 30) { parts[i] = this.make(false); continue; }
+          var x = p.x + Math.sin(p.ph + t * 0.9 * L.speed) * p.sw, c = Math.cos(p.flip), face = Math.abs(c);
+          ctx.save();
+          ctx.translate(x, p.y); ctx.rotate(p.rot); ctx.scale(1, 0.15 + 0.85 * face);
+          ctx.globalAlpha = 0.35 + 0.6 * face;
+          ctx.fillRect(-p.w / 2, -p.h / 2, p.w, p.h);
+          ctx.restore();
+          if (face > 0.97) { ctx.globalAlpha = 0.9; ctx.drawImage(sprite, x - 14, p.y - 14, 28, 28); } // loé sáng
+        }
+      },
+    },
+    // tim bay: trái tim to nhỏ bay lên, lắc nhẹ
+    tim: {
+      init: function () {
+        var n = Math.round(46 * L.density * AREA);
+        for (var i = 0; i < n; i++) parts.push(this.make(true));
+      },
+      make: function (any) {
+        var s = rnd(14, 52);
+        return { x: rnd(0, W), y: any ? rnd(0, H) : H + rnd(40, 140), s: s, vy: 30 + s * 1.6, sw: rnd(15, 50), ph: rnd(0, 6.28), a: rnd(0.22, 0.7), tilt: rnd(-0.3, 0.3) };
+      },
+      draw: function (dt, t) {
+        ctx.fillStyle = pal.particle;
+        for (var i = 0; i < parts.length; i++) {
+          var p = parts[i];
+          p.y -= p.vy * dt * L.speed;
+          if (p.y < -70) { parts[i] = this.make(false); continue; }
+          var x = p.x + Math.sin(p.ph + t * 0.7 * L.speed) * p.sw, s = p.s;
+          ctx.save();
+          ctx.translate(x, p.y); ctx.rotate(p.tilt + 0.12 * Math.sin(p.ph + t * 1.1 * L.speed));
+          ctx.globalAlpha = p.a;
+          ctx.beginPath();
+          ctx.moveTo(0, s * 0.46);
+          ctx.bezierCurveTo(-s * 0.58, -s * 0.02, -s * 0.42, -s * 0.66, 0, -s * 0.28);
+          ctx.bezierCurveTo(s * 0.42, -s * 0.66, s * 0.58, -s * 0.02, 0, s * 0.46);
+          ctx.fill();
+          ctx.restore();
+        }
+      },
+    },
+    // hoa đăng: đèn trời thả bay lên chậm, đèn gần to và sáng, đèn xa nhỏ và mờ
+    hoadang: {
+      init: function () {
+        var n = Math.round(26 * L.density * AREA);
+        for (var i = 0; i < n; i++) parts.push(this.make(true));
+        parts.sort(function (p, q) { return p.s - q.s; });
+        var m = Math.round(60 * L.density * AREA);
+        for (var j = 0; j < m; j++) extra.push({ x: rnd(0, W), y: rnd(0, H), r: rnd(0.6, 1.6), ph: rnd(0, 6.28) });
+      },
+      make: function (any) {
+        var s = rnd(18, 62);
+        return { x: rnd(0, W), y: any ? rnd(0, H) : H + rnd(60, 200), s: s, vy: 10 + s * 0.55, sw: rnd(10, 40), ph: rnd(0, 6.28) };
+      },
+      draw: function (dt, t) {
+        var i, p;
+        for (i = 0; i < extra.length; i++) {
+          p = extra[i];
+          ctx.globalAlpha = 0.15 + 0.35 * (0.5 + 0.5 * Math.sin(p.ph + t * 1.2 * L.speed));
+          ctx.drawImage(sprite, p.x - p.r * 3, p.y - p.r * 3, p.r * 6, p.r * 6);
+        }
+        for (i = 0; i < parts.length; i++) {
+          p = parts[i];
+          p.y -= p.vy * dt * L.speed;
+          if (p.y < -p.s * 3) { var q = this.make(false); q.s = p.s; q.vy = p.vy; parts[i] = p = q; }
+          var x = p.x + Math.sin(p.ph + t * 0.35 * L.speed) * p.sw, s = p.s, near = (s - 18) / 44;
+          var fl = 0.85 + 0.15 * Math.sin(p.ph * 3 + t * 5); // ngọn lửa bập bùng
+          ctx.globalAlpha = (0.25 + 0.3 * near) * fl;
+          ctx.drawImage(sprite, x - s * 2.4, p.y - s * 2.1, s * 4.8, s * 4.8);
+          ctx.globalAlpha = 0.5 + 0.45 * near;
+          var gr = ctx.createLinearGradient(0, p.y - s, 0, p.y + s * 0.9);
+          gr.addColorStop(0, rgba(pal.particle, 0.55)); gr.addColorStop(0.7, rgba(pal.particle, 0.95)); gr.addColorStop(1, '#ffffff');
+          ctx.fillStyle = gr;
+          ctx.beginPath(); // thân đèn: trên phình, dưới thắt
+          ctx.moveTo(x - s * 0.42, p.y + s * 0.85);
+          ctx.bezierCurveTo(x - s * 0.9, p.y + s * 0.1, x - s * 0.8, p.y - s, x, p.y - s);
+          ctx.bezierCurveTo(x + s * 0.8, p.y - s, x + s * 0.9, p.y + s * 0.1, x + s * 0.42, p.y + s * 0.85);
+          ctx.closePath(); ctx.fill();
+        }
+      },
+    },
   };
 
   function resetFx() {
@@ -215,6 +458,12 @@
         '<p class="bigdate glow" data-fit>' + C.date.d + '<i>·</i>' + C.date.m + '<i>·</i>' + C.date.y + '</p>' +
         (C.time ? '<p class="time">Vào lúc ' + esc(C.time) + '</p>' : '') +
         (C.lunar ? '<p class="lunar">' + esc(C.lunar) + '</p>' : '') + '</div>');
+    }
+    // đếm ngược tới giờ lễ: chỉ hiện khi còn chưa tới giờ (qua giờ thì tự bỏ cảnh này)
+    var target = C.at ? Date.parse(C.at) : NaN;
+    if (L.slides.countdown && target > Date.now()) {
+      out.push('<div class="slide s-count"><p class="kicker">' + esc(L.kicker || 'Lễ Thành Hôn') + ' bắt đầu sau</p>' +
+        '<p class="cd glow" data-fit></p><p class="cd-sub">' + (C.time ? 'Vào lúc ' + esc(C.time) : '') + (C.date ? ' · ' + C.date.d + '/' + C.date.m + '/' + C.date.y : '') + '</p></div>');
     }
     var fam = function (p, lb) {
       if (!p.father && !p.mother) return '';
@@ -253,6 +502,18 @@
       }
     });
   }
+
+  // cập nhật số đếm ngược mỗi giây; tới giờ thì dựng lại các cảnh (cảnh đếm ngược tự biến mất)
+  var cdTarget = function () { return C.at ? Date.parse(C.at) : NaN; };
+  setInterval(function () {
+    var el = slidesEl.querySelector('.cd'); if (!el) return;
+    var left = Math.round((cdTarget() - Date.now()) / 1000);
+    if (!(left > 0)) { var k = cur; buildSlides(); show(Math.min(k, slides.length - 1)); return; }
+    var dd = Math.floor(left / 86400), hh = Math.floor(left % 86400 / 3600), mm = Math.floor(left % 3600 / 60), ss = left % 60;
+    var two = function (n) { return (n < 10 ? '0' : '') + n; };
+    el.innerHTML = dd > 0 ? '<b>' + dd + '</b><small>ngày</small><b>' + two(hh) + '</b><small>giờ</small><b>' + two(mm) + '</b><small>phút</small>'
+      : '<b>' + two(hh) + '</b><i>:</i><b>' + two(mm) + '</b><i>:</i><b>' + two(ss) + '</b>';
+  }, 1000);
 
   function show(i) {
     if (!slides.length) return;
