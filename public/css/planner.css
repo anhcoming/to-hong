@@ -375,3 +375,7 @@ button.pcard{font:inherit;color:inherit;text-align:left;cursor:pointer}
 }
 /* ô trong lưới được co lại: tên việc dài (một dòng, có "…") không đẩy trang tràn ngang */
 .ptwo>*,.ptiles>*,.pbgrid>*,.plgrid>*,.ptgrid>*,.pbsum>*,.pgsum>*{min-width:0}
+/* đang tải sổ tay (planner.html, thay khi dữ liệu về) */
+.pload{display:flex;align-items:center;justify-content:center;gap:10px;padding:60px 0;color:var(--muted);font-weight:500}
+.pload .spin{width:20px;height:20px;border-radius:50%;border:2.5px solid var(--line);border-top-color:#d6455d;animation:pspin .8s linear infinite}
+@keyframes pspin{to{transform:rotate(360deg)}}

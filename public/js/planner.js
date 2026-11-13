@@ -552,16 +552,21 @@ async function settingsModal() {
 }
 
 // ---------- tải dữ liệu ----------
-async function loadOverview() { S.ov = await api('/api/wedding'); }
-async function loadTasks() { S.tasks = (await api('/api/wedding/tasks')).tasks; }
-async function loadBudget() { S.budget = await api('/api/wedding/budget'); }
-async function loadGuests() { S.guests = await api('/api/wedding/guests'); }
+// tải dữ liệu: tự huỷ sau 20 giây (mạng di động / máy chủ khởi động chậm có khi treo không báo lỗi → trước đây trang trắng mãi)
+const LOAD = { timeout: 20000 };
+async function loadOverview() { S.ov = await api('/api/wedding', LOAD); }
+async function loadTasks() { S.tasks = (await api('/api/wedding/tasks', LOAD)).tasks; }
+async function loadBudget() { S.budget = await api('/api/wedding/budget', LOAD); }
+async function loadGuests() { S.guests = await api('/api/wedding/guests', LOAD); }
 async function reloadAll() {
   await Promise.all([loadOverview(), loadTasks(), S.budget && loadBudget(), S.guests && loadGuests()]);
   render();
 }
 
 async function render() {
+  try { await renderTab(); } catch (e) { console.error(e); failed(e); }
+}
+async function renderTab() {
   renderHero();
   $$('#ptabs button').forEach((b) => b.classList.toggle('on', b.dataset.tab === S.tab));
   if (S.tab === 'budget' && !S.budget) await loadBudget();
@@ -714,6 +719,14 @@ function bind() {
   });
 }
 
+// Lỗi khác (máy chủ báo lỗi, dữ liệu lạ làm hỏng phần vẽ): vẫn báo rõ và cho thử lại, không để trang trắng
+function failed(e) {
+  if (e && (e.network || e.timeout)) return offline();
+  $('#hero').innerHTML = '';
+  $('main').innerHTML = `<div class="panel empty" style="margin-top:30px"><p style="font-size:40px;margin:0">😥</p>
+    <h3 style="color:var(--ink)">Sổ tay chưa mở được</h3><p>${esc((e && e.message) || 'Có lỗi xảy ra')}. Dữ liệu của bạn vẫn an toàn — thử lại sau ít phút, vẫn lỗi thì nhắn Zalo hỗ trợ giúp mình nhé.</p>
+    <button class="btn" onclick="location.reload()">Thử lại</button></div>`;
+}
 // Không tải được (mất mạng, máy chủ đang khởi động lại): báo rõ và cho thử lại, thay vì để trang trắng
 function offline() {
   $('#hero').innerHTML = '';
@@ -731,7 +744,7 @@ function offline() {
   document.title = 'Sổ tay cưới — ' + meta.brand;
   const h = location.hash.slice(1);
   if (['home', 'tasks', 'budget', 'guests', 'cal'].includes(h)) S.tab = h;
-  try { await Promise.all([loadOverview(), loadTasks()]); } catch (e) { if (!e.status) return offline(); throw e; }
+  try { await Promise.all([loadOverview(), loadTasks()]); } catch (e) { return failed(e); }
   bind();
   render();
   if ('serviceWorker' in navigator) navigator.serviceWorker.register('/sw.js').catch(() => {});
