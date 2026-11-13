@@ -160,6 +160,9 @@ window.newCard = function () {
 (async () => {
   const { meta, user } = await renderTopbar(VIDEOS ? 'videos' : 'cards');
   META = meta;
+  // "Dùng mẫu" khi chưa đăng nhập: vào thẳng trình sửa với thiệp nháp (đăng nhập sau, lúc cần lưu / tải ảnh / gửi khách)
+  const tao = new URLSearchParams(location.search).get('tao');
+  if (!user && tao) return create(tao, new URLSearchParams(location.search).get('mau')).catch(() => (location.href = '/dang-nhap?next=' + encodeURIComponent(location.pathname + location.search)));
   if (!user) return (location.href = '/dang-nhap?next=' + encodeURIComponent(location.pathname + location.search));
   document.title = (VIDEOS ? 'Video của tôi — ' : 'Thiệp của tôi — ') + meta.brand;
   if (VIDEOS) {

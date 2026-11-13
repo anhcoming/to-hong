@@ -324,6 +324,40 @@ async function call(who, method, url, body) {
   assert.equal(r.json.members.length, 1, 'tự có sổ tay riêng');
   assert.equal((await call('p', 'PUT', `/api/budget/${it.id}`, { estimate: 1 })).status, 404, 'không sửa được ngân sách nhà khác');
 
+  // khách chưa đăng nhập: "Dùng mẫu" → thiệp nháp gắn cookie, sửa chữ được; việc cần tài khoản thì 401; đăng nhập xong nháp về tài khoản
+  r = await call('g', 'POST', '/api/cards', { template: 'dodam' });
+  assert.equal(r.status, 200, 'khách tạo được thiệp nháp');
+  assert.equal(r.json.card.guest, true);
+  assert.match(jar.g, /^gid=[a-f0-9]{32}$/, 'đặt cookie khách');
+  const gcard = r.json.card.id, gslug = r.json.card.slug;
+  r = await call('g', 'POST', '/api/cards', { template: 'phuonghoang' });
+  assert.equal(r.json.card.id, gcard, 'chọn mẫu khác vẫn là thiệp nháp đó');
+  assert.equal(r.json.card.template, 'phuonghoang');
+  const gdata = r.json.card.data;
+  gdata.groom.name = 'Khách Rể'; gdata.bride.name = 'Khách Dâu'; gdata.date = '2027-01-09';
+  r = await call('g', 'PUT', `/api/cards/${gcard}`, { data: gdata });
+  assert.equal(r.status, 200, 'khách sửa chữ được');
+  r = await call('g', 'GET', `/t/${gslug}?preview=1&edit=1`);
+  assert.equal(r.status, 200, 'khách xem trước thiệp nháp của mình');
+  assert.match(r.text, /Khách Rể/);
+  assert.equal((await call('anon', 'GET', `/api/cards/${gcard}`)).status, 401, 'người khác không đọc được thiệp nháp');
+  assert.equal((await call('u', 'GET', `/api/cards/${gcard}`)).status, 404, 'tài khoản khác cũng không');
+  assert.equal((await call('anon', 'GET', `/t/${gslug}?preview=1`)).status, 404, 'thiệp nháp chưa phát hành');
+  assert.equal((await call('g', 'POST', `/api/cards/${gcard}/publish`, {})).status, 401, 'phát hành cần đăng nhập');
+  assert.equal((await call('g', 'GET', `/api/cards/${gcard}/guests`)).status, 401, 'khách mời cần đăng nhập');
+  assert.equal((await call('g', 'PUT', `/api/cards/${gcard}`, { slug: 'khach-dat-ten' })).status, 401, 'đường dẫn riêng cần đăng nhập');
+  assert.equal((await call('g', 'PUT', `/api/cards/${gcard}`, { data: { ...gdata, cover: 'https://example.com/a.jpg' } })).status, 401, 'khách không gắn được ảnh ngoài');
+  assert.equal((await call('g', 'GET', '/api/cards')).status, 401);
+  r = await call('g', 'POST', '/api/auth/register', { email: 'khach@test.vn', password: '123456' });
+  assert.equal(r.status, 200);
+  r = await call('g', 'GET', '/api/cards');
+  assert.equal(r.json.cards.length, 1, 'đăng ký xong thiệp nháp về tài khoản');
+  assert.equal(r.json.cards[0].id, gcard);
+  assert.equal(r.json.cards[0].guest, false);
+  assert.equal((await call('g', 'POST', `/api/cards/${gcard}/publish`, {})).status, 200, 'giờ phát hành được');
+  r = await call('g', 'GET', '/api/wedding');
+  assert.equal(r.json.wedding.couple.groom.name, 'Khách Rể', 'sổ tay mới lấy tên đôi từ thiệp nháp');
+
   // nhân bản + xoá
   r = await call('u', 'POST', `/api/cards/${id}/duplicate`);
   assert.equal(r.json.card.paid, false);

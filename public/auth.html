@@ -17,7 +17,7 @@
   <div class="box">
     <span class="eyebrow" data-brand>Cưới Nha</span>
     <h1 id="title">Chào mừng bạn</h1>
-    <p class="muted" style="margin:0">Sổ tay cưới miễn phí: việc cần làm, ngân sách, khách mời — và thiệp cưới online.</p>
+    <p class="muted" id="sub2" style="margin:0">Sổ tay cưới miễn phí: việc cần làm, ngân sách, khách mời — và thiệp cưới online.</p>
     <div class="seg"><button data-m="login" class="on">Đăng nhập</button><button data-m="register">Tạo tài khoản</button></div>
     <div id="gbox" hidden>
       <a class="gbtn" id="gbtn" href="/auth/google">
@@ -41,6 +41,8 @@
 let mode = new URLSearchParams(location.search).get('dang-ky') ? 'register' : 'login';
 const next = new URLSearchParams(location.search).get('next') || '/so-tay';
 const loi = new URLSearchParams(location.search).get('loi');
+// đến từ trình sửa khi chưa đăng nhập: thiệp nháp sẽ được chuyển vào tài khoản
+if (/^\/sua\//.test(next)) $('#sub2').textContent = 'Đăng nhập để lưu thiệp bạn vừa làm — nội dung đã sửa được giữ nguyên.';
 // Nút Google chỉ hiện khi máy chủ đã cấu hình Client ID
 document.addEventListener('meta', (e) => {
   if (!e.detail.googleLogin) return;

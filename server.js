@@ -53,8 +53,36 @@ function needUser(ctx) {
 function needAdmin(ctx) {
   if (!ctx.admin) throw httpError(403, 'Cần đăng nhập trang quản trị');
 }
-// Thiệp của mình, hoặc thiệp trong đám cưới mà mình là thành viên (người yêu, bố mẹ cùng sửa)
-function ownedCard(ctx, id) {
+// ----- bản nháp của khách chưa đăng nhập -----
+// Bấm "Dùng mẫu" khi chưa có tài khoản: thiệp nháp gắn với cookie ẩn danh `gid` (userId = null, guestId = gid).
+// Khách sửa chữ, đổi mẫu, xem trước thoải mái; tải ảnh, khách mời, phát hành… vẫn cần đăng nhập (401).
+// Đăng nhập xong thì thiệp nháp chuyển về tài khoản (claimGuestCards).
+const GUEST_DAYS = 30;
+const guestCookie = (v, maxAge) => `gid=${v}; HttpOnly; Path=/; SameSite=Lax; Max-Age=${maxAge}` + (BASE_URL.startsWith('https') ? '; Secure' : '');
+const guestId = (req) => { const g = cookies(req).gid; return /^[a-f0-9]{32}$/.test(g || '') ? g : null; };
+const guestOwns = (ctx, card) => !!(card && card.guestId && !card.userId && ctx.guest && card.guestId === ctx.guest);
+function claimGuestCards(req, res, user) {
+  const gid = guestId(req);
+  if (!gid) return;
+  const mine = db.cards.filter((c) => c.guestId === gid && !c.userId);
+  if (mine.length) {
+    const w = Wd.ensure(user);
+    // sổ tay còn trống (tài khoản mới) → lấy tên đôi, ngày cưới từ thiệp nháp; đã có thông tin thì giữ nguyên sổ tay
+    const fresh = !w.couple.groom.name && !w.couple.bride.name && !db.cards.some((c) => c.weddingId === w.id);
+    mine.forEach((c) => { c.userId = user.id; c.weddingId = w.id; delete c.guestId; c.updatedAt = Date.now(); });
+    if (fresh) Wd.syncFromCard(mine[0], true);
+    save();
+  }
+  const prev = res.getHeader('Set-Cookie');
+  res.setHeader('Set-Cookie', [].concat(prev || [], guestCookie('', 0)));
+}
+// Thiệp của mình, hoặc thiệp trong đám cưới mà mình là thành viên (người yêu, bố mẹ cùng sửa).
+// opts.guest: cho phép cả khách chưa đăng nhập đang giữ thiệp nháp này.
+function ownedCard(ctx, id, opts = {}) {
+  if (!ctx.user && opts.guest) {
+    const c = db.cards.find((x) => x.id === id);
+    if (guestOwns(ctx, c)) return c;
+  }
   const user = needUser(ctx);
   const card = db.cards.find((c) => c.id === id && (c.userId === user.id || (c.weddingId && Wd.isMember(Wd.get(c.weddingId), user))));
   if (!card) throw httpError(404, 'Không tìm thấy thiệp');
@@ -89,7 +117,7 @@ function cardSummary(card) {
     status: card.status, createdAt: card.createdAt, updatedAt: card.updatedAt, publishedAt: card.publishedAt || null,
     views: card.views || 0,
     guests: card.weddingId ? db.guests.filter((g) => g.weddingId === card.weddingId).length : 0,
-    ownerId: card.userId,
+    ownerId: card.userId, guest: !card.userId, // guest: thiệp nháp của khách chưa đăng nhập
     rsvpYes: rs.filter((r) => r.attending === 'yes').reduce((n, r) => n + r.count, 0),
     rsvpCount: rs.length,
     wishes: db.wishes.filter((w) => w.cardId === card.id).length,
@@ -143,6 +171,7 @@ route('POST', '/api/auth/register', async (req, res, ctx) => {
   const b = await readJson(req);
   const user = auth.createUser(b);
   auth.startSession(res, user.id);
+  claimGuestCards(req, res, user);
   json(res, 200, { user: auth.publicUser(user) });
 });
 route('POST', '/api/auth/login', async (req, res, ctx) => {
@@ -150,6 +179,7 @@ route('POST', '/api/auth/login', async (req, res, ctx) => {
   const b = await readJson(req);
   const user = auth.verifyLogin(b.email, b.password);
   auth.startSession(res, user.id);
+  claimGuestCards(req, res, user);
   json(res, 200, { user: auth.publicUser(user) });
 });
 route('POST', '/api/auth/logout', async (req, res) => {
@@ -184,7 +214,8 @@ route('GET', '/auth/google/callback', async (req, res, ctx) => {
     const g = await google.exchange(String(ctx.query.get('code') || ''), GOOGLE_CB);
     const user = auth.googleUser(g);
     auth.startSession(res, user.id);
-    redirect(res, safeNext(next), [res.getHeader('Set-Cookie'), clear]);
+    claimGuestCards(req, res, user);
+    redirect(res, safeNext(next), [].concat(res.getHeader('Set-Cookie'), clear));
   } catch (e) {
     if (e.status === 500 || !e.status) console.error('Google login lỗi:', e);
     fail(e.status && e.status !== 500 ? e.message : 'Không đăng nhập được bằng Google, thử lại sau nhé');
@@ -211,6 +242,7 @@ route('GET', '/api/cards', async (req, res, ctx) => {
 });
 
 route('POST', '/api/cards', async (req, res, ctx) => {
+  if (!ctx.user) return guestCard(req, res, ctx);
   const user = needUser(ctx);
   if (db.cards.filter((c) => c.userId === user.id).length >= 30) throw httpError(400, 'Bạn đã có quá nhiều thiệp');
   const w = Wd.ensure(user);
@@ -234,14 +266,54 @@ route('POST', '/api/cards', async (req, res, ctx) => {
   json(res, 200, { card: cardFull(card) });
 });
 
+// Khách chưa đăng nhập bấm "Dùng mẫu": mỗi khách một thiệp nháp; chọn mẫu khác thì đổi mẫu trên chính thiệp đó (giữ chữ đã gõ)
+async function guestCard(req, res, ctx) {
+  const b = await readJson(req);
+  const tpl = templates[b.template] ? b.template : DEFAULT_TEMPLATE;
+  const palette = templates[tpl].palettes.find((p) => p.id === b.palette)?.id || templates[tpl].palettes[0].id;
+  const now = Date.now();
+  let gid = ctx.guest;
+  let card = gid && db.cards.find((c) => c.guestId === gid && !c.userId);
+  if (card) Object.assign(card, { template: tpl, palette, updatedAt: now });
+  else {
+    rateLimit('gcard:' + ctx.ip, 12, 36e5);
+    // dọn thiệp nháp vô chủ đã quá hạn cookie
+    const old = now - GUEST_DAYS * DAY;
+    if (db.cards.some((c) => c.guestId && !c.userId && c.updatedAt < old)) db.cards = db.cards.filter((c) => !(c.guestId && !c.userId && c.updatedAt < old));
+    gid = gid || require('crypto').randomBytes(16).toString('hex');
+    const data = cd.defaults();
+    data.events = [
+      { name: 'Lễ Thành Hôn', date: '', time: '10:00', place: '', address: '', mapUrl: '' },
+      { name: 'Tiệc Cưới', date: '', time: '18:00', place: '', address: '', mapUrl: '' },
+    ];
+    card = {
+      id: rid(12), userId: null, guestId: gid, weddingId: null, slug: uniqueSlug('thiep-' + rid(6)), title: 'Thiệp 1',
+      template: tpl, palette, status: 'draft', paid: false, views: 0, data, createdAt: now, updatedAt: now,
+    };
+    db.cards.push(card);
+  }
+  save();
+  res.setHeader('Set-Cookie', guestCookie(gid, GUEST_DAYS * 86400));
+  json(res, 200, { card: cardFull(card) });
+}
+
 route('GET', '/api/cards/:id', async (req, res, ctx) => {
-  const card = ownedCard(ctx, ctx.params.id);
+  const card = ownedCard(ctx, ctx.params.id, { guest: true });
   json(res, 200, { card: cardFull(card) });
 });
 
 route('PUT', '/api/cards/:id', async (req, res, ctx) => {
-  const card = ownedCard(ctx, ctx.params.id);
+  const card = ownedCard(ctx, ctx.params.id, { guest: true });
   const b = await readJson(req);
+  if (!ctx.user) {
+    if (b.slug !== undefined || b.led || b.video) needUser(ctx); // đường dẫn riêng, màn LED, video: cần tài khoản
+    rateLimit('gsave:' + ctx.ip, 600, 36e5);
+    if (b.data) { // khách chưa đăng nhập không tải tệp lên được → không nhận link ảnh / nhạc gửi kèm
+      const cur = new Set([card.data.cover, card.data.music, ...card.data.photos].filter(Boolean).map((u) => String(u).split('#')[0]));
+      const ok = (u) => !u || cur.has(String(u).split('#')[0]);
+      if (!ok(b.data.cover) || !ok(b.data.music) || (Array.isArray(b.data.photos) && !b.data.photos.every(ok))) needUser(ctx);
+    }
+  }
   if (b.title !== undefined) card.title = str(b.title, 60) || card.title;
   if (b.template && templates[b.template]) {
     if (b.template !== card.template) card.palette = templates[b.template].palettes[0].id;
@@ -362,8 +434,8 @@ route('POST', '/api/wishes/:wid/toggle', async (req, res, ctx) => {
 // ---------------- API: đọc link Google Maps (link rút gọn → toạ độ + tên địa điểm) ----------------
 // GET (không giữ khoá dữ liệu trong lúc chờ Google trả lời)
 route('GET', '/api/maplink', async (req, res, ctx) => {
-  const user = needUser(ctx);
-  rateLimit('map:' + user.id, 60, 36e5);
+  if (!ctx.user && !(ctx.guest && db.cards.some((c) => c.guestId === ctx.guest && !c.userId))) needUser(ctx);
+  rateLimit('map:' + (ctx.user ? ctx.user.id : ctx.ip), ctx.user ? 60 : 20, 36e5);
   const url = String(ctx.query.get('url') || '').trim().slice(0, 500);
   if (!maplink.isMaps(url)) throw httpError(400, 'Đây không phải link Google Maps');
   const r = await maplink.resolve(url) || {};
@@ -529,7 +601,7 @@ function html(res, status, body) {
 async function showCard(req, res, ctx) {
   const card = db.cards.find((c) => c.slug === ctx.params.slug);
   if (!card) return html(res, 404, renderNotice('Không tìm thấy thiệp', 'Đường dẫn có thể đã bị đổi hoặc thiệp đã bị xoá.'));
-  const isOwner = canManage(ctx.user, card) || ctx.admin; // quản trị viên xem trước được để kiểm tra
+  const isOwner = canManage(ctx.user, card) || guestOwns(ctx, card) || ctx.admin; // quản trị viên xem trước được để kiểm tra
   const preview = isOwner && ctx.query.get('preview') === '1';
   const st = cardState(card);
   if (!preview) {
@@ -859,6 +931,7 @@ const server = http.createServer(async (req, res) => {
         query: url.searchParams,
         user: matched.noDb ? null : auth.currentUser(req),
         admin: adminAuth.check(req),
+        guest: guestId(req),
         ip: (req.headers['x-forwarded-for'] || '').split(',')[0].trim() || req.socket.remoteAddress,
         params,
       };

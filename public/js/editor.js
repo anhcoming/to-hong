@@ -149,6 +149,7 @@ function showTab(t) {
   $$('#tools button').forEach((b) => b.classList.toggle('on', b.dataset.tab === t));
   document.body.classList.toggle('sheet-open', !!t);
   if (!t) { $('#panes').innerHTML = ''; return; }
+  if (t === 'guests' && card.guest) { showTab(null); return askLogin('guests'); }
   $('#sheetTitle').textContent = SHEETS[t];
   $('#panes').innerHTML = `<div class="pane">${panes[t]()}</div>`;
   $('#sheetBody').scrollTop = 0;
@@ -162,8 +163,36 @@ function rerender() {
   if (curTab === 'guests') { loadGuests(); loadResponses(); }
 }
 
+// ---------- khách chưa đăng nhập ----------
+// card.guest: thiệp nháp gắn với trình duyệt này (chưa có tài khoản). Sửa chữ, đổi mẫu, xem trước được ngay;
+// tải ảnh / nhạc, khách mời, đường dẫn riêng, phát hành thì mời đăng nhập — đăng nhập xong thiệp nháp về tài khoản, quay lại đúng trang này.
+const LOGIN_WHY = {
+  save: 'Đăng nhập để giữ thiệp này trong tài khoản của bạn, mở lại sửa tiếp trên máy nào cũng được, rồi phát hành gửi khách.',
+  photo: 'Đăng nhập để tải ảnh cưới và nhạc của bạn lên thiệp.',
+  guests: 'Đăng nhập để thêm khách mời và lấy link mang tên riêng từng người.',
+  slug: 'Đăng nhập để đặt đường dẫn riêng cho thiệp.',
+};
+function askLogin(why = 'save') {
+  const next = encodeURIComponent(location.pathname);
+  openModal(`<h2 style="margin-top:0">Lưu thiệp vào tài khoản</h2>
+    <p class="muted" style="margin:0 0 16px">${LOGIN_WHY[why] || LOGIN_WHY.save} Những gì bạn vừa sửa được giữ nguyên.</p>
+    <div style="display:grid;gap:8px">
+      ${META.googleLogin ? `<a class="btn block" data-go href="/auth/google?next=${next}">Tiếp tục với Google</a>` : ''}
+      <a class="btn block ${META.googleLogin ? 'plain' : ''}" data-go href="/dang-nhap?dang-ky=1&next=${next}">Dùng email</a>
+    </div>
+    <p class="muted" style="font-size:13px;margin:14px 0 0">Miễn phí, không cần thẻ. Dùng thử ${META.trialDays} ngày, mời ${META.trialGuestLimit} khách.</p>`, (box) => {
+    box.addEventListener('click', async (e) => {
+      const a = e.target.closest('[data-go]'); if (!a) return;
+      e.preventDefault();
+      clearTimeout(saveTimer); saveTimer = null;
+      await save(); // chữ đang gõ dở phải nằm trên máy chủ trước khi rời trang
+      location.href = a.href;
+    });
+  });
+}
+
 // ---------- lưu ----------
-function status(t) { $('#saved').textContent = t; }
+function status(t) { $('#saved').textContent = card && card.guest && t === 'Đã lưu ✓' ? 'Bản nháp tạm' : t; }
 function scheduleSave(delay = 700) {
   status('Đang chỉnh sửa…');
   clearTimeout(saveTimer);
@@ -226,6 +255,11 @@ function livePatch(key, value) {
 function renderHeader() {
   $('#ttl').textContent = [card.data.groom.name, card.data.bride.name].filter(Boolean).join(' & ') || card.title;
   const pa = $('#pubArea');
+  if (card.guest) {
+    pa.innerHTML = '<button class="btn sm" id="loginBtn">Đăng nhập để lưu</button>';
+    $('#loginBtn').onclick = () => askLogin('save');
+    return;
+  }
   if (card.status !== 'published') {
     pa.innerHTML = '<button class="btn sm" id="pubBtn">Phát hành thiệp</button>';
   } else {
@@ -356,6 +390,11 @@ function bind() {
     scheduleSave(e.target.type === 'checkbox' || e.target.tagName === 'SELECT' ? 50 : 700);
     if (k.endsWith('.name') && (k.startsWith('groom') || k.startsWith('bride'))) renderHeader();
   });
+  // khách chưa đăng nhập: chặn trước khi mở hộp chọn tệp
+  panesEl.addEventListener('click', (e) => {
+    if (!card.guest || !e.target.closest('input[type=file]')) return;
+    e.preventDefault(); askLogin('photo');
+  }, true);
   panesEl.addEventListener('change', async (e) => {
     const t = e.target;
     const mk = /^events\.(\d+)\.mapUrl$/.exec(t.dataset.k || '');
@@ -406,6 +445,7 @@ function bind() {
     else if (ds.tpl) { if (card.template !== ds.tpl) { card.template = ds.tpl; card.palette = ''; } }
     else if (ds.pal) card.palette = ds.pal;
     else if (b.id === 'slugSave') {
+      if (card.guest) return askLogin('slug');
       try {
         const r = await api(`/api/cards/${CARD_ID}`, { method: 'PUT', body: { slug: $('#slugIn').value } });
         card.slug = r.card.slug; card.url = r.card.url;
@@ -470,6 +510,7 @@ function pickFile(accept = 'image/*') {
   });
 }
 async function livePhotoUpload(key, ratio) {
+  if (card.guest) return askLogin('photo');
   const f = await pickFile();
   if (!f) return;
   try {
@@ -664,6 +705,7 @@ window.addEventListener('message', (e) => {
     return;
   }
   bind();
+  if (card.guest) $('.ebar .back').href = '/mau-thiep'; // chưa có "Thiệp của tôi" để quay về
   renderHeader();
   // ?tab=… (link cũ: info/events/look/resp…) mở thẳng bảng tương ứng; mặc định chỉ hiện thiệp
   const OLD = { events: 'date', look: 'tpl', resp: 'guests', info: null };
