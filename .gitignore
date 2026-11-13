@@ -4,3 +4,6 @@ data/
 .env
 .vercel
 .env*
+
+# video quảng cáo, tài liệu marketing — chỉ lưu trên máy
+marketing/
