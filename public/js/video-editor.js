@@ -117,7 +117,7 @@ function renderExport() {
       ${[[1, `1 vòng (${total} giây)`], [Math.max(2, Math.round(180 / total)), 'Lặp ~3 phút'], [Math.max(2, Math.min(30, Math.round(600 / total))), 'Lặp ~10 phút']]
         .map(([n, label], i) => `<option value="${n}" ${i === 1 ? 'selected' : ''}>${label} · ~${Math.max(1, Math.round(n * total * 0.36))} MB</option>`).join('')}
     </select></label>
-    <button class="btn block" id="exportBtn">${s.paid ? '⬇ Xuất & tải MP4' : `Kích hoạt ${money(META.videoPrice)} để tải MP4`}</button>
+    <button class="btn block" id="exportBtn">${s.paid ? '⬇ Xuất & tải MP4' : card.credits && card.credits.video > 0 ? '🎁 Dùng lượt Trọn bộ để tải MP4' : `Kích hoạt ${money(META.videoPrice)} để tải MP4`}</button>
     ${s.mp4 ? `<a class="btn block plain" style="margin-top:8px" href="${esc(s.mp4)}" target="_blank" rel="noopener" download>Tải bản đã xuất gần nhất</a>` : ''}
     <p class="muted" style="font-size:12px;margin:10px 0 0">Video dựng ngay trên máy bạn — nên dùng Chrome, Edge hoặc Safari bản mới.</p>`;
 }
@@ -130,7 +130,7 @@ function renderHeader() {
   $('#chip').innerHTML = s.paid ? '<span class="chip ok">● Đã kích hoạt</span>'
     : s.expired ? '<span class="chip red">Hết hạn dùng thử</span>'
     : `<span class="chip warn">Dùng thử · còn ${Math.max(0, Math.ceil((s.trialEndsAt - Date.now()) / 864e5))} ngày</span>`;
-  $('#acts').innerHTML = `<button class="btn sm soft" id="cpLink">Chép link chiếu TV</button> <a class="btn sm plain" target="_blank" href="${esc(s.url)}">Mở trình chiếu</a>${s.paid ? '' : ` <button class="btn sm" id="payBtn">Kích hoạt · ${money(META.videoPrice)}</button>`}`;
+  $('#acts').innerHTML = `<button class="btn sm soft" id="cpLink">Chép link chiếu TV</button> <a class="btn sm plain" target="_blank" href="${esc(s.url)}">Mở trình chiếu</a>${s.paid ? '' : card.credits && card.credits.video > 0 ? ' <button class="btn sm" id="payBtn">🎁 Dùng lượt Trọn bộ</button>' : ` <button class="btn sm" id="payBtn">Kích hoạt · ${money(META.videoPrice)}</button>`}`;
   $('#cpLink').onclick = () => copyText(s.url, 'Đã chép link — mở trên Smart TV hoặc máy tính nối TV');
   const pb = $('#payBtn'); if (pb) pb.onclick = () => openPayModal(CARD_ID, reload, 'video');
 }

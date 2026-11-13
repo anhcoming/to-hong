@@ -54,9 +54,9 @@ let META;
 const VIDEOS = location.pathname === '/video-cua-toi';
 const tplName = (id) => (META.templates.find(t => t.id === id) || {}).name || id;
 
-const isCombo = (c) => c.paid && c.led.paid && c.video.paid;
+const isCombo = (c) => !!c.combo;
 function stateChip(c) {
-  if (isCombo(c)) return '<span class="chip ok">● Trọn bộ đã kích hoạt</span><span class="chip ok">Thiệp</span><span class="chip ok">Màn LED</span><span class="chip ok">Video</span>';
+  if (isCombo(c)) return '<span class="chip ok">● Trọn bộ đã kích hoạt</span>';
   if (c.paid) return '<span class="chip ok">● Thiệp đã kích hoạt</span>';
   if (c.status !== 'published') return '<span class="chip">Bản nháp</span>';
   if (c.expired) return '<span class="chip red">Hết hạn dùng thử</span>';
@@ -64,8 +64,18 @@ function stateChip(c) {
   return `<span class="chip warn">Dùng thử · còn ${days} ngày</span>`;
 }
 
+// Trọn bộ còn lượt: nhắc làm màn LED / video rồi bấm "Dùng lượt Trọn bộ" trên cái ưng ý
+function creditBar(c) {
+  const cr = c.credits || {}, parts = [];
+  if (cr.led > 0) parts.push(`<b>${cr.led}</b> lượt màn LED`);
+  if (cr.video > 0) parts.push(`<b>${cr.video}</b> lượt video`);
+  if (!parts.length) return '';
+  return `<div class="upbar"><span>🎁 Còn ${parts.join(' · ')} trong gói Trọn bộ — làm thử thoải mái, ưng cái nào thì bấm <b>Dùng lượt Trọn bộ</b> trên cái đó.</span><span style="display:flex;gap:6px">${cr.led > 0 ? `<a class="btn sm" href="/sua-led/${c.id}${c.led.created ? '' : '?tao=1'}">✨ Màn LED</a>` : ''}${cr.video > 0 ? `<a class="btn sm" href="/sua-video/${c.id}">🎬 Video</a>` : ''}</span></div>`;
+}
+
 // Thiệp đã kích hoạt lẻ, chưa có LED / video: gợi ý nâng lên Trọn bộ (chỉ trả phần chênh)
 function upgradeBar(c) {
+  if (isCombo(c)) return creditBar(c);
   if (!c.paid || c.led.paid || c.video.paid || !META.comboPrice) return '';
   const add = Math.max(0, META.comboPrice - META.price), retail = META.ledPrice + META.videoPrice;
   return `<div class="upbar"><span>✨ Thêm <b>màn LED tiệc cưới + video MP4</b> chỉ <b>${money(add)}</b> <span class="muted">(mua lẻ ${money(retail)})</span></span><button class="btn sm" data-a="combo">Nâng lên Trọn bộ</button></div>`;
@@ -95,7 +105,6 @@ setInterval(() => {
 }, 1000);
 
 function ledChip(c) {
-  if (isCombo(c)) return '';
   const one = (s, n) => !s.created ? '' : s.paid ? `<span class="chip ok">${n} · đã kích hoạt</span>`
     : s.expired ? `<span class="chip red">${n} · hết dùng thử</span>` : `<span class="chip warn">${n} · dùng thử</span>`;
   return one(c.led, 'Màn LED');
@@ -124,7 +133,7 @@ async function load() {
           ${c.status === 'published' ? `<button class="btn sm soft" data-a="share">Sao chép link</button><a class="btn sm plain" target="_blank" href="${esc(c.url)}">Mở thiệp</a>` : ''}
           ${!c.paid ? `<button class="btn sm plain" data-a="pay">Kích hoạt · ${money(META.price)}</button>` : ''}
           ${c.led.created ? `<a class="btn sm plain" href="/sua-led/${c.id}">✨ Màn LED</a>` : ''}
-          ${c.video.created && isCombo(c) ? `<a class="btn sm plain" href="/sua-video/${c.id}">🎬 Video</a>` : ''}
+          ${c.video.created ? `<a class="btn sm plain" href="/sua-video/${c.id}">🎬 Video</a>` : ''}
           <details class="more"><summary class="btn sm plain" aria-label="Thêm">⋯</summary><div><button data-a="dup">Nhân bản thiệp</button><button data-a="del" class="danger">Xoá thiệp</button></div></details>
         </div>
       </div>

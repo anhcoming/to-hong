@@ -22,6 +22,14 @@ const PAY_CSS = `<style>
 </style>`;
 
 window.openPayModal = async function (cardId, onDone, product = 'card') {
+  // Màn LED / video mà chủ thiệp còn lượt Trọn bộ → hỏi dùng lượt (miễn phí) trước, mua lẻ là lựa chọn phụ
+  if ((product === 'led' || product === 'video') && !openPayModal.skipCredit) {
+    try {
+      const { card } = await api(`/api/cards/${cardId}`);
+      const left = card.credits ? card.credits[product] : 0;
+      if (left > 0 && card[product] && card[product].created && !card[product].paid) return creditModal(cardId, onDone, product, left);
+    } catch {}
+  }
   // Bấm "Kích hoạt" thiệp → tải cả đơn thiệp lẫn đơn Trọn bộ để chọn gói ngay trên đầu (mặc định Trọn bộ).
   // product 'combo' khi thiệp đã kích hoạt = nâng cấp (chỉ trả phần chênh).
   const orders = {};
@@ -61,7 +69,7 @@ window.openPayModal = async function (cardId, onDone, product = 'card') {
     el.innerHTML = `${PAY_CSS}<div class="in">
         <div class="big">🎉</div>
         <h2>${o.product === 'combo' ? 'Đã kích hoạt Trọn bộ ngày cưới' : `Đã kích hoạt ${esc(o.productName.toLowerCase())}`}</h2>
-        ${o.product === 'combo' ? '<p class="muted" style="margin:0 0 6px">Thiệp, màn LED và video đã sẵn sàng.</p>' : ''}
+        ${o.product === 'combo' ? '<p class="muted" style="margin:0 0 6px">Thiệp đã kích hoạt. Bạn có thêm 1 lượt màn LED và 1 lượt video — làm thử thoải mái, ưng cái nào thì bấm <b>Dùng lượt Trọn bộ</b> trên cái đó.</p>' : ''}
         <p class="muted">Đã nhận ${money(o.amount)}. Cảm ơn hai bạn — chúc đám cưới thật vui!</p>
         <button class="btn block lg" id="payDone" style="margin-top:22px">Xong</button>
       </div>`;
@@ -176,3 +184,27 @@ window.openPayModal = async function (cardId, onDone, product = 'card') {
     }, 3000);
   });
 };
+
+// Hộp "Dùng lượt Trọn bộ": kích hoạt ngay màn LED / video này, không trả thêm. Mua lẻ vẫn chọn được.
+function creditModal(cardId, onDone, product, left) {
+  const name = product === 'led' ? 'màn LED' : 'video';
+  openModal(`
+    <div style="text-align:center">
+      <div style="font-size:44px;line-height:1;margin-bottom:10px">🎁</div>
+      <h2 style="margin:0 0 6px">Dùng lượt Trọn bộ cho ${name} này?</h2>
+      <p class="muted" style="margin:0 0 18px">Bạn còn <b>${left}</b> lượt ${name} trong gói Trọn bộ. Kích hoạt ngay, không trả thêm — sau này vẫn đổi mẫu, đổi chữ thoải mái.</p>
+      <button class="btn block lg" id="useCredit">Dùng lượt · miễn phí</button>
+      <button class="btn block plain" id="buyOne" style="margin-top:8px">Không, mua lẻ ${name} này</button>
+    </div>`, (box, close) => {
+    $('#useCredit', box).onclick = async (e) => {
+      e.target.disabled = true;
+      try {
+        await api(`/api/cards/${cardId}/redeem`, { method: 'POST', body: { product } });
+        close();
+        toast(`Đã kích hoạt ${name} bằng lượt Trọn bộ`);
+        if (onDone) onDone();
+      } catch (err) { e.target.disabled = false; toast(err.message, true); }
+    };
+    $('#buyOne', box).onclick = () => { close(); openPayModal.skipCredit = true; openPayModal(cardId, onDone, product).finally(() => { openPayModal.skipCredit = false; }); };
+  });
+}

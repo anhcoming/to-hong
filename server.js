@@ -24,7 +24,9 @@ const stats = require('./lib/stats');
 
 store.onLoad(() => Wd.migrate()); // dữ liệu từ trước khi có sổ tay cưới → gắn vào đám cưới
 
-// Sản phẩm bán: thiệp, màn LED, video dạm ngõ (đều gắn với một thiệp) và combo "Trọn bộ" = cả ba.
+// Sản phẩm bán: thiệp, màn LED, video dạm ngõ (đều gắn với một thiệp) và combo "Trọn bộ".
+// Trọn bộ = kích hoạt thiệp + cộng vào tài khoản chủ thiệp 1 lượt màn LED và 1 lượt video. Khách nháp bao nhiêu
+// LED / video cũng được, ưng cái nào thì bấm "Dùng lượt Trọn bộ" trên cái đó (POST /api/cards/:id/redeem).
 // Combo cho thiệp đã kích hoạt = nâng cấp, chỉ trả phần chênh (giá combo − giá thiệp).
 const PRODUCTS = {
   card: { name: 'Thiệp cưới online', price: () => cardPrice(), coupons: true, prefix: 'TH', sub: (c) => c },
@@ -32,16 +34,37 @@ const PRODUCTS = {
   video: { name: 'Video cưới', price: () => config.videoPrice, coupons: false, prefix: 'VD', sub: (c) => c.video },
   combo: {
     name: 'Trọn bộ ngày cưới', coupons: false, prefix: 'CB',
-    price: (c) => (c && c.paid ? Math.max(0, comboPrice() - cardPrice()) : comboPrice()),
-    sub: (c) => ({ paid: !!(c.paid && c.led && c.led.paid && c.video && c.video.paid) }),
+    price: (c) => (c && c.paid && !c.combo ? Math.max(0, comboPrice() - cardPrice()) : comboPrice()),
+    sub: (c) => ({ paid: !!c.combo }),
   },
 };
-// Combo kích hoạt cả ba; màn LED / video chưa tạo thì tạo sẵn bản mặc định (đã trả tiền) để mở là dùng ngay
+// ---- lượt Trọn bộ (credits) — lưu trên tài khoản chủ thiệp: user.credits = { led, video } ----
+const ownerOf = (card) => db.users.find((u) => u.id === card.userId) || null;
+const creditsOf = (card) => { const u = ownerOf(card); const c = (u && u.credits) || {}; return { led: c.led || 0, video: c.video || 0 }; };
+// các LED / video chưa kích hoạt của chủ thiệp (trên mọi thiệp của họ)
+const unpaidOf = (userId, kind) => db.cards.filter((c) => c.userId === userId && c[kind] && !c[kind].paid);
+function useCredit(card, kind, via = 'credit') {
+  const u = ownerOf(card);
+  if (!u || !u.credits || !(u.credits[kind] > 0)) throw httpError(400, `Bạn không còn lượt ${kind === 'led' ? 'màn LED' : 'video'} Trọn bộ`);
+  const target = card[kind];
+  if (!target) throw httpError(400, `Hãy tạo ${kind === 'led' ? 'màn LED' : 'video'} trước`);
+  if (target.paid) throw httpError(400, 'Đã kích hoạt rồi');
+  u.credits[kind] -= 1;
+  target.paid = true; target.paidAt = Date.now();
+  // ghi lại thành đơn 0đ để trang quản trị thấy lượt nào dùng ở đâu
+  db.orders.push({ id: rid(12), code: PRODUCTS[kind].prefix + rid(6).toUpperCase(), product: kind, cardId: card.id, userId: card.userId, amount: 0, status: 'paid', paidVia: via, createdAt: target.paidAt, paidAt: target.paidAt });
+}
+// Trọn bộ: kích hoạt thiệp + cộng lượt; chủ thiệp chỉ có đúng một LED (video) chưa kích hoạt thì dùng lượt luôn
 function activateCombo(card, at) {
-  card.paid = true; card.paidAt = card.paidAt || at;
-  if (!card.led) card.led = ledLib.normalize({}, {});
-  if (!card.video) card.video = videoLib.normalize({}, {});
-  for (const x of [card.led, card.video]) { x.paid = true; x.paidAt = x.paidAt || at; }
+  card.paid = true; card.paidAt = card.paidAt || at; card.combo = true;
+  const u = ownerOf(card);
+  if (!u) return;
+  u.credits = { led: 0, video: 0, ...(u.credits || {}) };
+  for (const kind of ['led', 'video']) {
+    u.credits[kind] += 1;
+    const pending = unpaidOf(card.userId, kind);
+    if (pending.length === 1) useCredit(pending[0], kind, 'combo');
+  }
 }
 
 // Giá thiệp: `price` là giá mở bán đang thu, `listPrice` là giá gốc (hiện gạch ngang) tới hết ngày `promoEndsAt`
@@ -143,6 +166,7 @@ function cardSummary(card) {
     views: card.views || 0,
     guests: card.weddingId ? db.guests.filter((g) => g.weddingId === card.weddingId).length : 0,
     ownerId: card.userId, guest: !card.userId, // guest: thiệp nháp của khách chưa đăng nhập
+    combo: !!card.combo, credits: creditsOf(card),
     rsvpYes: rs.filter((r) => r.attending === 'yes').reduce((n, r) => n + r.count, 0),
     rsvpCount: rs.length,
     wishes: db.wishes.filter((w) => w.cardId === card.id).length,
@@ -478,7 +502,7 @@ route('POST', '/api/cards/:id/duplicate', async (req, res, ctx) => {
   const now = Date.now();
   const card = {
     ...JSON.parse(JSON.stringify(src)), id: rid(12), slug: uniqueSlug(src.slug + '-ban-sao'), title: (src.title + ' (bản sao)').slice(0, 60),
-    status: 'draft', paid: false, paidAt: undefined, publishedAt: undefined, views: 0, createdAt: now, updatedAt: now,
+    status: 'draft', paid: false, paidAt: undefined, combo: undefined, publishedAt: undefined, views: 0, createdAt: now, updatedAt: now,
   };
   if (card.led) card.led = { ...card.led, paid: false, paidAt: undefined, createdAt: now };
   if (card.video) card.video = { ...card.video, paid: false, paidAt: undefined, mp4: null, createdAt: now };
@@ -599,7 +623,6 @@ route('POST', '/api/cards/:id/order', async (req, res, ctx) => {
   const target = P.sub(card);
   if (!target) throw httpError(400, `Hãy tạo ${P.name.toLowerCase()} trước`);
   if (target.paid) throw httpError(400, `${P.name} này đã được kích hoạt`);
-  if (product === 'combo' && ((card.led && card.led.paid) || (card.video && card.video.paid))) throw httpError(400, 'Màn LED hoặc video đã kích hoạt riêng — kích hoạt lẻ phần còn lại nhé');
   const isThis = (o) => o.cardId === card.id && (o.product || 'card') === product && o.status === 'pending';
   let order = db.orders.find(isThis);
   if (!order) {
@@ -623,6 +646,17 @@ route('POST', '/api/cards/:id/order', async (req, res, ctx) => {
   }
   save();
   json(res, 200, { order: orderView(order) });
+});
+
+// Dùng lượt Trọn bộ cho màn LED / video của thiệp này
+route('POST', '/api/cards/:id/redeem', async (req, res, ctx) => {
+  const card = ownedCard(ctx, ctx.params.id);
+  const b = await readJson(req);
+  const kind = b.product === 'video' ? 'video' : b.product === 'led' ? 'led' : null;
+  if (!kind) throw httpError(400, 'Sản phẩm không hợp lệ');
+  useCredit(card, kind);
+  save();
+  json(res, 200, { card: cardSummary(card) });
 });
 
 // Chủ thiệp xem trạng thái đơn (cửa sổ thanh toán hỏi lại vài giây một lần để biết tiền đã về)
