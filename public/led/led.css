@@ -61,7 +61,16 @@ body.active{cursor:default}
 .ctl{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);display:flex;gap:8px;padding:8px;border-radius:999px;background:rgba(0,0,0,.55);backdrop-filter:blur(6px);opacity:0;transition:opacity .3s;z-index:5}
 body.active .ctl{opacity:1}
 body.preview .ctl{display:none}
-.ctl button{border:0;border-radius:999px;background:rgba(255,255,255,.14);color:#fff;font:500 15px 'Hanken Grotesk',sans-serif;width:44px;height:44px;cursor:pointer}
-.ctl button.wide{width:auto;padding:0 18px}
+.ctl button{flex:none;border:0;border-radius:999px;background:rgba(255,255,255,.14);color:#fff;font:500 15px 'Hanken Grotesk',sans-serif;width:44px;height:44px;cursor:pointer}
 .ctl button:hover{background:rgba(255,255,255,.28)}
+/* thanh tua giống trình chiếu video cưới: phát/dừng · kéo để tua · thời gian */
+.ctl{align-items:center;width:min(760px,calc(100vw - 32px));box-sizing:border-box}
+.ctl input{flex:1;min-width:0;accent-color:#f0687b;cursor:pointer}
+.ctl span{flex:none;color:#fff;font:500 13px 'Hanken Grotesk',sans-serif;min-width:84px;text-align:center;font-variant-numeric:tabular-nums;white-space:nowrap}
+@media (max-width:640px){
+  .ctl{flex-wrap:wrap;justify-content:space-between;row-gap:6px;border-radius:22px;padding:10px 12px;bottom:max(16px,env(safe-area-inset-bottom))}
+  .ctl input{order:-1;flex:1 0 100%;height:28px;margin:0}
+  .ctl span{flex:1;min-width:0}
+  .ctl button{width:40px;height:40px}
+}
 @media (prefers-reduced-motion:reduce){.slide{transition:opacity .6s}}
