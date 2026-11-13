@@ -87,13 +87,13 @@ window.openPayModal = async function (cardId, onDone, product = 'card') {
         ${o.coupon ? `<span class="chip ok">Đã áp mã ${esc(o.coupon)}</span>` : ''}
         <p class="muted" style="margin:6px 0 0;font-size:13px">${product === 'video' ? 'Trả một lần · Tải MP4 Full HD · Bỏ dòng "Bản dùng thử"' : isLed ? 'Trả một lần · Bỏ dòng "Bản dùng thử" · Trình chiếu không giới hạn thời gian' :'Trả một lần · Mời khách không giới hạn · Dùng vĩnh viễn'}</p>
       </div>
-      <div style="display:grid;grid-template-columns:150px 1fr;gap:16px;align-items:center;margin:20px 0;padding:16px;border:1px solid var(--line);border-radius:14px">
-        <img src="${esc(o.qr)}" alt="Mã QR chuyển khoản" style="width:150px;height:150px;border-radius:8px;background:#fff">
-        <div style="font-size:14px;display:grid;gap:4px">
+      <div style="display:flex;flex-wrap:wrap;justify-content:center;gap:12px 20px;align-items:center;margin:20px 0;padding:16px;border:1px solid var(--line);border-radius:14px">
+        <img src="${esc(o.qr)}" alt="Mã QR chuyển khoản" style="width:210px;height:210px;border-radius:8px;background:#fff">
+        <div style="flex:1 1 170px;font-size:14px;display:grid;gap:6px">
           <div><span class="muted">Ngân hàng:</span> <b>${esc(o.bank.name)}</b></div>
-          <div><span class="muted">Số TK:</span> <b>${esc(o.bank.accountNo)}</b> <button class="btn sm soft" data-c="${esc(o.bank.accountNo)}">Chép</button></div>
+          <div><span class="muted">Số TK:</span> <b>${esc(o.bank.accountNo)}</b></div>
           <div><span class="muted">Chủ TK:</span> ${esc(o.bank.accountName)}</div>
-          <div><span class="muted">Nội dung:</span> <b style="color:var(--primary)">${esc(o.code)}</b> <button class="btn sm soft" data-c="${esc(o.code)}">Chép</button></div>
+          <div><span class="muted">Nội dung:</span> <b style="color:var(--primary)">${esc(o.code)}</b></div>
         </div>
       </div>
       <p class="muted" style="font-size:13px;margin:-6px 0 14px">Mở app ngân hàng, quét mã QR — số tiền và nội dung đã điền sẵn, giữ nguyên nội dung <b>${esc(o.code)}</b>. Chuyển xong bấm nút bên dưới.</p>
@@ -102,7 +102,6 @@ window.openPayModal = async function (cardId, onDone, product = 'card') {
         <button class="btn plain">Áp dụng</button>
       </form>
       <button class="btn block lg" id="claim">Tôi đã chuyển khoản</button>`;
-    $$('[data-c]', box).forEach((b) => (b.onclick = () => copyText(b.dataset.c)));
     $('#cp', box).onsubmit = async (e) => {
       e.preventDefault();
       try {
