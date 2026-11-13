@@ -50,6 +50,54 @@ async function home() {
     </div>`;
   badge(t.pending);
 }
+// ---------- truy cập ----------
+// Số liệu do các trang giới thiệu gửi về (site.js) và lượt mở trang xem thử; "khách" = trình duyệt ghé lần đầu trong ngày.
+async function traffic() {
+  const days = A.f.tdays || 30;
+  const d = await api('/api/admin/traffic?days=' + days);
+  const t = d.totals, f = d.funnel, y = d.yesterday || { visitors: 0, pv: 0 };
+  const num = (n) => Number(n || 0).toLocaleString('vi-VN');
+  const pct = (a, b) => (b ? Math.round((a / b) * 1000) / 10 + '%' : '—');
+  const KIND = { thiep: 'Thiệp', video: 'Video', led: 'Màn LED' };
+  const rank = (title, sub, list, unit) => {
+    const max = Math.max(1, ...list.map((x) => x.n));
+    return `<div class="chart panel"><h3>${title}</h3><p>${sub}</p>${list.length ? `<table class="tbl rank"><tbody>${list.slice(0, 10).map((x) =>
+      `<tr><td>${esc(x.key)}<span class="meter" style="width:${(x.n / max) * 100}%"></span></td><td><b>${num(x.n)}</b> ${unit}</td></tr>`).join('')}</tbody></table>` : '<p class="empty">Chưa có số liệu.</p>'}</div>`;
+  };
+  const steps = [['Khách ghé web', f.visitors], ['Mở xem thử mẫu', f.views], ['Bấm "Dùng mẫu"', f.uses], ['Tạo thiệp', f.cards], ['Đăng ký tài khoản', f.signups], ['Phát hành thiệp', f.published], ['Thanh toán', f.paid]];
+  const fmax = Math.max(1, ...steps.map((x) => x[1]));
+  const tmax = Math.max(1, ...d.templates.map((x) => x.views));
+  $('#view').innerHTML = `
+    <div class="tools"><select class="input" id="tdays">${[7, 30, 90].map((n) => `<option value="${n}" ${n === days ? 'selected' : ''}>${n} ngày gần đây</option>`).join('')}</select>
+      <span class="muted" style="font-size:13px">Tính từ lúc bật thống kê. Không tính bot và ảnh xem trước nhúng ở trang chủ.</span></div>
+    <div class="kpis">
+      <div class="kpi panel"><span>Khách hôm nay</span><b>${num(d.today.visitors)}</b><small>Hôm qua: ${num(y.visitors)}</small></div>
+      <div class="kpi panel"><span>Lượt xem trang hôm nay</span><b>${num(d.today.pv)}</b><small>Hôm qua: ${num(y.pv)}</small></div>
+      <div class="kpi panel"><span>Khách ${days} ngày</span><b>${num(t.visitors)}</b><small>${num(t.fresh)} người ghé lần đầu</small></div>
+      <div class="kpi panel"><span>Lượt xem trang ${days} ngày</span><b>${num(t.pv)}</b><small>${t.visitors ? (t.pv / t.visitors).toFixed(1) : '—'} trang mỗi khách</small></div>
+      <div class="kpi panel"><span>Khách → tạo thiệp</span><b>${pct(f.cards, f.visitors)}</b><small>${num(f.cards)} thiệp, ${num(f.drafts)} còn là nháp chưa đăng nhập</small></div>
+      <div class="kpi panel"><span>Khách → thanh toán</span><b>${pct(f.paid, f.visitors)}</b><small>${num(f.paid)} đơn · ${money(f.revenue)}</small></div>
+    </div>
+    <div class="charts">
+      <div class="chart panel"><h3>Khách ghé mỗi ngày</h3><p>${num(t.visitors)} khách trong ${days} ngày</p>${bars(d.series, 'visitors', (v) => v + ' khách')}</div>
+      <div class="chart panel"><h3>Lượt xem trang mỗi ngày</h3><p>${num(t.pv)} lượt</p>${bars(d.series, 'pv', (v) => v + ' lượt')}</div>
+    </div>
+    <div class="chart panel" style="margin-bottom:14px"><h3>Phễu ${days} ngày</h3><p>Từ lúc ghé web tới lúc trả tiền — phần trăm so với bước ngay trước.</p>
+      <div class="funnel">${steps.map((x, i) => `<div class="frow"><span>${x[0]}</span><i style="width:${(x[1] / fmax) * 100}%"></i><b>${num(x[1])}${i ? `<small>${pct(x[1], steps[i - 1][1])}</small>` : ''}</b></div>`).join('')}</div>
+    </div>
+    <div class="chart panel" style="margin-bottom:14px"><h3>Mẫu nào được bấm vào</h3><p>Lượt mở trang xem thử và lượt bấm "Dùng mẫu" của từng mẫu.</p>
+      ${d.templates.length ? `<div class="wrapx"><table class="tbl rank"><thead><tr><th>Mẫu</th><th>Loại</th><th>Xem thử</th><th>Dùng mẫu</th><th>Tỉ lệ dùng</th></tr></thead><tbody>
+        ${d.templates.slice(0, 40).map((x) => `<tr><td><b>${esc(x.name)}</b><span class="meter" style="width:${(x.views / tmax) * 100}%"></span></td><td>${KIND[x.kind] || ''}</td><td>${num(x.views)}</td><td>${num(x.uses)}</td><td>${pct(x.uses, x.views)}</td></tr>`).join('')}
+      </tbody></table></div>` : '<p class="empty">Chưa có ai mở mẫu nào từ lúc bật thống kê.</p>'}
+    </div>
+    <div class="charts">
+      ${rank('Khách tới từ đâu', 'Nguồn của lượt ghé đầu tiên trong ngày', d.refs, 'khách')}
+      ${rank('Trang được xem', 'Lượt xem theo trang', d.pages, 'lượt')}
+      ${rank('Thiết bị', 'Điện thoại hay máy tính', d.devices, 'khách')}
+    </div>`;
+  $('#tdays').onchange = (e) => { A.f.tdays = +e.target.value; render(); };
+}
+
 function badge(n) { $('#pendBadge').innerHTML = n ? `<span class="chip warn" style="margin-left:4px">${n}</span>` : ''; }
 
 // ---------- đơn hàng ----------
@@ -280,11 +328,12 @@ function bindFilters(key, map) {
     });
   }
 }
-const VIEWS = { home, orders, users, cards, settings, audit };
+const VIEWS = { home, traffic, orders, users, cards, settings, audit };
 async function render() {
   $$('#tabs .tab').forEach((b) => b.classList.toggle('on', b.dataset.t === A.tab));
   $('#view').onclick = null;
   try { await VIEWS[A.tab](); } catch (e) {
+    if (e.status === 403 && !$('#alogout').textContent.includes('quản trị')) return location.reload(); // quản trị theo tài khoản Google: về màn đăng nhập
     if (e.status === 403) return loginForm('Phiên quản trị đã hết, nhập lại mật khẩu nhé.');
     $('#view').innerHTML = `<p class="empty">${esc(e.message)}</p>`;
   }
@@ -309,9 +358,16 @@ function loginForm(msg) {
   A.meta = window.META = meta;
   document.title = 'Quản trị — ' + meta.brand;
   const s = await fetch('/api/admin/session').then((r) => r.json());
+  if (!s.admin && s.byEmail) {
+    // quản trị theo tài khoản Google được chỉ định: không có ô mật khẩu
+    $('main').innerHTML = `<div class="panel alogin"><h1>Quản trị</h1>
+      <p class="muted">${s.email ? `Tài khoản <b>${esc(s.email)}</b> không có quyền vào trang này, hoặc phiên chưa đăng nhập bằng Google.` : 'Trang này chỉ dành cho chủ web.'} Đăng nhập bằng tài khoản Google được cấp quyền để tiếp tục.</p>
+      <a class="btn block" href="/auth/google?next=%2Fadmin">Đăng nhập bằng Google</a></div>`;
+    return;
+  }
   if (!s.admin) return loginForm(s.enabled ? '' : 'Máy chủ chưa đặt mật khẩu quản trị (biến môi trường ADMIN_PASSWORD).');
-  $('#hello').innerHTML = `${esc(meta.brand)} · <a href="#" id="alogout">Đăng xuất quản trị</a>`;
-  $('#alogout').onclick = async (e) => { e.preventDefault(); await api('/api/admin/logout', { method: 'POST' }); location.reload(); };
+  $('#hello').innerHTML = `${esc(meta.brand)}${s.byEmail ? ' · ' + esc(s.email) : ''} · <a href="#" id="alogout">${s.byEmail ? 'Đăng xuất' : 'Đăng xuất quản trị'}</a>`;
+  $('#alogout').onclick = async (e) => { e.preventDefault(); await api(s.byEmail ? '/api/auth/logout' : '/api/admin/logout', { method: 'POST' }); location.reload(); };
   const h = location.hash.slice(1);
   if (VIEWS[h]) A.tab = h;
   $('#tabs').onclick = (e) => { const b = e.target.closest('.tab'); if (b) { A.tab = b.dataset.t; history.replaceState(null, '', '#' + A.tab); render(); } };

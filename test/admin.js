@@ -44,7 +44,8 @@ async function call(who, method, url, body, raw) {
   await call('v', 'POST', '/api/auth/register', { email: 'xau@test.vn', password: '123456' });
 
   // ---------- đăng nhập quản trị bằng mật khẩu riêng ----------
-  assert.deepEqual((await call('admin', 'GET', '/api/admin/session')).json, { admin: false, enabled: true });
+  r = (await call('admin', 'GET', '/api/admin/session')).json;
+  assert.deepEqual([r.admin, r.enabled, r.byEmail], [false, true, false]);
   assert.equal((await call('admin', 'POST', '/api/admin/login', { password: 'Mat-khau-quan-tri' })).status, 401, 'phân biệt hoa thường');
   assert.equal((await call('admin', 'POST', '/api/admin/login', {})).status, 401);
   assert.equal((await call('admin', 'POST', '/api/admin/login', { password: 'mat-khau-quan-tri' })).status, 200);
@@ -171,6 +172,29 @@ async function call(who, method, url, body, raw) {
   assert.equal((await call('x', 'GET', '/quan-tri')).status, 404, 'đường dẫn quản trị cũ đã bỏ');
   await call('admin', 'POST', '/api/admin/logout');
   assert.equal((await call('admin', 'GET', '/api/admin/stats')).status, 403, 'đăng xuất quản trị');
+
+  // ---------- quản trị theo email chỉ định (ADMIN_EMAILS): chỉ phiên Google của đúng email đó ----------
+  process.env.ADMIN_EMAILS = 'Chu@Gmail.com';
+  assert.equal((await call('admin', 'GET', '/api/admin/stats')).status, 403, 'cookie mật khẩu quản trị hết tác dụng');
+  assert.equal((await call('pw', 'POST', '/api/admin/login', { password: 'mat-khau-quan-tri' })).status, 403, 'tắt đăng nhập bằng mật khẩu');
+  // kẻ xấu đăng ký trước bằng email + mật khẩu với đúng địa chỉ của chủ web → vẫn không phải quản trị
+  await call('gia', 'POST', '/api/auth/register', { email: 'chu@gmail.com', password: '123456' });
+  assert.equal((await call('gia', 'GET', '/api/admin/stats')).status, 403, 'phiên email + mật khẩu không được tính');
+  // Google với email khác
+  r = await call('gk', 'GET', '/auth/google?next=/admin');
+  fakeGoogle = { sub: 'g-khac', email: 'khac@gmail.com', name: 'Khác' };
+  await call('gk', 'GET', `/auth/google/callback?state=${new URL(r.location).searchParams.get('state')}&code=ma-dung`);
+  assert.equal((await call('gk', 'GET', '/api/admin/stats')).status, 403, 'Google nhưng sai email');
+  // Google đúng email
+  r = await call('chu', 'GET', '/auth/google?next=/admin');
+  fakeGoogle = { sub: 'g-chu', email: 'chu@gmail.com', name: 'Chủ web' };
+  r = await call('chu', 'GET', `/auth/google/callback?state=${new URL(r.location).searchParams.get('state')}&code=ma-dung`);
+  assert.equal(r.location, '/admin');
+  assert.equal((await call('chu', 'GET', '/api/admin/stats')).status, 200, 'chủ web vào được');
+  r = (await call('chu', 'GET', '/api/admin/session')).json;
+  assert.deepEqual([r.admin, r.byEmail, r.email], [true, true, 'chu@gmail.com']);
+  assert.equal((await call('gia', 'GET', '/api/admin/stats')).status, 403, 'phiên mật khẩu cũ của kẻ xấu vẫn bị chặn sau khi chủ web gắn Google');
+  delete process.env.ADMIN_EMAILS;
 
   console.log('✓ Đăng nhập Google & trang quản trị: tất cả kiểm thử đều qua');
   server.close();

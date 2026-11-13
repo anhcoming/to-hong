@@ -32,6 +32,15 @@
 .chart .bar{fill:var(--primary);opacity:.85}
 .chart .bar:hover{opacity:1}
 .chart .lbl{font-size:10px;fill:var(--muted)}
+.chart .line{fill:none;stroke:var(--primary);stroke-width:2;vector-effect:non-scaling-stroke}
+.funnel{display:grid;gap:8px}
+.frow{display:grid;grid-template-columns:150px 1fr 110px;gap:10px;align-items:center;font-size:14px}
+.frow i{display:block;height:22px;border-radius:6px;background:var(--primary);opacity:.8;min-width:2px}
+.frow b{text-align:right;font-variant-numeric:tabular-nums}
+.frow small{color:var(--muted);font-weight:400;margin-left:6px}
+.rank td:last-child,.rank th:last-child{text-align:right}
+.rank .meter{display:block;height:6px;border-radius:4px;background:var(--primary);opacity:.55;margin-top:5px;min-width:2px}
+@media (max-width:560px){.frow{grid-template-columns:110px 1fr 84px}}
 .tools{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px;align-items:center}
 .tools .input{max-width:280px}
 .tools select.input{width:auto}
@@ -52,6 +61,7 @@
   <div class="ahead"><div><h1>Quản trị</h1><p class="muted" style="margin:4px 0 0" id="hello"></p></div><button class="btn sm plain" id="reload">↻ Làm mới</button></div>
   <nav class="tabs atabs" id="tabs">
     <button class="tab on" data-t="home">Tổng quan</button>
+    <button class="tab" data-t="traffic">Truy cập</button>
     <button class="tab" data-t="orders">Đơn hàng <span id="pendBadge"></span></button>
     <button class="tab" data-t="users">Người dùng</button>
     <button class="tab" data-t="cards">Thiệp & sản phẩm</button>

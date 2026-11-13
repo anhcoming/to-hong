@@ -20,6 +20,7 @@ const videoLib = require('./lib/video');
 const { execFile } = require('child_process');
 const Wd = require('./lib/wedding');
 const Gs = require('./lib/guests');
+const stats = require('./lib/stats');
 
 store.onLoad(() => Wd.migrate()); // dữ liệu từ trước khi có sổ tay cưới → gắn vào đám cưới
 
@@ -213,7 +214,7 @@ route('GET', '/auth/google/callback', async (req, res, ctx) => {
     rateLimit('google:' + ctx.ip, 30, 9e5);
     const g = await google.exchange(String(ctx.query.get('code') || ''), GOOGLE_CB);
     const user = auth.googleUser(g);
-    auth.startSession(res, user.id);
+    auth.startSession(res, user.id, 'google');
     claimGuestCards(req, res, user);
     redirect(res, safeNext(next), [].concat(res.getHeader('Set-Cookie'), clear));
   } catch (e) {
@@ -231,6 +232,75 @@ route('GET', '/api/meta', async (req, res) => {
     googleLogin: google.enabled(),
   });
 }, { noDb: true });
+
+// ---------------- thống kê truy cập ----------------
+// Trang giới thiệu gửi về (public/js/site.js): p = đường dẫn, v = lượt đầu trong ngày của trình duyệt này, n = lần đầu ghé,
+// r = nguồn tới, m = điện thoại; hoặc u = bấm "Dùng mẫu" (thiep:<mẫu> | video:<mẫu> | led:<màu>-<hiệu ứng>).
+const TRACK_PAGES = { '/': 'Trang chủ', '/mau-thiep': 'Mẫu thiệp', '/video-cuoi': 'Video cưới', '/so-tay-cuoi': 'Sổ tay cưới', '/dang-nhap': 'Đăng nhập' };
+route('POST', '/api/t', async (req, res, ctx) => {
+  try {
+    if (stats.isBot(req)) throw 0;
+    rateLimit('t:' + ctx.ip, 240, 6e5);
+    const b = JSON.parse((await readBody(req, 2000)).toString('utf8') || '{}');
+    const items = [];
+    if (typeof b.u === 'string') { if (/^(thiep|video|led):[\w-]{1,40}$/.test(b.u)) items.push(['use', b.u]); }
+    else if (typeof b.p === 'string') {
+      items.push(['pv', TRACK_PAGES[b.p.replace(/(.)\/$/, '$1')] || 'Trang khác']);
+      if (b.v) {
+        items.push(['visitor', 'all'], ['device', b.m ? 'Điện thoại' : 'Máy tính'], ['ref', stats.source(b.r, req)]);
+        if (b.n) items.push(['visitor', 'new']);
+      }
+    }
+    await stats.hit(items); // ghi xong mới trả lời: hàm serverless bị đóng băng ngay sau khi trả lời
+  } catch (e) { /* thống kê hỏng không được ảnh hưởng tới khách */ }
+  res.writeHead(204); res.end();
+}, { noDb: true });
+// lượt mở trang xem thử một mẫu (không tính ảnh xem trước nhúng ở trang chủ, không tính bot)
+const demoView = (req, ctx, key) => (ctx.query.get('preview') === '1' || stats.isBot(req) ? null : stats.hit([['view', key]]));
+
+route('GET', '/api/admin/traffic', async (req, res, ctx) => {
+  needAdmin(ctx);
+  const days = Math.min(180, Math.max(7, parseInt(ctx.query.get('days'), 10) || 30));
+  const rows = await stats.range(days);
+  const t0 = Date.now() - (days - 1) * DAY;
+  const series = Array.from({ length: days }, (_, i) => { const d = stats.today(t0 + i * DAY); return { date: d, day: d.slice(8) + '/' + d.slice(5, 7), visitors: 0, fresh: 0, pv: 0 }; });
+  const byDay = Object.fromEntries(series.map((s) => [s.date, s]));
+  const sums = { pv: {}, ref: {}, device: {}, view: {}, use: {} };
+  rows.forEach((r) => {
+    const s = byDay[r.day]; if (!s) return;
+    if (r.kind === 'visitor') s[r.key === 'new' ? 'fresh' : 'visitors'] += r.n;
+    else if (r.kind === 'pv') s.pv += r.n;
+    if (sums[r.kind]) sums[r.kind][r.key] = (sums[r.kind][r.key] || 0) + r.n;
+  });
+  const top = (m) => Object.entries(m).map(([key, n]) => ({ key, n })).sort((a, b) => b.n - a.n);
+  const vt = videoLib.options().templates, L = ledLib.options();
+  const nameOf = (key) => {
+    const [kind, id] = [key.slice(0, key.indexOf(':')), key.slice(key.indexOf(':') + 1)];
+    if (kind === 'thiep') return templates[id] ? templates[id].name : id;
+    if (kind === 'video') return (vt.find((t) => t.id === id) || {}).name || (id === 'chung' ? 'Chưa chọn mẫu' : id);
+    const [p, e] = id.split('-');
+    const pn = (L.palettes.find((x) => x.id === p) || {}).name, en = (L.effects.find((x) => x.id === e) || {}).name;
+    return pn ? `${pn}${en ? ' · ' + en : ''}` : id === 'chung' ? 'Chưa chọn mẫu' : id;
+  };
+  const keys = new Set([...Object.keys(sums.view), ...Object.keys(sums.use)]);
+  const tpls = [...keys].map((key) => ({ key, kind: key.split(':')[0], name: nameOf(key), views: sums.view[key] || 0, uses: sums.use[key] || 0 }))
+    .sort((a, b) => b.views + b.uses * 3 - (a.views + a.uses * 3));
+  const since = new Date(stats.today(t0) + 'T00:00:00+07:00').getTime();
+  const sum = (k) => series.reduce((n, s) => n + s[k], 0);
+  const paid = db.orders.filter((o) => o.status === 'paid' && o.paidAt >= since);
+  json(res, 200, {
+    days, series, today: series[series.length - 1], yesterday: series[series.length - 2],
+    totals: { visitors: sum('visitors'), fresh: sum('fresh'), pv: sum('pv') },
+    pages: top(sums.pv), refs: top(sums.ref), devices: top(sums.device), templates: tpls,
+    funnel: {
+      visitors: sum('visitors'), views: Object.values(sums.view).reduce((a, b) => a + b, 0), uses: Object.values(sums.use).reduce((a, b) => a + b, 0),
+      cards: db.cards.filter((c) => c.createdAt >= since).length, drafts: db.cards.filter((c) => c.createdAt >= since && !c.userId).length,
+      signups: db.users.filter((u) => u.createdAt >= since).length,
+      published: db.cards.filter((c) => c.publishedAt && c.publishedAt >= since).length,
+      paid: paid.length, revenue: paid.reduce((n, o) => n + o.amount, 0),
+    },
+  });
+});
 
 // ---------------- API: thiệp ----------------
 route('GET', '/api/cards', async (req, res, ctx) => {
@@ -514,9 +584,11 @@ route('POST', '/api/orders/:code/claim', async (req, res, ctx) => {
 
 // ---------------- API: quản trị ----------------
 route('GET', '/api/admin/session', async (req, res, ctx) => {
-  json(res, 200, { admin: ctx.admin, enabled: adminAuth.enabled() });
+  // byEmail: quản trị theo tài khoản Google được chỉ định (ADMIN_EMAILS) thay cho mật khẩu
+  json(res, 200, { admin: ctx.admin, enabled: adminAuth.byEmail() || adminAuth.enabled(), byEmail: adminAuth.byEmail(), email: ctx.user ? ctx.user.email : '' });
 });
 route('POST', '/api/admin/login', async (req, res, ctx) => {
+  if (adminAuth.byEmail()) throw httpError(403, 'Trang quản trị chỉ mở cho tài khoản Google của chủ web');
   rateLimit('admin-login:' + ctx.ip, 8, 15 * 60e3);
   if (!adminAuth.enabled()) throw httpError(503, 'Chưa đặt mật khẩu quản trị (biến môi trường ADMIN_PASSWORD)');
   const b = await readJson(req);
@@ -637,6 +709,7 @@ route('GET', '/demo/:tpl', async (req, res, ctx) => {
   // ?preview=1: bỏ màn mở thiệp, hiện thẳng trang bìa (ảnh xem trước trong bộ sưu tập trang chủ)
   // ?lite=1: bản nhẹ cho thẻ rê chuột — ảnh nạp lười, khối ngoài màn hình chưa vẽ, bản đồ Google thay bằng ô giữ chỗ
   const preview = ctx.query.get('preview') === '1', lite = ctx.query.get('lite') === '1';
+  await demoView(req, ctx, 'thiep:' + tpl.id);
   html(res, 200, renderCard(card, { guest, wishes, demo: true, preview, lite, trial: false, baseUrl: BASE_URL }));
 });
 
@@ -647,6 +720,7 @@ route('GET', '/led/:slug', async (req, res, ctx) => {
   if (slug === 'demo') {
     const q = Object.fromEntries(ctx.query);
     const led = ledLib.normalize({ ...q, kicker: 'Lễ Thành Hôn', message: ledLib.defaults().message });
+    await demoView(req, ctx, `led:${led.palette}-${led.effect}`);
     const card = { data: cd.normalize(cd.sample()) };
     return html(res, 200, ledLib.renderLed(card, led, { demo: true, preview: q.preview === '1' }));
   }
@@ -681,6 +755,7 @@ route('GET', '/video/:slug', async (req, res, ctx) => {
       toigian: P('xanhla', [1, 3, 2, 5, 4, 6, 8, 7, 9]),
     };
     const photos = SETS[q.template] || [];
+    await demoView(req, ctx, 'video:' + (videoLib.options().templates.some((t) => t.id === q.template) ? q.template : 'chung'));
     const v = videoLib.normalize({ template: q.template, photoBg: q.photo === '1', photos, event: { kind: 'Lễ Dạm Ngõ', date: '2026-11-22', time: '09:00', place: 'Tư gia nhà gái' } });
     return html(res, 200, videoLib.renderVideo(card, v, { preview: q.preview === '1' }));
   }
@@ -927,10 +1002,11 @@ const server = http.createServer(async (req, res) => {
   }
   try {
     if (matched) {
+      const user = matched.noDb ? null : auth.currentUser(req);
       const ctx = {
         query: url.searchParams,
-        user: matched.noDb ? null : auth.currentUser(req),
-        admin: adminAuth.check(req),
+        user,
+        admin: adminAuth.byEmail() ? adminAuth.isAdminUser(user, user && auth.viaGoogle(req)) : adminAuth.check(req),
         guest: guestId(req),
         ip: (req.headers['x-forwarded-for'] || '').split(',')[0].trim() || req.socket.remoteAddress,
         params,

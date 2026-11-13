@@ -101,5 +101,25 @@
   window.addEventListener('scroll', topCheck, { passive: true }); topCheck();
   top.addEventListener('click', function () { window.scrollTo({ top: 0, behavior: matchMedia('(prefers-reduced-motion:reduce)').matches ? 'auto' : 'smooth' }); });
 
+  // thống kê truy cập cho trang quản trị: chỉ gửi con số cộng dồn (trang nào, lượt đầu trong ngày, nguồn tới, bấm "Dùng mẫu" nào) —
+  // không cookie, không định danh người xem. Trình duyệt chặn localStorage thì mỗi lượt xem coi như một khách.
+  try {
+    if (!navigator.webdriver) {
+      var send = function (o) { var b = JSON.stringify(o); if (navigator.sendBeacon) navigator.sendBeacon('/api/t', b); else fetch('/api/t', { method: 'POST', body: b, keepalive: true }); };
+      var day = new Date(Date.now() + 7 * 36e5).toISOString().slice(0, 10), isNew = 1, first = 1;
+      try { isNew = localStorage.getItem('cn_day') !== day ? 1 : 0; first = localStorage.getItem('cn_seen') ? 0 : 1; localStorage.setItem('cn_day', day); localStorage.setItem('cn_seen', '1'); } catch (e) { /* bỏ qua */ }
+      var ref = '';
+      try { var rh = document.referrer ? new URL(document.referrer).host : ''; ref = new URLSearchParams(location.search).get('utm_source') || (rh && rh !== location.host ? rh : ''); } catch (e) { /* bỏ qua */ }
+      send({ p: location.pathname, v: isNew, n: first, r: ref, m: matchMedia('(max-width:760px)').matches ? 1 : 0 });
+      document.addEventListener('click', function (e) {
+        var a = e.target.closest && e.target.closest('a[href*="/thiep-cua-toi?tao"]');
+        if (!a) return;
+        var q = new URL(a.href, location.href).searchParams;
+        var k = q.get('tao') ? 'thiep:' + q.get('tao') : q.get('tao-video') ? 'video:' + (q.get('mau') || 'chung') : q.get('tao-led') ? 'led:' + (q.get('palette') ? q.get('palette') + '-' + (q.get('effect') || '') : 'chung') : '';
+        if (k) send({ u: k });
+      }, true);
+    }
+  } catch (e) { /* thống kê không được làm hỏng trang */ }
+
   window.SITE = { LOGO: LOGO, money: money };
 })();

@@ -358,6 +358,28 @@ async function call(who, method, url, body) {
   r = await call('g', 'GET', '/api/wedding');
   assert.equal(r.json.wedding.couple.groom.name, 'Khách Rể', 'sổ tay mới lấy tên đôi từ thiệp nháp');
 
+  // thống kê truy cập: trang giới thiệu gửi lượt về, quản trị xem tổng hợp
+  const beacon = (o, ua = 'Mozilla/5.0 (iPhone) Zalo') => fetch(base + '/api/t', { method: 'POST', headers: { 'user-agent': ua }, body: JSON.stringify(o) }).then((x) => x.status);
+  assert.equal(await beacon({ p: '/', v: 1, n: 1, r: '', m: 1 }), 204);
+  assert.equal(await beacon({ p: '/mau-thiep/', v: 0 }), 204);
+  assert.equal(await beacon({ u: 'thiep:dodam' }), 204);
+  assert.equal(await beacon({ u: 'thiep:<script>' }), 204, 'khoá lạ bị bỏ qua, không lỗi');
+  assert.equal(await beacon({ p: '/', v: 1 }, 'Googlebot/2.1'), 204, 'bot không được tính');
+  const viewsBefore = ((await call('qt', 'GET', '/api/admin/traffic')).json.templates.find((x) => x.key === 'thiep:dodam') || { views: 0 }).views;
+  await fetch(base + '/demo/dodam', { headers: { 'user-agent': 'Mozilla/5.0' } });
+  await fetch(base + '/demo/dodam?preview=1', { headers: { 'user-agent': 'Mozilla/5.0' } });
+  assert.equal((await call('u', 'GET', '/api/admin/traffic')).status, 403, 'chỉ quản trị xem được thống kê');
+  r = await call('qt', 'GET', '/api/admin/traffic?days=7');
+  assert.equal(r.status, 200);
+  assert.equal(r.json.series.length, 7);
+  assert.deepEqual([r.json.today.visitors, r.json.today.fresh, r.json.today.pv], [1, 1, 2]);
+  assert.deepEqual(r.json.refs, [{ key: 'Zalo', n: 1 }]);
+  assert.ok(r.json.pages.some((x) => x.key === 'Mẫu thiệp' && x.n === 1));
+  const td = r.json.templates.find((x) => x.key === 'thiep:dodam');
+  assert.equal(td.uses, 1, 'đếm lượt bấm Dùng mẫu');
+  assert.equal(td.views, viewsBefore + 1, 'đếm lượt mở xem thử, bỏ ảnh xem trước');
+  assert.ok(td.name);
+
   // nhân bản + xoá
   r = await call('u', 'POST', `/api/cards/${id}/duplicate`);
   assert.equal(r.json.card.paid, false);
