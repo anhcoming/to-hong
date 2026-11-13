@@ -103,10 +103,8 @@ const panes = {
         ${d.photos.filter(Boolean).length + pendingSlots.size < 24 ? '<label class="drop">+ Thêm ảnh<br>(chọn nhiều)<input type="file" accept="image/*" multiple id="photosIn" hidden></label>' : ''}
       </div>
     </section>
-    <section class="group panel"><h3>Nhạc nền</h3>
-      ${musicUp ? `<p class="muted" style="margin:0"><span class="spin"></span> Đang tải lên "${esc(musicUp)}"…</p>` : d.music ? `<audio controls src="${esc(d.music)}" style="width:100%;margin-bottom:10px"></audio><button class="btn sm danger" data-music-del>Bỏ nhạc</button>` : `
-        <label class="btn soft">Tải lên file MP3<input type="file" accept="audio/mpeg" id="musicIn" hidden></label>
-        <p class="muted" style="font-size:13px;margin:10px 0 0">Tối đa 12MB. Chỉ dùng bản nhạc bạn có quyền sử dụng. Nhạc phát khi khách chạm "Mở thiệp".</p>`}
+    <section class="group panel"><h3>Nhạc nền ${musicNow().auto ? '<small>tự chọn theo mẫu</small>' : ''}</h3>
+      ${musicPane()}
     </section>`;
   },
 
@@ -155,6 +153,7 @@ let curTab = null;
 function showTab(t) {
   if (!panes[t]) t = null;
   curTab = t;
+  if (t !== 'media' && musicPrev && !musicPrev.paused) musicPrev.pause(); // đóng bảng thì thôi nghe thử
   $$('#tools button').forEach((b) => b.classList.toggle('on', b.dataset.tab === t));
   document.body.classList.toggle('sheet-open', !!t);
   if (!t) { $('#panes').innerHTML = ''; return; }
@@ -202,28 +201,93 @@ function askLogin(why = 'save') {
 
 // ---------- lưu ----------
 function status(t) { const el = $('#saved'); el.textContent = card && card.guest && t === 'Đã lưu ✓' ? 'Bản nháp tạm' : t; el.classList.toggle('ok', el.textContent === 'Đã lưu ✓'); el.title = el.textContent; }
-function scheduleSave(delay = 700) {
+// Lưu xong có phải vẽ lại thiệp không: chỉ bỏ qua khi MỌI thay đổi từ lần lưu trước đã được đổi sẵn ngay trên khung
+// (vd. ảnh vừa tải lên đã thay vào đúng ô) — khỏi tải lại cả thiệp, album không nhảy về ảnh đầu, hiệu ứng không chạy lại.
+// null = chưa có thay đổi; true = toàn thay đổi đã hiện sẵn; false = có thay đổi cần vẽ lại.
+let liveOnly = null;
+function markChange(live) { liveOnly = live && liveOnly !== false; }
+function scheduleSave(delay = 700, { live = false } = {}) {
+  markChange(live);
   status('Đang chỉnh sửa…');
   clearTimeout(saveTimer);
-  saveTimer = setTimeout(save, delay);
+  saveTimer = setTimeout(() => save({ marked: true }), delay);
 }
-async function save() {
+async function save({ live = false, marked = false } = {}) {
+  if (!marked) markChange(live);
   if (saving) { pending = true; return; }
   saving = true;
   status('Đang lưu…');
+  const redraw = liveOnly !== true;
+  liveOnly = null;
   try {
     const r = await api(`/api/cards/${CARD_ID}`, { method: 'PUT', body: { data: card.data, title: card.title, template: card.template, palette: card.palette }, quiet: true });
     Object.assign(card, { ...r.card, data: card.data }); // giữ nguyên dữ liệu đang gõ
     upStatus(); // còn ảnh đang tải thì báo số ảnh, hết thì "Đã lưu ✓"
-    refreshPreview();
+    if (redraw) refreshPreview();
     renderHeader();
+    shareSoon();
   } catch (e) {
+    if (redraw) liveOnly = false; // lần lưu sau vẫn phải vẽ lại
     status('Lưu thất bại');
     toast(e.message, true);
   } finally {
     saving = false;
-    if (pending) { pending = false; save(); }
+    if (pending) { pending = false; save({ marked: true }); }
   }
+}
+// ---------- ảnh xem trước khi gửi link (Zalo, Messenger, Facebook…) ----------
+// JPEG 1200×630: ảnh cưới phủ nền + tên đôi + ngày cưới. Vẽ lại khi ảnh / tên / ngày đổi (shareKey), chạy ngầm.
+// Zalo không đọc ảnh WebP, nên ảnh tải lên (WebP) không tự làm ảnh xem trước được.
+let shareTimer = null, shareBusy = false;
+function shareSoon(ms = 2500) { clearTimeout(shareTimer); shareTimer = setTimeout(makeShareImage, ms); }
+const WEEKDAY = ['Chủ Nhật', 'Thứ Hai', 'Thứ Ba', 'Thứ Tư', 'Thứ Năm', 'Thứ Sáu', 'Thứ Bảy'];
+async function makeShareImage() {
+  const d = card && card.data;
+  if (!d || card.guest || shareBusy) return;
+  const src = [d.cover, ...(d.photos || [])].find((u) => u && !/^blob:/.test(u)) || '';
+  if (!src) return;
+  const names = [d.groom.name, d.bride.name].filter(Boolean).join(' & ');
+  const key = [src, names, d.date].join('|');
+  if (d.shareKey === key && d.shareImg) return;
+  shareBusy = true;
+  try {
+    const img = await new Promise((ok, no) => { const im = new Image(); im.crossOrigin = 'anonymous'; im.onload = () => ok(im); im.onerror = no; im.src = baseUrl(src); });
+    const W = 1200, H = 630, c = document.createElement('canvas');
+    c.width = W; c.height = H;
+    const g = c.getContext('2d');
+    // ảnh phủ kín khung, giữ điểm lấy nét đã căn (#p=x,y[,z])
+    const [fx, fy, fz] = focusOf(src);
+    const sc = Math.max(W / img.naturalWidth, H / img.naturalHeight) * fz, dw = img.naturalWidth * sc, dh = img.naturalHeight * sc;
+    g.drawImage(img, (W - dw) * fx / 100, (H - dh) * fy / 100, dw, dh);
+    const gr = g.createLinearGradient(0, H * 0.35, 0, H);
+    gr.addColorStop(0, 'rgba(20,8,10,0)'); gr.addColorStop(1, 'rgba(20,8,10,.82)');
+    g.fillStyle = gr; g.fillRect(0, 0, W, H);
+    g.textAlign = 'center'; g.fillStyle = '#fff'; g.shadowColor = 'rgba(0,0,0,.35)'; g.shadowBlur = 12;
+    g.font = '600 24px system-ui, sans-serif'; g.globalAlpha = 0.88;
+    if ('letterSpacing' in g) g.letterSpacing = '6px';
+    g.fillText('THIỆP CƯỚI', W / 2, 432);
+    if ('letterSpacing' in g) g.letterSpacing = '0px';
+    g.globalAlpha = 1;
+    let fs = 80;
+    do { g.font = `italic 600 ${fs}px Georgia, 'Times New Roman', serif`; fs -= 4; } while (g.measureText(names).width > W - 120 && fs > 36);
+    g.fillText(names || card.title, W / 2, 516);
+    const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(d.date || '');
+    if (m) {
+      g.font = '500 30px system-ui, sans-serif';
+      g.fillText(`${WEEKDAY[new Date(Date.UTC(+m[1], +m[2] - 1, +m[3])).getUTCDay()]} · ${m[3]}.${m[2]}.${m[1]}`, W / 2, 572);
+    }
+    g.shadowBlur = 0; g.textAlign = 'right'; g.globalAlpha = 0.75; g.font = '600 22px system-ui, sans-serif';
+    g.fillText(location.host, W - 36, H - 26);
+    const blob = await new Promise((ok, no) => c.toBlob((b) => (b ? ok(b) : no(new Error('toBlob'))), 'image/jpeg', 0.86));
+    const url = await uploadFile(new File([blob], 'share.jpg', { type: 'image/jpeg' }), { quiet: true, resized: true });
+    const old = d.shareImg;
+    d.shareImg = url; d.shareKey = key;
+    const r = await api(`/api/cards/${CARD_ID}`, { method: 'PUT', body: { data: card.data }, quiet: true });
+    Object.assign(card, { ...r.card, data: card.data });
+    if (old && old !== url) discardUpload(old);
+  } catch (e) {
+    console.info('[ảnh chia sẻ] bỏ qua:', e && e.message); // ảnh không cho đọc (CORS) / mạng lỗi: dùng ảnh mặc định
+  } finally { shareBusy = false; }
 }
 // Khung xem trước = khung sửa trực tiếp (bấm ảnh/chữ để sửa). "Xem như khách" tắt các viền sửa.
 let liveEdit = true;
@@ -415,6 +479,43 @@ async function loadResponses() {
 // Tải nhiều ảnh từ bảng "Ảnh & nhạc" mà không che màn hình: giữ chỗ từng ô ngay (vòng chờ), nén xong hiện ảnh trong máy
 // ở bảng lẫn trên thiệp, tải ngầm (3 ảnh một lúc), xong ảnh nào lưu ảnh đó. Ô đang chờ: card.data chưa đổi.
 let musicUp = ''; // tên file nhạc đang tải lên
+// ---------- nhạc nền: nhạc mẫu miễn phí bản quyền (lib/music.js) hoặc MP3 tự tải lên ----------
+// Chưa chọn (và chưa tắt) thì thiệp tự phát bản hợp với nhóm mẫu đang dùng.
+function musicNow() {
+  const d = card.data, M = META.music || { tracks: [], byGroup: {} };
+  const grp = (META.templates.find((t) => t.id === card.template) || {}).group || 'toigian';
+  const url = d.music || (d.musicOff ? '' : M.byGroup[grp] || '');
+  return { url, auto: !d.music && !d.musicOff && !!url, off: !url, track: M.tracks.find((t) => t.file === url) };
+}
+let musicPrev = null; // máy nghe thử trong bảng (một bản một lúc)
+function musicPane() {
+  const M = META.music || { tracks: [] }, now = musicNow();
+  const playing = (f) => musicPrev && !musicPrev.paused && musicPrev.dataset.f === f;
+  const row = (f, name, sub, picked, pickAttr) => `<div class="mrow${picked ? ' on' : ''}">
+      <button class="mplay" data-mplay="${esc(f)}" aria-label="${playing(f) ? 'Dừng nghe thử' : 'Nghe thử'}">${playing(f) ? '❚❚' : '▶'}</button>
+      <div class="mt"><b>${esc(name)}</b><small>${esc(sub)}</small></div>
+      ${picked ? '<span class="mnow">✓ Đang dùng</span>' : `<button class="btn sm plain" ${pickAttr}>Chọn</button>`}
+    </div>`;
+  const own = card.data.music && !now.track ? row(card.data.music, 'Nhạc bạn tải lên', 'MP3 của bạn', true, '') : '';
+  return `${musicUp ? `<p class="muted" style="margin:0 0 10px"><span class="spin"></span> Đang tải lên "${esc(musicUp)}"…</p>` : ''}
+    <div class="mlist">${own}${M.tracks.map((t) => row(t.file, t.name, `${t.by} · ${t.mood}`, now.url === t.file, `data-mpick="${esc(t.file)}"`)).join('')}</div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px">
+      <label class="btn sm soft">Tải lên MP3 của bạn<input type="file" accept="audio/mpeg" id="musicIn" hidden></label>
+      ${now.auto || !M.tracks.length ? '' : '<button class="btn sm plain" data-music-auto>Để thiệp tự chọn theo mẫu</button>'}
+      ${now.off ? '' : '<button class="btn sm plain" data-music-off>Tắt nhạc</button>'}
+    </div>
+    <p class="muted" style="font-size:13px;margin:10px 0 0">${now.off ? 'Thiệp đang tắt nhạc.' : 'Nhạc phát khi khách chạm "Mở thiệp".'} Nhạc mẫu là bản thu miễn phí bản quyền. Tự tải lên: tối đa 12MB, chỉ dùng bản nhạc bạn có quyền sử dụng.</p>`;
+}
+function musicPreview(f) {
+  if (musicPrev && musicPrev.dataset.f === f && !musicPrev.paused) { musicPrev.pause(); }
+  else {
+    if (musicPrev) musicPrev.pause();
+    musicPrev = new Audio(f); musicPrev.dataset.f = f;
+    musicPrev.onended = musicPrev.onpause = () => { if (curTab === 'media') rerender(); };
+    musicPrev.play().catch((e) => toast('Không phát được: ' + e.message, true));
+  }
+  if (curTab === 'media') rerender();
+}
 const pendingSlots = new Set(); // các vị trí (cover, photos.3…) đang có ảnh chờ tải
 function freeSlots(n) {
   const ps = card.data.photos, out = [];
@@ -433,7 +534,7 @@ async function pumpUploads() {
   if (upRunning >= 3 || !upQueue.length) return;
   upRunning++;
   const { key, file } = upQueue.shift();
-  let local = '';
+  let local = '', live = false;
   try {
     const small = await resizeImage(file);
     local = URL.createObjectURL(small);
@@ -445,7 +546,7 @@ async function pumpUploads() {
     // trong lúc chờ, ô giữ chỗ bị ảnh khác chiếm (sắp xếp lại) → sang ô trống khác, không đè ảnh
     let to = key;
     if (key !== 'cover' && card.data.photos[+key.split('.')[1]]) { pendingSlots.delete(key); to = freeSlots(1)[0]; }
-    if (to) photoSet(to, url); else { toast('Album đã đủ 24 ảnh', true); discardUpload(url); }
+    if (to) { photoSet(to, url); live = to === key && photoLive(key, url); } else { toast('Album đã đủ 24 ảnh', true); discardUpload(url); }
   } catch (e) {
     toast(e.message, true);
   } finally {
@@ -454,7 +555,7 @@ async function pumpUploads() {
     if (local) setTimeout(() => URL.revokeObjectURL(local), 60000);
     upRunning--;
     if (curTab === 'media') rerender();
-    scheduleSave(400); // gom các ảnh xong gần nhau vào một lần lưu
+    scheduleSave(400, { live }); // gom các ảnh xong gần nhau vào một lần lưu; ảnh đã thay sẵn trên thiệp thì khỏi vẽ lại
     upStatus();
     pumpUploads();
   }
@@ -506,7 +607,7 @@ function bind() {
       musicUp = f.name;
       rerender();
       status('Đang tải nhạc lên…');
-      try { card.data.music = await uploadFile(f, { quiet: true }); musicUp = ''; rerender(); save(); }
+      try { card.data.music = await uploadFile(f, { quiet: true }); card.data.musicOff = false; musicUp = ''; rerender(); save(); }
       catch (err) { musicUp = ''; rerender(); toast(err.message, true); status('Tải nhạc thất bại'); }
     }
   });
@@ -523,7 +624,10 @@ function bind() {
     else if (ds.phDel !== undefined) { d.photos[+ds.phDel] = ''; trimPhotos(); }
     else if (ds.phUp !== undefined) { const i = +ds.phUp; let j = i - 1; while (j > 0 && !d.photos[j]) j--; [d.photos[j], d.photos[i]] = [d.photos[i], d.photos[j]]; }
     else if (ds.coverDel !== undefined) d.cover = '';
-    else if (ds.musicDel !== undefined) d.music = '';
+    else if (ds.mplay !== undefined) { musicPreview(ds.mplay); return; }
+    else if (ds.mpick !== undefined) { d.music = ds.mpick; d.musicOff = false; }
+    else if (ds.musicAuto !== undefined) { d.music = ''; d.musicOff = false; }
+    else if (ds.musicOff !== undefined) { d.music = ''; d.musicOff = true; if (musicPrev) musicPrev.pause(); }
     else if (ds.tg !== undefined) { tplGroup = ds.tg; rerender(); return; }
     else if (ds.mode) { setMode(ds.mode === 'edit'); rerender(); return; }
     else if (ds.tpl) { if (card.template !== ds.tpl) { card.template = ds.tpl; card.palette = ''; } }
@@ -588,6 +692,16 @@ function photoSet(key, url) {
   trimPhotos();
 }
 function applyLive() { rerender(); renderHeader(); clearTimeout(saveTimer); save(); }
+// Ảnh vừa tải lên xong: thay ảnh thật vào đúng ô đang hiện ảnh tạm trên thiệp. Trả về false (→ phải vẽ lại thiệp) khi
+// thiệp chưa có ô đó (vd. ô album thứ 10 mà mẫu chưa vẽ) hoặc đang có bản vẽ lại dở dang (bản đó có thể thiếu ảnh này).
+function photoLive(key, url) {
+  try {
+    const fr = $('#frame');
+    if ($('#frameNext') || !fr.contentDocument || !fr.contentDocument.querySelector(`[data-ce-photo="${key}"]`)) return false;
+    fr.contentWindow.postMessage({ cePhoto: 1, key, src: url, final: 1 }, location.origin);
+    return true;
+  } catch (e) { return false; }
+}
 function pickFile(accept = 'image/*') {
   return new Promise((ok) => {
     const inp = document.createElement('input');
@@ -632,7 +746,8 @@ async function finishUpload(key, up, blob, local, x, y, z) {
     await new Promise((ok) => { const im = new Image(); im.onload = im.onerror = ok; im.src = url; setTimeout(ok, 8000); });
     if (localPhotos[key] !== shown) return; // đã chọn ảnh khác cho ô này trong lúc chờ
     photoSet(key, withFocus(url, x, y, z));
-    applyLive();
+    rerender(); renderHeader(); clearTimeout(saveTimer);
+    save({ live: photoLive(key, withFocus(url, x, y, z)) });
   } catch (e) {
     if (localPhotos[key] !== shown) return;
     toast(e.message, true);
@@ -845,6 +960,7 @@ window.addEventListener('message', (e) => {
   showTab(want in OLD ? OLD[want] : want);
   refreshPreview();
   status('Đã lưu ✓');
+  shareSoon(4000); // thiệp cũ chưa có ảnh xem trước khi gửi link → tạo ngầm
   // thiệp mới chưa có tên đôi: mở bảng điền nhanh (mỗi thiệp một lần trong phiên này)
   try {
     if (!card.data.groom.name && !card.data.bride.name && !sessionStorage.getItem('qs:' + CARD_ID)) { sessionStorage.setItem('qs:' + CARD_ID, '1'); setTimeout(() => quickStart(false), 500); }

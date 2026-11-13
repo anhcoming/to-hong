@@ -81,8 +81,35 @@
     var cells = { d: [], h: [], m: [], s: [] };
     $$('[data-cd]').forEach(function (el) { var k = el.getAttribute('data-cd'); if (cells[k]) cells[k].push(el); });
     var set = function (k, v) { cells[k].forEach(function (el) { el.textContent = v; }); };
+    // còn dưới 1 ngày thì ẩn hẳn ô "0 ngày". Ô ngày = khung bao riêng của số ngày (kiểu ô vuông), hoặc — với kiểu chữ
+    // liền "<b>0</b> ngày <b>22</b> giờ" — gói số + chữ "ngày" theo sau vào một span để ẩn cùng nhau.
+    var dayUnits = cells.d.map(function (el) {
+      var p = el.parentElement;
+      if (p && p.querySelectorAll('[data-cd]').length === 1 && !p.hasAttribute('role')) return p;
+      var w = document.createElement('span'), nx = el.nextSibling;
+      el.parentNode.insertBefore(w, el);
+      w.appendChild(el);
+      if (nx && nx.nodeType === 3) w.appendChild(nx);
+      return w;
+    });
+    var noDays = null;
+    var hideDays = function (hide) {
+      if (hide === noDays) return;
+      noDays = hide;
+      dayUnits.forEach(function (u) {
+        u.style.display = hide ? 'none' : '';
+        // khung lưới chia sẵn 4 cột (ngày/giờ/phút/giây) → còn 3 ô thì chia 3 cột cho cân
+        var box = u.parentElement;
+        if (!box) return;
+        if (hide) {
+          var cols = getComputedStyle(box).gridTemplateColumns;
+          if (cols && cols !== 'none' && cols.split(' ').length === 4) { box.dataset.cdCols = box.style.gridTemplateColumns || ' '; box.style.gridTemplateColumns = 'repeat(3,1fr)'; }
+        } else if (box.dataset.cdCols) { box.style.gridTemplateColumns = box.dataset.cdCols.trim(); delete box.dataset.cdCols; }
+      });
+    };
     var tick = function () {
       var s = Math.max(0, Math.floor((target - Date.now()) / 1000));
+      hideDays(s > 0 && s < 86400);
       set('d', Math.floor(s / 86400));
       set('h', Math.floor(s % 86400 / 3600));
       set('m', Math.floor(s % 3600 / 60));
@@ -91,6 +118,36 @@
     tick();
     setInterval(tick, 1000);
   }
+
+  // ----- hộp thoại: tiêu đề + nút đóng đứng yên khi cuộn nội dung -----
+  // Hộp có sẵn thanh đầu (…-dlg-head, vd. Hộp quà mừng) thì card.css cho dính trên cùng. Hộp chỉ có nút × đặt nổi
+  // (vd. Xác nhận tham dự: tiêu đề nằm trong nội dung) → gom tiêu đề + nút × vào một thanh dính; không có tiêu đề thì giữ nút ×.
+  $$('dialog').forEach(function (dlg) {
+    var x = null;
+    for (var c = dlg.firstElementChild; c; c = c.nextElementSibling) {
+      if (c.tagName === 'BUTTON' && c.getAttribute('aria-label') === 'Đóng') { x = c; break; }
+    }
+    if (!x) return;
+    var bar = document.createElement('div');
+    bar.className = 'dlg-bar';
+    var sec = x.nextElementSibling;
+    var h = sec && sec.firstElementChild && /^H[23]$/.test(sec.firstElementChild.tagName) ? sec.firstElementChild : null;
+    dlg.insertBefore(bar, dlg.firstChild);
+    if (h) {
+      var cs = getComputedStyle(sec), hs = getComputedStyle(h);
+      bar.style.background = getComputedStyle(dlg).backgroundColor;
+      bar.style.paddingLeft = cs.paddingLeft;
+      if (hs.textAlign === 'center') h.style.paddingLeft = '44px'; // tiêu đề căn giữa: chừa bên trái bằng nút × cho cân
+      bar.appendChild(h);
+      bar.appendChild(x);
+      sec.style.paddingTop = '0';
+      dlg.style.paddingTop = '0';
+      dlg.addEventListener('scroll', function () { bar.classList.toggle('stuck', dlg.scrollTop > 2); }, { passive: true });
+    } else {
+      bar.classList.add('only-x');
+      bar.appendChild(x);
+    }
+  });
 
   // ----- album ảnh -----
   var lb = $('#lightbox');

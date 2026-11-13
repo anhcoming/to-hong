@@ -17,6 +17,7 @@ const { renderCard, renderNotice, templates, templateList, groups: templateGroup
 const banks = require('./lib/banks');
 const ledLib = require('./lib/led');
 const videoLib = require('./lib/video');
+const musicLib = require('./lib/music');
 const { execFile } = require('child_process');
 const Wd = require('./lib/wedding');
 const Gs = require('./lib/guests');
@@ -139,10 +140,23 @@ function ownedCard(ctx, id, opts = {}) {
 function canManage(user, card) {
   return !!(user && card && (card.userId === user.id || (card.weddingId && Wd.isMember(Wd.get(card.weddingId), user))));
 }
+// thiệp theo đường dẫn; đường dẫn cũ (đã đổi sang tên đôi) vẫn tìm được để link đã gửi không chết
+const cardBySlug = (slug) => db.cards.find((c) => c.slug === slug) || db.cards.find((c) => (c.oldSlugs || []).includes(slug)) || null;
+const slugTaken = (x, exceptId) => RESERVED.has(x) || db.cards.some((c) => c.id !== exceptId && (c.slug === x || (c.oldSlugs || []).includes(x)));
+// đường dẫn tự sinh ("thiep-ab12cd") → đổi một lần sang tên đôi ("duc-anh-pham-nga") khi đã có đủ tên; giữ đường dẫn cũ
+const AUTO_SLUG = /^thiep-[a-z0-9]{6}(-[a-z0-9]{4})?$/;
+function autoSlug(card) {
+  const g = card.data && card.data.groom && card.data.groom.name, b = card.data && card.data.bride && card.data.bride.name;
+  if (!AUTO_SLUG.test(card.slug) || !g || !b) return;
+  const s = uniqueSlug(`${g} ${b}`, card.id);
+  if (s === card.slug) return;
+  card.oldSlugs = [...(card.oldSlugs || []), card.slug].slice(-5);
+  card.slug = s;
+}
 function uniqueSlug(wanted, exceptId) {
   let s = slugify(wanted) || 'thiep';
   if (s.length < 3) s += '-' + rid(4);
-  const taken = (x) => db.cards.some((c) => c.slug === x && c.id !== exceptId) || RESERVED.has(x);
+  const taken = (x) => slugTaken(x, exceptId);
   if (!taken(s)) return s;
   for (;;) { const t = `${s}-${rid(4)}`; if (!taken(t)) return t; }
 }
@@ -286,7 +300,7 @@ route('GET', '/api/meta', async (req, res) => {
     brand: config.brand, tagline: config.tagline, price: cardPrice(), ...promoInfo(), trialDays: config.trialDays,
     trialGuestLimit: config.trialGuestLimit, banks, templates: templateList(), templateGroups, baseUrl: BASE_URL, support: config.support,
     ledPrice: config.ledPrice, led: ledLib.options(),
-    videoPrice: config.videoPrice, video: videoLib.options(),
+    videoPrice: config.videoPrice, video: videoLib.options(), music: musicLib.options(),
     comboPrice: comboPrice(), comboListPrice: comboPromo() ? config.comboListPrice : null, promoEndsAt: promoActive() || comboPromo() ? promoEnd() : null, blobUpload: !!process.env.BLOB_READ_WRITE_TOKEN,
     googleLogin: google.enabled(),
   });
@@ -458,7 +472,7 @@ route('PUT', '/api/cards/:id', async (req, res, ctx) => {
     rateLimit('gsave:' + ctx.ip, 600, 36e5);
     if (b.data) { // khách chưa đăng nhập không tải tệp lên được → không nhận link ảnh / nhạc gửi kèm
       const cur = new Set([card.data.cover, card.data.music, ...card.data.photos].filter(Boolean).map((u) => String(u).split('#')[0]));
-      const ok = (u) => !u || cur.has(String(u).split('#')[0]);
+      const ok = (u) => !u || cur.has(String(u).split('#')[0]) || /^\/music\/[\w-]+\.mp3$/.test(u); // nhạc mẫu: ai cũng chọn được
       if (!ok(b.data.cover) || !ok(b.data.music) || (Array.isArray(b.data.photos) && !b.data.photos.every(ok))) needUser(ctx);
     }
   }
@@ -472,10 +486,12 @@ route('PUT', '/api/cards/:id', async (req, res, ctx) => {
   if (b.slug !== undefined && slugify(b.slug) !== card.slug) {
     const s = slugify(b.slug);
     if (s.length < 3) throw httpError(400, 'Đường dẫn cần ít nhất 3 ký tự (a-z, 0-9)');
-    if (RESERVED.has(s) || db.cards.some((c) => c.slug === s && c.id !== card.id)) throw httpError(409, 'Đường dẫn này đã có người dùng');
+    if (slugTaken(s, card.id)) throw httpError(409, 'Đường dẫn này đã có người dùng');
+    card.oldSlugs = [...(card.oldSlugs || []).filter((x) => x !== s), card.slug].slice(-5); // link đã gửi vẫn mở được
     card.slug = s;
   }
   if (b.data) { card.data = cd.normalize(b.data); Wd.syncFromCard(card); }
+  if (b.data && b.slug === undefined && card.userId) autoSlug(card); // thiệp nháp của khách chưa đăng nhập: giữ nguyên
   if (b.led) card.led = ledLib.normalize(b.led, card.led); // lần lưu đầu tiên bắt đầu dùng thử màn LED
   if (b.video) card.video = videoLib.normalize(b.video, card.video);
   card.updatedAt = Date.now();
@@ -832,7 +848,7 @@ const BLOCKED_HTML = () => renderNotice('Thiệp tạm thời không khả dụn
 
 // ---------------- API công khai trên trang thiệp ----------------
 function publicCard(slug) {
-  const card = db.cards.find((c) => c.slug === slug);
+  const card = cardBySlug(slug);
   if (!card || card.blocked || card.status !== 'published' || cardState(card).expired) throw httpError(404, 'Thiệp không còn nhận phản hồi');
   return card;
 }
@@ -870,8 +886,13 @@ function html(res, status, body) {
 }
 
 async function showCard(req, res, ctx) {
-  const card = db.cards.find((c) => c.slug === ctx.params.slug);
+  const card = cardBySlug(ctx.params.slug);
   if (!card) return html(res, 404, renderNotice('Không tìm thấy thiệp', 'Đường dẫn có thể đã bị đổi hoặc thiệp đã bị xoá.'));
+  if (card.slug !== ctx.params.slug) { // link cũ (trước khi đổi sang tên đôi) → chuyển sang link mới, giữ mã khách mời
+    const q = ctx.query.toString();
+    res.writeHead(301, { Location: `/t/${card.slug}${ctx.params.code ? '/' + encodeURIComponent(ctx.params.code) : ''}${q ? '?' + q : ''}` });
+    return res.end();
+  }
   const isOwner = canManage(ctx.user, card) || guestOwns(ctx, card) || ctx.admin; // quản trị viên xem trước được để kiểm tra
   const preview = isOwner && ctx.query.get('preview') === '1';
   const st = cardState(card);
@@ -923,7 +944,7 @@ route('GET', '/led/:slug', async (req, res, ctx) => {
     const card = { data: cd.normalize(cd.sample()) };
     return html(res, 200, ledLib.renderLed(card, led, { demo: true, preview: q.preview === '1' }));
   }
-  const card = db.cards.find((c) => c.slug === slug);
+  const card = cardBySlug(slug);
   const isOwner = canManage(ctx.user, card);
   if (!card || !card.led) return html(res, 404, renderNotice('Không tìm thấy màn hình LED', 'Đường dẫn có thể đã bị đổi. Hãy hỏi lại cô dâu chú rể nhé.'));
   if (card.blocked && !isOwner) return html(res, 403, BLOCKED_HTML());
@@ -961,7 +982,7 @@ route('GET', '/video/:slug', async (req, res, ctx) => {
     const v = videoLib.normalize({ template: q.template, photoBg: q.photo === '1', photos, event: { kind: 'Lễ Dạm Ngõ', date: '2026-11-22', time: '09:00', place: 'Tư gia nhà gái' } });
     return html(res, 200, videoLib.renderVideo(card, v, { preview: q.preview === '1' }));
   }
-  const card = db.cards.find((c) => c.slug === slug);
+  const card = cardBySlug(slug);
   const isOwner = canManage(ctx.user, card);
   if (!card || !card.video) return html(res, 404, renderNotice('Không tìm thấy video', 'Đường dẫn có thể đã bị đổi.'));
   if (card.blocked && !isOwner) return html(res, 403, BLOCKED_HTML());
@@ -1013,7 +1034,8 @@ route('POST', '/api/cards/:id/video/export', async (req, res, ctx) => {
     if (loops > 1) args.push('-stream_loop', String(loops - 1));
     if (type === 'video/h264') args.push('-f', 'h264', '-framerate', '30');
     args.push('-i', tmp);
-    const music = card.data.music && /^\/uploads\/[\w.-]+\.mp3$/.test(card.data.music) ? path.join(UPLOAD_DIR, path.basename(card.data.music)) : null;
+    const music = card.data.music && /^\/uploads\/[\w.-]+\.mp3$/.test(card.data.music) ? path.join(UPLOAD_DIR, path.basename(card.data.music))
+      : card.data.music && /^\/music\/[\w-]+\.mp3$/.test(card.data.music) ? path.join(PUBLIC_DIR, 'music', path.basename(card.data.music)) : null;
     if (music && fs.existsSync(music)) args.push('-stream_loop', '-1', '-i', music);
     args.push('-map', '0:v:0', '-vf', 'scale=1920:1080:flags=lanczos,fps=30,format=yuv420p',
       '-c:v', 'libx264', '-preset', 'medium', '-crf', '19', '-profile:v', 'high', '-level', '4.1', '-movflags', '+faststart');

@@ -526,10 +526,27 @@
     if (window.parent === window) return;
     try { window.parent.postMessage({ type: 'led-scene', index: cur, keys: slides.map(function (s) { return s.getAttribute('data-k') || ''; }), seconds: L.seconds, paused: paused }, location.origin); } catch (e) { /* bỏ qua */ }
   }
-  function restartTimer() {
-    clearInterval(timer);
-    if (slides.length > 1) timer = setInterval(function () { if (!paused) show(cur + 1); }, L.seconds * 1000);
+  // đồng hồ trình chiếu: thời gian đã chạy trong cảnh hiện tại (ms) — dừng thì đứng yên; đủ L.seconds thì sang cảnh sau.
+  // Vị trí cả vòng = cảnh × số giây mỗi cảnh + phần đã chạy → thanh tua kéo được như video.
+  var elapsed = 0, lastTick = performance.now();
+  function restartTimer() { elapsed = 0; lastTick = performance.now(); }
+  function total() { return Math.max(1, slides.length) * L.seconds; }
+  function position() { return cur * L.seconds + elapsed / 1000; }
+  function seekTo(t) {
+    if (!slides.length) return;
+    t = Math.max(0, Math.min(total() - 0.05, t));
+    var i = Math.floor(t / L.seconds);
+    if (i !== cur) show(i);
+    elapsed = (t - i * L.seconds) * 1000; lastTick = performance.now();
   }
+  timer = setInterval(function () {
+    var now = performance.now();
+    if (!paused) {
+      elapsed += now - lastTick;
+      if (elapsed >= L.seconds * 1000) { elapsed = 0; if (slides.length > 1) show(cur + 1); }
+    }
+    lastTick = now;
+  }, 100);
 
   function apply(newLed) {
     var keep = cur;
@@ -547,7 +564,7 @@
   function wake() {
     document.body.classList.add('active');
     clearTimeout(idle);
-    idle = setTimeout(function () { document.body.classList.remove('active'); }, 2500);
+    idle = setTimeout(function () { if (drag) return wake(); document.body.classList.remove('active'); }, 3000);
   }
   function fullscreen() {
     var d = document.documentElement;
@@ -555,16 +572,22 @@
     else if (d.requestFullscreen) d.requestFullscreen().catch(function () {});
   }
   var pauseBtn = document.querySelector('[data-c=pause]');
-  function togglePause() { paused = !paused; pauseBtn.textContent = paused ? '▶︎' : '❚❚'; if (!paused) restartTimer(); tell(); }
+  function togglePause() { paused = !paused; pauseBtn.textContent = paused ? '▶︎' : '❚❚'; pauseBtn.setAttribute('aria-label', paused ? 'Phát' : 'Tạm dừng'); lastTick = performance.now(); tell(); }
   document.getElementById('ctl').addEventListener('click', function (e) {
-    var c = e.target.getAttribute('data-c');
-    if (c === 'prev') { show(cur - 1); restartTimer(); }
-    if (c === 'next') { show(cur + 1); restartTimer(); }
-    if (c === 'pause') togglePause();
-    if (c === 'full') fullscreen();
+    if (e.target.getAttribute('data-c') === 'pause') togglePause();
   });
-  document.addEventListener('mousemove', wake);
-  document.addEventListener('touchstart', wake);
+  // thanh tua: kéo để tới đúng chỗ (cảnh + giây trong cảnh), thời gian "đã chạy / cả vòng"
+  var sk = document.getElementById('seek'), tm = document.getElementById('tm'), drag = false;
+  var fmt = function (t) { return Math.floor(t / 60) + ':' + ('0' + Math.floor(t % 60)).slice(-2); };
+  sk.addEventListener('input', function () { drag = true; seekTo(sk.value / 1000 * total()); wake(); });
+  sk.addEventListener('change', function () { drag = false; });
+  ['pointerup', 'pointercancel', 'touchend'].forEach(function (ev) { sk.addEventListener(ev, function () { drag = false; }); });
+  if (!C.preview) setInterval(function () {
+    var D = total(), t = Math.min(position(), D);
+    if (!drag) sk.value = Math.round(t / D * 1000);
+    tm.textContent = fmt(t) + ' / ' + fmt(D);
+  }, 200);
+  ['mousemove', 'pointerdown', 'touchstart'].forEach(function (ev) { document.addEventListener(ev, wake, { passive: true }); });
   document.addEventListener('dblclick', fullscreen);
   document.addEventListener('keydown', function (e) {
     if (e.key === 'f' || e.key === 'F') fullscreen();

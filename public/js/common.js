@@ -138,8 +138,23 @@ window.openModal = function (html, onMount, onClose) {
   m.addEventListener('click', (e) => { if (e.target === m || e.target.closest('.modal-x')) close(); });
   document.addEventListener('keydown', onKey);
   document.body.appendChild(m);
-  if (onMount) onMount(m.querySelector('.modal-box'), close);
+  const box = m.querySelector('.modal-box');
+  modalHead(box);
+  box.addEventListener('scroll', () => { const h = box.querySelector(':scope > .modal-head'); if (h) h.classList.toggle('stuck', box.scrollTop > 2); }, { passive: true });
+  if (onMount) onMount(box, close);
   return close;
+};
+// Đầu cửa sổ (tiêu đề h2 đứng đầu + nút ×) đứng yên khi cuộn nội dung dài. Cửa sổ không mở đầu bằng h2 thì chỉ giữ nút ×.
+// Cửa sổ tự vẽ lại nội dung (vd. thanh toán) gọi lại hàm này sau khi vẽ.
+window.modalHead = function modalHead(box) {
+  const x = box && box.querySelector(':scope > .modal-x');
+  if (!x || x.parentElement.classList.contains('modal-head')) return;
+  let h = x.nextElementSibling;
+  while (h && h.tagName === 'STYLE') h = h.nextElementSibling;
+  const head = document.createElement('div');
+  head.className = 'modal-head';
+  x.before(head);
+  if (h && h.tagName === 'H2') head.append(h, x); else { head.classList.add('only-x'); head.append(x); }
 };
 
 // Giảm kích thước ảnh trước khi tải lên (tiết kiệm băng thông 4G cho khách mở thiệp)
