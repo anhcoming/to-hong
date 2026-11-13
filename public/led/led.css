@@ -1,4 +1,6 @@
 html,body{margin:0;height:100%;background:#000;overflow:hidden}
+/* khung LED 1920px (thu nhỏ bằng transform) không được làm trình duyệt điện thoại nới rộng trang → body cố định đúng bằng màn hình, cắt phần thừa */
+body{position:fixed;inset:0}
 body{font-family:'Hanken Grotesk',system-ui,sans-serif;cursor:none}
 body.active{cursor:default}
 #stage{position:absolute;left:50%;top:50%;overflow:hidden;--text:#fff;--accent:#e8b65a}
