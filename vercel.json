@@ -6,6 +6,9 @@
       "maxDuration": 30
     }
   },
+  "redirects": [
+    { "source": "/:path*", "has": [{ "type": "host", "value": "to-hong.vercel.app" }], "destination": "https://cuoinha.com/:path*", "permanent": true }
+  ],
   "rewrites": [
     { "source": "/", "destination": "/index.html" },
     { "source": "/dang-nhap", "destination": "/auth.html" },

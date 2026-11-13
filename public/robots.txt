@@ -1,0 +1,16 @@
+# Cưới Nha — cuoinha.com
+User-agent: *
+Allow: /
+Disallow: /api/
+Disallow: /auth/
+Disallow: /admin
+Disallow: /thiep-cua-toi
+Disallow: /video-cua-toi
+Disallow: /so-tay$
+Disallow: /sua/
+Disallow: /sua-led/
+Disallow: /sua-video/
+Disallow: /thanh-toan/
+Disallow: /tham-gia/
+
+Sitemap: https://cuoinha.com/sitemap.xml
