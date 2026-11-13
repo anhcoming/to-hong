@@ -51,6 +51,11 @@ body{height:100vh;height:100dvh;display:flex;flex-direction:column;overflow:hidd
 .photo{position:relative;aspect-ratio:3/4;border-radius:10px;background:#eee center/cover;border:1px solid var(--line)}
 .photo button{position:absolute;top:4px;right:4px;width:26px;height:26px;border-radius:50%;border:0;background:rgba(0,0,0,.6);color:#fff;cursor:pointer}
 .photo .mv{left:4px;right:auto}
+.photo.up{display:grid;place-items:center}
+.photo.up::after{content:"";position:absolute;inset:0;border-radius:inherit;background:rgba(255,255,255,.35)}
+.photo.up i,.spin{display:inline-block;width:22px;height:22px;border-radius:50%;border:3px solid rgba(214,69,93,.25);border-top-color:#d6455d;animation:upspin .8s linear infinite;position:relative;z-index:1;vertical-align:middle}
+.spin{width:14px;height:14px;border-width:2px}
+@keyframes upspin{to{transform:rotate(360deg)}}
 .drop{display:grid;place-items:center;aspect-ratio:3/4;border:2px dashed var(--line);border-radius:10px;cursor:pointer;color:var(--muted);font-size:13px;text-align:center;padding:6px;background:var(--surface)}
 .drop:hover{border-color:var(--primary);color:var(--primary)}
 .cover-box{display:flex;gap:14px;align-items:center}

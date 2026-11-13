@@ -92,15 +92,19 @@ const panes = {
   media: () => {
     const d = card.data;
     return `
-    <section class="group panel"><h3>Album ảnh <small>${d.photos.filter(Boolean).length}/24 ảnh</small></h3>
+    <section class="group panel"><h3>Album ảnh <small>${d.photos.filter(Boolean).length + [...pendingSlots].filter((k) => k !== 'cover').length}/24 ảnh</small></h3>
       <p class="muted" style="margin:-6px 0 12px;font-size:14px">Bấm thẳng vào ảnh trên thiệp để đổi, căn khung. Ở đây chọn nhiều ảnh một lúc và sắp xếp thứ tự.</p>
       <div class="photos">
-        ${d.photos.map((u, i) => !u ? '' : `<div class="photo" style="background-image:url('${esc(u.split('#')[0])}')">${i ? `<button class="mv" data-ph-up="${i}" title="Lên trước">←</button>` : ''}<button data-ph-del="${i}" title="Xoá">×</button></div>`).join('')}
-        ${d.photos.filter(Boolean).length < 24 ? '<label class="drop">+ Thêm ảnh<br>(chọn nhiều)<input type="file" accept="image/*" multiple id="photosIn" hidden></label>' : ''}
+        ${Array.from({ length: Math.max(d.photos.length, ...[...pendingSlots].filter((k) => k !== 'cover').map((k) => +k.split('.')[1] + 1)) }, (_, i) => {
+          const u = d.photos[i];
+          if (pendingSlots.has('photos.' + i)) { const l = localPhotos['photos.' + i]; return `<div class="photo up"${l ? ` style="background-image:url('${l}')"` : ''}><i></i></div>`; }
+          return !u ? '' : `<div class="photo" style="background-image:url('${esc(u.split('#')[0])}')">${i ? `<button class="mv" data-ph-up="${i}" title="Lên trước">←</button>` : ''}<button data-ph-del="${i}" title="Xoá">×</button></div>`;
+        }).join('')}
+        ${d.photos.filter(Boolean).length + pendingSlots.size < 24 ? '<label class="drop">+ Thêm ảnh<br>(chọn nhiều)<input type="file" accept="image/*" multiple id="photosIn" hidden></label>' : ''}
       </div>
     </section>
     <section class="group panel"><h3>Nhạc nền</h3>
-      ${d.music ? `<audio controls src="${esc(d.music)}" style="width:100%;margin-bottom:10px"></audio><button class="btn sm danger" data-music-del>Bỏ nhạc</button>` : `
+      ${musicUp ? `<p class="muted" style="margin:0"><span class="spin"></span> Đang tải lên "${esc(musicUp)}"…</p>` : d.music ? `<audio controls src="${esc(d.music)}" style="width:100%;margin-bottom:10px"></audio><button class="btn sm danger" data-music-del>Bỏ nhạc</button>` : `
         <label class="btn soft">Tải lên file MP3<input type="file" accept="audio/mpeg" id="musicIn" hidden></label>
         <p class="muted" style="font-size:13px;margin:10px 0 0">Tối đa 12MB. Chỉ dùng bản nhạc bạn có quyền sử dụng. Nhạc phát khi khách chạm "Mở thiệp".</p>`}
     </section>`;
@@ -210,7 +214,7 @@ async function save() {
   try {
     const r = await api(`/api/cards/${CARD_ID}`, { method: 'PUT', body: { data: card.data, title: card.title, template: card.template, palette: card.palette }, quiet: true });
     Object.assign(card, { ...r.card, data: card.data }); // giữ nguyên dữ liệu đang gõ
-    status('Đã lưu ✓');
+    upStatus(); // còn ảnh đang tải thì báo số ảnh, hết thì "Đã lưu ✓"
     refreshPreview();
     renderHeader();
   } catch (e) {
@@ -408,14 +412,52 @@ async function loadResponses() {
 }
 
 // ---------- sự kiện giao diện ----------
-async function uploadMany(files, onUrl) {
-  const urls = await uploadFiles(files, {
-    onProgress: (d, n) => status(n > 1 ? `Đang tải ảnh lên ${d}/${n}…` : 'Đang tải ảnh lên…'),
-    onError: (e) => toast(e.message, true),
-  });
-  urls.filter(Boolean).forEach(onUrl);
-  rerender();
-  save();
+// Tải nhiều ảnh từ bảng "Ảnh & nhạc" mà không che màn hình: giữ chỗ từng ô ngay (vòng chờ), nén xong hiện ảnh trong máy
+// ở bảng lẫn trên thiệp, tải ngầm (3 ảnh một lúc), xong ảnh nào lưu ảnh đó. Ô đang chờ: card.data chưa đổi.
+let musicUp = ''; // tên file nhạc đang tải lên
+const pendingSlots = new Set(); // các vị trí (cover, photos.3…) đang có ảnh chờ tải
+function freeSlots(n) {
+  const ps = card.data.photos, out = [];
+  for (let i = 0; out.length < n && i < 24; i++) if (!ps[i] && !pendingSlots.has('photos.' + i)) out.push('photos.' + i);
+  return out;
+}
+let upQueue = [], upRunning = 0;
+function queueUploads(files, keys) {
+  keys.forEach((key, i) => { pendingSlots.add(key); upQueue.push({ key, file: files[i] }); });
+  if (curTab === 'media') rerender();
+  upStatus();
+  for (let i = 0; i < 3; i++) pumpUploads();
+}
+function upStatus() { status(pendingSlots.size ? `Đang tải ${pendingSlots.size} ảnh lên…` : 'Đã lưu ✓'); }
+async function pumpUploads() {
+  if (upRunning >= 3 || !upQueue.length) return;
+  upRunning++;
+  const { key, file } = upQueue.shift();
+  let local = '';
+  try {
+    const small = await resizeImage(file);
+    local = URL.createObjectURL(small);
+    localPhotos[key] = local;
+    showLocalPhoto($('#frame').contentWindow, key);
+    if (curTab === 'media') rerender();
+    const url = await uploadFile(small, { quiet: true, resized: true });
+    await new Promise((ok) => { const im = new Image(); im.onload = im.onerror = ok; im.src = url; setTimeout(ok, 8000); });
+    // trong lúc chờ, ô giữ chỗ bị ảnh khác chiếm (sắp xếp lại) → sang ô trống khác, không đè ảnh
+    let to = key;
+    if (key !== 'cover' && card.data.photos[+key.split('.')[1]]) { pendingSlots.delete(key); to = freeSlots(1)[0]; }
+    if (to) photoSet(to, url); else { toast('Album đã đủ 24 ảnh', true); discardUpload(url); }
+  } catch (e) {
+    toast(e.message, true);
+  } finally {
+    pendingSlots.delete(key);
+    if (localPhotos[key] === local) delete localPhotos[key];
+    if (local) setTimeout(() => URL.revokeObjectURL(local), 60000);
+    upRunning--;
+    if (curTab === 'media') rerender();
+    scheduleSave(400); // gom các ảnh xong gần nhau vào một lần lưu
+    upStatus();
+    pumpUploads();
+  }
 }
 
 function bind() {
@@ -454,15 +496,18 @@ function bind() {
       return;
     }
     if (t.id === 'titleIn') { card.title = t.value; scheduleSave(50); }
-    if (t.id === 'coverIn' && t.files[0]) uploadMany([t.files[0]], (u) => (card.data.cover = u));
     if (t.id === 'photosIn' && t.files.length) {
-      const ps = card.data.photos, room = 24 - ps.filter(Boolean).length;
-      uploadMany(Array.from(t.files).slice(0, room), (u) => { const i = ps.indexOf(''); if (i < 0) ps.push(u); else ps[i] = u; }); // lấp ô trống trước
+      const keys = freeSlots(t.files.length); // lấp ô trống trước, giữ đúng thứ tự đã chọn
+      if (keys.length < t.files.length) toast(`Album tối đa 24 ảnh — chỉ thêm ${keys.length} ảnh đầu`, true);
+      queueUploads(Array.from(t.files).slice(0, keys.length), keys);
     }
     if (t.id === 'musicIn' && t.files[0]) {
+      const f = t.files[0];
+      musicUp = f.name;
+      rerender();
       status('Đang tải nhạc lên…');
-      try { card.data.music = await uploadFile(t.files[0]); rerender(); save(); }
-      catch (err) { toast(err.message, true); status(''); }
+      try { card.data.music = await uploadFile(f, { quiet: true }); musicUp = ''; rerender(); save(); }
+      catch (err) { musicUp = ''; rerender(); toast(err.message, true); status('Tải nhạc thất bại'); }
     }
   });
   panesEl.addEventListener('click', async (e) => {
