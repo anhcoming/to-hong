@@ -176,6 +176,8 @@
       o.innerHTML = '<b>📍 Sửa địa điểm</b>';
       box.appendChild(o);
       box.classList.add('ce-venue');
+      // mẫu canvas (mh): các ô xếp chồng theo z-index → đưa khu địa điểm lên trên để nhãn không bị chữ bên trên đè
+      if (box.closest('.mh-canvas')) box.style.zIndex = 30;
     });
   }
 
