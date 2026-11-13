@@ -124,8 +124,10 @@ async function call(who, method, url, body, raw) {
   r = await call('admin', 'PUT', '/api/admin/settings', { price: '99.000', coupons: { 'giam 10k!': '10000' }, payment: { bankBin: '970422', bankName: 'MB', accountNo: '0123 456', accountName: 'nguyen van a' } });
   assert.equal(r.json.settings.price, 99000);
   assert.deepEqual(r.json.settings.coupons, { GIAM10K: 10000 });
-  assert.equal(r.json.settings.payment.accountNo, '0123456');
-  assert.equal(r.json.settings.payment.accountName, 'NGUYEN VAN A');
+  assert.equal(r.json.settings.payment, undefined, 'tài khoản nhận tiền không sửa trên web');
+  r = await call('u2', 'POST', '/api/cards', { template: 'dodam' });
+  r = await call('u2', 'POST', `/api/cards/${r.json.card.id}/order`, {});
+  assert.equal(r.json.order.bank.accountNo, require('../config.json').payment.accountNo, 'QR vẫn trỏ tài khoản trong config.json');
   assert.equal((await call('x', 'GET', '/api/meta')).json.price, 99000, 'giá mới áp dụng ngay');
 
   // ---------- thiệp, đơn ----------

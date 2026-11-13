@@ -274,12 +274,6 @@ async function settings() {
         <div id="cps">${coupons.map(([c, v]) => couponRow(c, v)).join('') || ''}</div>
         <button class="btn sm soft" type="button" id="addCp">+ Thêm mã</button>
       </section>
-      <section class="panel" style="padding:18px"><h3 style="margin-top:0">Tài khoản nhận tiền</h3>
-        <div class="grid2"><label class="field"><span>Mã BIN ngân hàng</span><input name="pay.bankBin" value="${esc(s.payment.bankBin)}" maxlength="6"><small>VD Vietcombank 970436, MB 970422</small></label>
-        <label class="field"><span>Tên ngân hàng</span><input name="pay.bankName" value="${esc(s.payment.bankName)}"></label></div>
-        <label class="field"><span>Số tài khoản</span><input name="pay.accountNo" value="${esc(s.payment.accountNo)}"></label>
-        <label class="field"><span>Tên chủ tài khoản (không dấu)</span><input name="pay.accountName" value="${esc(s.payment.accountName)}"></label>
-      </section>
       <section class="panel" style="padding:18px"><h3 style="margin-top:0">Thương hiệu & hỗ trợ</h3>
         <label class="field"><span>Tên thương hiệu</span><input name="brand" value="${esc(s.brand)}"></label>
         <label class="field"><span>Khẩu hiệu</span><input name="tagline" value="${esc(s.tagline)}"></label>
@@ -300,7 +294,6 @@ async function settings() {
       await api('/api/admin/settings', { method: 'PUT', body: {
         price: v('price'), ledPrice: v('ledPrice'), videoPrice: v('videoPrice'), trialDays: v('trialDays'), trialGuestLimit: v('trialGuestLimit'),
         coupons, brand: v('brand'), tagline: v('tagline'),
-        payment: { bankBin: v('pay.bankBin'), bankName: v('pay.bankName'), accountNo: v('pay.accountNo'), accountName: v('pay.accountName') },
         support: { zalo: v('sup.zalo'), email: v('sup.email') },
       } });
       toast('Đã lưu — áp dụng ngay, không cần khởi động lại');
