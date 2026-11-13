@@ -172,28 +172,82 @@ function _resize(file, maxSide, quality, resolve, reject) {
   img.src = url;
 }
 
+// ---------- tải tệp lên ----------
+// Ảnh: nếu web có kho Vercel Blob thì gửi thẳng từ trình duyệt lên Blob (máy chủ chỉ cấp vé) — đỡ một chặng
+// điện thoại → máy chủ → Blob; lỗi thì quay về cách cũ (gửi qua /api/upload). Nhạc luôn gửi qua máy chủ.
+// Mỗi lần tải ghi thời gian từng bước ra console ("[tải ảnh] …") để biết chậm ở đâu.
+const once = (fn) => { let p; return () => (p = p || fn().catch((e) => { p = null; throw e; })); };
+const uploadInfo = once(async () => {
+  const [meta, me] = await Promise.all([window.META ? window.META : fetch('/api/meta').then((r) => r.json()), fetch('/api/me').then((r) => r.json())]);
+  return { blob: !!meta.blobUpload, uid: me.user && me.user.id };
+});
+const blobClient = once(() => (window.BlobClient ? Promise.resolve(window.BlobClient) : new Promise((ok, no) => {
+  const s = document.createElement('script');
+  s.src = '/vendor/blob-client.js';
+  s.onload = () => (window.BlobClient ? ok(window.BlobClient) : no(new Error('Không nạp được thư viện tải ảnh')));
+  s.onerror = () => no(new Error('Không nạp được thư viện tải ảnh'));
+  document.head.appendChild(s);
+})));
+// gọi sớm (vd. lúc vừa chọn ảnh) để lúc tải không phải chờ nạp thư viện
+window.warmUpload = () => uploadInfo().then((i) => (i.blob ? blobClient() : null)).catch(() => {});
+const EXT = { 'image/webp': 'webp', 'image/jpeg': 'jpg', 'image/png': 'png' };
+async function blobDirect(file, info) {
+  const BC = await blobClient();
+  const ac = new AbortController();
+  const stop = setTimeout(() => ac.abort(), 45000);
+  try {
+    const name = `uploads/${info.uid}-${Math.random().toString(36).slice(2, 10)}.${EXT[file.type]}`;
+    const r = await BC.upload(name, file, { access: 'public', contentType: file.type, handleUploadUrl: '/api/upload/blob', abortSignal: ac.signal });
+    return r.url;
+  } finally { clearTimeout(stop); }
+}
+async function viaServer(file, quiet) {
+  // mỗi lần gửi tối đa 45s (máy chủ tự dừng ở 30s); lỗi mạng / quá giờ / máy chủ lỗi thì tự thử lại thêm 2 lần
+  for (let k = 0; ; k++) {
+    try {
+      return (await api('/api/upload', { method: 'POST', body: file, quiet: true, timeout: 45000 })).url;
+    } catch (e) {
+      const again = e.timeout || e.network || e.status >= 500;
+      if (!again || k >= 2) throw e;
+      if (!quiet) loading.text('Mạng chậm, đang thử lại…');
+      await new Promise((ok) => setTimeout(ok, 1500 * (k + 1)));
+    }
+  }
+}
+
 // quiet: để uploadFiles tự quản màn chờ (hiện tiến độ chung), khỏi mỗi tệp một màn chờ
 // resized: tệp đã qua resizeImage rồi (khỏi nén lại lần nữa)
 window.uploadFile = async function (file, { quiet = false, resized = false } = {}) {
   const isImg = file.type.startsWith('image/');
   if (!isImg && file.type !== 'audio/mpeg') throw new Error('Chỉ nhận ảnh hoặc nhạc MP3');
   if (!quiet) loading.show(isImg ? 'Đang tải ảnh lên…' : 'Đang tải nhạc lên…');
+  const t0 = performance.now(), log = {};
   try {
-    if (isImg && !resized) file = await resizeImage(file);
-    // mỗi lần gửi tối đa 45s (máy chủ tự dừng ở 30s); lỗi mạng / quá giờ / máy chủ lỗi thì tự thử lại thêm 2 lần
-    for (let k = 0; ; k++) {
-      try {
-        const r = await api('/api/upload', { method: 'POST', body: file, quiet: true, timeout: 45000 });
-        return r.url;
-      } catch (e) {
-        const again = e.timeout || e.network || e.status >= 500;
-        if (!again || k >= 2) throw e;
-        if (!quiet) loading.text('Mạng chậm, đang thử lại…');
-        await new Promise((ok) => setTimeout(ok, 1500 * (k + 1)));
+    if (isImg && !resized) { file = await resizeImage(file); log.nen = Math.round(performance.now() - t0); }
+    if (isImg && EXT[file.type]) {
+      const info = await uploadInfo().catch(() => ({}));
+      if (info.blob && info.uid) {
+        const t1 = performance.now();
+        try {
+          const url = await blobDirect(file, info);
+          log.blob = Math.round(performance.now() - t1);
+          return url;
+        } catch (e) {
+          log.blobLoi = e.message; // gửi thẳng không được → gửi qua máy chủ như cũ
+        }
       }
     }
-  } finally { if (!quiet) loading.hide(); }
+    const t2 = performance.now();
+    const url = await viaServer(file, quiet);
+    log.mayChu = Math.round(performance.now() - t2);
+    return url;
+  } finally {
+    if (!quiet) loading.hide();
+    console.info('[tải ảnh]', JSON.stringify({ kb: Math.round(file.size / 1024), ...log, tong: Math.round(performance.now() - t0) }));
+  }
 };
+// bỏ ảnh đã tải lên nhưng không dùng (máy chủ chỉ xoá khi chưa thiệp nào dùng)
+window.discardUpload = (url) => { if (url) api('/api/upload/discard', { method: 'POST', body: { url }, quiet: true }).catch(() => {}); };
 
 // Tải nhiều tệp cùng lúc (mặc định 4 tệp song song), giữ đúng thứ tự. Trả về mảng link ('' nếu tệp đó lỗi).
 // onProgress(xong, tổng) để hiện tiến độ; onError(lỗi) cho từng tệp hỏng.

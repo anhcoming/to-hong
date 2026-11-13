@@ -602,16 +602,62 @@ route('POST', '/api/upload', async (req, res, ctx) => {
   const t = UPLOAD_TYPES[type];
   if (!t) throw httpError(415, 'Chỉ nhận ảnh JPG/PNG/WEBP hoặc nhạc MP3');
   const buf = await readBody(req, t[1]);
+  ctx.tm.mark('body');
   if (!buf.length) throw httpError(400, 'Tệp rỗng');
   const name = `${user.id}-${rid(10)}${t[0]}`;
+  let url;
   if (process.env.BLOB_READ_WRITE_TOKEN) {
     // Vercel Blob: ổ đĩa serverless không giữ được tệp, nên lưu lên kho Blob (trả về link https)
     const { put } = require('@vercel/blob');
-    const blob = await put(`uploads/${name}`, buf, { access: 'public', contentType: type, addRandomSuffix: false });
-    return json(res, 200, { url: blob.url });
+    url = (await put(`uploads/${name}`, buf, { access: 'public', contentType: type, addRandomSuffix: false })).url;
+    ctx.tm.mark('blob');
+  } else {
+    fs.writeFileSync(path.join(UPLOAD_DIR, name), buf);
+    url = `/uploads/${name}`;
   }
-  fs.writeFileSync(path.join(UPLOAD_DIR, name), buf);
-  json(res, 200, { url: `/uploads/${name}` });
+  res.setHeader('Server-Timing', ctx.tm.header());
+  ctx.tm.log('upload', { bytes: buf.length, type });
+  json(res, 200, { url });
+});
+
+// Ảnh gửi thẳng từ trình duyệt lên Vercel Blob (không đi qua hàm máy chủ): máy chủ chỉ cấp vé.
+// Tên tệp bắt buộc bắt đầu bằng mã người dùng để biết ảnh của ai (dùng khi xoá ảnh bỏ dở).
+const IMG_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
+route('POST', '/api/upload/blob', async (req, res, ctx) => {
+  const user = needUser(ctx);
+  if (!process.env.BLOB_READ_WRITE_TOKEN) throw httpError(501, 'Chưa cấu hình kho lưu trữ');
+  const body = await readJson(req);
+  if (!body || body.type !== 'blob.generate-client-token') throw httpError(400, 'Yêu cầu không hợp lệ');
+  rateLimit('up:' + user.id, 200, 36e5);
+  const { handleUpload } = require('@vercel/blob/client');
+  const out = await handleUpload({
+    body, request: req,
+    onBeforeGenerateToken: async (pathname) => {
+      if (!new RegExp(`^uploads/${user.id}-[\\w-]+\\.(webp|jpg|png)$`).test(pathname)) throw httpError(400, 'Tên tệp không hợp lệ');
+      return { allowedContentTypes: IMG_TYPES, maximumSizeInBytes: 6e6, addRandomSuffix: true };
+    },
+  });
+  res.setHeader('Server-Timing', ctx.tm.header());
+  ctx.tm.log('upload-token');
+  json(res, 200, out);
+});
+
+// Ảnh vừa tải lên nhưng người dùng bỏ (đóng bảng căn chỉnh) → xoá khỏi kho. Chỉ xoá ảnh của chính mình
+// và chỉ khi chưa thiệp nào của họ dùng tới.
+route('POST', '/api/upload/discard', async (req, res, ctx) => {
+  const user = needUser(ctx);
+  const { url } = await readJson(req);
+  const u = String(url || '');
+  const local = /^\/uploads\/([\w-]+)\.(webp|jpg|png)$/.exec(u);
+  const blob = /^https:\/\/[a-z0-9]+\.public\.blob\.vercel-storage\.com\/uploads\/([\w-]+)\.(webp|jpg|png)$/i.exec(u);
+  const m = local || blob;
+  if (!m || !m[1].startsWith(user.id + '-')) throw httpError(400, 'Ảnh không hợp lệ');
+  const used = db.cards.some((c) => JSON.stringify(c.data || {}).includes(u) || JSON.stringify(c.video || {}).includes(u));
+  if (!used) {
+    if (local) fs.rmSync(path.join(UPLOAD_DIR, path.basename(u)), { force: true });
+    else if (process.env.BLOB_READ_WRITE_TOKEN) { try { await require('@vercel/blob').del(u); } catch (e) { console.warn('Không xoá được ảnh bỏ dở:', e.message); } }
+  }
+  json(res, 200, { ok: true, removed: !used });
 });
 
 // ---------------- API: thanh toán ----------------
@@ -1118,7 +1164,23 @@ function serveStatic(req, res, pathname) {
 }
 
 // ---------------- máy chủ ----------------
+// Đo thời gian từng bước của một request (khởi động lạnh, chờ kho dữ liệu, nhận tệp, gửi sang Blob…):
+// ghi vào header Server-Timing (xem trong DevTools) và nhật ký Vercel — để biết chậm ở đâu.
+let warm = false;
+function stopwatch() {
+  const t0 = Date.now(), cold = !warm, marks = [];
+  warm = true;
+  let last = t0;
+  return {
+    cold,
+    mark(name) { const now = Date.now(); marks.push([name, now - last]); last = now; },
+    header() { return [...marks.map(([n, d]) => `${n};dur=${d}`), `total;dur=${Date.now() - t0}`, ...(cold ? ['cold'] : [])].join(', '); },
+    log(label, extra = {}) { console.log(label, JSON.stringify({ cold, ...Object.fromEntries(marks), total: Date.now() - t0, ...extra })); },
+  };
+}
+
 const server = http.createServer(async (req, res) => {
+  const tm = stopwatch();
   restoreUrl(req); // Vercel có thể gửi request thẳng vào server này, bỏ qua `handler` bên dưới
   let url, pathname;
   try { url = new URL(req.url, 'http://x'); pathname = decodeURIComponent(url.pathname); } catch { return json(res, 400, { error: 'URL lỗi' }); }
@@ -1135,7 +1197,7 @@ const server = http.createServer(async (req, res) => {
   // Chỉ làm khi có route xử lý — file tĩnh và trang HTML không đụng tới dữ liệu nên không phải chờ kho.
   if (store.remote && matched && !matched.noDb) {
     let finish;
-    try { finish = await store.begin(req.method, pathname); } catch (e) {
+    try { finish = await store.begin(req.method, pathname); tm.mark('db'); } catch (e) {
       console.error(e);
       // gợi ý nguyên nhân (không lộ chuỗi kết nối) để chủ web tự sửa cấu hình
       const m = String(e && e.message || '');
@@ -1166,6 +1228,7 @@ const server = http.createServer(async (req, res) => {
         guest: guestId(req),
         ip: (req.headers['x-forwarded-for'] || '').split(',')[0].trim() || req.socket.remoteAddress,
         params,
+        tm,
       };
       return await matched.handler(req, res, ctx);
     }

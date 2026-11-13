@@ -556,28 +556,33 @@ const localPhotos = {};
 function showLocalPhoto(win, key) {
   try { win.postMessage({ cePhoto: 1, key, src: localPhotos[key] }, location.origin); } catch (e) { /* bỏ qua */ }
 }
-// Ảnh mới từ máy: nén ảnh → mở ngay bảng căn chỉnh (ảnh trong máy) → bấm Xong thì hiện tạm lên thiệp
-// đúng phần đã căn, đồng thời tải lên + lưu ngầm. Đóng bảng căn chỉnh = bỏ ảnh vừa chọn.
+// Ảnh mới từ máy: nén ảnh → mở ngay bảng căn chỉnh, đồng thời tải ảnh lên ngầm (thường xong trước khi căn xong)
+// → bấm Xong thì hiện tạm lên thiệp đúng phần đã căn, chờ tải xong (nếu chưa) rồi lưu vào thiệp.
+// Đóng bảng căn chỉnh = bỏ ảnh vừa chọn (ảnh đã tải lên thì xoá khỏi kho).
 async function livePhotoUpload(key, ratio) {
   if (card.guest) return askLogin('photo');
   const f = await pickFile();
   if (!f) return;
+  warmUpload();
   let small;
   try { small = await withLoading('Đang mở ảnh…', () => resizeImage(f)); } catch (e) { return toast(e.message, true); }
   const local = URL.createObjectURL(small);
+  const up = uploadFile(small, { quiet: true, resized: true });
+  up.catch(() => {}); // lỗi xử lý khi bấm Xong
   cropModal(key, ratio, {
     src: local,
-    onCancel: () => URL.revokeObjectURL(local),
-    onOk: (x, y, z) => finishUpload(key, small, local, x, y, z),
+    onCancel: () => { URL.revokeObjectURL(local); up.then(discardUpload, () => {}); },
+    onOk: (x, y, z) => finishUpload(key, up, small, local, x, y, z),
   });
 }
-async function finishUpload(key, blob, local, x, y, z) {
+async function finishUpload(key, up, blob, local, x, y, z) {
   const shown = withFocus(local, x, y, z);
   localPhotos[key] = shown;
   showLocalPhoto($('#frame').contentWindow, key);
   status('Đang tải ảnh lên…');
   try {
-    const url = await uploadFile(blob, { quiet: true, resized: true });
+    // tải trước đó hỏng (vd. mạng chập chờn lúc đang căn) → thử lại một lần
+    const url = await up.catch(() => uploadFile(blob, { quiet: true, resized: true }));
     // tải trước ảnh thật để lúc thiệp vẽ lại không bị trống chỗ ảnh
     await new Promise((ok) => { const im = new Image(); im.onload = im.onerror = ok; im.src = url; setTimeout(ok, 8000); });
     if (localPhotos[key] !== shown) return; // đã chọn ảnh khác cho ô này trong lúc chờ
