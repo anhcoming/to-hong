@@ -1,4 +1,19 @@
 // Hộp thoại kích hoạt thiệp (dùng ở trang quản lý và trình sửa)
+// Luồng: mã QR → khách bấm "Tôi đã chuyển khoản" → màn chờ toàn màn hình (vòng quay lớn) → SePay báo tiền về → "Đã kích hoạt".
+// Cửa sổ hỏi lại trạng thái đơn vài giây một lần; tiền về sớm (chưa bấm nút) thì nhảy thẳng sang "Đã kích hoạt".
+const PAY_CSS = `<style>
+@keyframes paySpin{to{transform:rotate(360deg)}}
+@keyframes payIn{from{opacity:0}to{opacity:1}}
+.pay-wait{position:fixed;inset:0;z-index:2000;background:var(--bg,#fffafa);display:flex;align-items:center;justify-content:center;padding:24px 16px;animation:payIn .25s ease;overflow:auto}
+.pay-wait .in{max-width:420px;width:100%;text-align:center}
+.pay-wait .ring{width:96px;height:96px;margin:0 auto 28px;border-radius:50%;border:6px solid var(--primary-soft,#fff0f2);border-top-color:var(--primary,#d6455d);animation:paySpin 1s linear infinite}
+.pay-wait h2{font-size:26px;margin:0 0 8px}
+.pay-wait .amt{font-family:var(--serif);font-size:34px;font-weight:600;color:var(--primary);margin:14px 0 4px}
+.pay-wait .meta{display:inline-flex;gap:14px;font-size:14px;color:var(--muted);margin-bottom:18px}
+.pay-wait .slow{background:var(--warn-soft,#fbf0dc);color:var(--warn,#a5660f);border-radius:14px;padding:12px 14px;font-size:14px;margin:0 0 16px;text-align:left}
+.pay-wait .big{font-size:64px;line-height:1;margin-bottom:18px}
+</style>`;
+
 window.openPayModal = async function (cardId, onDone, product = 'card') {
   let data;
   try {
@@ -6,22 +21,64 @@ window.openPayModal = async function (cardId, onDone, product = 'card') {
   } catch (e) { return toast(e.message, true); }
   const isLed = product !== 'card'; // màn LED, video: không có mã giảm giá
 
-  let timer = null;
-  const render = (box) => {
+  let timer = null, tick = null, ov = null, box = null, closeModal = null;
+  let waitStart = data.order.claimedAt ? Date.now() : 0; // đã báo chuyển từ trước → mở lại là vào màn chờ luôn
+  const SLOW = 120e3;
+
+  const closeAll = () => {
+    clearInterval(timer); clearInterval(tick);
+    if (ov) ov.remove();
+    ov = null;
+    if (closeModal) closeModal();
+  };
+  const overlay = () => {
+    if (!ov) { ov = document.createElement('div'); ov.className = 'pay-wait'; ov.setAttribute('role', 'dialog'); ov.setAttribute('aria-modal', 'true'); document.body.appendChild(ov); }
+    return ov;
+  };
+
+  const paid = () => {
     const o = data.order;
-    if (o.status === 'paid') {
-      clearInterval(timer);
-      box.innerHTML = `<button class="modal-x" aria-label="Đóng">×</button>
-        <div style="text-align:center;padding:10px 0">
-          <div style="font-size:48px">🎉</div>
-          <h2>Đã kích hoạt ${esc(o.productName.toLowerCase())}</h2>
-          <p class="muted">Đã nhận ${money(o.amount)}. Cảm ơn hai bạn — chúc đám cưới thật vui!</p>
-          <button class="btn block lg" id="done">Xong</button>
-        </div>`;
-      $('#done', box).onclick = () => box.closest('.modal').remove();
-      if (onDone) onDone();
-      return;
-    }
+    clearInterval(timer); clearInterval(tick);
+    if (onDone) onDone();
+    const el = overlay();
+    el.innerHTML = `${PAY_CSS}<div class="in">
+        <div class="big">🎉</div>
+        <h2>Đã kích hoạt ${esc(o.productName.toLowerCase())}</h2>
+        <p class="muted">Đã nhận ${money(o.amount)}. Cảm ơn hai bạn — chúc đám cưới thật vui!</p>
+        <button class="btn block lg" id="payDone" style="margin-top:22px">Xong</button>
+      </div>`;
+    $('#payDone', el).onclick = closeAll;
+    $('#payDone', el).focus();
+  };
+
+  const waiting = () => {
+    const o = data.order;
+    const el = overlay();
+    const slow = Date.now() - waitStart > SLOW;
+    el.innerHTML = `${PAY_CSS}<div class="in" role="status" aria-live="polite">
+        <div class="ring" aria-hidden="true"></div>
+        <h2>Đang chờ thanh toán…</h2>
+        <p class="muted" style="margin:0">Ngân hàng báo tiền về là ${esc(o.productName.toLowerCase())} tự kích hoạt — thường chỉ vài giây. Đừng tắt trang này nhé.</p>
+        <div class="amt">${money(o.amount)}</div>
+        <div class="meta"><span>Nội dung <b style="color:var(--ink)">${esc(o.code)}</b></span><span id="payClock">0:00</span></div>
+        ${slow ? `<p class="slow">Hơi lâu rồi — có thể ngân hàng đang chậm. Bạn có thể đóng trang, Cưới Nha sẽ kiểm tra và kích hoạt giúp trong ít phút.</p>` : ''}
+        <button class="btn block plain" id="payBack">← Xem lại mã QR</button>
+        ${slow ? '<button class="btn block plain" id="payClose" style="margin-top:8px">Đóng, mình sẽ quay lại sau</button>' : ''}
+      </div>`;
+    $('#payBack', el).onclick = () => { clearInterval(tick); ov.remove(); ov = null; };
+    const c = $('#payClose', el); if (c) c.onclick = closeAll;
+    clearInterval(tick);
+    const clock = () => {
+      const s = Math.floor((Date.now() - waitStart) / 1000);
+      const out = $('#payClock', el); if (out) out.textContent = `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`;
+      if (!slow && s * 1000 > SLOW) waiting(); // hiện lời nhắn "hơi lâu"
+    };
+    clock(); tick = setInterval(clock, 1000);
+  };
+
+  const render = () => {
+    const o = data.order;
+    if (o.status === 'paid') return paid();
     box.innerHTML = `<button class="modal-x" aria-label="Đóng">×</button>
       <div style="text-align:center">
         <h2>Kích hoạt ${esc(o.productName.toLowerCase())}</h2>
@@ -39,52 +96,44 @@ window.openPayModal = async function (cardId, onDone, product = 'card') {
           <div><span class="muted">Nội dung:</span> <b style="color:var(--primary)">${esc(o.code)}</b> <button class="btn sm soft" data-c="${esc(o.code)}">Chép</button></div>
         </div>
       </div>
-      <p class="muted" style="font-size:13px;margin:-6px 0 14px">Mở app ngân hàng, quét mã QR — số tiền và nội dung đã điền sẵn, giữ nguyên nội dung <b>${esc(o.code)}</b>.</p>
+      <p class="muted" style="font-size:13px;margin:-6px 0 14px">Mở app ngân hàng, quét mã QR — số tiền và nội dung đã điền sẵn, giữ nguyên nội dung <b>${esc(o.code)}</b>. Chuyển xong bấm nút bên dưới.</p>
       <form id="cp" style="display:${isLed ? 'none' : 'flex'};gap:8px;margin-bottom:14px">
         <input class="input" name="c" placeholder="Mã giảm giá (nếu có)" value="${esc(o.coupon || '')}" style="text-transform:uppercase">
         <button class="btn plain">Áp dụng</button>
       </form>
-      <style>@keyframes payPulse{0%{box-shadow:0 0 0 0 rgba(214,69,93,.45)}70%{box-shadow:0 0 0 10px rgba(214,69,93,0)}100%{box-shadow:0 0 0 0 rgba(214,69,93,0)}}</style>
-      <div role="status" style="display:flex;gap:12px;align-items:center;padding:14px 16px;border-radius:14px;background:var(--primary-soft,#fff0f2)">
-        <span style="flex:none;width:10px;height:10px;border-radius:50%;background:var(--primary);animation:payPulse 1.6s infinite"></span>
-        <div style="font-size:14px;text-align:left">
-          <b>Đang chờ thanh toán…</b>
-          <div class="muted" style="font-size:13px">Chuyển khoản xong cứ để nguyên cửa sổ này — tiền về là tự báo kích hoạt, thường chỉ vài giây.</div>
-        </div>
-      </div>
-      ${o.claimedAt
-        ? '<p class="muted" style="font-size:13px;text-align:center;margin:10px 0 0">Đã ghi nhận — nếu ngân hàng chậm, Cưới Nha sẽ kiểm tra và kích hoạt giúp bạn.</p>'
-        : '<button class="btn block plain" id="claim" style="margin-top:10px">Đã chuyển mà chưa thấy kích hoạt?</button>'}`;
+      <button class="btn block lg" id="claim">Tôi đã chuyển khoản</button>`;
     $$('[data-c]', box).forEach((b) => (b.onclick = () => copyText(b.dataset.c)));
     $('#cp', box).onsubmit = async (e) => {
       e.preventDefault();
       try {
         data = await api(`/api/cards/${cardId}/order`, { method: 'POST', body: { product, coupon: e.target.c.value } });
-        render(box);
+        render();
         toast(data.order.coupon ? 'Đã áp dụng mã giảm giá' : 'Đã bỏ mã giảm giá');
       } catch (err) { toast(err.message, true); }
     };
-    const claim = $('#claim', box);
-    if (claim) claim.onclick = async () => {
-      const r = await api(`/api/orders/${data.order.code}/claim`, { method: 'POST' });
-      data.order = r.order;
-      render(box);
-      if (onDone) onDone();
+    $('#claim', box).onclick = async () => {
+      if (!waitStart) waitStart = Date.now();
+      waiting();
+      try {
+        const r = await api(`/api/orders/${data.order.code}/claim`, { method: 'POST' });
+        data.order = r.order;
+        if (data.order.status === 'paid') paid();
+      } catch {}
     };
   };
-  openModal('', (box) => {
-    render(box);
-    // Hỏi lại trạng thái vài giây một lần: SePay báo tiền về là thiệp kích hoạt, cửa sổ tự chuyển sang "Đã kích hoạt"
+
+  openModal('', (b, close) => {
+    box = b; closeModal = close;
+    render();
+    if (waitStart && data.order.status !== 'paid') waiting();
+    // Hỏi lại trạng thái vài giây một lần: SePay báo tiền về là đơn chuyển sang "paid"
     timer = setInterval(async () => {
-      if (!box.isConnected) return clearInterval(timer);
+      if (!box.isConnected && !ov) return clearInterval(timer);
       if (document.hidden) return;
       try {
         const r = await api(`/api/orders/${data.order.code}`);
-        if (r.order.status !== data.order.status || r.order.claimedAt !== data.order.claimedAt) {
-          data.order = r.order;
-          if (!box.contains(document.activeElement) || r.order.status === 'paid') render(box);
-        }
+        if (r.order.status === 'paid') { data.order = r.order; paid(); }
       } catch {}
-    }, 4000);
+    }, 3000);
   });
 };
