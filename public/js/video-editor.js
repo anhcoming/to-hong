@@ -167,7 +167,7 @@ function renderHeader() {
   $('#chip').innerHTML = s.paid ? '<span class="chip ok">● Đã kích hoạt</span>'
     : s.expired ? '<span class="chip red">Hết hạn dùng thử</span>'
     : `<span class="chip warn">Dùng thử · còn ${Math.max(0, Math.ceil((s.trialEndsAt - Date.now()) / 864e5))} ngày</span>`;
-  $('#acts').innerHTML = `<button class="btn sm soft" id="cpLink">Chép link chiếu TV</button> <a class="btn sm plain" target="_blank" href="${esc(s.url)}">Mở trình chiếu</a>${s.paid ? '' : card.credits && card.credits.video > 0 ? ' <button class="btn sm" id="payBtn">🎁 Dùng lượt Trọn bộ</button>' : ` <button class="btn sm" id="payBtn">Kích hoạt · ${money(META.videoPrice)}</button>`}`;
+  $('#acts').innerHTML = `<button class="btn sm soft" id="cpLink">Chép link<span class="xl">&nbsp;chiếu TV</span></button> <a class="btn sm plain" target="_blank" href="${esc(s.url)}"><span class="xl">Mở trình chiếu</span><span class="xs">Trình chiếu ↗</span></a>${s.paid ? '' : card.credits && card.credits.video > 0 ? ' <button class="btn sm" id="payBtn">🎁 Dùng lượt Trọn bộ</button>' : ` <button class="btn sm" id="payBtn">Kích hoạt<span class="xl">&nbsp;· ${money(META.videoPrice)}</span></button>`}`;
   $('#cpLink').onclick = () => copyText(s.url, 'Đã chép link — mở trên Smart TV hoặc máy tính nối TV');
   const pb = $('#payBtn'); if (pb) pb.onclick = () => openPayModal(CARD_ID, reload, 'video');
 }

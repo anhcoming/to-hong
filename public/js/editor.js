@@ -201,7 +201,7 @@ function askLogin(why = 'save') {
 }
 
 // ---------- lưu ----------
-function status(t) { $('#saved').textContent = card && card.guest && t === 'Đã lưu ✓' ? 'Bản nháp tạm' : t; }
+function status(t) { const el = $('#saved'); el.textContent = card && card.guest && t === 'Đã lưu ✓' ? 'Bản nháp tạm' : t; el.classList.toggle('ok', el.textContent === 'Đã lưu ✓'); el.title = el.textContent; }
 function scheduleSave(delay = 700) {
   status('Đang chỉnh sửa…');
   clearTimeout(saveTimer);
@@ -265,12 +265,12 @@ function renderHeader() {
   $('#ttl').textContent = [card.data.groom.name, card.data.bride.name].filter(Boolean).join(' & ') || card.title;
   const pa = $('#pubArea');
   if (card.guest) {
-    pa.innerHTML = '<button class="btn sm" id="loginBtn">Đăng nhập để lưu</button>';
+    pa.innerHTML = '<button class="btn sm" id="loginBtn">Đăng nhập<span class="xl">&nbsp;để lưu</span></button>';
     $('#loginBtn').onclick = () => askLogin('save');
     return;
   }
   if (card.status !== 'published') {
-    pa.innerHTML = '<button class="btn sm" id="pubBtn">Phát hành thiệp</button>';
+    pa.innerHTML = '<button class="btn sm" id="pubBtn">Phát hành<span class="xl">&nbsp;thiệp</span></button>';
   } else {
     pa.innerHTML = `<button class="btn sm soft" id="shareBtn">Chia sẻ</button>${card.paid ? '' : ' <button class="btn sm" id="payBtn">Kích hoạt</button>'}`;
   }
