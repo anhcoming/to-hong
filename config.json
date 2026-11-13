@@ -13,9 +13,7 @@
   "ffmpegPath": "ffmpeg",
   "trialDays": 7,
   "trialGuestLimit": 20,
-  "coupons": {
-    "CHAOMUNG": 30000
-  },
+  "coupons": {},
   "payment": {
     "bankBin": "970432",
     "bankName": "VPBank",

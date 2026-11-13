@@ -37,7 +37,7 @@ async function newCard(slug) {
 
   // 1. mua thẳng Trọn bộ
   const a = await newCard('combo-a');
-  assert.equal((await call('u', 'POST', `/api/cards/${a}/order`, { product: 'combo', coupon: 'CHAOMUNG' })).status, 400, 'không áp mã cho Trọn bộ');
+  assert.equal((await call('u', 'POST', `/api/cards/${a}/order`, { product: 'combo', coupon: 'GIAMRIENG' })).status, 400, 'không áp mã cho Trọn bộ');
   r = await call('u', 'POST', `/api/cards/${a}/order`, { product: 'combo' });
   let o = r.json.order;
   assert.match(o.code, /^CB/);

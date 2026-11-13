@@ -134,8 +134,9 @@ async function call(who, method, url, body) {
   assert.equal(r.json.stats.yesPeople, 5);
 
   // thanh toán
-  assert.equal((await call('u', 'POST', `/api/cards/${id}/order`, { coupon: 'SAIMA' })).status, 400);
-  r = await call('u', 'POST', `/api/cards/${id}/order`, { coupon: 'chaomung' });
+  assert.equal((await call('u', 'POST', `/api/cards/${id}/order`, { coupon: 'CHAOMUNG' })).status, 400, 'không còn mã CHAOMUNG công khai');
+  await call('qt', 'PUT', '/api/admin/settings', { coupons: { GIAMRIENG: '30000' } }); // mã riêng do quản trị tạo
+  r = await call('u', 'POST', `/api/cards/${id}/order`, { coupon: 'giamrieng' });
   const order = r.json.order;
   assert.equal(order.amount, 99000);
   assert.match(order.qr, /img\.vietqr\.io/);
@@ -169,7 +170,7 @@ async function call(who, method, url, body) {
   assert.equal(r.status, 200);
   assert.match(r.text, /Bản dùng thử/);
   assert.ok(!r.text.includes('Tuấn <script>'), 'tên trên màn LED phải được escape');
-  assert.equal((await call('u', 'POST', `/api/cards/${id}/order`, { product: 'led', coupon: 'CHAOMUNG' })).status, 400, 'mã giảm giá chỉ cho thiệp');
+  assert.equal((await call('u', 'POST', `/api/cards/${id}/order`, { product: 'led', coupon: 'GIAMRIENG' })).status, 400, 'mã giảm giá chỉ cho thiệp');
   r = await call('u', 'POST', `/api/cards/${id}/order`, { product: 'led' });
   assert.equal(r.json.order.amount, 49000);
   assert.match(r.json.order.code, /^LD/);
