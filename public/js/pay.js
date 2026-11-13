@@ -39,14 +39,22 @@ window.openPayModal = async function (cardId, onDone, product = 'card') {
           <div><span class="muted">Nội dung:</span> <b style="color:var(--primary)">${esc(o.code)}</b> <button class="btn sm soft" data-c="${esc(o.code)}">Chép</button></div>
         </div>
       </div>
-      <p class="muted" style="font-size:13px;margin:-6px 0 14px">Mở app ngân hàng, quét mã QR — số tiền và nội dung đã điền sẵn. Giữ đúng nội dung <b>${esc(o.code)}</b> — tiền về là tự kích hoạt, thường trong 1–2 phút.</p>
+      <p class="muted" style="font-size:13px;margin:-6px 0 14px">Mở app ngân hàng, quét mã QR — số tiền và nội dung đã điền sẵn, giữ nguyên nội dung <b>${esc(o.code)}</b>.</p>
       <form id="cp" style="display:${isLed ? 'none' : 'flex'};gap:8px;margin-bottom:14px">
         <input class="input" name="c" placeholder="Mã giảm giá (nếu có)" value="${esc(o.coupon || '')}" style="text-transform:uppercase">
         <button class="btn plain">Áp dụng</button>
       </form>
+      <style>@keyframes payPulse{0%{box-shadow:0 0 0 0 rgba(214,69,93,.45)}70%{box-shadow:0 0 0 10px rgba(214,69,93,0)}100%{box-shadow:0 0 0 0 rgba(214,69,93,0)}}</style>
+      <div role="status" style="display:flex;gap:12px;align-items:center;padding:14px 16px;border-radius:14px;background:var(--primary-soft,#fff0f2)">
+        <span style="flex:none;width:10px;height:10px;border-radius:50%;background:var(--primary);animation:payPulse 1.6s infinite"></span>
+        <div style="font-size:14px;text-align:left">
+          <b>Đang chờ thanh toán…</b>
+          <div class="muted" style="font-size:13px">Chuyển khoản xong cứ để nguyên cửa sổ này — tiền về là tự báo kích hoạt, thường chỉ vài giây.</div>
+        </div>
+      </div>
       ${o.claimedAt
-        ? '<p class="chip warn" style="display:flex;justify-content:center;padding:10px;font-size:14px">Đang chờ tiền về — cửa sổ này tự báo khi kích hoạt xong</p>'
-        : '<button class="btn block lg" id="claim">Tôi đã chuyển khoản</button>'}`;
+        ? '<p class="muted" style="font-size:13px;text-align:center;margin:10px 0 0">Đã ghi nhận — nếu ngân hàng chậm, Cưới Nha sẽ kiểm tra và kích hoạt giúp bạn.</p>'
+        : '<button class="btn block plain" id="claim" style="margin-top:10px">Đã chuyển mà chưa thấy kích hoạt?</button>'}`;
     $$('[data-c]', box).forEach((b) => (b.onclick = () => copyText(b.dataset.c)));
     $('#cp', box).onsubmit = async (e) => {
       e.preventDefault();
