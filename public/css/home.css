@@ -56,10 +56,27 @@ img{display:block;max-width:100%}
 .hnav.mopen .burger i{background:transparent}
 .hnav.mopen .burger i::before{top:0;transform:rotate(45deg)}
 .hnav.mopen .burger i::after{top:0;transform:rotate(-45deg)}
-.mpanel{display:none;padding:6px 10px 14px;border-top:1px solid var(--line)}
-.mpanel a{display:flex;align-items:center;gap:12px;padding:10px 8px;border-radius:12px;font-weight:500}
-.mpanel a:hover{background:var(--soft)}
-.mpanel i{flex:none;width:34px;height:34px;border-radius:10px;display:grid;place-items:center;font-style:normal;background:var(--soft)}
+/* bảng menu điện thoại (site.js dựng): thẻ lớn "Thiệp cưới online" + 3 ô sản phẩm (icon nét trong ô hồng nhạt) + hàng tài khoản. Màu riêng --mp-* để dùng y hệt ở home.css và site.css */
+.mpanel{--mp-acc:#d6455d;--mp-acc2:#ef7d8d;--mp-soft:#fff5f5;--mp-tint:#ffe3e7;--mp-ic:#d6455d;display:none;padding:14px;border-top:1px solid var(--line)}
+[data-theme="dark"] .mpanel{--mp-soft:#261d20;--mp-tint:rgba(240,104,123,.18);--mp-ic:#f59aa5}
+.mpanel svg{display:block;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.mp-big{position:relative;display:block;overflow:hidden;padding:18px 18px 16px;border-radius:20px;color:#fff;background:linear-gradient(135deg,#c93a53,var(--mp-acc2));box-shadow:0 12px 28px rgba(214,69,93,.28)}
+.mp-big b{display:block;font-size:19px;font-weight:700;line-height:1.3}
+.mp-big small{display:block;margin-top:2px;font-size:13px;opacity:.92;line-height:1.4;max-width:78%}
+.mp-big .go{display:inline-block;margin-top:12px;padding:7px 14px;border-radius:999px;background:#fff;color:var(--mp-acc);font-size:13px;font-weight:700}
+.mp-big svg{position:absolute;right:-12px;bottom:-26px;width:112px;height:112px;stroke-width:1.4;opacity:.35;transform:rotate(-12deg)}
+.mp-three{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-top:10px}
+.mp-three a{display:flex;flex-direction:column;align-items:center;gap:6px;padding:12px 4px;border-radius:16px;background:var(--mp-soft);font-size:13px;font-weight:600;text-align:center;line-height:1.3;transition:transform .15s}
+.mp-three a:active{transform:scale(.97)}
+.mp-three i{display:grid;place-items:center;width:44px;height:44px;border-radius:14px;background:var(--mp-tint);color:var(--mp-ic)}
+.mp-three i svg{width:26px;height:26px}
+.mp-acct{display:flex;margin-top:10px;border:1px solid var(--line);border-radius:16px}
+.mp-acct a{flex:1 1 0;min-width:0;display:flex;flex-direction:column;align-items:center;gap:4px;padding:10px 4px;font-size:12.5px;font-weight:500;text-align:center;line-height:1.3}
+.mp-acct a+a{border-left:1px solid var(--line)}
+.mp-acct svg{width:20px;height:20px;color:var(--muted)}
+.mp-three a:hover{background:var(--mp-tint)}
+.hnav.mopen{background:rgba(255,255,255,.96)} /* menu mở: nền đặc để chữ trang phía sau không lộ qua */
+[data-theme="dark"] .hnav.mopen{background:rgba(26,20,22,.97)}
 @media (max-width:1060px){
   .menu,.hacts .login,.hacts .mine{display:none}
   .caret{display:none}.mine-btn{padding:8px 16px}

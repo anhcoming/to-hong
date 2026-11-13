@@ -6,6 +6,39 @@
   var MENU = [['/mau-thiep', 'Thiệp cưới', 'tpl'], ['/man-hinh-led-dam-cuoi', 'Màn hình LED', 'led'], ['/video-cuoi', 'Video cưới', 'video'], ['/so-tay-cuoi', 'Sổ tay cưới', 'planner']]; // các chức năng chính
   var page = document.body.getAttribute('data-page') || '';
 
+  // Bảng menu điện thoại (trang chủ và các trang giới thiệu): thẻ lớn Thiệp cưới + 3 ô sản phẩm + hàng tài khoản.
+  // Icon nét 24×24 (màu theo currentColor).
+  var ICON = {
+    card: '<rect x="3" y="5" width="18" height="14" rx="2.5"/><path d="M3.5 6.5 12 13l8.5-6.5"/>',
+    led: '<rect x="2.5" y="4" width="19" height="12.5" rx="2"/><path d="M8 20.5h8M12 16.5v4"/><path d="m12 7 .9 1.9 2 .3-1.5 1.4.4 2-1.8-1-1.8 1 .4-2-1.5-1.4 2-.3z"/>',
+    video: '<rect x="3" y="6" width="13" height="12" rx="2.5"/><path d="m16 10.5 5-3v9l-5-3"/>',
+    book: '<path d="M5 4.5A1.5 1.5 0 0 1 6.5 3H19v15H6.5A1.5 1.5 0 0 0 5 19.5z"/><path d="M5 19.5A1.5 1.5 0 0 0 6.5 21H19v-3"/><path d="M9 8h6M9 11.5h4"/>',
+    pen: '<path d="M4 20h4L19 9a2.1 2.1 0 0 0-3-3L5 17z"/><path d="m14.5 7.5 3 3"/>',
+    moon: '<path d="M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5z"/>',
+    out: '<path d="M15 4h3a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-3"/><path d="M10 16l-4-4 4-4M6 12h10"/>',
+    user: '<circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/>'
+  };
+  var svg = function (k) { return '<svg viewBox="0 0 24 24" aria-hidden="true">' + ICON[k] + '</svg>'; };
+  function renderMPanel(user) {
+    var acct = user
+      ? '<a href="/so-tay">' + svg('pen') + 'Sổ tay của tôi</a><a href="#" data-theme-toggle>' + svg('moon') + 'Sáng / tối</a><a href="#" data-logout>' + svg('out') + 'Đăng xuất</a>'
+      : '<a href="/dang-nhap">' + svg('user') + 'Đăng nhập</a><a href="#" data-theme-toggle>' + svg('moon') + 'Sáng / tối</a>';
+    var html = '<a class="mp-big" href="/mau-thiep"><b>Thiệp cưới online</b><small>Mỗi khách một lời mời có tên riêng</small><span class="go">Xem mẫu →</span>' + svg('card') + '</a>' +
+      '<div class="mp-three">' + [['led', MENU[1]], ['video', MENU[2]], ['book', MENU[3]]].map(function (x) {
+        return '<a href="' + x[1][0] + '"><i>' + svg(x[0]) + '</i>' + x[1][1] + '</a>';
+      }).join('') + '</div>' +
+      '<div class="mp-acct">' + acct + '</div>';
+    document.querySelectorAll('.mpanel').forEach(function (p) { p.innerHTML = html; });
+  }
+  window.renderMPanel = renderMPanel;
+  document.addEventListener('click', function (e) {
+    var t = e.target.closest && e.target.closest('.mpanel [data-theme-toggle], .mpanel [data-logout]');
+    if (!t) return;
+    e.preventDefault();
+    if (t.hasAttribute('data-theme-toggle')) { if (window.toggleTheme) toggleTheme(); return; }
+    fetch('/api/auth/logout', { method: 'POST' }).then(function () { location.reload(); });
+  });
+
   var nav = document.getElementById('nav');
   if (nav) {
     nav.className = 'nav' + (document.body.hasAttribute('data-solid') ? ' always' : '');
@@ -13,15 +46,16 @@
       '<nav class="menu">' + MENU.map(function (m) { return '<a href="' + m[0] + '"' + (m[2] === page ? ' class="on"' : '') + '>' + m[1] + '</a>'; }).join('') + '</nav>' +
       (window.themeBtn ? themeBtn() : '') + '<div class="acts" id="navActs"><a class="btn btn-ghost btn-sm login" href="/dang-nhap">Đăng nhập</a><a class="btn btn-main btn-sm" href="/mau-thiep">Tạo thiệp</a></div>' +
       '<button class="burger" id="burger" type="button" aria-label="Mở menu" aria-expanded="false"><i></i></button></div>' +
-      // bảng menu điện thoại: các chức năng + đăng nhập + đổi nền
-      '<nav class="mpanel" aria-label="Menu">' + MENU.map(function (m, i) { return '<a href="' + m[0] + '"><i>' + ['💌', '✨', '🎬', '📒'][i] + '</i>' + m[1] + '</a>'; }).join('') +
-      '<a href="/dang-nhap" id="mLogin"><i>👤</i>Đăng nhập</a><a href="#" onclick="toggleTheme();return false"><i>🌓</i>Đổi nền sáng / tối</a></nav>';
+      // bảng menu điện thoại: nội dung do renderMPanel() bên dưới dựng
+      '<nav class="mpanel" aria-label="Menu"></nav>';
     var burger = document.getElementById('burger');
     burger.addEventListener('click', function () { var on = !nav.classList.contains('mopen'); nav.classList.toggle('mopen', on); burger.setAttribute('aria-expanded', on); });
     var onScroll = function () { nav.classList.toggle('solid', window.scrollY > 40); };
     window.addEventListener('scroll', onScroll, { passive: true });
     onScroll();
   }
+
+  renderMPanel(null); // chưa biết đăng nhập: hiện bản khách, /api/me bên dưới dựng lại
 
   var foot = document.getElementById('foot');
   if (foot) {
@@ -76,8 +110,7 @@
   fetch('/api/me').then(function (r) { return r.json(); }).then(function (me) {
     var a = document.getElementById('navActs');
     if (me.user && a) a.innerHTML = '<a class="btn btn-main btn-sm" href="/thiep-cua-toi">Thiệp của tôi</a>';
-    var ml = document.getElementById('mLogin');
-    if (me.user && ml) ml.outerHTML = '<a href="/thiep-cua-toi"><i>👤</i>Thiệp &amp; video của tôi</a>';
+    if (me.user) renderMPanel(me.user);
   }).catch(function () {});
 
   // khung 16:9 chứa trang 1280×720 (video, màn LED)
