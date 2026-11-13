@@ -202,27 +202,37 @@ function askLogin(why = 'save') {
 
 // ---------- lưu ----------
 function status(t) { const el = $('#saved'); el.textContent = card && card.guest && t === 'Đã lưu ✓' ? 'Bản nháp tạm' : t; el.classList.toggle('ok', el.textContent === 'Đã lưu ✓'); el.title = el.textContent; }
-function scheduleSave(delay = 700) {
+// Lưu xong có phải vẽ lại thiệp không: chỉ bỏ qua khi MỌI thay đổi từ lần lưu trước đã được đổi sẵn ngay trên khung
+// (vd. ảnh vừa tải lên đã thay vào đúng ô) — khỏi tải lại cả thiệp, album không nhảy về ảnh đầu, hiệu ứng không chạy lại.
+// null = chưa có thay đổi; true = toàn thay đổi đã hiện sẵn; false = có thay đổi cần vẽ lại.
+let liveOnly = null;
+function markChange(live) { liveOnly = live && liveOnly !== false; }
+function scheduleSave(delay = 700, { live = false } = {}) {
+  markChange(live);
   status('Đang chỉnh sửa…');
   clearTimeout(saveTimer);
-  saveTimer = setTimeout(save, delay);
+  saveTimer = setTimeout(() => save({ marked: true }), delay);
 }
-async function save() {
+async function save({ live = false, marked = false } = {}) {
+  if (!marked) markChange(live);
   if (saving) { pending = true; return; }
   saving = true;
   status('Đang lưu…');
+  const redraw = liveOnly !== true;
+  liveOnly = null;
   try {
     const r = await api(`/api/cards/${CARD_ID}`, { method: 'PUT', body: { data: card.data, title: card.title, template: card.template, palette: card.palette }, quiet: true });
     Object.assign(card, { ...r.card, data: card.data }); // giữ nguyên dữ liệu đang gõ
     upStatus(); // còn ảnh đang tải thì báo số ảnh, hết thì "Đã lưu ✓"
-    refreshPreview();
+    if (redraw) refreshPreview();
     renderHeader();
   } catch (e) {
+    if (redraw) liveOnly = false; // lần lưu sau vẫn phải vẽ lại
     status('Lưu thất bại');
     toast(e.message, true);
   } finally {
     saving = false;
-    if (pending) { pending = false; save(); }
+    if (pending) { pending = false; save({ marked: true }); }
   }
 }
 // Khung xem trước = khung sửa trực tiếp (bấm ảnh/chữ để sửa). "Xem như khách" tắt các viền sửa.
@@ -433,7 +443,7 @@ async function pumpUploads() {
   if (upRunning >= 3 || !upQueue.length) return;
   upRunning++;
   const { key, file } = upQueue.shift();
-  let local = '';
+  let local = '', live = false;
   try {
     const small = await resizeImage(file);
     local = URL.createObjectURL(small);
@@ -445,7 +455,7 @@ async function pumpUploads() {
     // trong lúc chờ, ô giữ chỗ bị ảnh khác chiếm (sắp xếp lại) → sang ô trống khác, không đè ảnh
     let to = key;
     if (key !== 'cover' && card.data.photos[+key.split('.')[1]]) { pendingSlots.delete(key); to = freeSlots(1)[0]; }
-    if (to) photoSet(to, url); else { toast('Album đã đủ 24 ảnh', true); discardUpload(url); }
+    if (to) { photoSet(to, url); live = to === key && photoLive(key, url); } else { toast('Album đã đủ 24 ảnh', true); discardUpload(url); }
   } catch (e) {
     toast(e.message, true);
   } finally {
@@ -454,7 +464,7 @@ async function pumpUploads() {
     if (local) setTimeout(() => URL.revokeObjectURL(local), 60000);
     upRunning--;
     if (curTab === 'media') rerender();
-    scheduleSave(400); // gom các ảnh xong gần nhau vào một lần lưu
+    scheduleSave(400, { live }); // gom các ảnh xong gần nhau vào một lần lưu; ảnh đã thay sẵn trên thiệp thì khỏi vẽ lại
     upStatus();
     pumpUploads();
   }
@@ -588,6 +598,16 @@ function photoSet(key, url) {
   trimPhotos();
 }
 function applyLive() { rerender(); renderHeader(); clearTimeout(saveTimer); save(); }
+// Ảnh vừa tải lên xong: thay ảnh thật vào đúng ô đang hiện ảnh tạm trên thiệp. Trả về false (→ phải vẽ lại thiệp) khi
+// thiệp chưa có ô đó (vd. ô album thứ 10 mà mẫu chưa vẽ) hoặc đang có bản vẽ lại dở dang (bản đó có thể thiếu ảnh này).
+function photoLive(key, url) {
+  try {
+    const fr = $('#frame');
+    if ($('#frameNext') || !fr.contentDocument || !fr.contentDocument.querySelector(`[data-ce-photo="${key}"]`)) return false;
+    fr.contentWindow.postMessage({ cePhoto: 1, key, src: url, final: 1 }, location.origin);
+    return true;
+  } catch (e) { return false; }
+}
 function pickFile(accept = 'image/*') {
   return new Promise((ok) => {
     const inp = document.createElement('input');
@@ -632,7 +652,8 @@ async function finishUpload(key, up, blob, local, x, y, z) {
     await new Promise((ok) => { const im = new Image(); im.onload = im.onerror = ok; im.src = url; setTimeout(ok, 8000); });
     if (localPhotos[key] !== shown) return; // đã chọn ảnh khác cho ô này trong lúc chờ
     photoSet(key, withFocus(url, x, y, z));
-    applyLive();
+    rerender(); renderHeader(); clearTimeout(saveTimer);
+    save({ live: photoLive(key, withFocus(url, x, y, z)) });
   } catch (e) {
     if (localPhotos[key] !== shown) return;
     toast(e.message, true);
