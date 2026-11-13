@@ -17,10 +17,15 @@ body{height:100vh;height:100dvh;display:flex;flex-direction:column;overflow:hidd
 .emain{flex:1;min-height:0;display:flex}
 /* 6 nút công cụ: cột dọc bên trái (máy tính), thanh dưới cùng (điện thoại) */
 .tools{flex:none;display:flex;flex-direction:column;gap:4px;width:88px;padding:12px 8px;background:var(--surface);border-right:1px solid var(--line);overflow-y:auto}
-.tools button{display:flex;flex-direction:column;align-items:center;gap:5px;padding:10px 4px;border:0;border-radius:12px;background:none;color:var(--ink);font:inherit;font-size:12px;font-weight:600;line-height:1.2;cursor:pointer;text-align:center}
-.tools button i{font-style:normal;font-size:20px;line-height:1}
-.tools button:hover{background:var(--primary-soft)}
-.tools button.on{background:var(--primary-soft);color:var(--primary)}
+.tools button{display:flex;flex-direction:column;align-items:center;gap:4px;min-width:0;padding:8px 2px;border:0;background:none;color:var(--muted);font:inherit;font-size:12px;font-weight:600;line-height:1.2;cursor:pointer;text-align:center;-webkit-tap-highlight-color:transparent}
+.tools button i{display:grid;place-items:center;width:52px;height:30px;border-radius:999px;transition:background .2s,color .2s}
+.tools button svg{width:22px;height:22px}
+.tools button span{max-width:100%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tools button:hover i{background:rgba(214,69,93,.07)}
+.tools button:hover{color:var(--ink)}
+.tools button.on{color:var(--primary)}
+.tools button.on i{background:var(--primary-soft)}
+.tools button.on svg{stroke-width:2.1}
 /* bảng mở từ nút công cụ */
 .sheet{flex:none;width:400px;display:none;flex-direction:column;background:var(--bg);border-right:1px solid var(--line);min-height:0}
 .sheet-open .sheet{display:flex}
@@ -89,9 +94,10 @@ body{height:100vh;height:100dvh;display:flex;flex-direction:column;overflow:hidd
   .saved{font-size:11px}
   .ebar h1{font-size:16px}
   .emain{flex-direction:column-reverse}
-  .tools{flex-direction:row;width:auto;justify-content:space-around;gap:0;padding:4px 2px calc(4px + env(safe-area-inset-bottom));border-right:0;border-top:1px solid var(--line)}
-  .tools button{flex:1;padding:6px 1px;font-size:10.5px;gap:3px}
-  .tools button i{font-size:19px}
+  .tools{flex-direction:row;width:auto;justify-content:stretch;gap:0;padding:4px 4px calc(4px + env(safe-area-inset-bottom));border-right:0;border-top:1px solid var(--line);box-shadow:0 -4px 16px rgba(31,26,27,.04);overflow:hidden}
+  .tools button{flex:1 1 auto;padding:6px 0 4px;font-size:11px;gap:2px;letter-spacing:-.01em}
+  .tools button i{width:46px;max-width:100%;height:28px}
+  .tools button svg{width:21px;height:21px}
   .stage{padding:0;display:block}
   .pvmode{display:none}
   .phone{width:100%;height:100%;border-radius:0;padding:0;background:none;box-shadow:none}
@@ -117,12 +123,12 @@ body{height:100vh;height:100dvh;display:flex;flex-direction:column;overflow:hidd
 </header>
 <div class="emain">
   <nav class="tools" id="tools" aria-label="Công cụ">
-    <button data-tab="tpl"><i>🎨</i>Mẫu</button>
-    <button data-tab="date"><i>📝</i>Thông tin</button>
-    <button data-tab="media"><i>🖼</i>Ảnh &amp; nhạc</button>
-    <button data-tab="gift"><i>💝</i>Mừng cưới</button>
-    <button data-tab="guests"><i>👥</i>Khách</button>
-    <button data-tab="more"><i>⋯</i>Thêm</button>
+    <button data-tab="tpl"><i><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3.5" y="3.5" width="17" height="17" rx="3"/><path d="M3.5 9.5h17M9.5 9.5v11"/></svg></i><span>Mẫu</span></button>
+    <button data-tab="date"><i><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14.5 4.5l5 5L9 20H4v-5z"/><path d="M12.5 6.5l5 5"/></svg></i><span>Thông tin</span></button>
+    <button data-tab="media"><i><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3.5" y="4.5" width="17" height="15" rx="3"/><circle cx="9" cy="10" r="1.8"/><path d="M20.5 16l-4.5-4.5-8.5 8"/></svg></i><span>Ảnh &amp; nhạc</span></button>
+    <button data-tab="gift"><i><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3.5" y="8.5" width="17" height="4" rx="1"/><path d="M5 12.5v6a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-6M12 8.5v12"/><path d="M12 8.5C10.5 5 7 4.5 7 6.8 7 8.5 12 8.5 12 8.5zM12 8.5c1.5-3.5 5-4 5-1.7 0 1.7-5 1.7-5 1.7z"/></svg></i><span>Mừng cưới</span></button>
+    <button data-tab="guests"><i><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="8.5" r="3.5"/><path d="M2.5 20c.6-3.4 3.2-5.5 6.5-5.5s5.9 2.1 6.5 5.5"/><path d="M16 5.2a3.3 3.3 0 0 1 0 6.6M18 14.8c2 .7 3.2 2.5 3.5 5.2"/></svg></i><span>Khách</span></button>
+    <button data-tab="more"><i><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="5.5" cy="12" r="1.3" fill="currentColor"/><circle cx="12" cy="12" r="1.3" fill="currentColor"/><circle cx="18.5" cy="12" r="1.3" fill="currentColor"/></svg></i><span>Thêm</span></button>
   </nav>
   <aside class="sheet" id="sheet" aria-label="Bảng công cụ">
     <div class="sheet-h"><b id="sheetTitle"></b><button id="sheetX" aria-label="Đóng">×</button></div>
