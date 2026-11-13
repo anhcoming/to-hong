@@ -446,7 +446,7 @@ function musicPane() {
     <div class="mlist">${own}${M.tracks.map((t) => row(t.file, t.name, `${t.by} · ${t.mood}`, now.url === t.file, `data-mpick="${esc(t.file)}"`)).join('')}</div>
     <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px">
       <label class="btn sm soft">Tải lên MP3 của bạn<input type="file" accept="audio/mpeg" id="musicIn" hidden></label>
-      ${now.auto ? '' : '<button class="btn sm plain" data-music-auto>Để thiệp tự chọn theo mẫu</button>'}
+      ${now.auto || !M.tracks.length ? '' : '<button class="btn sm plain" data-music-auto>Để thiệp tự chọn theo mẫu</button>'}
       ${now.off ? '' : '<button class="btn sm plain" data-music-off>Tắt nhạc</button>'}
     </div>
     <p class="muted" style="font-size:13px;margin:10px 0 0">${now.off ? 'Thiệp đang tắt nhạc.' : 'Nhạc phát khi khách chạm "Mở thiệp".'} Nhạc mẫu là bản thu miễn phí bản quyền. Tự tải lên: tối đa 12MB, chỉ dùng bản nhạc bạn có quyền sử dụng.</p>`;
