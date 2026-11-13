@@ -128,11 +128,12 @@ window.backTo = function (a, fallback) {
     history.back();
   };
 };
-window.openModal = function (html, onMount) {
+// onClose(): gọi khi cửa sổ đóng (bấm ×, bấm ra ngoài, Esc hoặc close() từ trong)
+window.openModal = function (html, onMount, onClose) {
   const m = document.createElement('div');
   m.className = 'modal';
   m.innerHTML = `<div class="modal-box" role="dialog" aria-modal="true"><button class="modal-x" aria-label="Đóng">×</button>${html}</div>`;
-  const close = () => { m.remove(); document.removeEventListener('keydown', onKey); };
+  const close = () => { if (!m.isConnected) return; m.remove(); document.removeEventListener('keydown', onKey); if (onClose) onClose(); };
   const onKey = (e) => { if (e.key === 'Escape') close(); };
   m.addEventListener('click', (e) => { if (e.target === m || e.target.closest('.modal-x')) close(); });
   document.addEventListener('keydown', onKey);
@@ -172,12 +173,13 @@ function _resize(file, maxSide, quality, resolve, reject) {
 }
 
 // quiet: để uploadFiles tự quản màn chờ (hiện tiến độ chung), khỏi mỗi tệp một màn chờ
-window.uploadFile = async function (file, { quiet = false } = {}) {
+// resized: tệp đã qua resizeImage rồi (khỏi nén lại lần nữa)
+window.uploadFile = async function (file, { quiet = false, resized = false } = {}) {
   const isImg = file.type.startsWith('image/');
   if (!isImg && file.type !== 'audio/mpeg') throw new Error('Chỉ nhận ảnh hoặc nhạc MP3');
   if (!quiet) loading.show(isImg ? 'Đang tải ảnh lên…' : 'Đang tải nhạc lên…');
   try {
-    if (isImg) file = await resizeImage(file);
+    if (isImg && !resized) file = await resizeImage(file);
     // mỗi lần gửi tối đa 45s (máy chủ tự dừng ở 30s); lỗi mạng / quá giờ / máy chủ lỗi thì tự thử lại thêm 2 lần
     for (let k = 0; ; k++) {
       try {

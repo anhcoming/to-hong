@@ -556,29 +556,40 @@ const localPhotos = {};
 function showLocalPhoto(win, key) {
   try { win.postMessage({ cePhoto: 1, key, src: localPhotos[key] }, location.origin); } catch (e) { /* bỏ qua */ }
 }
+// Ảnh mới từ máy: nén ảnh → mở ngay bảng căn chỉnh (ảnh trong máy) → bấm Xong thì hiện tạm lên thiệp
+// đúng phần đã căn, đồng thời tải lên + lưu ngầm. Đóng bảng căn chỉnh = bỏ ảnh vừa chọn.
 async function livePhotoUpload(key, ratio) {
   if (card.guest) return askLogin('photo');
   const f = await pickFile();
   if (!f) return;
-  const local = URL.createObjectURL(f);
-  localPhotos[key] = local;
+  let small;
+  try { small = await withLoading('Đang mở ảnh…', () => resizeImage(f)); } catch (e) { return toast(e.message, true); }
+  const local = URL.createObjectURL(small);
+  cropModal(key, ratio, {
+    src: local,
+    onCancel: () => URL.revokeObjectURL(local),
+    onOk: (x, y, z) => finishUpload(key, small, local, x, y, z),
+  });
+}
+async function finishUpload(key, blob, local, x, y, z) {
+  const shown = withFocus(local, x, y, z);
+  localPhotos[key] = shown;
   showLocalPhoto($('#frame').contentWindow, key);
   status('Đang tải ảnh lên…');
   try {
-    const url = await uploadFile(f, { quiet: true });
+    const url = await uploadFile(blob, { quiet: true, resized: true });
     // tải trước ảnh thật để lúc thiệp vẽ lại không bị trống chỗ ảnh
     await new Promise((ok) => { const im = new Image(); im.onload = im.onerror = ok; im.src = url; setTimeout(ok, 8000); });
-    if (localPhotos[key] !== local) return; // đã chọn ảnh khác cho ô này trong lúc chờ
-    photoSet(key, url);
+    if (localPhotos[key] !== shown) return; // đã chọn ảnh khác cho ô này trong lúc chờ
+    photoSet(key, withFocus(url, x, y, z));
     applyLive();
-    if (ratio && Math.abs(ratio - 1) > 0.05) setTimeout(() => cropModal(key, ratio, true), 300); // ảnh mới: mời căn khung luôn
   } catch (e) {
-    if (localPhotos[key] !== local) return;
+    if (localPhotos[key] !== shown) return;
     toast(e.message, true);
     status('Tải ảnh thất bại');
     refreshPreview(); // bỏ ảnh tạm, trả lại ảnh cũ
   } finally {
-    if (localPhotos[key] === local) delete localPhotos[key];
+    if (localPhotos[key] === shown) delete localPhotos[key];
     setTimeout(() => URL.revokeObjectURL(local), 60000);
   }
 }
@@ -601,14 +612,17 @@ function photoActions(key, ratio) {
   });
 }
 // kéo ảnh trong khung (đúng tỉ lệ ô của mẫu) để chọn phần hiện ra
-function cropModal(key, ratio = 1, fresh = false) {
-  const u = photoGet(key);
+// opt.src: ảnh mới (chưa tải lên) để căn trước; opt.onOk(x, y, z) thay cho việc lưu ngay; opt.onCancel khi đóng mà chưa bấm Xong
+function cropModal(key, ratio = 1, opt = {}) {
+  const fresh = !!opt.src;
+  const u = opt.src || photoGet(key);
   if (!u) return;
+  let done = false;
   let [x, y, z] = focusOf(u);
   const W = Math.min(300, window.innerWidth - 80), H = Math.round(Math.min(380, Math.max(170, W / (ratio || 1))));
   const FW = Math.round(H * (ratio || 1) > W ? W : H * (ratio || 1));
   openModal(`<h2 style="margin-top:0">Căn chỉnh ảnh</h2>
-    <p class="muted" style="margin:-4px 0 12px">${fresh ? 'Ảnh đã tải lên. ' : ''}Kéo để chọn phần hiện ra, phóng to bằng thanh trượt${matchMedia('(pointer:coarse)').matches ? ' hoặc chụm hai ngón' : ' hoặc lăn chuột'}.</p>
+    <p class="muted" style="margin:-4px 0 12px">Kéo để chọn phần hiện ra, phóng to bằng thanh trượt${matchMedia('(pointer:coarse)').matches ? ' hoặc chụm hai ngón' : ' hoặc lăn chuột'}.</p>
     <div id="cropF" style="position:relative;margin:0 auto;width:${FW}px;height:${H}px;border-radius:12px;overflow:hidden;touch-action:none;cursor:grab;background:#eee url('${esc(baseUrl(u))}') ${x}% ${y}%/cover no-repeat;box-shadow:inset 0 0 0 2px var(--primary)"></div>
     <label style="display:flex;align-items:center;gap:10px;margin:16px auto 0;max-width:${Math.max(FW, 240)}px">
       <span aria-hidden="true" style="font-size:13px">−</span>
@@ -616,7 +630,7 @@ function cropModal(key, ratio = 1, fresh = false) {
       <span aria-hidden="true" style="font-size:18px">+</span>
       <b id="cropZv" style="min-width:42px;text-align:right;font-size:13px">${z.toFixed(1)}×</b>
     </label>
-    <div style="display:flex;gap:8px;margin-top:16px"><button class="btn plain" data-c="reset" style="flex:1">Đặt lại</button><button class="btn" data-c="ok" style="flex:2">Xong</button></div>`, (box, close) => {
+    <div style="display:flex;gap:8px;margin-top:16px"><button class="btn plain" data-c="reset" style="flex:1">Đặt lại</button><button class="btn" data-c="ok" style="flex:2">${fresh ? 'Xong, dùng ảnh này' : 'Xong'}</button></div>`, (box, close) => {
     const fr = $('#cropF', box), zr = $('#cropZ', box), zv = $('#cropZv', box);
     const img = new Image();
     let iw = 0, ih = 0;
@@ -660,11 +674,13 @@ function cropModal(key, ratio = 1, fresh = false) {
     box.addEventListener('click', (e) => {
       const b = e.target.closest('[data-c]'); if (!b) return;
       if (b.dataset.c === 'reset') { x = 50; y = 50; z = 1; paint(); return; }
-      photoSet(key, withFocus(u, x, y, z));
+      done = true;
       close();
+      if (opt.onOk) return opt.onOk(x, y, z);
+      photoSet(key, withFocus(u, x, y, z));
       applyLive();
     });
-  });
+  }, () => { if (!done && opt.onCancel) opt.onCancel(); });
 }
 const LONG_FIELDS = /^(message|story)$|\.address$/;
 const FIELD_NAMES = { name: 'Tên gọi', fullName: 'Họ và tên đầy đủ', father: 'Tên bố', mother: 'Tên mẹ', address: 'Địa chỉ', place: 'Nơi tổ chức', inviteText: 'Lời mời', message: 'Lời nhắn', story: 'Chuyện tình yêu' };

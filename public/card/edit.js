@@ -219,13 +219,20 @@
   }
   // ---------- trang sửa vừa chọn ảnh → hiện ngay ảnh trong máy (chưa chờ tải lên xong); nhấp nháy nhẹ tới khi lưu xong ----------
   function photoPatch(key, src) {
-    var tagged = src + '#k=' + key;
+    var tagged = src + (src.indexOf('#') >= 0 ? '&' : '#') + 'k=' + key;
     var re = new RegExp('url\\(([\'"]?)[^\'")]*[#&]k=' + key.replace('.', '\\.') + '(?![\\w.])[^\'")]*\\1\\)', 'g');
     Array.prototype.forEach.call(document.querySelectorAll('[data-ce-photo="' + key + '"]'), function (el) {
-      if (el.tagName === 'IMG') { el.removeAttribute('srcset'); el.src = tagged; }
-      else el.setAttribute('style', el.getAttribute('style').replace(re, 'url("' + tagged + '")'));
+      if (el.tagName === 'IMG') {
+        el.removeAttribute('srcset');
+        el.style.objectPosition = el.style.scale = el.style.clipPath = el.style.transformOrigin = ''; // bỏ phần căn của ảnh cũ
+        el.src = tagged;
+      } else {
+        el.setAttribute('style', el.getAttribute('style').replace(re, 'url("' + tagged + '")'));
+        el.style.backgroundSize = ''; el.style.backgroundPosition = '';
+      }
       el.dataset.ceEmpty = '';
       el.dataset.ceUp = '1';
+      if (window.__applyFocus && el.parentElement) window.__applyFocus(el.parentElement); // căn đúng phần đã chọn (#p=…)
     });
   }
   window.addEventListener('message', function (e) {
