@@ -12,7 +12,10 @@
 body{height:100vh;display:flex;flex-direction:column;overflow:hidden}
 .ebar{display:flex;align-items:center;gap:10px;padding:10px 16px;border-bottom:1px solid var(--line);background:var(--surface);flex-wrap:wrap}
 .ebar .back{text-decoration:none;color:var(--muted);font-size:20px;padding:4px 8px}
-.ebar h1{margin:0;font-size:17px;flex:1;min-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ebar .tt{flex:1;min-width:0;display:flex;align-items:center;gap:10px}
+.ebar h1{margin:0;font-size:17px;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ebar .sub{display:flex;align-items:center;gap:10px;flex:none}
+#acts{display:flex;gap:8px;flex:none}
 .saved{font-size:13px;color:var(--muted)}
 .layout{flex:1;display:grid;grid-template-columns:420px minmax(0,1fr);min-height:0}
 .side{overflow:auto;padding:16px 16px 80px;background:var(--bg)}
@@ -35,24 +38,54 @@ body{height:100vh;display:flex;flex-direction:column;overflow:hidden}
 .stagewrap{background:#1a1416;display:grid;place-items:center;padding:24px;min-height:0;overflow:hidden;position:relative}
 .screen{background:#000;box-shadow:0 20px 60px rgba(0,0,0,.5);border:10px solid #2b2326;border-radius:8px;max-width:100%;max-height:100%}
 .screen iframe{width:100%;height:100%;border:0;display:block}
-.hint{position:absolute;left:24px;bottom:14px;color:#bba;font-size:13px}
+/* thanh chuyển cảnh dưới khung xem trước: bấm tên cảnh để nhảy tới, vạch dưới cùng chạy theo thời gian của cảnh */
+.stagewrap{grid-template-rows:minmax(0,1fr) auto;gap:12px}
+.scenes{display:flex;align-items:center;gap:6px;max-width:100%;min-width:0}
+.sc-btn{flex:none;width:38px;height:38px;border:0;border-radius:50%;background:rgba(255,255,255,.12);color:#fff;font-size:20px;line-height:1;cursor:pointer}
+.sc-btn[data-sc=pause]{font-size:13px}
+.sc-btn:hover{background:rgba(255,255,255,.22)}
+.sc-list{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;min-width:0}
+.sc-list::-webkit-scrollbar{display:none}
+.sc{position:relative;flex:none;height:34px;padding:0 13px;border:0;border-radius:999px;background:rgba(255,255,255,.1);color:#d9cfd1;font:600 13px var(--sans,system-ui);cursor:pointer;overflow:hidden;white-space:nowrap}
+.sc.on{background:#fff;color:#1a1416}
+.sc.on i{position:absolute;left:0;bottom:0;height:3px;width:100%;background:var(--primary);transform-origin:left;animation:scbar linear forwards}
+.paused .sc.on i{animation-play-state:paused}
+@keyframes scbar{from{transform:scaleX(0)}to{transform:scaleX(1)}}
+.layout[hidden]{display:none}
+#introBox:not(:empty){flex:1;min-height:0;overflow:auto;padding:0 16px}
 .intro{max-width:520px;margin:60px auto;padding:28px;text-align:center}
+@media (max-width:600px){.intro{margin:20px auto 40px;padding:22px 18px}}
 .tips{font-size:14px;margin:0;padding-left:18px;color:var(--muted)}
 .tips li{margin-bottom:6px}
-@media (max-width:900px){.layout{grid-template-columns:1fr;grid-template-rows:42vh 1fr}.stagewrap{order:-1;padding:12px}.side{padding-bottom:40px}}
+@media (max-width:900px){.layout{grid-template-columns:1fr;grid-template-rows:auto minmax(0,1fr)}.stagewrap{order:-1;padding:10px 8px 8px;gap:8px}.screen{border-width:3px;border-radius:6px}.side{padding:12px 12px 40px}}
+/* điện thoại: dòng 1 = ← tên thiệp, dưới tên là hạn dùng thử + trạng thái lưu (chữ nhỏ, không viên thuốc);
+   dòng 2 = ba nút chia đều bề ngang, nhãn ngắn — không nút nào bị cắt hay phải cuộn ngang */
+@media (max-width:600px){
+  .ebar{padding:8px 10px 10px;gap:8px 4px}
+  .ebar .back{padding:2px 6px 2px 0;font-size:22px}
+  .ebar .tt{flex-direction:column;align-items:flex-start;gap:1px}
+  .ebar h1{font-size:16px;max-width:100%}
+  .ebar .sub{gap:6px;font-size:12px}
+  #chip .chip{background:none;border:0;padding:0;font-size:12px;font-weight:600}
+  #chip:not(:empty)+.saved::before{content:"·";margin-right:6px;color:var(--muted)}
+  .saved{font-size:12px}
+  #acts{width:100%;display:grid;grid-template-columns:1fr 1fr 1.25fr;gap:6px}
+  #acts:empty{display:none}
+  #acts .btn{min-height:38px;padding:6px 4px;font-size:13px;justify-content:center;text-align:center;white-space:nowrap}
+  .group{padding:14px;margin-bottom:10px}
+}
 </style>
 </head>
 <body>
 <header class="ebar">
   <a class="back" id="back" href="/thiep-cua-toi" title="Quay lại">←</a>
-  <h1 id="ttl">Màn hình LED</h1>
-  <span id="chip"></span>
-  <span class="saved" id="saved"></span>
+  <div class="tt"><h1 id="ttl">Màn hình LED</h1><div class="sub"><span id="chip"></span><span class="saved" id="saved"></span></div></div>
   <span id="acts"></span>
 </header>
 <div class="layout" id="layout" hidden>
   <div class="side" id="side"></div>
-  <div class="stagewrap" id="stagewrap"><div class="screen" id="screen"><iframe id="frame" title="Xem trước màn LED"></iframe></div><span class="hint">Xem trước · Bấm "Mở trình chiếu" để chạy toàn màn hình</span></div>
+  <div class="stagewrap" id="stagewrap"><div class="screen" id="screen"><iframe id="frame" title="Xem trước màn LED"></iframe></div>
+    <div class="scenes" id="scenes" aria-label="Chuyển cảnh"><button class="sc-btn" data-sc="prev" aria-label="Cảnh trước">‹</button><button class="sc-btn" data-sc="pause" id="scPause" aria-label="Tạm dừng">❚❚</button><div class="sc-list" id="scList"></div><button class="sc-btn" data-sc="next" aria-label="Cảnh sau">›</button></div></div>
 </div>
 <div id="introBox"></div>
 <script src="/js/common.js"></script>

@@ -257,13 +257,13 @@
     const TOP_VIDEO = ['polaroid', 'saodem', 'phimcu', 'lichhen', 'songhy']; // 5 mẫu video được chọn nhiều, cùng thứ tự với khu video bên dưới
     const topVideo = [...TOP_VIDEO.map((id) => V.find((t) => t.id === id)).filter(Boolean), ...V.filter((t) => t.photos && !TOP_VIDEO.includes(t.id))].slice(0, 5);
     const vcard = (t, i) => `<div class="ncard" data-video="${t.id}">${i ? '' : PILL}<div class="pic"><a href="/video/demo?template=${t.id}" aria-label="Xem thử video ${esc(t.name)}"><img src="/demo/vposter-${t.id}.jpg" alt="${esc(t.name)}" loading="lazy"></a><span class="lbl">${esc(t.name)}<small>${t.photos ? t.slots + ' ảnh' : 'Mẫu chữ'} · chiếu TV, tải MP4</small></span>
-      <div class="info"><b>${esc(t.name)}</b><a class="use" href="/thiep-cua-toi?tao-video=1&mau=${t.id}">Dùng mẫu</a></div></div></div>`;
+      <div class="info"><b>${esc(t.name)}</b><a class="use" href="/tao-video?mau=${t.id}">Dùng mẫu</a></div></div></div>`;
     // thẻ màn LED 16:9: mỗi "mẫu" là một cặp bảng màu + hiệu ứng nền; poster chụp sẵn (npm run previews -- <địa chỉ> led), rê chuột chạy màn thật
     const L = ev.detail.led || { palettes: [], effects: [] };
     const TOP_LED = [['do', 'sao'], ['den', 'remphale'], ['dem', 'phaohoa'], ['tim', 'hoadang'], ['hong', 'tim']]; // cùng danh sách với tools/previews.js
     const topLed = TOP_LED.map(([p, e]) => ({ p: L.palettes.find((x) => x.id === p), e: L.effects.find((x) => x.id === e) })).filter((x) => x.p && x.e);
     const lcard = ({ p, e }, i) => { const q = `palette=${p.id}&effect=${e.id}`; return `<div class="ncard" data-led="${q}">${i ? '' : PILL}<div class="pic"><a href="/led/demo?${q}" aria-label="Xem thử màn LED ${esc(p.name)}"><img src="/demo/lposter-${p.id}-${e.id}.jpg" alt="Màn hình LED ${esc(p.name)}" loading="lazy"></a><span class="lbl one">${esc(p.name)}<small>${esc(e.name)}</small></span>
-      <div class="info"><b>${esc(p.name)}</b><a class="use" href="/thiep-cua-toi?tao-led=1&${q}">Dùng mẫu</a></div></div></div>`; };
+      <div class="info"><b>${esc(p.name)}</b><a class="use" href="/tao-led?${q}">Dùng mẫu</a></div></div></div>`; };
     const hot = T.filter((t) => t.badge === 'Hot');
     const top = [...hot, ...T.filter((t) => !hot.includes(t))].slice(0, 5); // top 5: mẫu Hot trước, thiếu thì lấy thêm mẫu kế tiếp
     const used = G.filter((g) => T.some((t) => t.group === g.id));
@@ -271,7 +271,7 @@
     rows.innerHTML =
       row('Top 5 mẫu thiệp được chọn nhiều nhất tuần này', top.map((t, i) => card(t, `<span class="num">${i + 1}</span>`)), 'top')
       + block('Video cưới chiếu TV', topVideo.map(vcard), '/video-cuoi')
-      + block('Màn hình LED tiệc cưới', topLed.map(lcard), '/thiep-cua-toi?tao-led=1', 'Tạo màn LED')
+      + block('Màn hình LED tiệc cưới', topLed.map(lcard), '/tao-led', 'Tạo màn LED')
       + row('Mới ra mắt', T.filter((t) => t.badge === 'Mới').map((t) => card(t)))
 
       + used.map((g) => row(esc(g.name), T.filter((t) => t.group === g.id).map((t) => card(t)), '', `/mau-thiep?phong-cach=${g.id}`)).join('')

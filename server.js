@@ -348,10 +348,29 @@ route('GET', '/api/cards', async (req, res, ctx) => {
 
 route('POST', '/api/cards', async (req, res, ctx) => {
   if (!ctx.user) return guestCard(req, res, ctx);
-  const user = needUser(ctx);
+  const card = newCard(needUser(ctx), await readJson(req));
+  json(res, 200, { card: cardFull(card) });
+});
+// Bấm "Tạo màn LED" / "Dùng mẫu" video: chuyển thẳng tới trình sửa (máy chủ chọn thiệp gần nhất, chưa có thì tạo),
+// không ghé trang "Thiệp của tôi" rồi mới nhảy tiếp. Chưa đăng nhập thì đăng nhập xong quay lại đúng link này.
+// /tao-led?palette=&effect=  → /sua-led/<thiệp>?palette=&effect=      /tao-video?mau=<mẫu> → /sua-video/<thiệp>?mau=<mẫu>
+for (const [path, to, keep] of [['/tao-led', 'sua-led', ['palette', 'effect']], ['/tao-video', 'sua-video', ['mau']]]) {
+  route('GET', path, async (req, res, ctx) => {
+    const q = new URLSearchParams();
+    keep.forEach((k) => { const v = String(ctx.query.get(k) || '').slice(0, 40); if (/^[\w-]+$/.test(v)) q.set(k, v); });
+    const qs = q.toString() ? '?' + q : '';
+    if (!ctx.user) return redirect(res, '/dang-nhap?next=' + encodeURIComponent(path + qs));
+    const user = ctx.user, w = Wd.ensure(user);
+    const card = db.cards.filter((c) => c.userId === user.id || c.weddingId === w.id).sort((a, b) => b.updatedAt - a.updatedAt)[0]
+      || newCard(user, { template: 'dodam' });
+    if (to === 'sua-led') q.set('tao', '1'); // trình sửa LED tự bật màn LED, khỏi bấm thêm nút "Tạo màn LED từ thiệp này"
+    redirect(res, `/${to}/${card.id}?${q}`);
+  });
+}
+
+function newCard(user, b = {}) {
   if (db.cards.filter((c) => c.userId === user.id).length >= 30) throw httpError(400, 'Bạn đã có quá nhiều thiệp');
   const w = Wd.ensure(user);
-  const b = await readJson(req);
   const tpl = templates[b.template] ? b.template : DEFAULT_TEMPLATE;
   const now = Date.now();
   const data = cd.defaults();
@@ -368,8 +387,8 @@ route('POST', '/api/cards', async (req, res, ctx) => {
   };
   db.cards.push(card);
   save();
-  json(res, 200, { card: cardFull(card) });
-});
+  return card;
+}
 
 // Khách chưa đăng nhập bấm "Dùng mẫu": mỗi khách một thiệp nháp; chọn mẫu khác thì đổi mẫu trên chính thiệp đó (giữ chữ đã gõ)
 async function guestCard(req, res, ctx) {

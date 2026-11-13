@@ -92,7 +92,7 @@
       // thẻ gọn: ảnh xem trước (bấm để xem toàn màn) + tên mẫu + nút Dùng mẫu
       return '<article class="vt" data-id="' + t.id + '"><a class="pic" href="/video/demo?template=' + t.id + '" aria-label="Xem thử mẫu ' + esc(t.name) + '">' +
         (t.photos ? '<span class="tag">' + t.slots + ' ảnh</span>' : '<span class="tag soft">Chữ</span>') + '<img src="/demo/vposter-' + t.id + '.jpg" alt="Mẫu video ' + esc(t.name) + '" loading="lazy"></a>' +
-        '<div class="body"><h3>' + esc(t.name) + '</h3><a class="btn btn-main btn-sm" href="/thiep-cua-toi?tao-video=1&amp;mau=' + t.id + '">Dùng mẫu</a></div></article>';
+        '<div class="body"><h3>' + esc(t.name) + '</h3><a class="btn btn-main btn-sm" href="/tao-video?mau=' + t.id + '">Dùng mẫu</a></div></article>';
     }).join('');
     // rê chuột: phát thử video thật trong khung, thu nhỏ từ 1280×720
     if (!matchMedia('(hover:hover)').matches) return;

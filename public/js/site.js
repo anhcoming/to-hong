@@ -134,10 +134,10 @@
       try { var rh = document.referrer ? new URL(document.referrer).host : ''; ref = new URLSearchParams(location.search).get('utm_source') || (rh && rh !== location.host ? rh : ''); } catch (e) { /* bỏ qua */ }
       send({ p: location.pathname, v: isNew, n: first, r: ref, m: matchMedia('(max-width:760px)').matches ? 1 : 0 });
       document.addEventListener('click', function (e) {
-        var a = e.target.closest && e.target.closest('a[href*="/thiep-cua-toi?tao"]');
+        var a = e.target.closest && e.target.closest('a[href*="/thiep-cua-toi?tao"],a[href^="/tao-led"],a[href^="/tao-video"]');
         if (!a) return;
-        var q = new URL(a.href, location.href).searchParams;
-        var k = q.get('tao') ? 'thiep:' + q.get('tao') : q.get('tao-video') ? 'video:' + (q.get('mau') || 'chung') : q.get('tao-led') ? 'led:' + (q.get('palette') ? q.get('palette') + '-' + (q.get('effect') || '') : 'chung') : '';
+        var u = new URL(a.href, location.href), q = u.searchParams;
+        var k = q.get('tao') ? 'thiep:' + q.get('tao') : u.pathname === '/tao-video' ? 'video:' + (q.get('mau') || 'chung') : u.pathname === '/tao-led' ? 'led:' + (q.get('palette') ? q.get('palette') + '-' + (q.get('effect') || '') : 'chung') : '';
         if (k) send({ u: k });
       }, true);
     }

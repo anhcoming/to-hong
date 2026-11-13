@@ -450,11 +450,11 @@
     var hy = L.hy ? '<p class="hy glow">囍</p>' : '';
     var out = [];
     if (L.slides.names) {
-      out.push('<div class="slide s-names">' + hy + (L.kicker ? '<p class="kicker">' + esc(L.kicker) + '</p>' : '') +
+      out.push('<div data-k="names" class="slide s-names">' + hy + (L.kicker ? '<p class="kicker">' + esc(L.kicker) + '</p>' : '') +
         '<p class="names glow" data-fit><span>' + gn + '</span><span class="amp">&amp;</span><span>' + bn + '</span></p></div>');
     }
     if (L.slides.date && C.date) {
-      out.push('<div class="slide s-date"><p class="wd">' + esc(C.date.weekday) + '</p>' +
+      out.push('<div data-k="date" class="slide s-date"><p class="wd">' + esc(C.date.weekday) + '</p>' +
         '<p class="bigdate glow" data-fit>' + C.date.d + '<i>·</i>' + C.date.m + '<i>·</i>' + C.date.y + '</p>' +
         (C.time ? '<p class="time">Vào lúc ' + esc(C.time) + '</p>' : '') +
         (C.lunar ? '<p class="lunar">' + esc(C.lunar) + '</p>' : '') + '</div>');
@@ -462,7 +462,7 @@
     // đếm ngược tới giờ lễ: chỉ hiện khi còn chưa tới giờ (qua giờ thì tự bỏ cảnh này)
     var target = C.at ? Date.parse(C.at) : NaN;
     if (L.slides.countdown && target > Date.now()) {
-      out.push('<div class="slide s-count"><p class="kicker">' + esc(L.kicker || 'Lễ Thành Hôn') + ' bắt đầu sau</p>' +
+      out.push('<div data-k="countdown" class="slide s-count"><p class="kicker">' + esc(L.kicker || 'Lễ Thành Hôn') + ' bắt đầu sau</p>' +
         '<p class="cd glow" data-fit></p><p class="cd-sub">' + (C.time ? 'Vào lúc ' + esc(C.time) : '') + (C.date ? ' · ' + C.date.d + '/' + C.date.m + '/' + C.date.y : '') + '</p></div>');
     }
     var fam = function (p, lb) {
@@ -472,15 +472,15 @@
     };
     var fams = fam(g, 'Nhà trai') + fam(b, 'Nhà gái');
     if (L.slides.parents && fams) {
-      out.push('<div class="slide s-parents"><p class="title glow">Hân hạnh đón tiếp</p><div class="fams" data-fit>' + fams + '</div></div>');
+      out.push('<div data-k="parents" class="slide s-parents"><p class="title glow">Hân hạnh đón tiếp</p><div class="fams" data-fit>' + fams + '</div></div>');
     }
     if (L.slides.photo && C.photo) {
-      out.push('<div class="slide s-photo"><div class="photo" style="background-image:url(\'' + esc(C.photo) + '\')"></div>' +
+      out.push('<div data-k="photo" class="slide s-photo"><div class="photo" style="background-image:url(\'' + esc(C.photo) + '\')"></div>' +
         '<div class="pn">' + (L.kicker ? '<p class="kicker" style="margin-top:36px">' + esc(L.kicker) + '</p>' : '') +
         '<p class="photo-names glow" data-fit><span>' + gn + '</span> <span class="amp">&amp;</span> <span>' + bn + '</span></p></div></div>');
     }
     if (L.slides.message && L.message) {
-      out.push('<div class="slide s-msg"><p class="msg">' + esc(L.message) + '</p><p class="sign glow" data-fit>' + gn + ' &amp; ' + bn + '</p></div>');
+      out.push('<div data-k="msg" class="slide s-msg"><p class="msg">' + esc(L.message) + '</p><p class="sign glow" data-fit>' + gn + ' &amp; ' + bn + '</p></div>');
     }
     if (!out.length) out.push('<div class="slide"><p class="names glow" data-fit>' + gn + ' <span class="amp">&amp;</span> ' + bn + '</p></div>');
     slidesEl.innerHTML = out.join('');
@@ -519,6 +519,12 @@
     if (!slides.length) return;
     cur = (i + slides.length) % slides.length;
     slides.forEach(function (s, j) { s.classList.toggle('on', j === cur); });
+    tell();
+  }
+  // khung xem trước trong trình sửa: báo cảnh đang chiếu để thanh chuyển cảnh bên ngoài sáng đúng ô, chạy thanh thời gian
+  function tell() {
+    if (window.parent === window) return;
+    try { window.parent.postMessage({ type: 'led-scene', index: cur, keys: slides.map(function (s) { return s.getAttribute('data-k') || ''; }), seconds: L.seconds, paused: paused }, location.origin); } catch (e) { /* bỏ qua */ }
   }
   function restartTimer() {
     clearInterval(timer);
@@ -549,7 +555,7 @@
     else if (d.requestFullscreen) d.requestFullscreen().catch(function () {});
   }
   var pauseBtn = document.querySelector('[data-c=pause]');
-  function togglePause() { paused = !paused; pauseBtn.textContent = paused ? '▶︎' : '❚❚'; }
+  function togglePause() { paused = !paused; pauseBtn.textContent = paused ? '▶︎' : '❚❚'; if (!paused) restartTimer(); tell(); }
   document.getElementById('ctl').addEventListener('click', function (e) {
     var c = e.target.getAttribute('data-c');
     if (c === 'prev') { show(cur - 1); restartTimer(); }
@@ -584,6 +590,7 @@
       apply(e.data.led);
     }
     if (e.data.type === 'led-goto') { show(e.data.index); restartTimer(); }
+    if (e.data.type === 'led-pause' && !!e.data.paused !== paused) togglePause();
   });
 
   apply(L);

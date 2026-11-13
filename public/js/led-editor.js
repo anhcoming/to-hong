@@ -44,7 +44,7 @@ function renderSide() {
       <label class="field"><span>Dòng tiêu đề</span><input data-l="kicker" value="${esc(led.kicker)}" maxlength="40" placeholder="Lễ Thành Hôn / Lễ Vu Quy / Tiệc Cưới"></label>
       <label class="field"><span>Lời cảm ơn</span><textarea data-l="message" maxlength="200" rows="3">${esc(led.message)}</textarea></label>
     </section>
-    <section class="group panel"><h3>Thông tin <small>dùng chung với thiệp</small></h3>
+    <section class="group panel" id="info"><h3>Thông tin <small>dùng chung với thiệp</small></h3>
       <div class="grid2">${fd('groom.name', 'Chú rể', 'text', 'Đức Minh')}${fd('bride.name', 'Cô dâu', 'text', 'Thu Hà')}${fd('date', 'Ngày cưới', 'date')}${fd('time', 'Giờ', 'time')}
       ${fd('groom.father', 'Bố chú rể')}${fd('groom.mother', 'Mẹ chú rể')}${fd('bride.father', 'Bố cô dâu')}${fd('bride.mother', 'Mẹ cô dâu')}</div>
       <div style="display:flex;align-items:center;gap:12px">
@@ -61,16 +61,27 @@ function renderSide() {
       </ol>
       <button class="btn sm plain" id="copyGuide" style="margin-top:8px">Chép link + hướng dẫn gửi kỹ thuật</button>
     </section>`;
+  infoFirst();
 }
 
+// thiệp chưa có tên đôi: khối "Thông tin" lên đầu cột tuỳ chỉnh, khỏi phải cuộn tìm (màn LED đang hiện "Chú rể & Cô dâu")
+let infoTop = null; // quyết định một lần lúc mở trang, để khối không nhảy chỗ khi đang điền
+function infoFirst() {
+  if (infoTop === null) infoTop = !card.data.groom.name || !card.data.bride.name;
+  const info = $('#info');
+  if (infoTop && info) $('#side').prepend(info);
+}
 function renderHeader() {
   const s = card.led;
-  $('#ttl').textContent = 'Màn hình LED · ' + ([card.data.groom.name, card.data.bride.name].filter(Boolean).join(' & ') || card.title);
+  $('#ttl').textContent = 'Màn LED · ' + ([card.data.groom.name, card.data.bride.name].filter(Boolean).join(' & ') || card.title);
   backTo($('#back'), '/sua/' + CARD_ID);
   $('#chip').innerHTML = !s.created ? '' : s.paid ? '<span class="chip ok">● Đã kích hoạt</span>'
     : s.expired ? '<span class="chip red">Hết hạn dùng thử</span>'
     : `<span class="chip warn">Dùng thử · còn ${Math.max(0, Math.ceil((s.trialEndsAt - Date.now()) / 864e5))} ngày</span>`;
-  $('#acts').innerHTML = s.created ? `<button class="btn sm soft" id="cpLink">Chép link</button> <a class="btn sm plain" target="_blank" href="${esc(s.url)}">Mở trình chiếu</a>${s.paid ? '' : ` <button class="btn sm" id="payBtn">Kích hoạt · ${money(META.ledPrice)}</button>`}` : '';
+  // điện thoại: nhãn ngắn (lớp hide-xs / show-xs) để ba nút vừa một hàng
+  $('#acts').innerHTML = s.created ? `<button class="btn sm soft" id="cpLink">Chép link</button><a class="btn sm plain" target="_blank" href="${esc(s.url)}"><span class="hide-xs">Mở trình chiếu</span><span class="show-xs">▶ Trình chiếu</span></a>${s.paid ? '' : `<button class="btn sm" id="payBtn">Kích hoạt<span class="hide-xs"> · ${money(META.ledPrice)}</span><span class="show-xs"> ${Math.round(META.ledPrice / 1000)}k</span></button>`}`
+    : '';
+  $('#acts').style.gridTemplateColumns = s.created && s.paid ? '1fr 1fr' : '';
   const cp = $('#cpLink'); if (cp) cp.onclick = () => copyText(s.url, 'Đã chép link màn LED');
   const pb = $('#payBtn'); if (pb) pb.onclick = () => openPayModal(CARD_ID, reload, 'led');
 }
@@ -78,7 +89,9 @@ function renderHeader() {
 function fitScreen() {
   const [w, h] = led.ratio.split(':').map(Number);
   const box = $('#stagewrap').getBoundingClientRect();
-  const maxW = box.width - 48, maxH = box.height - 60;
+  // điện thoại: khung xem trước theo bề ngang, cao tối đa ~1/3 màn hình (phần tuỳ chỉnh bên dưới cuộn riêng)
+  const phone = matchMedia('(max-width:900px)').matches;
+  const maxW = phone ? innerWidth - 22 : box.width - 48, maxH = phone ? innerHeight * (h > w ? 0.42 : 0.34) : box.height - 110;
   const s = Math.min(maxW / w, maxH / h);
   $('#screen').style.width = Math.round(w * s) + 'px';
   $('#screen').style.height = Math.round(h * s) + 'px';
@@ -173,6 +186,29 @@ function bind() {
     } catch (err) { toast(err.message, true); status(''); }
   });
   window.addEventListener('resize', fitScreen);
+  // thanh chuyển cảnh
+  const SC = { names: 'Tên đôi', date: 'Ngày cưới', countdown: 'Đếm ngược', parents: 'Bố mẹ', photo: 'Ảnh cưới', msg: 'Lời cảm ơn' };
+  let scKey = '';
+  window.addEventListener('message', (e) => {
+    if (e.origin !== location.origin || !e.data || e.data.type !== 'led-scene') return;
+    const m = e.data, list = $('#scList'), key = m.keys.join();
+    if (key !== scKey) { scKey = key; list.innerHTML = m.keys.map((k, i) => `<button class="sc" data-i="${i}">${SC[k] || 'Cảnh ' + (i + 1)}</button>`).join(''); }
+    list.querySelectorAll('.sc').forEach((b, i) => {
+      const on = i === m.index;
+      if (on) { b.classList.remove('on'); void b.offsetWidth; b.innerHTML = (SC[m.keys[i]] || 'Cảnh ' + (i + 1)) + `<i style="animation-duration:${m.seconds}s"></i>`; b.classList.add('on'); b.scrollIntoView({ block: 'nearest', inline: 'nearest' }); }
+      else if (b.classList.contains('on')) { b.classList.remove('on'); b.textContent = SC[m.keys[i]] || 'Cảnh ' + (i + 1); }
+    });
+    $('#scenes').classList.toggle('paused', !!m.paused);
+    $('#scPause').textContent = m.paused ? '▶' : '❚❚';
+  });
+  $('#scenes').addEventListener('click', (e) => {
+    const fr = $('#frame').contentWindow; if (!fr) return;
+    const b = e.target.closest('.sc'), c = e.target.closest('[data-sc]');
+    const cur = [...$('#scList').children].findIndex((x) => x.classList.contains('on'));
+    if (b) fr.postMessage({ type: 'led-goto', index: +b.dataset.i }, location.origin);
+    else if (c && c.dataset.sc === 'pause') fr.postMessage({ type: 'led-pause', paused: !$('#scenes').classList.contains('paused') }, location.origin);
+    else if (c) fr.postMessage({ type: 'led-goto', index: cur + (c.dataset.sc === 'next' ? 1 : -1) }, location.origin);
+  });
 }
 
 function start() {
@@ -216,11 +252,13 @@ function start() {
       const q = new URLSearchParams(location.search), pick = {};
       if (q.get('palette')) pick.palette = q.get('palette');
       if (q.get('effect')) pick.effect = q.get('effect');
-      if (q.get('palette')) history.replaceState(null, '', location.pathname);
+      if (q.get('palette') || q.get('tao')) history.replaceState(null, '', location.pathname);
       const r = await api(`/api/cards/${CARD_ID}`, { method: 'PUT', body: { led: pick } });
       card = r.card;
       led = card.ledConfig;
       start();
     } catch (e) { toast(e.message, true); }
   };
+  // đến từ nút "Tạo màn LED" (/tao-led): bật luôn, không dừng ở màn giới thiệu
+  if (new URLSearchParams(location.search).get('tao')) $('#startBtn').click();
 })();
