@@ -17,6 +17,7 @@ const { renderCard, renderNotice, templates, templateList, groups: templateGroup
 const banks = require('./lib/banks');
 const ledLib = require('./lib/led');
 const videoLib = require('./lib/video');
+const musicLib = require('./lib/music');
 const { execFile } = require('child_process');
 const Wd = require('./lib/wedding');
 const Gs = require('./lib/guests');
@@ -286,7 +287,7 @@ route('GET', '/api/meta', async (req, res) => {
     brand: config.brand, tagline: config.tagline, price: cardPrice(), ...promoInfo(), trialDays: config.trialDays,
     trialGuestLimit: config.trialGuestLimit, banks, templates: templateList(), templateGroups, baseUrl: BASE_URL, support: config.support,
     ledPrice: config.ledPrice, led: ledLib.options(),
-    videoPrice: config.videoPrice, video: videoLib.options(),
+    videoPrice: config.videoPrice, video: videoLib.options(), music: musicLib.options(),
     comboPrice: comboPrice(), comboListPrice: comboPromo() ? config.comboListPrice : null, promoEndsAt: promoActive() || comboPromo() ? promoEnd() : null, blobUpload: !!process.env.BLOB_READ_WRITE_TOKEN,
     googleLogin: google.enabled(),
   });
@@ -458,7 +459,7 @@ route('PUT', '/api/cards/:id', async (req, res, ctx) => {
     rateLimit('gsave:' + ctx.ip, 600, 36e5);
     if (b.data) { // khách chưa đăng nhập không tải tệp lên được → không nhận link ảnh / nhạc gửi kèm
       const cur = new Set([card.data.cover, card.data.music, ...card.data.photos].filter(Boolean).map((u) => String(u).split('#')[0]));
-      const ok = (u) => !u || cur.has(String(u).split('#')[0]);
+      const ok = (u) => !u || cur.has(String(u).split('#')[0]) || /^\/music\/[\w-]+\.mp3$/.test(u); // nhạc mẫu: ai cũng chọn được
       if (!ok(b.data.cover) || !ok(b.data.music) || (Array.isArray(b.data.photos) && !b.data.photos.every(ok))) needUser(ctx);
     }
   }
@@ -1013,7 +1014,8 @@ route('POST', '/api/cards/:id/video/export', async (req, res, ctx) => {
     if (loops > 1) args.push('-stream_loop', String(loops - 1));
     if (type === 'video/h264') args.push('-f', 'h264', '-framerate', '30');
     args.push('-i', tmp);
-    const music = card.data.music && /^\/uploads\/[\w.-]+\.mp3$/.test(card.data.music) ? path.join(UPLOAD_DIR, path.basename(card.data.music)) : null;
+    const music = card.data.music && /^\/uploads\/[\w.-]+\.mp3$/.test(card.data.music) ? path.join(UPLOAD_DIR, path.basename(card.data.music))
+      : card.data.music && /^\/music\/[\w-]+\.mp3$/.test(card.data.music) ? path.join(PUBLIC_DIR, 'music', path.basename(card.data.music)) : null;
     if (music && fs.existsSync(music)) args.push('-stream_loop', '-1', '-i', music);
     args.push('-map', '0:v:0', '-vf', 'scale=1920:1080:flags=lanczos,fps=30,format=yuv420p',
       '-c:v', 'libx264', '-preset', 'medium', '-crf', '19', '-profile:v', 'high', '-level', '4.1', '-movflags', '+faststart');

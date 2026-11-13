@@ -609,8 +609,11 @@ module.exports = {
 .tpl-songhy2 .sh-rsvp .choice input{position:absolute;opacity:0;width:1px;height:1px}
 .tpl-songhy2 .sh-rsvp .choice span::before{content:"✓";display:inline-flex;align-items:center;justify-content:center;width:32px;height:32px;margin-right:12px;vertical-align:middle;border-radius:50%;background:#e5e7eb;color:#6b7280;font-size:14px}
 .tpl-songhy2 .sh-rsvp .choice label+label span::before{content:"✕"}
-.tpl-songhy2 .sh-rsvp .choice label:has(input:checked){border-color:#10b981;background:rgba(236,253,245,.5);color:#047857}
-.tpl-songhy2 .sh-rsvp .choice label:has(input:checked) span::before{background:#10b981;color:#fff}
+.tpl-songhy2 .sh-rsvp .choice label:has(input:checked){border-color:var(--accent);background:color-mix(in srgb,var(--accent) 6%,#fff);color:var(--accent)}
+.tpl-songhy2 .sh-rsvp .choice label:has(input:checked) span::before{background:var(--accent);color:var(--paper)}
+/* ô nhập: viền & vầng sáng theo màu chủ đạo của thiệp khi đang gõ (đồng bộ với nút Gửi và lựa chọn) */
+.tpl-songhy2 .sh-rsvp .form input:not([type=radio]):focus,.tpl-songhy2 .sh-rsvp .form select:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px color-mix(in srgb,var(--accent) 14%,transparent)}
+.tpl-songhy2 .sh-rsvp .choice label{cursor:pointer;transition:border-color .15s,background .15s}
 .tpl-songhy2 .sh-rsvp .row2{gap:12px}
 .tpl-songhy2 .sh-rsvp .form-msg{margin:0;font-size:13px}
 .tpl-songhy2 .sh-rsvp .form-msg:empty{display:none}

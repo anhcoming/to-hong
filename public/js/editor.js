@@ -103,10 +103,8 @@ const panes = {
         ${d.photos.filter(Boolean).length + pendingSlots.size < 24 ? '<label class="drop">+ Thêm ảnh<br>(chọn nhiều)<input type="file" accept="image/*" multiple id="photosIn" hidden></label>' : ''}
       </div>
     </section>
-    <section class="group panel"><h3>Nhạc nền</h3>
-      ${musicUp ? `<p class="muted" style="margin:0"><span class="spin"></span> Đang tải lên "${esc(musicUp)}"…</p>` : d.music ? `<audio controls src="${esc(d.music)}" style="width:100%;margin-bottom:10px"></audio><button class="btn sm danger" data-music-del>Bỏ nhạc</button>` : `
-        <label class="btn soft">Tải lên file MP3<input type="file" accept="audio/mpeg" id="musicIn" hidden></label>
-        <p class="muted" style="font-size:13px;margin:10px 0 0">Tối đa 12MB. Chỉ dùng bản nhạc bạn có quyền sử dụng. Nhạc phát khi khách chạm "Mở thiệp".</p>`}
+    <section class="group panel"><h3>Nhạc nền ${musicNow().auto ? '<small>tự chọn theo mẫu</small>' : ''}</h3>
+      ${musicPane()}
     </section>`;
   },
 
@@ -155,6 +153,7 @@ let curTab = null;
 function showTab(t) {
   if (!panes[t]) t = null;
   curTab = t;
+  if (t !== 'media' && musicPrev && !musicPrev.paused) musicPrev.pause(); // đóng bảng thì thôi nghe thử
   $$('#tools button').forEach((b) => b.classList.toggle('on', b.dataset.tab === t));
   document.body.classList.toggle('sheet-open', !!t);
   if (!t) { $('#panes').innerHTML = ''; return; }
@@ -425,6 +424,43 @@ async function loadResponses() {
 // Tải nhiều ảnh từ bảng "Ảnh & nhạc" mà không che màn hình: giữ chỗ từng ô ngay (vòng chờ), nén xong hiện ảnh trong máy
 // ở bảng lẫn trên thiệp, tải ngầm (3 ảnh một lúc), xong ảnh nào lưu ảnh đó. Ô đang chờ: card.data chưa đổi.
 let musicUp = ''; // tên file nhạc đang tải lên
+// ---------- nhạc nền: nhạc mẫu miễn phí bản quyền (lib/music.js) hoặc MP3 tự tải lên ----------
+// Chưa chọn (và chưa tắt) thì thiệp tự phát bản hợp với nhóm mẫu đang dùng.
+function musicNow() {
+  const d = card.data, M = META.music || { tracks: [], byGroup: {} };
+  const grp = (META.templates.find((t) => t.id === card.template) || {}).group || 'toigian';
+  const url = d.music || (d.musicOff ? '' : M.byGroup[grp] || '');
+  return { url, auto: !d.music && !d.musicOff && !!url, off: !url, track: M.tracks.find((t) => t.file === url) };
+}
+let musicPrev = null; // máy nghe thử trong bảng (một bản một lúc)
+function musicPane() {
+  const M = META.music || { tracks: [] }, now = musicNow();
+  const playing = (f) => musicPrev && !musicPrev.paused && musicPrev.dataset.f === f;
+  const row = (f, name, sub, picked, pickAttr) => `<div class="mrow${picked ? ' on' : ''}">
+      <button class="mplay" data-mplay="${esc(f)}" aria-label="${playing(f) ? 'Dừng nghe thử' : 'Nghe thử'}">${playing(f) ? '❚❚' : '▶'}</button>
+      <div class="mt"><b>${esc(name)}</b><small>${esc(sub)}</small></div>
+      ${picked ? '<span class="mnow">✓ Đang dùng</span>' : `<button class="btn sm plain" ${pickAttr}>Chọn</button>`}
+    </div>`;
+  const own = card.data.music && !now.track ? row(card.data.music, 'Nhạc bạn tải lên', 'MP3 của bạn', true, '') : '';
+  return `${musicUp ? `<p class="muted" style="margin:0 0 10px"><span class="spin"></span> Đang tải lên "${esc(musicUp)}"…</p>` : ''}
+    <div class="mlist">${own}${M.tracks.map((t) => row(t.file, t.name, `${t.by} · ${t.mood}`, now.url === t.file, `data-mpick="${esc(t.file)}"`)).join('')}</div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px">
+      <label class="btn sm soft">Tải lên MP3 của bạn<input type="file" accept="audio/mpeg" id="musicIn" hidden></label>
+      ${now.auto || !M.tracks.length ? '' : '<button class="btn sm plain" data-music-auto>Để thiệp tự chọn theo mẫu</button>'}
+      ${now.off ? '' : '<button class="btn sm plain" data-music-off>Tắt nhạc</button>'}
+    </div>
+    <p class="muted" style="font-size:13px;margin:10px 0 0">${now.off ? 'Thiệp đang tắt nhạc.' : 'Nhạc phát khi khách chạm "Mở thiệp".'} Nhạc mẫu là bản thu miễn phí bản quyền. Tự tải lên: tối đa 12MB, chỉ dùng bản nhạc bạn có quyền sử dụng.</p>`;
+}
+function musicPreview(f) {
+  if (musicPrev && musicPrev.dataset.f === f && !musicPrev.paused) { musicPrev.pause(); }
+  else {
+    if (musicPrev) musicPrev.pause();
+    musicPrev = new Audio(f); musicPrev.dataset.f = f;
+    musicPrev.onended = musicPrev.onpause = () => { if (curTab === 'media') rerender(); };
+    musicPrev.play().catch((e) => toast('Không phát được: ' + e.message, true));
+  }
+  if (curTab === 'media') rerender();
+}
 const pendingSlots = new Set(); // các vị trí (cover, photos.3…) đang có ảnh chờ tải
 function freeSlots(n) {
   const ps = card.data.photos, out = [];
@@ -516,7 +552,7 @@ function bind() {
       musicUp = f.name;
       rerender();
       status('Đang tải nhạc lên…');
-      try { card.data.music = await uploadFile(f, { quiet: true }); musicUp = ''; rerender(); save(); }
+      try { card.data.music = await uploadFile(f, { quiet: true }); card.data.musicOff = false; musicUp = ''; rerender(); save(); }
       catch (err) { musicUp = ''; rerender(); toast(err.message, true); status('Tải nhạc thất bại'); }
     }
   });
@@ -533,7 +569,10 @@ function bind() {
     else if (ds.phDel !== undefined) { d.photos[+ds.phDel] = ''; trimPhotos(); }
     else if (ds.phUp !== undefined) { const i = +ds.phUp; let j = i - 1; while (j > 0 && !d.photos[j]) j--; [d.photos[j], d.photos[i]] = [d.photos[i], d.photos[j]]; }
     else if (ds.coverDel !== undefined) d.cover = '';
-    else if (ds.musicDel !== undefined) d.music = '';
+    else if (ds.mplay !== undefined) { musicPreview(ds.mplay); return; }
+    else if (ds.mpick !== undefined) { d.music = ds.mpick; d.musicOff = false; }
+    else if (ds.musicAuto !== undefined) { d.music = ''; d.musicOff = false; }
+    else if (ds.musicOff !== undefined) { d.music = ''; d.musicOff = true; if (musicPrev) musicPrev.pause(); }
     else if (ds.tg !== undefined) { tplGroup = ds.tg; rerender(); return; }
     else if (ds.mode) { setMode(ds.mode === 'edit'); rerender(); return; }
     else if (ds.tpl) { if (card.template !== ds.tpl) { card.template = ds.tpl; card.palette = ''; } }
