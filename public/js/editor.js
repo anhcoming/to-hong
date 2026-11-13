@@ -551,16 +551,36 @@ function pickFile(accept = 'image/*') {
     inp.click();
   });
 }
+// Ảnh đang tải lên: hiện ngay bản trong máy trên thiệp (kể cả khi thiệp vẽ lại giữa chừng), tải lên chạy ngầm
+const localPhotos = {};
+function showLocalPhoto(win, key) {
+  try { win.postMessage({ cePhoto: 1, key, src: localPhotos[key] }, location.origin); } catch (e) { /* bỏ qua */ }
+}
 async function livePhotoUpload(key, ratio) {
   if (card.guest) return askLogin('photo');
   const f = await pickFile();
   if (!f) return;
+  const local = URL.createObjectURL(f);
+  localPhotos[key] = local;
+  showLocalPhoto($('#frame').contentWindow, key);
+  status('Đang tải ảnh lên…');
   try {
-    const url = await uploadFile(f);
+    const url = await uploadFile(f, { quiet: true });
+    // tải trước ảnh thật để lúc thiệp vẽ lại không bị trống chỗ ảnh
+    await new Promise((ok) => { const im = new Image(); im.onload = im.onerror = ok; im.src = url; setTimeout(ok, 8000); });
+    if (localPhotos[key] !== local) return; // đã chọn ảnh khác cho ô này trong lúc chờ
     photoSet(key, url);
     applyLive();
     if (ratio && Math.abs(ratio - 1) > 0.05) setTimeout(() => cropModal(key, ratio, true), 300); // ảnh mới: mời căn khung luôn
-  } catch (e) { toast(e.message, true); }
+  } catch (e) {
+    if (localPhotos[key] !== local) return;
+    toast(e.message, true);
+    status('Tải ảnh thất bại');
+    refreshPreview(); // bỏ ảnh tạm, trả lại ảnh cũ
+  } finally {
+    if (localPhotos[key] === local) delete localPhotos[key];
+    setTimeout(() => URL.revokeObjectURL(local), 60000);
+  }
 }
 function photoActions(key, ratio) {
   const u = photoGet(key);
@@ -727,7 +747,11 @@ function eventModal(i, focus) {
 window.addEventListener('message', (e) => {
   if (e.origin !== location.origin || !e.data || !e.data.ce) return;
   const m = e.data;
-  if (m.type === 'ready') { const nf = $('#frameNext'); if (nf && e.source === nf.contentWindow && nf._ready) nf._ready(); return; }
+  if (m.type === 'ready') {
+    Object.keys(localPhotos).forEach((k) => showLocalPhoto(e.source, k)); // thiệp vẽ lại khi ảnh còn đang tải → giữ ảnh tạm
+    const nf = $('#frameNext'); if (nf && e.source === nf.contentWindow && nf._ready) nf._ready();
+    return;
+  }
   if (m.type === 'photo') { if (m.empty || !photoGet(m.key)) livePhotoUpload(m.key, m.ratio); else photoActions(m.key, m.ratio); return; }
   if (m.type !== 'text') return;
   if (/^events\.\d+\./.test(m.key)) eventModal(+m.key.split('.')[1], m.map ? 'map' : '');

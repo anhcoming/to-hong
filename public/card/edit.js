@@ -22,6 +22,8 @@
     '.ce-mapph{display:flex;align-items:center;justify-content:center;min-height:180px;height:100%;width:100%;background:repeating-linear-gradient(45deg,rgba(0,0,0,.035) 0 12px,rgba(0,0,0,.06) 12px 24px);border-radius:12px;color:#8a6a70;font:600 14px/1.4 system-ui,sans-serif;text-align:center;padding:16px;box-sizing:border-box}',
     '.ce-map b{position:absolute;left:50%;top:-13px;translate:-50% 0;padding:6px 12px;border-radius:999px;background:#d6455d;color:#fff;font:600 13px/1.3 system-ui,sans-serif;white-space:nowrap;box-shadow:0 4px 12px rgba(0,0,0,.2)}',
     '.ce-lock{position:absolute;inset:0;z-index:5;cursor:default}',
+    '[data-ce-up]{animation:ceUp 1.3s ease-in-out infinite}',
+    '@keyframes ceUp{0%,100%{opacity:1}50%{opacity:.6}}',
     '.ce-tip{position:fixed;left:50%;bottom:14px;translate:-50% 0;z-index:2147483001;padding:8px 14px;border-radius:999px;background:rgba(20,12,14,.78);color:#fff;font:600 13px/1.3 system-ui,sans-serif;white-space:nowrap;pointer-events:none;transition:opacity .4s}',
   ].join('\n');
   document.head.appendChild(st);
@@ -215,9 +217,21 @@
     re = new RegExp(escRx(String(val).normalize('NFC').trim()), 'giu');
     RX.forEach(function (r) { if (r.f.key === key) { r.f.raw = val; r.re = re; } });
   }
+  // ---------- trang sửa vừa chọn ảnh → hiện ngay ảnh trong máy (chưa chờ tải lên xong); nhấp nháy nhẹ tới khi lưu xong ----------
+  function photoPatch(key, src) {
+    var tagged = src + '#k=' + key;
+    var re = new RegExp('url\\(([\'"]?)[^\'")]*[#&]k=' + key.replace('.', '\\.') + '(?![\\w.])[^\'")]*\\1\\)', 'g');
+    Array.prototype.forEach.call(document.querySelectorAll('[data-ce-photo="' + key + '"]'), function (el) {
+      if (el.tagName === 'IMG') { el.removeAttribute('srcset'); el.src = tagged; }
+      else el.setAttribute('style', el.getAttribute('style').replace(re, 'url("' + tagged + '")'));
+      el.dataset.ceEmpty = '';
+      el.dataset.ceUp = '1';
+    });
+  }
   window.addEventListener('message', function (e) {
-    if (e.origin !== location.origin || !e.data || !e.data.cePatch) return;
-    patch(e.data.key, e.data.value);
+    if (e.origin !== location.origin || !e.data) return;
+    if (e.data.cePatch) patch(e.data.key, e.data.value);
+    if (e.data.cePhoto) photoPatch(e.data.key, e.data.src);
   });
 
   function init() {
