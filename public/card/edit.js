@@ -45,6 +45,31 @@
     return null;
   }
 
+  // ---------- ảnh tải lên được thì đứng yên ----------
+  // Trong trình sửa, ảnh (và khung chứa ảnh) không lắc / phóng to dần / trượt / hiện dần — bấm là trúng đúng ảnh.
+  // Dùng Web Animations: hiệu ứng lặp mãi thì dừng hẳn (về tư thế gốc), hiệu ứng chạy một lần thì nhảy tới kết quả.
+  // Trang trí không chứa ảnh (hoa rơi, lá bay…) vẫn chạy như thường.
+  function photoRelated(el) {
+    return !!(el && el.nodeType === 1 && (el.closest('[data-ce-photo]') || el.querySelector('[data-ce-photo]')));
+  }
+  function still(a) {
+    if (a.animationName === 'ceUp') return; // nhấp nháy "đang tải ảnh" của trình sửa
+    try {
+      var t = a.effect && a.effect.getComputedTiming ? a.effect.getComputedTiming() : null;
+      if (!t || t.endTime === Infinity || t.iterations === Infinity) a.cancel(); else a.finish();
+    } catch (e) { try { a.cancel(); } catch (_) { /* bỏ qua */ } }
+  }
+  function freezePhotos() {
+    if (!document.getAnimations) return;
+    document.getAnimations().forEach(function (a) { if (photoRelated(a.effect && a.effect.target)) still(a); });
+  }
+  function freezeOne(e) {
+    if (!photoRelated(e.target) || !e.target.getAnimations) return;
+    e.target.getAnimations().forEach(still);
+  }
+  document.addEventListener('animationstart', freezeOne, true);
+  document.addEventListener('transitionrun', freezeOne, true);
+
   // ---------- chữ ----------
   var norm = function (s) { return String(s || '').normalize('NFC').toLowerCase().replace(/\s+/g, ' ').trim(); };
   var unTitle = function (s) { return s.replace(/^(ông|bà)\s+/, ''); }; // mẫu hay bỏ "Ông/Bà" trước tên bố mẹ
@@ -243,6 +268,8 @@
 
   function init() {
     markPhotos(); markText(); markMaps(); lockForms();
+    freezePhotos();
+    window.addEventListener('load', freezePhotos); // hiệu ứng bắt đầu khi ảnh tải xong
     tell({ type: 'ready' });
     // gợi ý chỉ hiện lần đầu, không hiện lại mỗi lần thiệp vẽ lại sau khi lưu
     try { if (sessionStorage.getItem('ceTip')) return; sessionStorage.setItem('ceTip', '1'); } catch (e) { /* bỏ qua */ }
