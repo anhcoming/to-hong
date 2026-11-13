@@ -7,6 +7,7 @@ const assert = require('assert');
 process.env.DATA_DIR = fs.mkdtempSync(path.join(os.tmpdir(), 'thiep-test-'));
 process.env.BASE_URL = 'http://localhost';
 process.env.ADMIN_PASSWORD = 'mat-khau-quan-tri';
+process.env.SEPAY_API_KEY = 'khoa-sepay-thu';
 const server = require('../server');
 
 let base;
@@ -138,7 +139,8 @@ async function call(who, method, url, body) {
   const order = r.json.order;
   assert.equal(order.amount, 99000);
   assert.match(order.qr, /img\.vietqr\.io/);
-  r = await call('anon', 'POST', `/api/orders/${order.code}/claim`);
+  assert.equal((await call('anon', 'POST', `/api/orders/${order.code}/claim`)).status, 401, 'người ngoài không báo chuyển khoản hộ được');
+  r = await call('u', 'POST', `/api/orders/${order.code}/claim`);
   assert.ok(r.json.order.claimedAt);
   assert.equal((await call('u', 'GET', '/api/admin/overview')).status, 403);
   r = await call('qt', 'GET', '/api/admin/overview');
@@ -207,8 +209,28 @@ async function call(who, method, url, body) {
   r = await call('u', 'POST', `/api/cards/${id}/order`, { product: 'video' });
   assert.equal(r.json.order.amount, 69000);
   assert.match(r.json.order.code, /^VD/);
-  r = await call('qt', 'GET', '/api/admin/overview');
-  await call('qt', 'POST', `/api/admin/orders/${r.json.orders.find((o) => o.product === 'video').id}/confirm`);
+  // SePay báo tiền về → tự kích hoạt
+  const vcode = r.json.order.code;
+  const sepay = async (body, key = 'khoa-sepay-thu') => {
+    const res = await fetch(base + '/api/pay/sepay', { method: 'POST', headers: { 'content-type': 'application/json', authorization: `Apikey ${key}` }, body: JSON.stringify(body) });
+    return { status: res.status, json: await res.json() };
+  };
+  const spaced = vcode.slice(0, 4).toLowerCase() + '-' + vcode.slice(4).toLowerCase();
+  assert.equal((await sepay({ id: 1, transferType: 'in', transferAmount: 69000, content: vcode }, 'sai')).status, 401, 'sai khoá SePay');
+  assert.equal((await call('anon', 'GET', `/api/orders/${vcode}`)).status, 401, 'người ngoài không xem được đơn');
+  assert.equal((await sepay({ id: 2, transferType: 'out', transferAmount: 69000, content: vcode })).json.skipped, true, 'bỏ qua tiền ra');
+  assert.equal((await sepay({ id: 3, transferType: 'in', transferAmount: 50000, content: 'chuyen tien linh tinh' })).json.result, 'unmatched');
+  assert.equal((await sepay({ id: 4, transferType: 'in', transferAmount: 20000, content: `MBVCB.123.${spaced}.CT tu 0123` })).json.result, 'underpaid');
+  r = await call('u', 'GET', `/api/orders/${vcode}`);
+  assert.equal(r.json.order.status, 'pending');
+  assert.match(r.json.order.bankNote, /thiếu 49\.000đ/);
+  assert.equal((await call('u', 'GET', `/api/cards/${id}`)).json.card.video.paid, false, 'thiếu tiền thì chưa kích hoạt');
+  assert.equal((await sepay({ id: 5, transferType: 'in', transferAmount: 69000, content: `ND ${spaced} chuyen khoan` })).json.result, 'paid');
+  assert.equal((await sepay({ id: 5, transferType: 'in', transferAmount: 69000, content: vcode })).json.duplicate, true, 'SePay gửi lại cùng giao dịch');
+  r = await call('u', 'GET', `/api/orders/${vcode}`);
+  assert.equal(r.json.order.status, 'paid');
+  assert.equal(r.json.order.paidVia, 'sepay');
+  assert.equal((await sepay({ id: 6, transferType: 'in', transferAmount: 69000, content: vcode })).json.result, 'already-paid', 'trả hai lần');
   r = await call('u', 'GET', `/api/cards/${id}`);
   assert.equal(r.json.card.video.paid, true);
   assert.equal(r.json.card.led.paid, true, 'kích hoạt video không ảnh hưởng màn LED');

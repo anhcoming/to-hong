@@ -6,8 +6,22 @@ window.openPayModal = async function (cardId, onDone, product = 'card') {
   } catch (e) { return toast(e.message, true); }
   const isLed = product !== 'card'; // màn LED, video: không có mã giảm giá
 
+  let timer = null;
   const render = (box) => {
     const o = data.order;
+    if (o.status === 'paid') {
+      clearInterval(timer);
+      box.innerHTML = `<button class="modal-x" aria-label="Đóng">×</button>
+        <div style="text-align:center;padding:10px 0">
+          <div style="font-size:48px">🎉</div>
+          <h2>Đã kích hoạt ${esc(o.productName.toLowerCase())}</h2>
+          <p class="muted">Đã nhận ${money(o.amount)}. Cảm ơn hai bạn — chúc đám cưới thật vui!</p>
+          <button class="btn block lg" id="done">Xong</button>
+        </div>`;
+      $('#done', box).onclick = () => box.closest('.modal').remove();
+      if (onDone) onDone();
+      return;
+    }
     box.innerHTML = `<button class="modal-x" aria-label="Đóng">×</button>
       <div style="text-align:center">
         <h2>Kích hoạt ${esc(o.productName.toLowerCase())}</h2>
@@ -25,15 +39,14 @@ window.openPayModal = async function (cardId, onDone, product = 'card') {
           <div><span class="muted">Nội dung:</span> <b style="color:var(--primary)">${esc(o.code)}</b> <button class="btn sm soft" data-c="${esc(o.code)}">Chép</button></div>
         </div>
       </div>
-      <p class="muted" style="font-size:13px;margin:-6px 0 14px">Mở app ngân hàng, quét mã QR — số tiền và nội dung đã điền sẵn. Ghi đúng nội dung <b>${esc(o.code)}</b> để được kích hoạt nhanh.</p>
+      <p class="muted" style="font-size:13px;margin:-6px 0 14px">Mở app ngân hàng, quét mã QR — số tiền và nội dung đã điền sẵn. Giữ đúng nội dung <b>${esc(o.code)}</b> — tiền về là tự kích hoạt, thường trong 1–2 phút.</p>
       <form id="cp" style="display:${isLed ? 'none' : 'flex'};gap:8px;margin-bottom:14px">
         <input class="input" name="c" placeholder="Mã giảm giá (nếu có)" value="${esc(o.coupon || '')}" style="text-transform:uppercase">
         <button class="btn plain">Áp dụng</button>
       </form>
       ${o.claimedAt
-        ? '<p class="chip warn" style="display:flex;justify-content:center;padding:10px;font-size:14px">Đã ghi nhận — thiệp sẽ được kích hoạt sau khi tiền về (thường vài phút)</p>'
-        : '<button class="btn block lg" id="claim">Tôi đã chuyển khoản</button>'}
-      <button class="btn block plain" id="relative" style="margin-top:8px">Nhờ người thân thanh toán hộ</button>`;
+        ? '<p class="chip warn" style="display:flex;justify-content:center;padding:10px;font-size:14px">Đang chờ tiền về — cửa sổ này tự báo khi kích hoạt xong</p>'
+        : '<button class="btn block lg" id="claim">Tôi đã chuyển khoản</button>'}`;
     $$('[data-c]', box).forEach((b) => (b.onclick = () => copyText(b.dataset.c)));
     $('#cp', box).onsubmit = async (e) => {
       e.preventDefault();
@@ -50,11 +63,20 @@ window.openPayModal = async function (cardId, onDone, product = 'card') {
       render(box);
       if (onDone) onDone();
     };
-    $('#relative', box).onclick = () => {
-      const text = `Bố/mẹ ơi, thanh toán giúp con ${data.order.productName.toLowerCase()} nhé: ${data.payUrl}`;
-      if (navigator.share) navigator.share({ text }).catch(() => {});
-      else copyText(text, 'Đã chép đường link thanh toán — gửi cho người thân qua Zalo nhé');
-    };
   };
-  openModal('', (box) => render(box));
+  openModal('', (box) => {
+    render(box);
+    // Hỏi lại trạng thái vài giây một lần: SePay báo tiền về là thiệp kích hoạt, cửa sổ tự chuyển sang "Đã kích hoạt"
+    timer = setInterval(async () => {
+      if (!box.isConnected) return clearInterval(timer);
+      if (document.hidden) return;
+      try {
+        const r = await api(`/api/orders/${data.order.code}`);
+        if (r.order.status !== data.order.status || r.order.claimedAt !== data.order.claimedAt) {
+          data.order = r.order;
+          if (!box.contains(document.activeElement) || r.order.status === 'paid') render(box);
+        }
+      } catch {}
+    }, 4000);
+  });
 };

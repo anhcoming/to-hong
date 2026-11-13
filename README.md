@@ -60,7 +60,6 @@ public/
   auth.html          đăng nhập / đăng ký           → /dang-nhap
   dashboard.html     danh sách thiệp               → /thiep-cua-toi
   editor.html        trình sửa + xem trước         → /sua/:id
-  pay.html           trang thanh toán hộ           → /thanh-toan/:mã
   admin.html         xác nhận đơn, thống kê        → /admin
   card/              CSS + JS chạy trên trang thiệp của khách
 data/                dữ liệu + ảnh tải lên (không đưa lên git — nhớ sao lưu!)

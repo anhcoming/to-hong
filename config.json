@@ -13,10 +13,10 @@
     "CHAOMUNG": 30000
   },
   "payment": {
-    "bankBin": "970436",
-    "bankName": "Vietcombank",
-    "accountNo": "0000000000",
-    "accountName": "TEN CHU TAI KHOAN"
+    "bankBin": "970432",
+    "bankName": "VPBank",
+    "accountNo": "0355301887",
+    "accountName": "VU DUC ANH"
   },
   "support": {
     "zalo": "0900000000",

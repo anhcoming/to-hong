@@ -24,7 +24,6 @@
     { "source": "/sua-led/:id", "destination": "/led-editor.html" },
     { "source": "/sua-video/:id", "destination": "/video-editor.html" },
     { "source": "/tham-gia/:id", "destination": "/join.html" },
-    { "source": "/thanh-toan/:id", "destination": "/pay.html" },
     { "source": "/:path*", "destination": "/api/index.js?__p=/:path*" }
   ]
 }

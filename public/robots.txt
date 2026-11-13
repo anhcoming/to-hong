@@ -10,7 +10,6 @@ Disallow: /so-tay$
 Disallow: /sua/
 Disallow: /sua-led/
 Disallow: /sua-video/
-Disallow: /thanh-toan/
 Disallow: /tham-gia/
 
 Sitemap: https://cuoinha.com/sitemap.xml

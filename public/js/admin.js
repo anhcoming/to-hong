@@ -104,9 +104,10 @@ function badge(n) { $('#pendBadge').innerHTML = n ? `<span class="chip warn" sty
 async function orders() {
   const f = A.f.orders || (A.f.orders = { status: 'pending', product: '', q: '' });
   const d = await api('/api/admin/orders?' + qs(f));
-  const stChip = (o) => o.status === 'paid' ? '<span class="chip ok">Đã thanh toán</span>'
+  const stChip = (o) => (o.status === 'paid' ? `<span class="chip ok">Đã thanh toán${o.paidVia === 'sepay' ? ' · tự động' : ''}</span>`
     : o.status === 'cancelled' ? '<span class="chip">Đã huỷ</span>'
-    : o.claimedAt ? `<span class="chip warn">Khách báo đã chuyển · ${ago(o.claimedAt)}</span>` : '<span class="chip">Chờ thanh toán</span>';
+    : o.claimedAt ? `<span class="chip warn">Khách báo đã chuyển · ${ago(o.claimedAt)}</span>` : '<span class="chip">Chờ thanh toán</span>')
+    + (o.bankNote ? `<div class="sub" style="color:var(--danger,#c0392b)">🏦 ${esc(o.bankNote)}</div>` : '');
   $('#view').innerHTML = `
     <div class="tools">
       <input class="input" id="fq" placeholder="Tìm mã đơn, email, tên đôi…" value="${esc(f.q)}">
@@ -114,7 +115,7 @@ async function orders() {
       <select class="input" id="fpr"><option value="">Mọi sản phẩm</option>${Object.entries(PROD).map(([k, v]) => `<option value="${k}" ${f.product === k ? 'selected' : ''}>${v}</option>`).join('')}</select>
       <span class="muted" style="font-size:13px">${d.total} đơn</span>
     </div>
-    <p class="muted" style="font-size:13px;margin:0 0 10px">Đối chiếu app ngân hàng: thấy tiền về đúng số tiền và nội dung (mã đơn) thì bấm <b>Xác nhận</b>.</p>
+    <p class="muted" style="font-size:13px;margin:0 0 10px">Đơn chuyển khoản đúng mã, đủ tiền được SePay kích hoạt tự động. Đơn còn ở đây (thiếu tiền, ghi sai nội dung…) thì đối chiếu app ngân hàng rồi bấm <b>Xác nhận</b>.</p>
     <div class="panel wrapx">${d.orders.length ? `<table class="tbl"><thead><tr><th>Mã</th><th>Sản phẩm</th><th>Khách</th><th>Số tiền</th><th>Trạng thái</th><th></th></tr></thead><tbody>
       ${d.orders.map((o) => `<tr data-id="${o.id}">
         <td><b>${esc(o.code)}</b><div class="sub">${fmtDateTime(o.createdAt)}</div></td>

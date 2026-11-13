@@ -145,7 +145,7 @@ function orderView(o) {
   return {
     product, productName: PRODUCTS[product].name,
     code: o.code, amount: o.amount, coupon: o.coupon || null, status: o.status, claimedAt: o.claimedAt || null,
-    createdAt: o.createdAt, paidAt: o.paidAt || null,
+    createdAt: o.createdAt, paidAt: o.paidAt || null, paidVia: o.paidVia || null, bankNote: o.bankNote || null,
     qr: qrPay(o.amount, o.code),
     bank: { name: config.payment.bankName, accountNo: config.payment.accountNo, accountName: config.payment.accountName },
     card: card ? { id: card.id, title: card.title, names: [card.data.groom.name, card.data.bride.name].filter(Boolean).join(' & ') } : null,
@@ -565,21 +565,85 @@ route('POST', '/api/cards/:id/order', async (req, res, ctx) => {
     }
   }
   save();
-  json(res, 200, { order: orderView(order), payUrl: `${BASE_URL}/thanh-toan/${order.code}` });
+  json(res, 200, { order: orderView(order) });
 });
 
-// Trang "nhờ người thân thanh toán hộ" — ai có mã đơn cũng xem được
+// Chủ thiệp xem trạng thái đơn (cửa sổ thanh toán hỏi lại vài giây một lần để biết tiền đã về)
 route('GET', '/api/orders/:code', async (req, res, ctx) => {
   const o = db.orders.find((x) => x.code === ctx.params.code);
   if (!o) throw httpError(404, 'Không tìm thấy đơn');
+  ownedCard(ctx, o.cardId, { guest: true });
   json(res, 200, { order: orderView(o) });
 });
+
+// Chủ thiệp báo "Tôi đã chuyển khoản"
 route('POST', '/api/orders/:code/claim', async (req, res, ctx) => {
   rateLimit('claim:' + ctx.ip, 10, 36e5);
   const o = db.orders.find((x) => x.code === ctx.params.code);
   if (!o) throw httpError(404, 'Không tìm thấy đơn');
+  ownedCard(ctx, o.cardId, { guest: true });
   if (o.status === 'pending') { o.claimedAt = Date.now(); save(); }
   json(res, 200, { order: orderView(o) });
+});
+
+// Kích hoạt sản phẩm của đơn — dùng chung cho quản trị viên bấm tay và SePay báo tiền về
+function markPaid(o, via) {
+  o.status = 'paid';
+  o.paidAt = Date.now();
+  o.paidVia = via;
+  const card = db.cards.find((c) => c.id === o.cardId);
+  const target = card && PRODUCTS[o.product || 'card'].sub(card);
+  if (target) { target.paid = true; target.paidAt = o.paidAt; }
+}
+
+function productPaid(o) {
+  const card = db.cards.find((c) => c.id === o.cardId);
+  const target = card && PRODUCTS[o.product || 'card'].sub(card);
+  return !!(target && target.paid);
+}
+
+// SePay báo có giao dịch vào tài khoản ngân hàng (https://docs.sepay.vn — webhook, xác thực "API Key").
+// Tìm mã đơn (TH/LD/VD + 6 ký tự) trong nội dung chuyển khoản; đủ tiền thì kích hoạt ngay.
+// Thiếu tiền / đơn đã trả rồi / không thấy mã → ghi chú để quản trị viên xử lý tay. Luôn trả success
+// cho SePay (trừ sai khoá) để SePay không gửi lại mãi.
+const money = (n) => n.toLocaleString('vi-VN') + 'đ';
+route('POST', '/api/pay/sepay', async (req, res, ctx) => {
+  const key = process.env.SEPAY_API_KEY || '';
+  if (!key) throw httpError(503, 'Chưa cấu hình SEPAY_API_KEY');
+  const got = Buffer.from(String(req.headers.authorization || '').replace(/^apikey\s+/i, '').trim());
+  const want = Buffer.from(key);
+  if (got.length !== want.length || !require('crypto').timingSafeEqual(got, want)) throw httpError(401, 'Sai khoá API');
+  const t = await readJson(req, 64 * 1024);
+  const txnId = String(t.id || t.referenceCode || '');
+  const amount = Math.round(+t.transferAmount || 0);
+  if (t.transferType !== 'in' || !txnId || amount <= 0) return json(res, 200, { success: true, skipped: true });
+  if (db.bankTxns.some((x) => x.id === txnId)) return json(res, 200, { success: true, duplicate: true });
+
+  const text = `${t.code || ''} ${t.content || ''} ${t.description || ''}`.toUpperCase().replace(/[^A-Z0-9]/g, '');
+  const prefixes = Object.values(PRODUCTS).map((p) => p.prefix).join('|');
+  let o = null;
+  for (const m of text.matchAll(new RegExp(`(?:${prefixes})[A-Z0-9]{6}`, 'g'))) {
+    o = db.orders.find((x) => x.code === m[0]);
+    if (o) break;
+  }
+  let result;
+  if (!o) result = 'unmatched';
+  else if (o.status === 'paid' || productPaid(o)) {
+    result = 'already-paid';
+    o.bankNote = `Nhận thêm ${money(amount)} khi đơn đã thanh toán — cần hoàn tiền`;
+  } else if (amount < o.amount) {
+    result = 'underpaid';
+    o.claimedAt = o.claimedAt || Date.now();
+    o.bankNote = `Nhận ${money(amount)}, thiếu ${money(o.amount - amount)}`;
+  } else {
+    result = 'paid';
+    if (amount > o.amount) o.bankNote = `Nhận ${money(amount)}, thừa ${money(amount - o.amount)}`;
+    markPaid(o, 'sepay');
+  }
+  db.bankTxns.push({ id: txnId, amount, content: str(t.content || '', 300), at: Date.now(), order: o ? o.code : null, result });
+  if (db.bankTxns.length > 2000) db.bankTxns.splice(0, db.bankTxns.length - 2000);
+  save();
+  json(res, 200, { success: true, result });
 });
 
 // ---------------- API: quản trị ----------------
@@ -618,11 +682,7 @@ route('POST', '/api/admin/orders/:id/confirm', async (req, res, ctx) => {
   needAdmin(ctx);
   const o = db.orders.find((x) => x.id === ctx.params.id);
   if (!o) throw httpError(404, 'Không tìm thấy đơn');
-  o.status = 'paid';
-  o.paidAt = Date.now();
-  const card = db.cards.find((c) => c.id === o.cardId);
-  const target = card && PRODUCTS[o.product || 'card'].sub(card);
-  if (target) { target.paid = true; target.paidAt = o.paidAt; }
+  markPaid(o, 'admin');
   adminLib.audit(ctx, 'Xác nhận đơn', o.code, `${o.amount}đ`);
   json(res, 200, { ok: true });
 });
@@ -953,7 +1013,6 @@ function serveStatic(req, res, pathname) {
   if (/^\/tham-gia\/[\w-]+$/.test(pathname)) return serveFile(res, path.join(PUBLIC_DIR, 'join.html'), 'no-cache');
   if (/^\/sua-video\/[\w-]+$/.test(pathname)) return serveFile(res, path.join(PUBLIC_DIR, 'video-editor.html'), 'no-cache');
   if (pathname === '/js/lunar.js') return serveFile(res, path.join(__dirname, 'lib', 'lunar.js'), 'no-cache');
-  if (/^\/thanh-toan\/[\w-]+$/.test(pathname)) return serveFile(res, path.join(PUBLIC_DIR, 'pay.html'), 'no-cache');
   if (/^\/uploads\/[\w.-]+$/.test(pathname)) return serveFile(res, path.join(UPLOAD_DIR, path.basename(pathname)), 'public, max-age=31536000, immutable', req);
   const file = path.normalize(path.join(PUBLIC_DIR, pathname));
   if (!file.startsWith(PUBLIC_DIR + path.sep)) return html(res, 404, renderNotice('Không tìm thấy trang', ''));
