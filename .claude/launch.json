@@ -9,6 +9,15 @@
         "server.js"
       ],
       "port": 3210
+    },
+    {
+      "name": "thiep-mac",
+      "runtimeExecutable": "node",
+      "runtimeArgs": [
+        "--watch",
+        "server.js"
+      ],
+      "port": 3210
     }
   ]
 }

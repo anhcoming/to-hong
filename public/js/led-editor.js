@@ -212,7 +212,12 @@ function start() {
   </div>`;
   $('#startBtn').onclick = async () => {
     try {
-      const r = await api(`/api/cards/${CARD_ID}`, { method: 'PUT', body: { led: {} } });
+      // mẫu chọn ở trang chủ (?palette=…&effect=…): máy chủ tự bỏ giá trị lạ, về mặc định
+      const q = new URLSearchParams(location.search), pick = {};
+      if (q.get('palette')) pick.palette = q.get('palette');
+      if (q.get('effect')) pick.effect = q.get('effect');
+      if (q.get('palette')) history.replaceState(null, '', location.pathname);
+      const r = await api(`/api/cards/${CARD_ID}`, { method: 'PUT', body: { led: pick } });
       card = r.card;
       led = card.ledConfig;
       start();

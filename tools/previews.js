@@ -62,5 +62,18 @@ const kb = (f) => Math.round(fs.statSync(f).size / 1024) + 'KB';
       console.log(`✓ ${t.id} / ${p.id}: ${note}`);
     } catch (err) { console.error(`✗ ${t.id} / ${p.id}: ${err.message}`); }
   }
+  // poster màn LED 16:9 cho hàng "Top 5 màn hình LED" ở trang chủ: lposter-<màu>-<hiệu ứng>.jpg (chỉ chụp riêng: tham số cuối = led)
+  if (!ONLY || ONLY === 'led') {
+    const TOP_LED = [['do', 'sao'], ['dem', 'sao'], ['hong', 'hoa'], ['ngoc', 'domdom'], ['kem', 'lua']]; // cùng danh sách với public/index.html
+    await send('Emulation.setDeviceMetricsOverride', { width: 1280, height: 720, deviceScaleFactor: 1, mobile: false });
+    for (const [p, e] of TOP_LED) try {
+      await send('Page.navigate', { url: `${BASE}/led/demo?preview=1&palette=${p}&effect=${e}` });
+      await sleep(4500); // chờ font + cảnh đầu (tên cô dâu chú rể) hiện xong
+      const file = path.join(OUT, `lposter-${p}-${e}.jpg`);
+      const r = await send('Page.captureScreenshot', { format: 'jpeg', quality: 80, clip: { x: 0, y: 0, width: 1280, height: 720, scale: 1 } });
+      fs.writeFileSync(file, Buffer.from(r.result.data, 'base64'));
+      console.log(`✓ LED ${p} / ${e}: ${kb(file)}`);
+    } catch (err) { console.error(`✗ LED ${p} / ${e}: ${err.message}`); }
+  }
   ws.close(); done(0);
 })().catch((e) => { console.error(e); process.exit(1); });

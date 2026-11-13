@@ -233,7 +233,7 @@
   const badge = (t) => t.badge ? `<span class="tag${t.badge === 'Hot' ? ' hot' : ''}"><svg viewBox="0 0 100 26" preserveAspectRatio="none" aria-hidden="true"><path d="${t.badge === 'Hot' ? 'M0 0h88l12 13-12 13H0z' : 'M0 0h100l-8 13 8 13H0z'}"/></svg>${t.badge === 'Hot' ? 'Hot!' : esc(t.badge)}</span>` : '';
     const card = (t, extra = '') => `<div class="ncard" data-tpl="${t.id}" data-pal="${t.palettes[0].id}">${extra}${extra ? '' : badge(t)}<div class="pic"><a href="/demo/${t.id}" aria-label="Xem thử ${esc(t.name)}"><img src="${cover(t.id, t.palettes[0].id)}" alt="${esc(t.name)}" loading="lazy"></a>
       <div class="info"><b>${esc(t.name)}</b><a class="use" href="/thiep-cua-toi?tao=${t.id}&mau=${t.palettes[0].id}">Dùng mẫu</a></div></div></div>`;
-    const row = (title, list, cls = '', more = '/mau-thiep') => list.length ? `<section class="nrow ${cls}"><h2>${title}<a href="${more}">Xem tất cả ›</a></h2>
+    const row = (title, list, cls = '', more = '/mau-thiep', moreText = 'Xem tất cả') => list.length ? `<section class="nrow ${cls}"><h2>${title}<a href="${more}">${moreText} ›</a></h2>
       <div class="track"><button class="arrow l" type="button" aria-label="Trước">‹</button><div class="slider">${list.join('')}</div><button class="arrow r" type="button" aria-label="Sau">›</button></div></section>` : '';
     // thẻ video 16:9: poster + tên + số ảnh, rê chuột phát thử video thật (xem bên dưới)
     const V = (ev.detail.video && ev.detail.video.templates) || [];
@@ -241,6 +241,12 @@
     const topVideo = [...TOP_VIDEO.map((id) => V.find((t) => t.id === id)).filter(Boolean), ...V.filter((t) => t.photos && !TOP_VIDEO.includes(t.id))].slice(0, 5);
     const vcard = (t, i) => `<div class="ncard" data-video="${t.id}"><span class="num">${i + 1}</span><div class="pic"><a href="/video/demo?template=${t.id}" aria-label="Xem thử video ${esc(t.name)}"><img src="/demo/vposter-${t.id}.jpg" alt="${esc(t.name)}" loading="lazy"></a><span class="lbl">${esc(t.name)}<small>${t.photos ? t.slots + ' ảnh' : 'Mẫu chữ'} · chiếu TV, tải MP4</small></span>
       <div class="info"><b>${esc(t.name)}</b><a class="use" href="/thiep-cua-toi?tao-video=1&mau=${t.id}">Dùng mẫu</a></div></div></div>`;
+    // thẻ màn LED 16:9: mỗi "mẫu" là một cặp bảng màu + hiệu ứng nền; poster chụp sẵn (npm run previews -- <địa chỉ> led), rê chuột chạy màn thật
+    const L = ev.detail.led || { palettes: [], effects: [] };
+    const TOP_LED = [['do', 'sao'], ['dem', 'sao'], ['hong', 'hoa'], ['ngoc', 'domdom'], ['kem', 'lua']]; // cùng danh sách với tools/previews.js
+    const topLed = TOP_LED.map(([p, e]) => ({ p: L.palettes.find((x) => x.id === p), e: L.effects.find((x) => x.id === e) })).filter((x) => x.p && x.e);
+    const lcard = ({ p, e }, i) => { const q = `palette=${p.id}&effect=${e.id}`; return `<div class="ncard" data-led="${q}"><span class="num">${i + 1}</span><div class="pic"><a href="/led/demo?${q}" aria-label="Xem thử màn LED ${esc(p.name)}"><img src="/demo/lposter-${p.id}-${e.id}.jpg" alt="Màn hình LED ${esc(p.name)}" loading="lazy"></a><span class="lbl one">${esc(p.name)}<small>${esc(e.name)}</small></span>
+      <div class="info"><b>${esc(p.name)}</b><a class="use" href="/thiep-cua-toi?tao-led=1&${q}">Dùng mẫu</a></div></div></div>`; };
     const hot = T.filter((t) => t.badge === 'Hot');
     const top = [...hot, ...T.filter((t) => !hot.includes(t))].slice(0, 5); // top 5: mẫu Hot trước, thiếu thì lấy thêm mẫu kế tiếp
     const used = G.filter((g) => T.some((t) => t.group === g.id));
@@ -248,6 +254,7 @@
     rows.innerHTML =
       row('Top 5 mẫu thiệp được chọn nhiều nhất tuần này', top.map((t, i) => card(t, `<span class="num">${i + 1}</span>`)), 'top')
       + row('Top 5 mẫu video cưới', topVideo.map(vcard), 'top wide', '/video-cuoi')
+      + row('Top 5 màn hình LED tiệc cưới', topLed.map(lcard), 'top wide', '/thiep-cua-toi?tao-led=1', 'Tạo màn LED')
       + row('Mới ra mắt', T.filter((t) => t.badge === 'Mới').map((t) => card(t)))
 
       + used.map((g) => row(esc(g.name), T.filter((t) => t.group === g.id).map((t) => card(t)), '', `/mau-thiep?phong-cach=${g.id}`)).join('')
@@ -273,25 +280,25 @@
         const moved = e.screenX !== lastX || e.screenY !== lastY; // mousemove giả sau khi cuộn có toạ độ y hệt lần trước
         lastX = e.screenX; lastY = e.screenY;
         if (!moved) return;
-        const c = e.target.closest('.ncard[data-tpl],.ncard[data-video]');
+        const c = e.target.closest('.ncard[data-tpl],.ncard[data-video],.ncard[data-led]');
         if (!c) return;
         if (cur && cur.c !== c) stop();
         if (cur && cur.f) return; // đã nạp xong trên thẻ này
         const st = cur = cur || { c };
         clearTimeout(st.t);
         st.t = setTimeout(() => {
-          const pic = c.querySelector('.pic'), video = !!c.dataset.video;
+          const pic = c.querySelector('.pic'), video = !!(c.dataset.video || c.dataset.led);
           if (!video) return scrollImage(st, c, pic);
           const base = 1280, s = pic.clientWidth / base;
           const f = document.createElement('iframe');
           f.className = 'live'; f.tabIndex = -1; f.title = 'Xem trước';
           f.style.width = base + 'px'; f.style.height = '720px'; f.style.transform = `scale(${s})`;
-          f.src = `/video/demo?preview=1&template=${c.dataset.video}`;
+          f.src = c.dataset.led ? `/led/demo?preview=1&${c.dataset.led}` : `/video/demo?preview=1&template=${c.dataset.video}`;
           pic.querySelector('a').after(f); st.f = f;
           f.onload = () => { if (cur === st) setTimeout(() => f.classList.add('on'), 150); };
         }, video(c) ? 500 : 80);
       });
-      const video = (c) => !!c.dataset.video;
+      const video = (c) => !!(c.dataset.video || c.dataset.led);
       // thiệp: ảnh dài chụp sẵn của cả trang (tools/previews.js → /demo/scroll-<mẫu>.jpg) trượt bằng CSS transition —
       // hiện ngay khi rê chuột, trượt bằng GPU nên mượt; thiếu ảnh (mẫu mới chưa chụp) thì rơi về nạp trang thật vào iframe
       const scrollImage = (st, c, pic) => {

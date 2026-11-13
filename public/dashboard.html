@@ -175,7 +175,9 @@ window.newCard = function () {
     // từ trang giới thiệu sản phẩm: dùng thiệp gần nhất, chưa có thì tạo thiệp mới
     const { cards } = await api('/api/cards');
     // từ trang "Video cưới": mang theo mẫu đã chọn sang trình sửa
-    const mau = want === 'sua-video' && q.get('mau') ? `?mau=${encodeURIComponent(q.get('mau'))}` : '';
+    // từ hàng "Top 5 màn hình LED" ở trang chủ: mang theo bảng màu + hiệu ứng đã chọn
+    const mau = want === 'sua-video' && q.get('mau') ? `?mau=${encodeURIComponent(q.get('mau'))}`
+      : want === 'sua-led' && q.get('palette') ? `?palette=${encodeURIComponent(q.get('palette'))}&effect=${encodeURIComponent(q.get('effect') || '')}` : '';
     if (cards[0]) return (location.href = `/${want}/${cards[0].id}${mau}`);
     const { card } = await api('/api/cards', { method: 'POST', body: { template: 'dodam' } });
     return (location.href = `/${want}/${card.id}${mau}`);

@@ -152,6 +152,8 @@ img{display:block;max-width:100%}
 .top.wide .ncard{width:clamp(240px,calc((min(100vw,1240px) - 2 * var(--fade) - 60px) / 3.3),380px)}
 .top.wide .num{bottom:-10px}
 .wide .lbl small{display:block;font-weight:500;font-size:12px;color:#e0d6d2}
+.wide .lbl.one{right:12px;bottom:8px;font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis} /* màn LED: nhãn một dòng sát đáy, không đè tên cô dâu chú rể giữa poster */
+.wide .lbl.one small{display:inline;margin-left:7px}
 @media (max-width:700px){
   .bb{height:78vh}
   .bb .wall{grid-template-columns:repeat(3,1fr);opacity:.6}
