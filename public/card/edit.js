@@ -243,7 +243,8 @@
     RX.forEach(function (r) { if (r.f.key === key) { r.f.raw = val; r.re = re; } });
   }
   // ---------- trang sửa vừa chọn ảnh → hiện ngay ảnh trong máy (chưa chờ tải lên xong); nhấp nháy nhẹ tới khi lưu xong ----------
-  function photoPatch(key, src) {
+  // final: ảnh thật đã tải lên xong → thôi nhấp nháy (trang sửa không vẽ lại thiệp nữa)
+  function photoPatch(key, src, final) {
     var tagged = src + (src.indexOf('#') >= 0 ? '&' : '#') + 'k=' + key;
     var re = new RegExp('url\\(([\'"]?)[^\'")]*[#&]k=' + key.replace('.', '\\.') + '(?![\\w.])[^\'")]*\\1\\)', 'g');
     Array.prototype.forEach.call(document.querySelectorAll('[data-ce-photo="' + key + '"]'), function (el) {
@@ -256,14 +257,14 @@
         el.style.backgroundSize = ''; el.style.backgroundPosition = '';
       }
       el.dataset.ceEmpty = '';
-      el.dataset.ceUp = '1';
+      if (final) delete el.dataset.ceUp; else el.dataset.ceUp = '1';
       if (window.__applyFocus && el.parentElement) window.__applyFocus(el.parentElement); // căn đúng phần đã chọn (#p=…)
     });
   }
   window.addEventListener('message', function (e) {
     if (e.origin !== location.origin || !e.data) return;
     if (e.data.cePatch) patch(e.data.key, e.data.value);
-    if (e.data.cePhoto) photoPatch(e.data.key, e.data.src);
+    if (e.data.cePhoto) photoPatch(e.data.key, e.data.src, e.data.final);
   });
 
   function init() {
