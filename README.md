@@ -75,11 +75,30 @@ Nhóm phong cách khai báo ở `groups` trong `lib/render.js` (hiện ở bộ 
 | Nhóm | Mẫu (`id`) |
 |---|---|
 | Truyền thống | Song Hỷ (`songhy`, bảng màu Đỏ/Xanh), Song Hỷ Đỏ (`songhy2`), Long Phụng (`longphung`) |
-| Tối giản | Đỏ Đậm (`dodam`, mẫu mặc định), Nâu (`nau`), Nâu Đậm (`naudam`), Xanh Lá (`xanhla`), Tím (`tim`) |
+| Tối giản | Mẫu Đơn (`dodam`, mẫu mặc định), Hoài Niệm (`nau`), Hoa Khô (`naudam`), Vòm Lá (`xanhla`), Oải Hương (`tim`) |
 | Hoa & thiên nhiên | Hoa Mộc (`hoamoc`), Thanh Diệp (`thanhdiep`) |
 | Chất liệu | Tơ Duyên (`toduyen`) |
 
 Xem nhanh: `/demo/<id>?palette=<id bảng màu>`. Các mẫu đều dựng lại theo thiệp mẫu của chungdoi.com và dùng ảnh trang trí của bản gốc trong `public/demo/<id>-*` (phong bao nhỏ quanh hộp quà của bộ Tối giản dùng chung `toigian-mini-*`); chỉ nên dùng công khai khi đã thay bằng ảnh của mình.
+
+### Mẫu nhập từ mehappy.vn (`mh*`)
+
+20 mẫu được xem nhiều nhất trong kho mẫu trọn gói của mehappy.vn, nhập bằng `node tools/mehappy-import.js --all` (hoặc `<id>:<slug>`). Bản gốc dựng bằng trình kéo thả nên mỗi mẫu là một JSON bố cục (`templates/mh/<slug>.json`: các khối cao cố định, phần tử con có toạ độ tuyệt đối trên khung 380–428px); máy dựng chung `lib/mh.js` đọc JSON đó, thay ô có `initField` bằng dữ liệu thiệp (tên, bố mẹ, địa chỉ, ngày giờ, lễ, tài khoản, ảnh) và dựng lại các khối động (đếm ngược, lịch, album, xác nhận, lưu bút, mừng cưới, popup, menu nhanh) bằng đúng móc của `card.js`. Trên màn rộng khung nằm giữa như bản gốc (bản gốc chỉ có bố cục điện thoại).
+
+| `id` | Bản gốc | | `id` | Bản gốc |
+|---|---|---|---|---|
+| `mhhb04` | HB04 (#145) | | `mhda01` | DA01 (#133) |
+| `mhda05` | DA05 (#24) | | `mhredflow` | RedFlow (#181) |
+| `mhhb02` | HB02 (#45) | | `mhpasiona` | Pasiona (#67) |
+| `mhradiant` | Radiant (#69) | | `mhds03` | DS03 (#128) |
+| `mhna01` | NA01 (#81) | | `mhda04` | DA04 (#28) |
+| `mh2m05` | Save the date 2M-05 (#117) | | `mhflowers` | Flowers (#18) |
+| `mhat01` | AT01 (#2) | | `mhsleazy` | Sleazy (#65) |
+| `mhtd03` | TD03 (#3) | | `mhmn01` | MN01 (#135) |
+| `mhbustle` | Bustle (#71) | | `mhds01` | DS01 (#125) |
+| `mhnc11` | NC11 (#70) | | `mhna02` | NA02 (#89) |
+
+Ảnh (`public/demo/mh-<slug>-*`, ~230MB) và font (`public/demo/fonts/mh-*`, nhiều font thương mại Việt) là tài sản của bản gốc: **chỉ đưa lên công khai sau khi thay bằng ảnh và font của mình**. Những chỗ thiệp chưa có dữ liệu tương ứng giữ chữ gốc hoặc ẩn: mô tả riêng từng người (dùng `story`), ảnh chân dung riêng (lấy 2 ảnh cuối album), số điện thoại (nút gọi bị bỏ), video YouTube của bản gốc.
 
 ### Thêm / sửa mẫu
 
