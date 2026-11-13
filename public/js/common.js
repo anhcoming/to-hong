@@ -74,8 +74,21 @@ async function apiCall(url, opts) {
       init.headers['Content-Type'] = 'application/json';
     }
   }
-  const r = await fetch(url, init);
-  const j = await r.json().catch(() => ({}));
+  // opts.timeout (ms): mạng di động đôi khi treo kết nối không báo lỗi → tự huỷ để khỏi chờ mãi
+  let timer = null;
+  if (opts.timeout) {
+    const ac = new AbortController();
+    init.signal = ac.signal;
+    timer = setTimeout(() => ac.abort(), opts.timeout);
+  }
+  let r, j;
+  try {
+    r = await fetch(url, init);
+    j = await r.json().catch(() => ({}));
+  } catch (e) {
+    if (e && e.name === 'AbortError') throw Object.assign(new Error('Mạng chậm quá, chưa gửi xong'), { timeout: true });
+    throw Object.assign(new Error('Mất kết nối mạng, vui lòng thử lại'), { network: true });
+  } finally { clearTimeout(timer); }
   if (r.status === 401 && !opts.allow401) {
     location.href = '/dang-nhap?next=' + encodeURIComponent(location.pathname + location.search);
     throw new Error('Bạn cần đăng nhập');
@@ -130,26 +143,33 @@ window.openModal = function (html, onMount) {
 
 // Giảm kích thước ảnh trước khi tải lên (tiết kiệm băng thông 4G cho khách mở thiệp)
 window.resizeImage = function (file, maxSide = 1600, quality = 0.85) {
+  // có hạn giờ: ảnh hỏng/quá nặng hoặc ảnh còn nằm trên mây (Google Photos) có thể không bao giờ báo xong
   return new Promise((resolve, reject) => {
-    const img = new Image();
-    const url = URL.createObjectURL(file);
-    img.onload = () => {
-      const scale = Math.min(1, maxSide / Math.max(img.width, img.height));
-      const c = document.createElement('canvas');
-      c.width = Math.round(img.width * scale);
-      c.height = Math.round(img.height * scale);
-      c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
-      URL.revokeObjectURL(url);
-      // WebP nhẹ hơn JPEG ~30% cùng độ nét; trình duyệt chưa nén được WebP thì trả về PNG → dùng JPEG
-      c.toBlob((w) => {
-        if (w && w.type === 'image/webp') return resolve(w);
-        c.toBlob((b) => (b ? resolve(b) : reject(new Error('Không đọc được ảnh'))), 'image/jpeg', quality);
-      }, 'image/webp', 0.82);
-    };
-    img.onerror = () => reject(new Error('Tệp không phải ảnh hợp lệ'));
-    img.src = url;
+    const stop = setTimeout(() => reject(new Error('Đọc ảnh quá lâu — thử chọn ảnh khác hoặc chụp màn hình ảnh rồi tải lên')), 30000);
+    const ok = (b) => { clearTimeout(stop); resolve(b); };
+    const no = (e) => { clearTimeout(stop); reject(e); };
+    _resize(file, maxSide, quality, ok, no);
   });
 };
+function _resize(file, maxSide, quality, resolve, reject) {
+  const img = new Image();
+  const url = URL.createObjectURL(file);
+  img.onload = () => {
+    const scale = Math.min(1, maxSide / Math.max(img.width, img.height));
+    const c = document.createElement('canvas');
+    c.width = Math.round(img.width * scale);
+    c.height = Math.round(img.height * scale);
+    c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
+    URL.revokeObjectURL(url);
+    // WebP nhẹ hơn JPEG ~30% cùng độ nét; trình duyệt chưa nén được WebP thì trả về PNG → dùng JPEG
+    c.toBlob((w) => {
+      if (w && w.type === 'image/webp') return resolve(w);
+      c.toBlob((b) => (b ? resolve(b) : reject(new Error('Không đọc được ảnh'))), 'image/jpeg', quality);
+    }, 'image/webp', 0.82);
+  };
+  img.onerror = () => { URL.revokeObjectURL(url); reject(new Error('Không đọc được ảnh này (ảnh HEIC/HEIF? hãy chọn ảnh JPG/PNG)')); };
+  img.src = url;
+}
 
 // quiet: để uploadFiles tự quản màn chờ (hiện tiến độ chung), khỏi mỗi tệp một màn chờ
 window.uploadFile = async function (file, { quiet = false } = {}) {
@@ -158,8 +178,18 @@ window.uploadFile = async function (file, { quiet = false } = {}) {
   if (!quiet) loading.show(isImg ? 'Đang tải ảnh lên…' : 'Đang tải nhạc lên…');
   try {
     if (isImg) file = await resizeImage(file);
-    const r = await api('/api/upload', { method: 'POST', body: file, quiet: true });
-    return r.url;
+    // mỗi lần gửi tối đa 45s (máy chủ tự dừng ở 30s); lỗi mạng / quá giờ / máy chủ lỗi thì tự thử lại thêm 2 lần
+    for (let k = 0; ; k++) {
+      try {
+        const r = await api('/api/upload', { method: 'POST', body: file, quiet: true, timeout: 45000 });
+        return r.url;
+      } catch (e) {
+        const again = e.timeout || e.network || e.status >= 500;
+        if (!again || k >= 2) throw e;
+        if (!quiet) loading.text('Mạng chậm, đang thử lại…');
+        await new Promise((ok) => setTimeout(ok, 1500 * (k + 1)));
+      }
+    }
   } finally { if (!quiet) loading.hide(); }
 };
 
