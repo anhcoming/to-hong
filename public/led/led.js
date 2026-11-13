@@ -586,7 +586,7 @@
   window.addEventListener('message', function (e) {
     if (e.origin !== location.origin || !e.data) return;
     if (e.data.type === 'led-config') {
-      if (e.data.card) { C.groom = e.data.card.groom; C.bride = e.data.card.bride; }
+      if (e.data.card) { C.groom = e.data.card.groom; C.bride = e.data.card.bride; if (e.data.card.photo !== undefined) C.photo = e.data.card.photo; }
       apply(e.data.led);
     }
     if (e.data.type === 'led-goto') { show(e.data.index); restartTimer(); }

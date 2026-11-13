@@ -48,7 +48,8 @@ function renderSide() {
       <div class="grid2">${fd('groom.name', 'Chú rể', 'text', 'Đức Minh')}${fd('bride.name', 'Cô dâu', 'text', 'Thu Hà')}${fd('date', 'Ngày cưới', 'date')}${fd('time', 'Giờ', 'time')}
       ${fd('groom.father', 'Bố chú rể')}${fd('groom.mother', 'Mẹ chú rể')}${fd('bride.father', 'Bố cô dâu')}${fd('bride.mother', 'Mẹ cô dâu')}</div>
       <div style="display:flex;align-items:center;gap:12px">
-        ${d.cover ? `<div style="width:56px;height:70px;border-radius:8px;background:center/cover url('${esc(d.cover)}')"></div>` : ''}
+        ${localCover ? `<div style="position:relative;width:56px;height:70px;border-radius:8px;background:center/cover url('${localCover}');display:grid;place-items:center"><i class="upspin"></i></div>`
+          : d.cover ? `<div style="width:56px;height:70px;border-radius:8px;background:center/cover url('${esc(d.cover)}')"></div>` : ''}
         <label class="btn sm soft">${d.cover ? 'Đổi ảnh cưới' : 'Chọn ảnh cưới'}<input type="file" accept="image/*" id="coverIn" hidden></label>
       </div>
     </section>
@@ -97,9 +98,11 @@ function fitScreen() {
   $('#screen').style.height = Math.round(h * s) + 'px';
 }
 
+let localCover = ''; // ảnh cưới vừa chọn, đang tải lên ngầm
 function pushPreview() {
   const fr = $('#frame');
-  if (fr.contentWindow) fr.contentWindow.postMessage({ type: 'led-config', led, card: { groom: card.data.groom, bride: card.data.bride } }, location.origin);
+  const photo = localCover || card.data.cover || card.data.photos.find(Boolean) || ''; // ảnh đang tải: dùng ảnh trong máy
+  if (fr.contentWindow) fr.contentWindow.postMessage({ type: 'led-config', led, card: { groom: card.data.groom, bride: card.data.bride, photo } }, location.origin);
 }
 function reloadPreview() { $('#frame').src = `/led/${card.slug}?preview=1&t=${Date.now()}`; }
 
@@ -175,15 +178,30 @@ function bind() {
       schedule(900);
     }
   });
+  // ảnh cưới: hiện ngay ảnh trong máy (ô nhỏ + màn xem trước), tải lên + lưu ngầm, không che màn hình
   side.addEventListener('change', async (e) => {
     if (e.target.id !== 'coverIn' || !e.target.files[0]) return;
-    status('Đang tải ảnh…');
+    const f = e.target.files[0];
+    let local = '';
+    status('Đang tải ảnh lên…');
     try {
-      card.data.cover = await uploadFile(e.target.files[0]);
+      const small = await resizeImage(f);
+      local = localCover = URL.createObjectURL(small);
+      renderSide(); pushPreview();
+      const url = await uploadFile(small, { quiet: true, resized: true });
+      await new Promise((ok) => { const im = new Image(); im.onload = im.onerror = ok; im.src = url; setTimeout(ok, 8000); });
+      if (localCover !== local) return; // đã chọn ảnh khác trong lúc chờ
+      card.data.cover = url;
+      localCover = '';
       dataDirty = true;
       renderSide();
       save();
-    } catch (err) { toast(err.message, true); status(''); }
+    } catch (err) {
+      if (local && localCover !== local) return;
+      localCover = '';
+      renderSide(); pushPreview();
+      toast(err.message, true); status('Tải ảnh thất bại');
+    } finally { if (local) setTimeout(() => URL.revokeObjectURL(local), 60000); }
   });
   window.addEventListener('resize', fitScreen);
   // thanh chuyển cảnh
