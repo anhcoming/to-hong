@@ -59,15 +59,17 @@ const eq = (a, b, msg) => { assert.deepEqual(a, b, msg); n++; };
   // menu trang chủ: đúng 3 chức năng chính
   r = await call('x', 'GET', '/');
   const menu = (r.text.match(/<nav class="menu"[^]*?<\/nav>/) || [''])[0];
-  eq((menu.match(/<a /g) || []).length, 3, 'menu trang chủ chỉ có 3 mục');
-  ok(/Thiệp cưới/.test(menu) && /Video cưới/.test(menu) && /Sổ tay cưới/.test(menu), 'menu: Thiệp / Video / Sổ tay');
+  eq((menu.match(/<a /g) || []).length, 4, 'menu trang chủ có 4 mục');
+  ok(/Thiệp cưới/.test(menu) && /Màn hình LED/.test(menu) && /Video cưới/.test(menu) && /Sổ tay cưới/.test(menu), 'menu: Thiệp / Màn LED / Video / Sổ tay');
 
   // đường dẫn cũ chuyển về trang Video cưới
-  for (const p of ['/video-dam-ngo', '/man-hinh-led-dam-cuoi']) {
+  for (const p of ['/video-dam-ngo']) {
     r = await call('x', 'GET', p, undefined, { redirect: 'manual' });
     eq(r.status, 301, `${p} phải chuyển hướng`);
     eq(r.headers.get('location'), '/video-cuoi', `${p} → /video-cuoi`);
   }
+  r = await call('x', 'GET', '/man-hinh-led-dam-cuoi');
+  ok(r.status === 200 && r.text.includes('data-page="led"'), 'trang giới thiệu Màn hình LED mở được');
   eq((await call('x', 'GET', '/khong-co-trang-nay')).status, 404, 'trang không tồn tại → 404');
 
   // ---------- mẫu thiệp: ảnh bìa mọi bảng màu ----------

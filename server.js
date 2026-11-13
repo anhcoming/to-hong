@@ -295,7 +295,7 @@ route('GET', '/api/meta', async (req, res) => {
 // ---------------- thống kê truy cập ----------------
 // Trang giới thiệu gửi về (public/js/site.js): p = đường dẫn, v = lượt đầu trong ngày của trình duyệt này, n = lần đầu ghé,
 // r = nguồn tới, m = điện thoại; hoặc u = bấm "Dùng mẫu" (thiep:<mẫu> | video:<mẫu> | led:<màu>-<hiệu ứng>).
-const TRACK_PAGES = { '/': 'Trang chủ', '/mau-thiep': 'Mẫu thiệp', '/video-cuoi': 'Video cưới', '/so-tay-cuoi': 'Sổ tay cưới', '/dang-nhap': 'Đăng nhập' };
+const TRACK_PAGES = { '/': 'Trang chủ', '/mau-thiep': 'Mẫu thiệp', '/video-cuoi': 'Video cưới', '/man-hinh-led-dam-cuoi': 'Màn hình LED', '/so-tay-cuoi': 'Sổ tay cưới', '/dang-nhap': 'Đăng nhập' };
 route('POST', '/api/t', async (req, res, ctx) => {
   try {
     if (stats.isBot(req)) throw 0;
@@ -1061,6 +1061,7 @@ route('POST', '/api/cards/:id/video/saved-file', async (req, res, ctx) => {
 const PAGES = {
   '/': 'index.html', '/dang-nhap': 'auth.html', '/thiep-cua-toi': 'dashboard.html', '/admin': 'admin.html', '/mau-thiep': 'templates.html',
   '/video-cuoi': 'video-landing.html',
+  '/man-hinh-led-dam-cuoi': 'led-landing.html',
   '/so-tay': 'planner.html',
   '/video-cua-toi': 'dashboard.html', // cùng trang với "Thiệp của tôi", hiện danh sách video
   '/so-tay-cuoi': 'planner-landing.html',
@@ -1099,7 +1100,7 @@ function serveFile(res, file, cache, req) {
 }
 
 // trang cũ gộp vào "Video cưới" (màn LED không còn bán riêng; khách cũ vẫn sửa & chiếu ở /sua-led, /led/…)
-const MOVED = { '/video-dam-ngo': '/video-cuoi', '/man-hinh-led-dam-cuoi': '/video-cuoi' };
+const MOVED = { '/video-dam-ngo': '/video-cuoi' };
 
 function serveStatic(req, res, pathname) {
   if (MOVED[pathname]) { res.writeHead(301, { Location: MOVED[pathname] }); return res.end(); }

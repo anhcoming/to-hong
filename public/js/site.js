@@ -3,7 +3,7 @@
   'use strict';
   // logo giống trang chủ: chữ viết tay tô gradient, tim nhỏ cuối chữ (CSS .logo .lw / .lh)
   var LOGO = '<span class="lw" data-brand>Cưới Nha</span><svg class="lh" viewBox="0 0 32 30" aria-hidden="true"><path d="M16 28C6.5 21 3 16 3 11.5 3 7.9 5.8 5 9.4 5c2.6 0 4.6 1.4 6.6 3.9C18 6.4 20 5 22.6 5 26.2 5 29 7.9 29 11.5 29 16 25.5 21 16 28z"/></svg>';
-  var MENU = [['/mau-thiep', 'Thiệp cưới', 'tpl'], ['/video-cuoi', 'Video cưới', 'video'], ['/so-tay-cuoi', 'Sổ tay cưới', 'planner']]; // 3 chức năng chính
+  var MENU = [['/mau-thiep', 'Thiệp cưới', 'tpl'], ['/man-hinh-led-dam-cuoi', 'Màn hình LED', 'led'], ['/video-cuoi', 'Video cưới', 'video'], ['/so-tay-cuoi', 'Sổ tay cưới', 'planner']]; // các chức năng chính
   var page = document.body.getAttribute('data-page') || '';
 
   var nav = document.getElementById('nav');
@@ -13,8 +13,8 @@
       '<nav class="menu">' + MENU.map(function (m) { return '<a href="' + m[0] + '"' + (m[2] === page ? ' class="on"' : '') + '>' + m[1] + '</a>'; }).join('') + '</nav>' +
       (window.themeBtn ? themeBtn() : '') + '<div class="acts" id="navActs"><a class="btn btn-ghost btn-sm login" href="/dang-nhap">Đăng nhập</a><a class="btn btn-main btn-sm" href="/mau-thiep">Tạo thiệp</a></div>' +
       '<button class="burger" id="burger" type="button" aria-label="Mở menu" aria-expanded="false"><i></i></button></div>' +
-      // bảng menu điện thoại: 3 chức năng + đăng nhập + đổi nền
-      '<nav class="mpanel" aria-label="Menu">' + MENU.map(function (m, i) { return '<a href="' + m[0] + '"><i>' + ['💌', '🎬', '📒'][i] + '</i>' + m[1] + '</a>'; }).join('') +
+      // bảng menu điện thoại: các chức năng + đăng nhập + đổi nền
+      '<nav class="mpanel" aria-label="Menu">' + MENU.map(function (m, i) { return '<a href="' + m[0] + '"><i>' + ['💌', '✨', '🎬', '📒'][i] + '</i>' + m[1] + '</a>'; }).join('') +
       '<a href="/dang-nhap" id="mLogin"><i>👤</i>Đăng nhập</a><a href="#" onclick="toggleTheme();return false"><i>🌓</i>Đổi nền sáng / tối</a></nav>';
     var burger = document.getElementById('burger');
     burger.addEventListener('click', function () { var on = !nav.classList.contains('mopen'); nav.classList.toggle('mopen', on); burger.setAttribute('aria-expanded', on); });
@@ -28,7 +28,7 @@
     foot.className = 'foot';
     foot.innerHTML = '<div class="wrap"><div class="cols">' +
       '<div><a class="logo" href="/" style="margin-bottom:10px">' + LOGO + '</a><p style="margin:0;max-width:340px">Thiệp cưới online, video cưới chiếu TV và sổ tay chuẩn bị đám cưới — báo tin vui bằng một đường link.</p></div>' +
-      '<div><h4>Sản phẩm</h4><a href="/mau-thiep">Thiệp cưới online</a><a href="/video-cuoi">Video cưới chiếu TV</a><a href="/so-tay-cuoi">Sổ tay cưới miễn phí</a></div>' +
+      '<div><h4>Sản phẩm</h4><a href="/mau-thiep">Thiệp cưới online</a><a href="/man-hinh-led-dam-cuoi">Màn hình LED đám cưới</a><a href="/video-cuoi">Video cưới chiếu TV</a><a href="/so-tay-cuoi">Sổ tay cưới miễn phí</a></div>' +
       '<div><h4>Hỗ trợ</h4><a href="/#hoi-dap">Câu hỏi thường gặp</a><a href="/#gia">Bảng giá</a><span style="display:block;margin-bottom:8px">Zalo: <b data-zalo style="color:var(--ink)"></b></span><span data-email></span></div>' +
       '</div><div class="copy"><span>© ' + new Date().getFullYear() + ' <span data-brand>Cưới Nha</span></span><span>Làm bằng ♥ tại Việt Nam</span></div></div>';
   }

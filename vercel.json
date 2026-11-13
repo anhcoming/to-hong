@@ -18,6 +18,7 @@
     { "source": "/admin", "destination": "/admin.html" },
     { "source": "/mau-thiep", "destination": "/templates.html" },
     { "source": "/video-cuoi", "destination": "/video-landing.html" },
+    { "source": "/man-hinh-led-dam-cuoi", "destination": "/led-landing.html" },
     { "source": "/so-tay", "destination": "/planner.html" },
     { "source": "/so-tay-cuoi", "destination": "/planner-landing.html" },
     { "source": "/sua/:id", "destination": "/editor.html" },
