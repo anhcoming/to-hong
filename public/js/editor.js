@@ -92,11 +92,11 @@ const panes = {
   media: () => {
     const d = card.data;
     return `
-    <section class="group panel"><h3>Album ảnh <small>${d.photos.length}/24 ảnh</small></h3>
+    <section class="group panel"><h3>Album ảnh <small>${d.photos.filter(Boolean).length}/24 ảnh</small></h3>
       <p class="muted" style="margin:-6px 0 12px;font-size:14px">Bấm thẳng vào ảnh trên thiệp để đổi, căn khung. Ở đây chọn nhiều ảnh một lúc và sắp xếp thứ tự.</p>
       <div class="photos">
-        ${d.photos.map((u, i) => `<div class="photo" style="background-image:url('${esc(u.split('#')[0])}')">${i ? `<button class="mv" data-ph-up="${i}" title="Lên trước">←</button>` : ''}<button data-ph-del="${i}" title="Xoá">×</button></div>`).join('')}
-        ${d.photos.length < 24 ? '<label class="drop">+ Thêm ảnh<br>(chọn nhiều)<input type="file" accept="image/*" multiple id="photosIn" hidden></label>' : ''}
+        ${d.photos.map((u, i) => !u ? '' : `<div class="photo" style="background-image:url('${esc(u.split('#')[0])}')">${i ? `<button class="mv" data-ph-up="${i}" title="Lên trước">←</button>` : ''}<button data-ph-del="${i}" title="Xoá">×</button></div>`).join('')}
+        ${d.photos.filter(Boolean).length < 24 ? '<label class="drop">+ Thêm ảnh<br>(chọn nhiều)<input type="file" accept="image/*" multiple id="photosIn" hidden></label>' : ''}
       </div>
     </section>
     <section class="group panel"><h3>Nhạc nền</h3>
@@ -456,8 +456,8 @@ function bind() {
     if (t.id === 'titleIn') { card.title = t.value; scheduleSave(50); }
     if (t.id === 'coverIn' && t.files[0]) uploadMany([t.files[0]], (u) => (card.data.cover = u));
     if (t.id === 'photosIn' && t.files.length) {
-      const room = 24 - card.data.photos.length;
-      uploadMany(Array.from(t.files).slice(0, room), (u) => card.data.photos.push(u));
+      const ps = card.data.photos, room = 24 - ps.filter(Boolean).length;
+      uploadMany(Array.from(t.files).slice(0, room), (u) => { const i = ps.indexOf(''); if (i < 0) ps.push(u); else ps[i] = u; }); // lấp ô trống trước
     }
     if (t.id === 'musicIn' && t.files[0]) {
       status('Đang tải nhạc lên…');
@@ -475,8 +475,8 @@ function bind() {
     if (b.id === 'evAdd') d.events.push({ name: '', date: d.date, time: '', place: '', address: '', mapUrl: '' });
     else if (ds.evDel !== undefined) { if (!confirm('Xoá sự kiện này?')) return; d.events.splice(+ds.evDel, 1); }
     else if (ds.evUp !== undefined) { const i = +ds.evUp; [d.events[i - 1], d.events[i]] = [d.events[i], d.events[i - 1]]; }
-    else if (ds.phDel !== undefined) d.photos.splice(+ds.phDel, 1);
-    else if (ds.phUp !== undefined) { const i = +ds.phUp; [d.photos[i - 1], d.photos[i]] = [d.photos[i], d.photos[i - 1]]; }
+    else if (ds.phDel !== undefined) { d.photos[+ds.phDel] = ''; trimPhotos(); }
+    else if (ds.phUp !== undefined) { const i = +ds.phUp; let j = i - 1; while (j > 0 && !d.photos[j]) j--; [d.photos[j], d.photos[i]] = [d.photos[i], d.photos[j]]; }
     else if (ds.coverDel !== undefined) d.cover = '';
     else if (ds.musicDel !== undefined) d.music = '';
     else if (ds.tg !== undefined) { tplGroup = ds.tg; rerender(); return; }
@@ -532,12 +532,15 @@ function photoGet(key) {
   const i = +key.split('.')[1];
   return card.data.photos[i] || '';
 }
+function trimPhotos() { const p = card.data.photos; while (p.length && !p[p.length - 1]) p.pop(); }
 function photoSet(key, url) {
   const d = card.data;
   if (key === 'cover') { d.cover = url; return; }
   const i = +key.split('.')[1];
-  if (!url) { if (i < d.photos.length) d.photos.splice(i, 1); return; }
-  if (i < d.photos.length) d.photos[i] = url; else d.photos.push(url); // ô trống phía sau → thêm vào cuối album
+  // ảnh nằm đúng ô được bấm: ô phía sau còn trống thì chừa '' cho các ô ở giữa; xoá ảnh để lại ô trống, ảnh khác không bị dồn
+  while (d.photos.length <= i) d.photos.push('');
+  d.photos[i] = url || '';
+  trimPhotos();
 }
 function applyLive() { rerender(); renderHeader(); clearTimeout(saveTimer); save(); }
 function pickFile(accept = 'image/*') {

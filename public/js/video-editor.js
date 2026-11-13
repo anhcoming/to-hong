@@ -208,7 +208,7 @@ async function exportMp4() {
   try {
     const off = document.createElement('canvas');
     off.width = 1920; off.height = 1080;
-    const rec = VideoEngine.create(off, { photo: card.data.cover || card.data.photos[0] || '', photos: slidePhotos(), trial: false });
+    const rec = VideoEngine.create(off, { photo: card.data.cover || card.data.photos.find(Boolean) || '', photos: slidePhotos(), trial: false });
     rec.set(video, info());
     const { blob, music } = await rec.exportMp4({
       loops, music: card.data.music,
@@ -380,7 +380,7 @@ function bind() {
 function start() {
   $('#introBox').innerHTML = '';
   $('#layout').hidden = false;
-  engine = VideoEngine.create($('#cv'), { photo: card.data.cover || card.data.photos[0] || '', photos: slidePhotos(), trial: false });
+  engine = VideoEngine.create($('#cv'), { photo: card.data.cover || card.data.photos.find(Boolean) || '', photos: slidePhotos(), trial: false });
   renderSide();
   renderHeader();
   bind();

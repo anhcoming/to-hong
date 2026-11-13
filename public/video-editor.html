@@ -99,7 +99,10 @@ body{height:100vh;display:flex;flex-direction:column;overflow:hidden}
 .scrub #tm{flex:none;min-width:92px;text-align:right;font-variant-numeric:tabular-nums}
 .jump button{border:1px solid rgba(255,255,255,.2);background:transparent;color:#ddd;border-radius:999px;padding:6px 14px;cursor:pointer;font-size:13px}
 .jump button:hover{background:rgba(255,255,255,.1)}
+.layout[hidden]{display:none}
+#introBox:not(:empty){flex:1;min-height:0;overflow:auto;padding:0 16px}
 .intro{max-width:560px;margin:60px auto;padding:28px;text-align:center}
+@media (max-width:600px){.intro{margin:20px auto 40px;padding:22px 18px}}
 .bar{height:10px;border-radius:999px;background:var(--line);overflow:hidden;margin:16px 0 8px}
 .bar i{display:block;height:100%;width:0;background:var(--primary);transition:width .2s}
 @media (max-width:980px){.layout{grid-template-columns:1fr;grid-template-rows:auto 1fr}.stage{order:-1;padding:10px}.side{padding-bottom:40px}}

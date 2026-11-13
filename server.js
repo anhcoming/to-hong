@@ -149,7 +149,7 @@ function cardSummary(card) {
     url: `${BASE_URL}/t/${card.slug}`,
     names: [card.data.groom.name, card.data.bride.name].filter(Boolean).join(' & '),
     date: card.data.date,
-    cover: card.data.cover || card.data.photos[0] || '',
+    cover: card.data.cover || card.data.photos.find(Boolean) || '',
     ...cardState(card),
     led: { ...ledLib.state(card.led), url: `${BASE_URL}/led/${card.slug}` },
     video: { ...videoLib.state(card.video), url: `${BASE_URL}/video/${card.slug}`, template: card.video ? card.video.template : null, kind: card.video ? card.video.event.kind : null },
