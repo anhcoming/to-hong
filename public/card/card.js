@@ -52,7 +52,7 @@
   }
 
   // ----- giữ vị trí cuộn khi xem trước trong trình sửa -----
-  if (C.preview) {
+  if (C.preview && !C.lite) { // bản nhẹ cho thẻ rê chuột: luôn bắt đầu từ đầu trang, không nhớ vị trí cuộn
     var key = 'pv-scroll-' + C.slug;
     try {
       var y = +sessionStorage.getItem(key);
@@ -77,14 +77,16 @@
   // ----- đếm ngược -----
   if (C.target) {
     var target = new Date(C.target).getTime();
-    var cells = {};
-    $$('[data-cd]').forEach(function (el) { cells[el.getAttribute('data-cd')] = el; });
+    // một mẫu có thể đặt nhiều đồng hồ đếm ngược (mẫu nhập từ mehappy): cập nhật mọi ô cùng khoá
+    var cells = { d: [], h: [], m: [], s: [] };
+    $$('[data-cd]').forEach(function (el) { var k = el.getAttribute('data-cd'); if (cells[k]) cells[k].push(el); });
+    var set = function (k, v) { cells[k].forEach(function (el) { el.textContent = v; }); };
     var tick = function () {
       var s = Math.max(0, Math.floor((target - Date.now()) / 1000));
-      if (cells.d) cells.d.textContent = Math.floor(s / 86400);
-      if (cells.h) cells.h.textContent = Math.floor(s % 86400 / 3600);
-      if (cells.m) cells.m.textContent = Math.floor(s % 3600 / 60);
-      if (cells.s) cells.s.textContent = s % 60;
+      set('d', Math.floor(s / 86400));
+      set('h', Math.floor(s % 86400 / 3600));
+      set('m', Math.floor(s % 3600 / 60));
+      set('s', s % 60);
     };
     tick();
     setInterval(tick, 1000);

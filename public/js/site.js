@@ -1,15 +1,15 @@
 // Phần chung của các trang giới thiệu: thanh trên, chân trang, giá từ cấu hình, hiệu ứng hiện dần.
 (function () {
   'use strict';
-  // logo giống trang chủ: tim viền + chữ in hoa màu hồng
-  var LOGO = '<svg viewBox="0 0 32 32" fill="none" aria-hidden="true"><path d="M16 27C6.5 20 3 15 3 10.5 3 6.9 5.8 4 9.4 4c2.6 0 4.6 1.4 6.6 3.9C18 5.4 20 4 22.6 4 26.2 4 29 6.9 29 10.5 29 15 25.5 20 16 27z" stroke="currentColor" stroke-width="2.4"/></svg>';
+  // logo giống trang chủ: chữ viết tay tô gradient, tim nhỏ cuối chữ (CSS .logo .lw / .lh)
+  var LOGO = '<span class="lw" data-brand>Cưới Nha</span><svg class="lh" viewBox="0 0 32 30" aria-hidden="true"><path d="M16 28C6.5 21 3 16 3 11.5 3 7.9 5.8 5 9.4 5c2.6 0 4.6 1.4 6.6 3.9C18 6.4 20 5 22.6 5 26.2 5 29 7.9 29 11.5 29 16 25.5 21 16 28z"/></svg>';
   var MENU = [['/mau-thiep', 'Thiệp cưới', 'tpl'], ['/video-cuoi', 'Video cưới', 'video'], ['/so-tay-cuoi', 'Sổ tay cưới', 'planner']]; // 3 chức năng chính
   var page = document.body.getAttribute('data-page') || '';
 
   var nav = document.getElementById('nav');
   if (nav) {
     nav.className = 'nav' + (document.body.hasAttribute('data-solid') ? ' always' : '');
-    nav.innerHTML = '<div class="wrap"><a class="logo" href="/">' + LOGO + '<span data-brand>Cưới Nha</span></a>' +
+    nav.innerHTML = '<div class="wrap"><a class="logo" href="/">' + LOGO + '</a>' +
       '<nav class="menu">' + MENU.map(function (m) { return '<a href="' + m[0] + '"' + (m[2] === page ? ' class="on"' : '') + '>' + m[1] + '</a>'; }).join('') + '</nav>' +
       (window.themeBtn ? themeBtn() : '') + '<div class="acts" id="navActs"><a class="btn btn-ghost btn-sm login" href="/dang-nhap">Đăng nhập</a><a class="btn btn-main btn-sm" href="/mau-thiep">Tạo thiệp</a></div>' +
       '<button class="burger" id="burger" type="button" aria-label="Mở menu" aria-expanded="false"><i></i></button></div>' +
@@ -27,7 +27,7 @@
   if (foot) {
     foot.className = 'foot';
     foot.innerHTML = '<div class="wrap"><div class="cols">' +
-      '<div><a class="logo" href="/" style="margin-bottom:10px">' + LOGO + '<span data-brand>Cưới Nha</span></a><p style="margin:0;max-width:340px">Thiệp cưới online, video cưới chiếu TV và sổ tay chuẩn bị đám cưới — báo tin vui bằng một đường link.</p></div>' +
+      '<div><a class="logo" href="/" style="margin-bottom:10px">' + LOGO + '</a><p style="margin:0;max-width:340px">Thiệp cưới online, video cưới chiếu TV và sổ tay chuẩn bị đám cưới — báo tin vui bằng một đường link.</p></div>' +
       '<div><h4>Sản phẩm</h4><a href="/mau-thiep">Thiệp cưới online</a><a href="/video-cuoi">Video cưới chiếu TV</a><a href="/so-tay-cuoi">Sổ tay cưới miễn phí</a></div>' +
       '<div><h4>Hỗ trợ</h4><a href="/#hoi-dap">Câu hỏi thường gặp</a><a href="/#gia">Bảng giá</a><span style="display:block;margin-bottom:8px">Zalo: <b data-zalo style="color:var(--ink)"></b></span><span data-email></span></div>' +
       '</div><div class="copy"><span>© ' + new Date().getFullYear() + ' <span data-brand>Cưới Nha</span></span><span>Làm bằng ♥ tại Việt Nam</span></div></div>';
@@ -90,6 +90,16 @@
       if (full) full.href = path + '?' + q;
     });
   });
+
+  // nút lên đầu trang: góc dưới phải, hiện khi đã cuộn quá 80% một màn hình, bấm thì cuộn mượt về đầu (CSS .totop)
+  var top = document.createElement('button');
+  top.className = 'totop'; top.type = 'button'; top.title = 'Lên đầu trang'; top.setAttribute('aria-label', 'Lên đầu trang');
+  top.innerHTML = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 19V6M5 12l7-7 7 7"/></svg>';
+  document.body.appendChild(top);
+  var topOn = false;
+  var topCheck = function () { var on = window.scrollY > window.innerHeight * 0.8; if (on !== topOn) { topOn = on; top.classList.toggle('on', on); } };
+  window.addEventListener('scroll', topCheck, { passive: true }); topCheck();
+  top.addEventListener('click', function () { window.scrollTo({ top: 0, behavior: matchMedia('(prefers-reduced-motion:reduce)').matches ? 'auto' : 'smooth' }); });
 
   window.SITE = { LOGO: LOGO, money: money };
 })();

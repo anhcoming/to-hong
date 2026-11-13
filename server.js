@@ -563,8 +563,9 @@ route('GET', '/demo/:tpl', async (req, res, ctx) => {
     { name: 'Team Marketing', message: 'Mãi yêu thương và luôn cười thật tươi như hôm nay ❤' },
   ];
   // ?preview=1: bỏ màn mở thiệp, hiện thẳng trang bìa (ảnh xem trước trong bộ sưu tập trang chủ)
-  const preview = ctx.query.get('preview') === '1';
-  html(res, 200, renderCard(card, { guest, wishes, demo: true, preview, trial: false, baseUrl: BASE_URL }));
+  // ?lite=1: bản nhẹ cho thẻ rê chuột — ảnh nạp lười, khối ngoài màn hình chưa vẽ, bản đồ Google thay bằng ô giữ chỗ
+  const preview = ctx.query.get('preview') === '1', lite = ctx.query.get('lite') === '1';
+  html(res, 200, renderCard(card, { guest, wishes, demo: true, preview, lite, trial: false, baseUrl: BASE_URL }));
 });
 
 // ---------------- màn hình LED ----------------

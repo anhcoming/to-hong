@@ -34,7 +34,7 @@ const FLOURISH = '<svg class="dt-flo" viewBox="0 0 300 24" aria-hidden="true" fi
 
 module.exports = {
   id: 'dentrang',
-  name: 'Đen Trắng',
+  name: 'Kinh Điển',
   group: 'toigian',
   badge: 'Mới',
   desc: 'Tạp chí đen trắng: ngày xếp dọc, ảnh tròn, chữ serif mảnh và nhiều khoảng trắng',

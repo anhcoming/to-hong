@@ -32,7 +32,7 @@ const bloom = (cls) => `<span class="mn-bloom ${cls}" aria-hidden="true"><span><
 
 module.exports = {
   id: 'xanhla',
-  name: 'Xanh Lá',
+  name: 'Vòm Lá',
   group: 'toigian',
   desc: 'Thanh lịch: nền trắng, hoa cỏ xanh mờ, khung lời mời hình vòm và phong bì hai ảnh',
   fonts: 'https://fonts.googleapis.com/css2?family=Viaoda+Libre&family=EB+Garamond:wght@400;500&family=The+Nautigal:wght@400;700&family=Cormorant+Garamond:wght@500;600&family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=Lora:wght@300;400;500;600&display=swap',

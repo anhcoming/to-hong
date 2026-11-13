@@ -28,7 +28,7 @@ const orn = (cls, img, dur, delay) => `<span class="mn-orn ${cls}"><span style="
 
 module.exports = {
   id: 'tim',
-  name: 'Tím',
+  name: 'Oải Hương',
   group: 'toigian',
   desc: 'Lãng mạn: giấy trắng, khối tím oải hương, phong bì hoa và nhà thờ mờ phía sau',
   fonts: 'https://fonts.googleapis.com/css2?family=Viaoda+Libre&family=EB+Garamond:wght@400;500&family=The+Nautigal:wght@400;700&family=Playfair+Display:wght@600&family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=Lora:wght@300;400;500;600&family=Uchen&family=Ms+Madi&display=swap',

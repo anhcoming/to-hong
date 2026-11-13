@@ -34,7 +34,7 @@ const orn = (cls, img, dur, delay, amp) => `<span class="mn-orn ${cls}"><span st
 
 module.exports = {
   id: 'naudam',
-  name: 'Nâu Đậm',
+  name: 'Hoa Khô',
   group: 'toigian',
   desc: 'Cổ điển ấm áp: giấy kem, khối nâu cà phê, phong bì hoa khô và đường chỉ vàng',
   fonts: 'https://fonts.googleapis.com/css2?family=Viaoda+Libre&family=EB+Garamond:wght@400;500&family=The+Nautigal:wght@400;700&family=Playfair+Display:wght@600&family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=Lora:wght@300;400;500;600&family=Uchen&family=Ms+Madi&display=swap',

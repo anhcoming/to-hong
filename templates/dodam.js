@@ -22,7 +22,7 @@ const dateRow = (p) => `<div class="dd-date"><b>${p.d}</b><i></i><span><em>Thán
 
 module.exports = {
   id: 'dodam',
-  name: 'Đỏ Đậm',
+  name: 'Mẫu Đơn',
   group: 'toigian',
   badge: 'Hot', // nhãn trên thẻ ở bộ sưu tập trang chủ
   desc: 'Tối giản sang trọng: giấy kem, khối đỏ rượu vang, phong bì sáp niêm và hoa mẫu đơn',

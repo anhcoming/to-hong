@@ -15,73 +15,78 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&amp;family=Dancing+Script:wght@600;700&amp;display=swap">
 <link rel="stylesheet" href="/css/site.css">
 <style>
-/* Trang bộ sưu tập mẫu: thanh lọc (tìm, phong cách, màu, nhãn, sắp xếp) + lưới ảnh bìa; bộ lọc ghi lên URL để gửi link được */
+/* Trang bộ sưu tập mẫu: thanh lọc ngang trên lưới — ô tìm + chip phong cách kèm số mẫu; bộ lọc đang áp hiện thành thẻ × cạnh số mẫu;
+   bộ lọc ghi lên URL để gửi link được. Điện thoại: ô tìm tràn hàng, chip cuộn ngang. */
 .sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
-/* bỏ phần giới thiệu: thanh lọc nằm ngay dưới thanh menu nổi */
-main.wrap{padding-top:104px}
-/* thanh lọc một hàng: tìm (icon bung ra ô gõ), phong cách dạng nút tròn + "Xem thêm", bên phải: nhãn dạng công tắc, màu & sắp xếp dạng menu thả */
-.fbar{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:10px 12px;margin:0 0 22px;padding-bottom:18px;border-bottom:1px solid var(--line)}
-.fside{display:flex;align-items:center;gap:8px;min-width:0}
-#fRight{margin-left:auto}
-.seg,.pill,.ddb{flex:none}
-.srch{display:flex;align-items:center;flex:none;height:40px;width:40px;border:1px solid var(--line);border-radius:999px;background:var(--card);overflow:hidden;transition:width .25s}
-.srch.open{width:230px;border-color:#f2b6bf}
-.srch button{flex:none;width:38px;height:38px;border:0;background:none;display:grid;place-items:center;cursor:pointer}
-.srch input{flex:1;min-width:0;border:0;outline:0;padding:0 12px 0 0;font:14px var(--sans);background:none;color:var(--ink)}
-.pill,.ddb{display:inline-flex;align-items:center;gap:7px;height:40px;padding:0 16px;border:1px solid var(--line);border-radius:999px;background:var(--card);font:500 14px var(--sans);color:var(--ink);cursor:pointer;white-space:nowrap}
-.pill:hover,.ddb:hover{border-color:#f2b6bf}
-.pill[aria-pressed="true"],.ddb.on{border-color:var(--red);background:#fff0f2;color:var(--red)}
-.ddb::after{content:"";width:6px;height:6px;margin-left:2px;border-right:1.6px solid currentColor;border-bottom:1.6px solid currentColor;transform:translateY(-2px) rotate(45deg);opacity:.7}
-.ddb i,.ddm i{width:12px;height:12px;border-radius:50%;box-shadow:0 0 0 1px rgba(0,0,0,.12)}
-.seg{display:flex;height:40px;padding:3px;border-radius:999px;background:#f5eff0}
-.seg button{border:0;background:none;padding:0 14px;border-radius:999px;font:500 14px var(--sans);color:var(--muted);cursor:pointer;white-space:nowrap}
-.seg button[aria-pressed="true"]{background:var(--card);color:var(--ink);box-shadow:0 1px 4px rgba(120,40,50,.14)}
-.dd{position:relative;flex:none}
-/* menu thả đặt position:fixed theo nút để không bị khung cuộn ngang (điện thoại) cắt mất */
-.ddm{position:fixed;z-index:60;min-width:190px;padding:6px;border-radius:14px;background:var(--card);box-shadow:0 20px 50px rgba(120,40,50,.18);display:none}
-.dd.open .ddm{display:block}
-.ddm button{display:flex;align-items:center;gap:10px;width:100%;padding:9px 10px;border:0;border-radius:10px;background:none;font:14px var(--sans);color:var(--ink);text-align:left;cursor:pointer}
-.ddm button:hover{background:var(--bg2)}
-.ddm button[aria-pressed="true"]{color:var(--red);font-weight:600}
-.ddm small{margin-left:auto;color:var(--muted);font-size:12px}
-.meta{display:flex;justify-content:space-between;align-items:center;gap:10px;margin:0 0 16px;color:var(--muted);font-size:14px}
-.meta button{border:0;background:none;color:var(--red);font:600 14px var(--sans);cursor:pointer}
-.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:26px 22px;padding-bottom:80px}
-.tc{min-width:0}
-.tc .pic{position:relative;display:block;border-radius:16px;overflow:hidden;box-shadow:0 14px 30px rgba(120,40,50,.14);transition:transform .3s,box-shadow .3s}
+main.wrap{padding-top:104px} /* không có phần giới thiệu: nội dung nằm ngay dưới thanh menu nổi */
+.side{display:flex;flex-wrap:wrap;align-items:center;gap:10px 8px;margin:0 0 14px;padding-bottom:16px;border-bottom:1px solid var(--line)}
+.srch{display:flex;flex:none;align-items:center;gap:8px;width:210px;height:40px;padding:0 12px;border:1px solid var(--line);border-radius:999px;background:var(--card)}
+.srch:focus-within{border-color:#f2b6bf}
+.srch input{flex:1;min-width:0;border:0;outline:0;font:14px var(--sans);background:none;color:var(--ink)}
+.flist{display:flex;flex-wrap:wrap;gap:8px}
+.flist button{display:inline-flex;align-items:center;gap:7px;height:40px;padding:0 14px;border:1px solid var(--line);border-radius:999px;background:var(--card);font:500 14px var(--sans);color:var(--ink);cursor:pointer;white-space:nowrap}
+.flist button:hover{border-color:#f2b6bf}
+.flist button[aria-pressed="true"]{border-color:var(--red);background:#fff0f2;color:var(--red);font-weight:600}
+.flist i{font-style:normal;font-size:11.5px;line-height:1;padding:3px 7px;border-radius:999px;background:var(--bg2);color:var(--muted)}
+.flist button[aria-pressed="true"] i{background:#ffd9df;color:var(--red)}
+.clear{padding:0;border:0;background:none;color:var(--red);font:600 14px var(--sans);cursor:pointer}
+.meta{display:flex;justify-content:space-between;align-items:center;gap:10px;margin:0 0 16px;color:var(--muted);font-size:14px;min-height:40px}
+.meta b{color:var(--ink);font-size:16px}
+#shown{white-space:nowrap}
+.crumbs{display:flex;flex-wrap:wrap;gap:6px 10px;align-items:center}
+.crumbs button{display:inline-flex;align-items:center;gap:6px;height:28px;padding:0 10px;border:1px solid var(--line);border-radius:999px;background:var(--card);font:500 13px var(--sans);color:var(--ink);cursor:pointer}
+.crumbs button:not(.clear)::after{content:"×";font-size:15px;color:var(--muted)}
+.crumbs .clear{height:auto;padding:0;border:0;background:none}
+.crumbs button i{width:10px;height:10px;border-radius:50%;box-shadow:0 0 0 1px rgba(0,0,0,.12)}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:26px 22px;padding-bottom:80px}
+.tc{position:relative;min-width:0}
+/* thẻ mẫu = chỉ ảnh bìa (bấm → xem thử; ở chế độ chọn mẫu → tạo thiệp luôn). Tên, chấm màu, nút Dùng mẫu nằm trong khung ảnh,
+   trên dải tối mờ dần ở đáy. Lớp chữ không bắt chuột (trừ chấm màu + nút) để bấm vào vùng tên vẫn mở ảnh. */
+.tc .pic{position:relative;border-radius:16px;overflow:hidden;box-shadow:0 14px 30px rgba(120,40,50,.14);transition:transform .3s,box-shadow .3s}
 .tc .pic:hover{transform:translateY(-6px);box-shadow:0 22px 44px rgba(120,40,50,.2)}
+.tc .pic>a{display:block}
 .tc img{width:100%;aspect-ratio:9/16;object-fit:cover;object-position:top;background:var(--bg2)}
-.tc .tag{position:absolute;top:10px;left:10px;padding:3px 10px;border-radius:999px;background:var(--red);color:#fff;font-size:12px;font-weight:700}
-.tc .tag.hot{background:#8b5cf6}
-.tc .peek{position:absolute;left:50%;bottom:14px;transform:translate(-50%,8px);padding:7px 14px;border-radius:999px;background:rgba(255,255,255,.95);font-size:13px;font-weight:600;white-space:nowrap;opacity:0;transition:.25s;box-shadow:0 4px 14px rgba(0,0,0,.15)}
-.tc .pic:hover .peek,.tc .pic:focus-visible .peek{opacity:1;transform:translate(-50%,0)}
-.tc .row{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:12px}
-.tc b{font-size:16px}
-.tc .use{flex:none;font-size:13px;font-weight:600;color:var(--red)}
-.tc .use:hover{text-decoration:underline}
-.tc .sub2{margin-top:2px;font-size:13px;color:var(--muted)}
-.sw{display:flex;gap:6px;margin-top:8px;min-height:20px}
-.sw button{width:20px;height:20px;padding:0;border-radius:50%;border:2px solid #fff;box-shadow:0 0 0 1px var(--line);cursor:pointer}
-.sw button.on{box-shadow:0 0 0 2px var(--red)}
+.tc .pic::after{content:"";position:absolute;left:0;right:0;bottom:0;height:52%;background:linear-gradient(0deg,rgba(0,0,0,.8),rgba(0,0,0,.3) 58%,transparent);pointer-events:none}
+.tc .tag{position:absolute;top:10px;left:-6px;z-index:3;display:flex;align-items:center;height:24px;padding:0 20px 0 14px;color:#fff;font:800 11px/1 var(--sans);letter-spacing:.04em;text-transform:uppercase;white-space:nowrap;filter:drop-shadow(0 3px 6px rgba(0,0,0,.25));pointer-events:none;transition:transform .3s} /* ruy băng tràn mép trái 6px, nếp gấp tối bên dưới */
+.tc .tag svg{position:absolute;inset:0;z-index:-1;width:100%;height:100%;fill:#2f7d5b}
+.tc .tag::after{content:"";position:absolute;left:0;bottom:-6px;border-style:solid;border-width:6px 0 0 6px;border-color:#1b4d37 transparent transparent transparent}
+.tc .tag.hot svg{fill:var(--red)}
+.tc .tag.hot::after{border-top-color:#8a1f2e}
+.tc:hover .tag{transform:translateY(-6px)}
+/* lớp chữ: tên bên trái, nút Dùng mẫu bên phải cùng hàng (tên dài thì cắt …); mẫu nhiều màu có hàng chấm màu dưới tên.
+   Bình thường chỉ có tên; rê chuột (hoặc focus bàn phím) thì chấm màu + nút hiện lên; màn cảm ứng hiện sẵn. */
+.tc .txt{position:absolute;left:12px;right:12px;bottom:12px;z-index:1;display:flex;align-items:center;justify-content:space-between;gap:8px;color:#fff;pointer-events:none}
+.tc b{flex:1;min-width:0;font-size:17px;line-height:32px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-shadow:0 1px 8px rgba(0,0,0,.45)}
+/* chấm màu ở góc trên bên phải (đối diện nhãn Hot/Mới), hiện cùng lúc với nút Dùng mẫu */
+.sw{position:absolute;top:12px;right:12px;z-index:2;display:flex;align-items:center;gap:7px;padding:3px;opacity:0;transform:translateY(-6px);pointer-events:auto;transition:opacity .25s,transform .25s}
+.sw:empty{display:none}
+.sw button{width:18px;height:18px;padding:0;border-radius:50%;border:1px solid rgba(255,255,255,.75);cursor:pointer}
+.sw button.on{border-color:#fff;box-shadow:0 0 0 1px rgba(0,0,0,.35),0 0 0 2.5px #fff} /* chấm đang chọn: vòng trắng mảnh cách một khe tối */
+.tc .use{flex:none;display:inline-flex;align-items:center;height:32px;pointer-events:auto;padding:0 13px;border-radius:999px;background:var(--red);color:#fff;font-size:12px;font-weight:700;white-space:nowrap;box-shadow:0 4px 12px rgba(0,0,0,.25);opacity:0;transform:translateY(6px);transition:opacity .25s,transform .25s,filter .2s}
+.tc .pic:hover .sw,.tc .pic:focus-within .sw,.tc .pic:hover .use,.tc .pic:focus-within .use{opacity:1;transform:none}
+@media (hover:none){.sw,.tc .use{opacity:1;transform:none}}
+.tc .use:hover{filter:brightness(1.08)}
+/* rê chuột: trang thiệp thật nạp vào thẻ (thu nhỏ từ 390px), hiện dần rồi tự trượt dọc; nằm dưới dải tối + tên */
+.tc .live{position:absolute;left:0;top:0;width:390px;border:0;pointer-events:none;transform-origin:0 0;opacity:0;transition:opacity .4s;background:#fff}
+.tc .live.on{opacity:1}
+.tc .scrollimg{position:absolute;left:0;top:0;z-index:0;width:100%;height:auto;aspect-ratio:auto;object-fit:fill;will-change:transform;pointer-events:none} /* ảnh dài toàn trang, trượt bằng transform */
 .none{grid-column:1/-1;padding:60px 16px;text-align:center;color:var(--muted)}
 .chon{display:none;margin:0 auto 18px;max-width:640px;padding:12px 18px;border-radius:14px;background:#fff0f2;color:var(--ink);font-size:15px;text-align:center}
 .chon.show{display:block}
-@media (max-width:700px){
-  .fbar{flex-direction:column;flex-wrap:nowrap;align-items:stretch;gap:10px}
-  #fRight{margin-left:-16px}
-  .fside{overflow-x:auto;scrollbar-width:none;margin:0 -16px;padding:0 16px}
-  .fside::-webkit-scrollbar{display:none}
-  .srch.open{width:180px}
+/* điện thoại / máy tính bảng hẹp: ô tìm tràn hàng, chip phong cách cuộn ngang một hàng, chấm màu xuống hàng riêng */
+@media (max-width:860px){
+  .srch{width:100%}
+  .flist{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;width:100vw;margin:0 -16px;padding:0 16px;box-sizing:border-box}
+  .flist::-webkit-scrollbar{display:none}
   .grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:20px 12px}
-  .tc .row{flex-direction:column;align-items:flex-start;gap:2px}
-  .tc .use{font-size:13px;order:3}
+  .tc .txt{left:9px;right:9px;bottom:9px}
+  .sw{top:9px;right:9px}
+  .tc b{font-size:15px;line-height:28px}
+  .tc .use{height:28px;padding:0 10px;font-size:11px}
 }
 /* nền tối */
-[data-theme="dark"] .seg{background:#2a2124}
-[data-theme="dark"] .pill[aria-pressed="true"],[data-theme="dark"] .ddb.on,[data-theme="dark"] .chon{background:#3a1f26}
-[data-theme="dark"] .ddm{box-shadow:0 20px 50px rgba(0,0,0,.45)}
-[data-theme="dark"] .ddm button:hover{background:#2a2023}
-[data-theme="dark"] .srch.open,[data-theme="dark"] .pill:hover,[data-theme="dark"] .ddb:hover{border-color:#5a3540}
+[data-theme="dark"] .flist button[aria-pressed="true"],[data-theme="dark"] .chon{background:#3a1f26}
+[data-theme="dark"] .srch:focus-within{border-color:#5a3540}
 </style>
 </head>
 <body data-page="tpl">
@@ -90,15 +95,12 @@ main.wrap{padding-top:104px}
 <h1 class="sr">Mẫu thiệp cưới online</h1>
 
 <main class="wrap">
-  <p class="chon" id="chon"><b>Chọn một mẫu để tạo thiệp mới</b> — bấm vào mẫu để xem trước, rồi bấm <b>Dùng mẫu →</b>.</p>
-  <div class="fbar" role="search">
-    <div class="fside" id="fLeft">
-      <div class="srch" id="srch"><button type="button" id="srchBtn" aria-label="Tìm mẫu"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#6f6668" stroke-width="2.2" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg></button><input id="q" type="search" placeholder="Tìm mẫu…" aria-label="Tìm mẫu theo tên"></div>
-      <div class="fside" id="fStyle" style="margin:0;padding:0;overflow:visible"></div>
-    </div>
-    <div class="fside" id="fRight"></div>
+  <p class="chon" id="chon"><b>Chọn một mẫu để tạo thiệp mới</b> — bấm vào mẫu để xem trước, rồi bấm <b>Dùng mẫu</b>.</p>
+  <div class="side" id="side" role="search" aria-label="Bộ lọc mẫu">
+    <label class="srch"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#6f6668" stroke-width="2.2" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg><input id="q" type="search" placeholder="Tìm mẫu…" aria-label="Tìm mẫu theo tên"></label>
+    <div class="flist" id="fStyle"></div>
   </div>
-  <div class="meta"><span id="shown"></span><button id="clear" hidden>Xoá bộ lọc</button></div>
+  <div class="meta"><span id="shown"></span><div class="crumbs" id="crumbs"><span id="crumbList"></span><button class="clear" id="clear" hidden>Xoá bộ lọc</button></div></div>
   <div class="grid" id="grid"></div>
 </main>
 
@@ -109,11 +111,8 @@ main.wrap{padding-top:104px}
   const $ = (s) => document.querySelector(s);
   const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
   const cover = (id, pal) => `/demo/cover-${id}-${pal}.jpg`;
-  // nhóm màu theo phần đầu mã bảng màu (do-ruou, do-son → đỏ…)
-  const FAMILY = { do: 'Đỏ', xanh: 'Xanh', nau: 'Nâu', tim: 'Tím', hong: 'Hồng', vang: 'Vàng', den: 'Đen', trang: 'Trắng' };
-  const fam = (p) => p.id.split('-')[0];
   const qs = new URLSearchParams(location.search);
-  const F = { q: qs.get('q') || '', style: qs.get('phong-cach') || '', color: qs.get('mau-sac') || '', tag: qs.get('nhan') || '', sort: qs.get('sap-xep') || '' };
+  const F = { q: qs.get('q') || '', style: qs.get('phong-cach') || '' };
   if (qs.has('chon')) $('#chon').classList.add('show');
   let T = [], G = [];
 
@@ -122,93 +121,146 @@ main.wrap{padding-top:104px}
     if (qs.has('chon')) u.set('chon', '1');
     if (F.q) u.set('q', F.q);
     if (F.style) u.set('phong-cach', F.style);
-    if (F.color) u.set('mau-sac', F.color);
-    if (F.tag) u.set('nhan', F.tag);
-    if (F.sort) u.set('sap-xep', F.sort);
     history.replaceState(null, '', location.pathname + (u.toString() ? '?' + u : ''));
   }
-  const SHOW = 3; // số phong cách hiện thẳng, còn lại vào "Xem thêm"
-  const SORTS = [['', 'Nổi bật'], ['new', 'Mới nhất'], ['az', 'Tên A → Z']];
-  const opt = (k, v, label, extra = '') => `<button type="button" data-k="${k}" data-v="${esc(v)}" aria-pressed="${F[k] === v}">${label}${extra}</button>`;
-  const dd = (id, label, on, items) => `<div class="dd" id="${id}"><button type="button" class="ddb${on ? ' on' : ''}" aria-expanded="false">${label}</button><div class="ddm">${items}</div></div>`;
+  // thanh lọc: chip phong cách kèm số mẫu (tính trên ô tìm hiện tại)
   function bar(base) {
     const used = G.filter((g) => T.some((t) => t.group === g.id));
-    const shown = used.slice(0, SHOW), more = used.slice(SHOW);
-    const moreOn = more.find((g) => g.id === F.style);
-    const n = (k, test) => `<small>${base(k).filter(test).length}</small>`;
-    $('#fStyle').innerHTML = [{ id: '', name: 'Tất cả' }, ...shown].map((g) => `<button type="button" class="pill" data-k="style" data-v="${esc(g.id)}" aria-pressed="${F.style === g.id}">${esc(g.name)}</button>`).join('')
-      + (more.length ? dd('ddMore', moreOn ? esc(moreOn.name) : 'Xem thêm', !!moreOn, more.map((g) => opt('style', g.id, esc(g.name), n('style', (t) => t.group === g.id))).join('')) : '');
-    const fams = [];
-    T.forEach((t) => t.palettes.forEach((p) => { if (!fams.some((f) => f.id === fam(p))) fams.push({ id: fam(p), name: FAMILY[fam(p)] || p.name, dot: p.swatch[1] }); }));
-    const cur = fams.find((f) => f.id === F.color);
-    $('#fRight').innerHTML = `<div class="seg" role="group" aria-label="Nhãn">${[['', 'Tất cả'], ['Hot', '🔥 Hot'], ['Mới', '✨ Mới']].map(([v, l]) => `<button type="button" data-k="tag" data-v="${v}" aria-pressed="${F.tag === v}">${l}</button>`).join('')}</div>`
-      + dd('ddColor', cur ? `<i style="background:${cur.dot}"></i>${esc(cur.name)}` : 'Màu sắc', !!cur, opt('color', '', 'Tất cả màu') + fams.map((f) => opt('color', f.id, `<i style="background:${f.dot}"></i>${esc(f.name)}`, n('color', (t) => t.palettes.some((p) => fam(p) === f.id)))).join(''))
-      + dd('ddSort', SORTS.find(([v]) => v === F.sort)[1], false, SORTS.map(([v, l]) => opt('sort', v, l)).join(''));
+    const cnt = (k, test) => base(k).filter(test).length;
+    $('#fStyle').innerHTML = [{ id: '', name: 'Tất cả', all: true }, ...used].map((g) =>
+      `<button type="button" data-k="style" data-v="${esc(g.id)}" aria-pressed="${F.style === g.id}"><span>${esc(g.name)}</span><i>${g.all ? base('style').length : cnt('style', (t) => t.group === g.id)}</i></button>`).join('');
   }
-  function closeMenus(except) { document.querySelectorAll('.dd.open').forEach((d) => { if (d !== except) { d.classList.remove('open'); d.querySelector('.ddb').setAttribute('aria-expanded', false); } }); }
-  document.querySelector('.fbar').addEventListener('click', (e) => {
-    const t = e.target.closest('.ddb');
-    if (t) {
-      const d = t.parentElement, on = !d.classList.contains('open');
-      closeMenus(d); d.classList.toggle('open', on); t.setAttribute('aria-expanded', on);
-      if (on) { const r = t.getBoundingClientRect(), m = d.querySelector('.ddm'); m.style.top = r.bottom + 8 + 'px'; m.style.left = Math.max(8, Math.min(r.left, innerWidth - m.offsetWidth - 8)) + 'px'; }
-      return;
-    }
+  $('#side').addEventListener('click', (e) => {
     const b = e.target.closest('[data-k]'); if (!b) return;
-    F[b.dataset.k] = b.dataset.v; closeMenus(); render();
+    F[b.dataset.k] = b.dataset.v; render();
   });
-  document.addEventListener('click', (e) => { if (!e.target.closest('.dd')) closeMenus(); });
-  addEventListener('scroll', () => closeMenus(), { passive: true });
-  document.querySelectorAll('.fside').forEach((x) => x.addEventListener('scroll', () => closeMenus(), { passive: true }));
-  document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeMenus(); });
-  // tìm: bấm icon thì bung ô gõ
-  const srch = $('#srch');
-  $('#srchBtn').onclick = () => { srch.classList.add('open'); $('#q').focus(); };
-  $('#q').addEventListener('blur', () => { if (!F.q) srch.classList.remove('open'); });
 
+  let stopLive = () => {}; // huỷ xem trước đang chạy (gán bên dưới, chỉ khi máy có chuột)
+  // nhãn ruy băng tràn mép trái thẻ: Hot = ruy băng đỏ mũi cờ nhọn, Mới = ruy băng xanh đuôi én (CSS .tag)
+  const badge = (t) => t.badge ? `<span class="tag${t.badge === 'Hot' ? ' hot' : ''}"><svg viewBox="0 0 100 26" preserveAspectRatio="none" aria-hidden="true"><path d="${t.badge === 'Hot' ? 'M0 0h88l12 13-12 13H0z' : 'M0 0h100l-8 13 8 13H0z'}"/></svg>${t.badge === 'Hot' ? 'Hot!' : esc(t.badge)}</span>` : '';
   function render() {
+    stopLive();
     sync();
     const q = F.q.trim().toLowerCase();
-    let list = T.filter((t) => (!F.style || t.group === F.style)
-      && (!F.color || t.palettes.some((p) => fam(p) === F.color))
-      && (!F.tag || t.badge === F.tag)
+    const list = T.filter((t) => (!F.style || t.group === F.style)
       && (!q || (t.name + ' ' + t.desc).toLowerCase().includes(q)));
-    if (F.sort === 'new') list = list.slice().sort((a, b) => (b.badge === 'Mới') - (a.badge === 'Mới'));
-    if (F.sort === 'az') list = list.slice().sort((a, b) => a.name.localeCompare(b.name, 'vi'));
 
-    // số đếm trong menu tính trên các bộ lọc còn lại
-    const base = (skip) => T.filter((t) => (skip === 'style' || !F.style || t.group === F.style) && (skip === 'color' || !F.color || t.palettes.some((p) => fam(p) === F.color)) && (skip === 'tag' || !F.tag || t.badge === F.tag) && (!q || (t.name + ' ' + t.desc).toLowerCase().includes(q)));
+    // số đếm trên chip tính trên các bộ lọc còn lại
+    const base = (skip) => T.filter((t) => (skip === 'style' || !F.style || t.group === F.style) && (!q || (t.name + ' ' + t.desc).toLowerCase().includes(q)));
     bar(base);
 
-    $('#shown').textContent = list.length === T.length ? `${T.length} mẫu` : `${list.length} / ${T.length} mẫu`;
-    $('#clear').hidden = !(F.q || F.style || F.color || F.tag);
+    const active = [F.q, F.style].filter(Boolean).length;
+    $('#shown').innerHTML = list.length === T.length ? `<b>${T.length}</b> mẫu` : `<b>${list.length}</b> / ${T.length} mẫu`;
+    $('#clear').hidden = !active;
+    // bộ lọc đang áp hiện thành thẻ nhỏ cạnh số mẫu, bấm × để bỏ từng cái
+    const g = G.find((x) => x.id === F.style);
+    $('#crumbList').innerHTML = (F.q ? `<button type="button" data-x="q">“${esc(F.q)}”</button>` : '')
+      + (g ? `<button type="button" data-x="style">${esc(g.name)}</button>` : '');
+
     $('#grid').innerHTML = list.length ? list.map((t) => {
-      // lọc theo màu thì bìa hiện đúng bảng màu đó
-      const p = (F.color && t.palettes.find((x) => fam(x) === F.color)) || t.palettes[0];
-      const g = G.find((x) => x.id === t.group);
-      return `<div class="tc" data-tpl="${t.id}">
-        <a class="pic" href="/demo/${t.id}?palette=${p.id}" aria-label="Xem thử mẫu ${esc(t.name)}">${t.badge ? `<span class="tag${t.badge === 'Hot' ? ' hot' : ''}">${esc(t.badge)}</span>` : ''}<img src="${cover(t.id, p.id)}" alt="Mẫu thiệp ${esc(t.name)}" loading="lazy"><span class="peek">Xem thử</span></a>
-        <div class="row"><b>${esc(t.name)}</b><a class="use" href="/thiep-cua-toi?tao=${t.id}&mau=${p.id}">Dùng mẫu →</a></div>
-        <div class="sub2">${esc(g ? g.name : '')}</div>
+      const p = t.palettes[0];
+      return `<div class="tc" data-tpl="${t.id}" data-pal="${p.id}">${badge(t)}
+        <div class="pic"><a class="demo" href="/demo/${t.id}?palette=${p.id}" aria-label="Xem thử mẫu ${esc(t.name)}"><img src="${cover(t.id, p.id)}" alt="Mẫu thiệp ${esc(t.name)}" loading="lazy"></a>
         <div class="sw">${t.palettes.length > 1 ? t.palettes.map((q2) => `<button type="button" data-pal="${q2.id}" title="${esc(q2.name)}" aria-label="Bảng màu ${esc(q2.name)}" class="${q2.id === p.id ? 'on' : ''}" style="background:linear-gradient(135deg,${q2.swatch[0]} 50%,${q2.swatch[1]} 50%)"></button>`).join('') : ''}</div>
+        <div class="txt"><b>${esc(t.name)}</b><a class="use" href="/thiep-cua-toi?tao=${t.id}&mau=${p.id}">Dùng mẫu</a></div></div>
       </div>`;
     }).join('') : '<div class="none"><p style="font-size:40px;margin:0">🔍</p><p>Chưa có mẫu khớp bộ lọc.</p><button class="btn btn-ghost" id="clear2">Xoá bộ lọc</button></div>';
     const c2 = $('#clear2'); if (c2) c2.onclick = clear;
   }
-  function clear() { Object.assign(F, { q: '', style: '', color: '', tag: '' }); $('#q').value = ''; srch.classList.remove('open'); render(); }
+  function clear() { Object.assign(F, { q: '', style: '' }); $('#q').value = ''; render(); }
 
   $('#q').value = F.q;
-  if (F.q) srch.classList.add('open');
   $('#q').addEventListener('input', (e) => { F.q = e.target.value; render(); });
   $('#clear').onclick = clear;
+  $('#crumbs').addEventListener('click', (e) => {
+    const b = e.target.closest('[data-x]'); if (!b) return;
+    F[b.dataset.x] = ''; if (b.dataset.x === 'q') $('#q').value = ''; render();
+  });
   $('#grid').addEventListener('click', (e) => {
     const b = e.target.closest('.sw button'); if (!b) return;
     const card = b.closest('.tc'), id = card.dataset.tpl, pal = b.dataset.pal;
     card.querySelectorAll('.sw button').forEach((x) => x.classList.toggle('on', x === b));
-    card.querySelector('.pic').href = `/demo/${id}?palette=${pal}`;
-    card.querySelector('img').src = cover(id, pal);
+    card.querySelector('.pic a.demo').href = `/demo/${id}?palette=${pal}`;
     card.querySelector('.use').href = `/thiep-cua-toi?tao=${id}&mau=${pal}`;
+    card.querySelector('img').src = cover(id, pal);
+    card.dataset.pal = pal; stopLive(); // đổi màu thì bỏ xem trước cũ, rê tiếp sẽ nạp đúng màu mới
   });
+
+  // rê chuột vào thẻ: chuột dừng 0,5 giây thì nạp trang thiệp thật vào thẻ, hiện dần rồi tự trượt chậm xuống (giống hàng mẫu trang chủ).
+  // Chỉ nạp khi con trỏ thật sự di chuyển tới (cuộn trang làm thẻ trượt qua dưới con trỏ đứng yên cũng bắn pointermove), và huỷ khi cuộn trang.
+  if (matchMedia('(hover:hover)').matches && !matchMedia('(prefers-reduced-motion:reduce)').matches) {
+    const grid = $('#grid');
+    let cur = null, lastX = NaN, lastY = NaN;
+    stopLive = () => { if (!cur) return; clearTimeout(cur.t); cancelAnimationFrame(cur.raf); if (cur.f) cur.f.remove(); cur = null; };
+    addEventListener('scroll', stopLive, { passive: true });
+    grid.addEventListener('pointermove', (e) => {
+      if (e.pointerType && e.pointerType !== 'mouse') return;
+      const moved = e.screenX !== lastX || e.screenY !== lastY;
+      lastX = e.screenX; lastY = e.screenY;
+      if (!moved) return;
+      const c = e.target.closest('.tc[data-tpl]');
+      if (!c) return;
+      if (cur && cur.c !== c) stopLive();
+      if (cur && cur.f) return; // đã nạp xong trên thẻ này
+      const st = cur = cur || { c };
+      clearTimeout(st.t);
+      st.t = setTimeout(() => scrollImage(st, c, c.querySelector('.pic')), 80);
+    });
+    // ảnh dài chụp sẵn của cả trang (tools/previews.js → /demo/scroll-<mẫu>.jpg) trượt bằng CSS transition: hiện ngay, mượt;
+    // thiếu ảnh (mẫu mới chưa chụp) thì rơi về nạp trang thật vào iframe
+    const scrollImage = (st, c, pic) => {
+      // ảnh trượt chỉ chụp cho bảng màu đầu: thẻ đang chọn màu khác thì nạp trang thật để khớp màu
+      const tpl = T.find((x) => x.id === c.dataset.tpl);
+      if (tpl && c.dataset.pal && c.dataset.pal !== tpl.palettes[0].id) return liveFrame(st, c, pic);
+      const im = new Image();
+      im.className = 'scrollimg'; im.alt = ''; im.draggable = false;
+      im.src = `/demo/scroll-${c.dataset.tpl}.jpg`;
+      st.f = im;
+      im.onload = () => {
+        if (cur !== st) return;
+        pic.querySelector('a').after(im);
+        const speed = 90 * pic.clientWidth / 390;
+        const run = () => {
+          if (cur !== st) return;
+          const d = im.offsetHeight - pic.clientHeight; if (d <= 0) return;
+          im.style.transition = 'none'; im.style.transform = 'translateY(0)'; void im.offsetHeight;
+          im.style.transition = `transform ${(d / speed).toFixed(2)}s linear`; im.style.transform = `translateY(${-d}px)`;
+        };
+        im.addEventListener('transitionend', () => { if (cur === st) st.t = setTimeout(run, 700); });
+        run();
+      };
+      im.onerror = () => { if (cur === st) liveFrame(st, c, pic); };
+    };
+    const liveFrame = (st, c, pic) => {
+        const base = 390, sc = pic.clientWidth / base;
+        const f = document.createElement('iframe');
+        f.className = 'live'; f.tabIndex = -1; f.title = 'Xem trước';
+        f.style.width = base + 'px'; f.style.height = pic.clientHeight / sc + 'px'; f.style.transform = `scale(${sc})`;
+        f.src = `/demo/${c.dataset.tpl}?palette=${c.dataset.pal}&preview=1&lite=1`;
+        pic.querySelector('a').after(f); st.f = f;
+        f.onload = () => {
+          if (cur !== st) return;
+          setTimeout(() => f.classList.add('on'), 150);
+          let y = 0, last = 0, t0 = 0;
+          const w = f.contentWindow;
+          try { w.document.documentElement.style.scrollbarWidth = 'none'; } catch (err) { /* khác nguồn thì bỏ qua */ }
+          const step = (now) => {
+            if (cur !== st) return;
+            if (last && now - last < 100) { y += (now - last) * 0.09 * Math.min(1, (now - (t0 || (t0 = now))) / 700); w.scrollTo({ top: y, behavior: 'instant' }); } // trang thiệp đặt cuộn mượt: cuộn tức thời từng bước
+            last = now;
+            if (y > w.document.documentElement.scrollHeight - w.innerHeight) y = 0; // hết trang thì quay lại đầu
+            st.raf = requestAnimationFrame(step);
+          };
+          setTimeout(() => { if (cur === st) st.raf = requestAnimationFrame(step); }, 350);
+        };
+    };
+    grid.addEventListener('mouseout', (e) => { if (cur && !cur.c.contains(e.relatedTarget)) stopLive(); });
+    // lần đầu rê vào lưới: nạp trước ảnh trượt của các thẻ đang thấy
+    grid.addEventListener('pointerover', () => {
+      if (grid.dataset.pf) return; grid.dataset.pf = '1';
+      grid.querySelectorAll('.tc[data-tpl]').forEach((c) => { const b = c.getBoundingClientRect(); if (b.bottom > 0 && b.top < innerHeight) new Image().src = `/demo/scroll-${c.dataset.tpl}.jpg`; });
+    }, { once: true });
+  }
   document.addEventListener('meta', (e) => {
     T = e.detail.templates; G = e.detail.templateGroups || [];
     render();

@@ -18,7 +18,7 @@
 </head>
 <body data-page="home">
 <header class="hnav" id="hnav"><div class="wrap">
-  <a class="logo" href="/" id="hlogo"><svg viewBox="0 0 32 32" fill="none" aria-hidden="true"><path d="M16 27C6.5 20 3 15 3 10.5 3 6.9 5.8 4 9.4 4c2.6 0 4.6 1.4 6.6 3.9C18 5.4 20 4 22.6 4 26.2 4 29 6.9 29 10.5 29 15 25.5 20 16 27z" stroke="currentColor" stroke-width="2.4"/></svg><span data-brand>Cưới Nha</span></a>
+  <a class="logo" href="/" id="hlogo"><span class="lw" data-brand>Cưới Nha</span><svg class="lh" viewBox="0 0 32 30" aria-hidden="true"><path d="M16 28C6.5 21 3 16 3 11.5 3 7.9 5.8 5 9.4 5c2.6 0 4.6 1.4 6.6 3.9C18 6.4 20 5 22.6 5 26.2 5 29 7.9 29 11.5 29 16 25.5 21 16 28z"/></svg></a>
   <nav class="menu" aria-label="Menu chính"><a href="/mau-thiep">Thiệp cưới</a><a href="/video-cuoi">Video cưới</a><a href="/so-tay-cuoi">Sổ tay cưới</a></nav>
   <span id="themeSlot"></span>
   <div class="hacts" id="hacts"><a class="login" href="/dang-nhap">Đăng nhập</a><a class="btn btn-main btn-sm" href="/mau-thiep">Tạo thiệp</a></div>
@@ -36,7 +36,6 @@
     <p class="lead">Mỗi khách một tấm thiệp mang tên riêng — có nhạc, bản đồ, hộp mừng cưới.</p>
     <div class="acts"><a class="b b-play" href="#mau">▶ Xem các mẫu</a><a class="b b-more" href="/mau-thiep">＋ Tạo thiệp miễn phí</a></div>
   </div>
-  <div class="rate">♥ <span data-price-k>129k</span> · dùng thử <span data-trial-days>7</span> ngày</div>
 </section>
 
 <!-- ba chức năng chính -->
@@ -203,25 +202,41 @@
     const { templates: T, templateGroups: G = [] } = ev.detail;
     const K = (v) => Math.round(v / 1000) + 'k';
 
-    // tường thiệp trôi: mỗi cột 6 bìa liên tiếp, lệch điểm bắt đầu để các cột cạnh nhau không trùng
+    // tường thiệp trôi: mỗi cột 6 bìa liên tiếp, lệch điểm bắt đầu để các cột cạnh nhau không trùng.
+    // Ảnh nạp ngay (không lazy): cột đang trôi mà ảnh nửa sau mới nạp giữa chừng thì hiện bật ra + giải mã ảnh làm khựng chuyển động.
+    // Màn hẹp chỉ hiện 3 cột đầu (CSS ẩn 3 cột sau) → 3 cột sau để lazy cho khỏi tải thừa.
     const all = T.flatMap((t) => t.palettes.map((p) => cover(t.id, p.id)));
+    const narrow = matchMedia('(max-width:700px)').matches;
     document.getElementById('cols').innerHTML = [0, 1, 2, 3, 4, 5].map((c) => {
       const list = Array.from({ length: 6 }, (_, j) => all[(c * 5 + j * 3) % all.length]);
-      return `<div class="col">${[...list, ...list].map((u) => `<img src="${u}" alt="" loading="lazy">`).join('')}</div>`;
+      const lazy = narrow && c >= 3 ? ' loading="lazy"' : '';
+      return `<div class="col">${[...list, ...list].map((u) => `<img src="${u}" alt="" decoding="async"${lazy}>`).join('')}</div>`;
     }).join('');
+    // cuộn qua khỏi billboard thì dừng trôi (nhường GPU cho các hàng thẻ + khung video bên dưới)
+    const bb = document.querySelector('.bb');
+    if (bb && 'IntersectionObserver' in window) new IntersectionObserver((es) => es.forEach((e) => bb.classList.toggle('off', !e.isIntersecting))).observe(bb);
 
     // các hàng mẫu cuộn ngang kiểu Netflix
-    const card = (t, extra = '') => `<div class="ncard" data-tpl="${t.id}" data-pal="${t.palettes[0].id}">${extra}<div class="pic"><a href="/demo/${t.id}" aria-label="Xem thử ${esc(t.name)}"><img src="${cover(t.id, t.palettes[0].id)}" alt="${esc(t.name)}" loading="lazy"></a>${t.badge === 'Hot' && !extra ? '<span class="tag">TOP<br>10</span>' : ''}${t.badge === 'Mới' ? '<span class="new">Mới ra mắt</span>' : ''}
+  // nhãn ruy băng tràn mép trái thẻ: Hot = ruy băng đỏ mũi cờ nhọn, Mới = ruy băng xanh đuôi én (CSS .tag)
+  const badge = (t) => t.badge ? `<span class="tag${t.badge === 'Hot' ? ' hot' : ''}"><svg viewBox="0 0 100 26" preserveAspectRatio="none" aria-hidden="true"><path d="${t.badge === 'Hot' ? 'M0 0h88l12 13-12 13H0z' : 'M0 0h100l-8 13 8 13H0z'}"/></svg>${t.badge === 'Hot' ? 'Hot!' : esc(t.badge)}</span>` : '';
+    const card = (t, extra = '') => `<div class="ncard" data-tpl="${t.id}" data-pal="${t.palettes[0].id}">${extra}${extra ? '' : badge(t)}<div class="pic"><a href="/demo/${t.id}" aria-label="Xem thử ${esc(t.name)}"><img src="${cover(t.id, t.palettes[0].id)}" alt="${esc(t.name)}" loading="lazy"></a>
       <div class="info"><b>${esc(t.name)}</b><a class="use" href="/thiep-cua-toi?tao=${t.id}&mau=${t.palettes[0].id}">Dùng mẫu</a></div></div></div>`;
     const row = (title, list, cls = '', more = '/mau-thiep') => list.length ? `<section class="nrow ${cls}"><h2>${title}<a href="${more}">Xem tất cả ›</a></h2>
       <div class="track"><button class="arrow l" type="button" aria-label="Trước">‹</button><div class="slider">${list.join('')}</div><button class="arrow r" type="button" aria-label="Sau">›</button></div></section>` : '';
+    // thẻ video 16:9: poster + tên + số ảnh, rê chuột phát thử video thật (xem bên dưới)
+    const V = (ev.detail.video && ev.detail.video.templates) || [];
+    const TOP_VIDEO = ['polaroid', 'phimcu', 'dienanh', 'songhy', 'traitim']; // 5 mẫu video được chọn nhiều, cùng thứ tự với khu video bên dưới
+    const topVideo = [...TOP_VIDEO.map((id) => V.find((t) => t.id === id)).filter(Boolean), ...V.filter((t) => t.photos && !TOP_VIDEO.includes(t.id))].slice(0, 5);
+    const vcard = (t, i) => `<div class="ncard" data-video="${t.id}"><span class="num">${i + 1}</span><div class="pic"><a href="/video/demo?template=${t.id}" aria-label="Xem thử video ${esc(t.name)}"><img src="/demo/vposter-${t.id}.jpg" alt="${esc(t.name)}" loading="lazy"></a><span class="lbl">${esc(t.name)}<small>${t.photos ? t.slots + ' ảnh' : 'Mẫu chữ'} · chiếu TV, tải MP4</small></span>
+      <div class="info"><b>${esc(t.name)}</b><a class="use" href="/thiep-cua-toi?tao-video=1&mau=${t.id}">Dùng mẫu</a></div></div></div>`;
     const hot = T.filter((t) => t.badge === 'Hot');
     const top = [...hot, ...T.filter((t) => !hot.includes(t))].slice(0, 5); // top 5: mẫu Hot trước, thiếu thì lấy thêm mẫu kế tiếp
     const used = G.filter((g) => T.some((t) => t.group === g.id));
     const rows = document.getElementById('mau');
     rows.innerHTML =
-      row('Top 5 mẫu được chọn nhiều nhất tuần này', top.map((t, i) => card(t, `<span class="num">${i + 1}</span>`)), 'top')
-      + row('Mới ra mắt', T.filter((t) => t.badge === 'Mới').map((t) => card(t)), '', '/mau-thiep?nhan=M%E1%BB%9Bi')
+      row('Top 5 mẫu thiệp được chọn nhiều nhất tuần này', top.map((t, i) => card(t, `<span class="num">${i + 1}</span>`)), 'top')
+      + row('Top 5 mẫu video cưới', topVideo.map(vcard), 'top wide', '/video-cuoi')
+      + row('Mới ra mắt', T.filter((t) => t.badge === 'Mới').map((t) => card(t)))
 
       + used.map((g) => row(esc(g.name), T.filter((t) => t.group === g.id).map((t) => card(t)), '', `/mau-thiep?phong-cach=${g.id}`)).join('')
       + row('Tất cả mẫu thiệp', T.map((t) => card(t)));
@@ -234,41 +249,89 @@
       const s = a.parentNode.querySelector('.slider'); s.scrollBy({ left: (a.classList.contains('l') ? -1 : 1) * s.clientWidth * 0.8 });
     });
 
-    // rê chuột vào thẻ: sau 0,3 giây nạp trang thiệp thật vào thẻ, hiện dần rồi tự trượt chậm xuống
+    // rê chuột vào thẻ: chuột dừng yên 0,5 giây trên thẻ thì nạp trang thiệp thật vào thẻ, hiện dần rồi tự trượt chậm xuống.
+    // Trang thiệp nạp cùng luồng với trang chủ nên khá nặng (~1 giây): chỉ nạp khi con trỏ thật sự di chuyển tới rồi dừng,
+    // không nạp khi thẻ trượt qua dưới con trỏ đứng yên lúc cuộn ngang (trình duyệt vẫn bắn mouseover lúc đó), và huỷ ngay khi hàng cuộn.
     if (matchMedia('(hover:hover)').matches && !matchMedia('(prefers-reduced-motion:reduce)').matches) {
-      let cur = null;
+      let cur = null, lastX = NaN, lastY = NaN;
       const stop = () => { if (!cur) return; clearTimeout(cur.t); cancelAnimationFrame(cur.raf); if (cur.f) cur.f.remove(); cur = null; };
-      rows.addEventListener('mouseover', (e) => {
-        const c = e.target.closest('.ncard[data-tpl]');
-        if (!c || (cur && cur.c === c)) return;
-        stop();
-        const st = cur = { c };
+      rows.addEventListener('scroll', stop, { capture: true, passive: true }); // scroll không nổi bọt: bắt ở pha capture
+      rows.addEventListener('pointermove', (e) => {
+        if (e.pointerType && e.pointerType !== 'mouse') return;
+        const moved = e.screenX !== lastX || e.screenY !== lastY; // mousemove giả sau khi cuộn có toạ độ y hệt lần trước
+        lastX = e.screenX; lastY = e.screenY;
+        if (!moved) return;
+        const c = e.target.closest('.ncard[data-tpl],.ncard[data-video]');
+        if (!c) return;
+        if (cur && cur.c !== c) stop();
+        if (cur && cur.f) return; // đã nạp xong trên thẻ này
+        const st = cur = cur || { c };
+        clearTimeout(st.t);
         st.t = setTimeout(() => {
-          const pic = c.querySelector('.pic'), s = pic.clientWidth / 390;
+          const pic = c.querySelector('.pic'), video = !!c.dataset.video;
+          if (!video) return scrollImage(st, c, pic);
+          const base = 1280, s = pic.clientWidth / base;
           const f = document.createElement('iframe');
           f.className = 'live'; f.tabIndex = -1; f.title = 'Xem trước';
-          f.style.height = pic.clientHeight / s + 'px'; f.style.transform = `scale(${s})`;
-          f.src = `/demo/${c.dataset.tpl}?palette=${c.dataset.pal}&preview=1`;
+          f.style.width = base + 'px'; f.style.height = '720px'; f.style.transform = `scale(${s})`;
+          f.src = `/video/demo?preview=1&template=${c.dataset.video}`;
+          pic.querySelector('a').after(f); st.f = f;
+          f.onload = () => { if (cur === st) setTimeout(() => f.classList.add('on'), 150); };
+        }, video(c) ? 500 : 80);
+      });
+      const video = (c) => !!c.dataset.video;
+      // thiệp: ảnh dài chụp sẵn của cả trang (tools/previews.js → /demo/scroll-<mẫu>.jpg) trượt bằng CSS transition —
+      // hiện ngay khi rê chuột, trượt bằng GPU nên mượt; thiếu ảnh (mẫu mới chưa chụp) thì rơi về nạp trang thật vào iframe
+      const scrollImage = (st, c, pic) => {
+        const im = new Image();
+        im.className = 'scrollimg'; im.alt = ''; im.draggable = false;
+        im.src = `/demo/scroll-${c.dataset.tpl}.jpg`;
+        st.f = im;
+        im.onload = () => {
+          if (cur !== st) return;
+          pic.querySelector('a').after(im);
+          const speed = 90 * pic.clientWidth / 390; // px/giây trên màn hình, bằng tốc độ cuộn cũ của trang 390px
+          const run = () => {
+            if (cur !== st) return;
+            const d = im.offsetHeight - pic.clientHeight; if (d <= 0) return;
+            im.style.transition = 'none'; im.style.transform = 'translateY(0)'; void im.offsetHeight;
+            im.style.transition = `transform ${(d / speed).toFixed(2)}s linear`; im.style.transform = `translateY(${-d}px)`;
+          };
+          im.addEventListener('transitionend', () => { if (cur === st) st.t = setTimeout(run, 700); }); // hết trang: nghỉ chút rồi quay lại đầu
+          run();
+        };
+        im.onerror = () => { if (cur === st) liveFrame(st, c, pic); };
+      };
+      const liveFrame = (st, c, pic) => {
+          const base = 390, s = pic.clientWidth / base;
+          const f = document.createElement('iframe');
+          f.className = 'live'; f.tabIndex = -1; f.title = 'Xem trước';
+          f.style.width = base + 'px'; f.style.height = pic.clientHeight / s + 'px'; f.style.transform = `scale(${s})`;
+          f.src = `/demo/${c.dataset.tpl}?palette=${c.dataset.pal}&preview=1&lite=1`;
           pic.querySelector('a').after(f); st.f = f;
           f.onload = () => {
             if (cur !== st) return;
             setTimeout(() => f.classList.add('on'), 150);
-            let y = 0, last = 0;
+            let y = 0, last = 0, t0 = 0;
             const w = f.contentWindow;
             try { w.document.documentElement.style.scrollbarWidth = 'none'; } catch (err) { /* khác nguồn thì bỏ qua */ }
             const step = (now) => {
               if (cur !== st) return;
               // trang thiệp đặt cuộn mượt: phải cuộn tức thời từng bước
-              if (last && now - last < 100) { y += (now - last) * 0.09; w.scrollTo({ top: y, behavior: 'instant' }); }
+              if (last && now - last < 100) { y += (now - last) * 0.09 * Math.min(1, (now - (t0 || (t0 = now))) / 700); w.scrollTo({ top: y, behavior: 'instant' }); }
               last = now;
               if (y > w.document.documentElement.scrollHeight - w.innerHeight) y = 0; // hết trang thì quay lại đầu
               st.raf = requestAnimationFrame(step);
             };
-            setTimeout(() => { if (cur === st) st.raf = requestAnimationFrame(step); }, 900);
+            setTimeout(() => { if (cur === st) st.raf = requestAnimationFrame(step); }, 350);
           };
-        }, 300);
-      });
+      };
       rows.addEventListener('mouseout', (e) => { if (cur && !cur.c.contains(e.relatedTarget)) stop(); });
+      // rê chuột vào một hàng: nạp trước ảnh trượt của các thẻ đang thấy để lúc rê tới thẻ là hiện ngay
+      rows.addEventListener('pointerover', (e) => {
+        const r = e.target.closest('.nrow'); if (!r || r.dataset.pf) return; r.dataset.pf = '1';
+        r.querySelectorAll('.ncard[data-tpl]').forEach((c) => { const b = c.getBoundingClientRect(); if (b.right > 0 && b.left < innerWidth) new Image().src = `/demo/scroll-${c.dataset.tpl}.jpg`; });
+      });
     }
 
     // mở thẳng /#mau: cuộn lại sau khi các hàng đã dựng xong

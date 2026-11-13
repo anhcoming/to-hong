@@ -30,7 +30,7 @@ const LEAF = '<svg viewBox="0 0 24 24" width="1em" height="1em"><path fill="curr
 
 module.exports = {
   id: 'nau',
-  name: 'Nâu',
+  name: 'Hoài Niệm',
   group: 'toigian',
   desc: 'Tối giản ấm áp: giấy kem, khung thông tin màu be, khung ảnh vintage và cành lá khô',
   fonts: 'https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;1,400&family=The+Nautigal:wght@400;700&family=Cormorant+Garamond:wght@500;600&family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=Lora:wght@400;500;600&family=Ms+Madi&display=swap',

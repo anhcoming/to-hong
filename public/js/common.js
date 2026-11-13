@@ -191,7 +191,7 @@ window.renderTopbar = async function (active) {
   const bar = document.createElement('header');
   bar.className = 'topbar';
   bar.innerHTML = `<div class="wrap">
-    <a class="logo" href="/"><svg viewBox="0 0 32 32" fill="none" aria-hidden="true"><path d="M16 27C6.5 20 3 15 3 10.5 3 6.9 5.8 4 9.4 4c2.6 0 4.6 1.4 6.6 3.9C18 5.4 20 4 22.6 4 26.2 4 29 6.9 29 10.5 29 15 25.5 20 16 27z" stroke="currentColor" stroke-width="2.4"/></svg><span class="lt">${esc(meta.brand)}</span></a>
+    <a class="logo" href="/"><span class="lw">${esc(meta.brand)}</span><svg class="lh" viewBox="0 0 32 30" aria-hidden="true"><path d="M16 28C6.5 21 3 16 3 11.5 3 7.9 5.8 5 9.4 5c2.6 0 4.6 1.4 6.6 3.9C18 6.4 20 5 22.6 5 26.2 5 29 7.9 29 11.5 29 16 25.5 21 16 28z"/></svg></a>
     <nav class="nav">
       ${me.user ? `
         <a href="/thiep-cua-toi" class="${active === 'cards' ? 'on' : ''}">Thiệp<span class="hide-xs"> cưới</span></a>

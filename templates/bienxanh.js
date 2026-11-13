@@ -39,7 +39,7 @@ const CAPTIONS = ['Gió biển thổi qua, và anh vẫn ở đây', 'Có em, ng
 
 module.exports = {
   id: 'bienxanh',
-  name: 'Biển Xanh',
+  name: 'Sóng Biển',
   group: 'toigian',
   badge: 'Mới',
   desc: 'Trời biển trong trẻo: ảnh tràn màn hình, chữ viết tay trắng, sóng nước mềm mại',
