@@ -7,6 +7,7 @@
     }
   },
   "redirects": [
+    { "source": "/", "has": [{ "type": "host", "value": "to-hong.vercel.app" }], "destination": "https://cuoinha.com/", "permanent": true },
     { "source": "/:path*", "has": [{ "type": "host", "value": "to-hong.vercel.app" }], "destination": "https://cuoinha.com/:path*", "permanent": true }
   ],
   "rewrites": [
