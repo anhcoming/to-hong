@@ -225,6 +225,7 @@ async function save({ live = false, marked = false } = {}) {
     upStatus(); // còn ảnh đang tải thì báo số ảnh, hết thì "Đã lưu ✓"
     if (redraw) refreshPreview();
     renderHeader();
+    shareSoon();
   } catch (e) {
     if (redraw) liveOnly = false; // lần lưu sau vẫn phải vẽ lại
     status('Lưu thất bại');
@@ -233,6 +234,60 @@ async function save({ live = false, marked = false } = {}) {
     saving = false;
     if (pending) { pending = false; save({ marked: true }); }
   }
+}
+// ---------- ảnh xem trước khi gửi link (Zalo, Messenger, Facebook…) ----------
+// JPEG 1200×630: ảnh cưới phủ nền + tên đôi + ngày cưới. Vẽ lại khi ảnh / tên / ngày đổi (shareKey), chạy ngầm.
+// Zalo không đọc ảnh WebP, nên ảnh tải lên (WebP) không tự làm ảnh xem trước được.
+let shareTimer = null, shareBusy = false;
+function shareSoon(ms = 2500) { clearTimeout(shareTimer); shareTimer = setTimeout(makeShareImage, ms); }
+const WEEKDAY = ['Chủ Nhật', 'Thứ Hai', 'Thứ Ba', 'Thứ Tư', 'Thứ Năm', 'Thứ Sáu', 'Thứ Bảy'];
+async function makeShareImage() {
+  const d = card && card.data;
+  if (!d || card.guest || shareBusy) return;
+  const src = [d.cover, ...(d.photos || [])].find((u) => u && !/^blob:/.test(u)) || '';
+  if (!src) return;
+  const names = [d.groom.name, d.bride.name].filter(Boolean).join(' & ');
+  const key = [src, names, d.date].join('|');
+  if (d.shareKey === key && d.shareImg) return;
+  shareBusy = true;
+  try {
+    const img = await new Promise((ok, no) => { const im = new Image(); im.crossOrigin = 'anonymous'; im.onload = () => ok(im); im.onerror = no; im.src = baseUrl(src); });
+    const W = 1200, H = 630, c = document.createElement('canvas');
+    c.width = W; c.height = H;
+    const g = c.getContext('2d');
+    // ảnh phủ kín khung, giữ điểm lấy nét đã căn (#p=x,y[,z])
+    const [fx, fy, fz] = focusOf(src);
+    const sc = Math.max(W / img.naturalWidth, H / img.naturalHeight) * fz, dw = img.naturalWidth * sc, dh = img.naturalHeight * sc;
+    g.drawImage(img, (W - dw) * fx / 100, (H - dh) * fy / 100, dw, dh);
+    const gr = g.createLinearGradient(0, H * 0.35, 0, H);
+    gr.addColorStop(0, 'rgba(20,8,10,0)'); gr.addColorStop(1, 'rgba(20,8,10,.82)');
+    g.fillStyle = gr; g.fillRect(0, 0, W, H);
+    g.textAlign = 'center'; g.fillStyle = '#fff'; g.shadowColor = 'rgba(0,0,0,.35)'; g.shadowBlur = 12;
+    g.font = '600 24px system-ui, sans-serif'; g.globalAlpha = 0.88;
+    if ('letterSpacing' in g) g.letterSpacing = '6px';
+    g.fillText('THIỆP CƯỚI', W / 2, 432);
+    if ('letterSpacing' in g) g.letterSpacing = '0px';
+    g.globalAlpha = 1;
+    let fs = 80;
+    do { g.font = `italic 600 ${fs}px Georgia, 'Times New Roman', serif`; fs -= 4; } while (g.measureText(names).width > W - 120 && fs > 36);
+    g.fillText(names || card.title, W / 2, 516);
+    const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(d.date || '');
+    if (m) {
+      g.font = '500 30px system-ui, sans-serif';
+      g.fillText(`${WEEKDAY[new Date(Date.UTC(+m[1], +m[2] - 1, +m[3])).getUTCDay()]} · ${m[3]}.${m[2]}.${m[1]}`, W / 2, 572);
+    }
+    g.shadowBlur = 0; g.textAlign = 'right'; g.globalAlpha = 0.75; g.font = '600 22px system-ui, sans-serif';
+    g.fillText(location.host, W - 36, H - 26);
+    const blob = await new Promise((ok, no) => c.toBlob((b) => (b ? ok(b) : no(new Error('toBlob'))), 'image/jpeg', 0.86));
+    const url = await uploadFile(new File([blob], 'share.jpg', { type: 'image/jpeg' }), { quiet: true, resized: true });
+    const old = d.shareImg;
+    d.shareImg = url; d.shareKey = key;
+    const r = await api(`/api/cards/${CARD_ID}`, { method: 'PUT', body: { data: card.data }, quiet: true });
+    Object.assign(card, { ...r.card, data: card.data });
+    if (old && old !== url) discardUpload(old);
+  } catch (e) {
+    console.info('[ảnh chia sẻ] bỏ qua:', e && e.message); // ảnh không cho đọc (CORS) / mạng lỗi: dùng ảnh mặc định
+  } finally { shareBusy = false; }
 }
 // Khung xem trước = khung sửa trực tiếp (bấm ảnh/chữ để sửa). "Xem như khách" tắt các viền sửa.
 let liveEdit = true;
@@ -905,6 +960,7 @@ window.addEventListener('message', (e) => {
   showTab(want in OLD ? OLD[want] : want);
   refreshPreview();
   status('Đã lưu ✓');
+  shareSoon(4000); // thiệp cũ chưa có ảnh xem trước khi gửi link → tạo ngầm
   // thiệp mới chưa có tên đôi: mở bảng điền nhanh (mỗi thiệp một lần trong phiên này)
   try {
     if (!card.data.groom.name && !card.data.bride.name && !sessionStorage.getItem('qs:' + CARD_ID)) { sessionStorage.setItem('qs:' + CARD_ID, '1'); setTimeout(() => quickStart(false), 500); }
