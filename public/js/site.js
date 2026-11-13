@@ -41,6 +41,18 @@
     set('[data-brand]', m.brand);
     set('[data-price]', money(m.price));
     set('[data-price-k]', k(m.price));
+    // giá mở bán: hiện giá gốc gạch ngang + đếm ngược tới hết hạn
+    if (m.listPrice && m.promoEndsAt) {
+      set('[data-list-price]', money(m.listPrice));
+      set('[data-list-price-k]', k(m.listPrice));
+      document.querySelectorAll('[data-promo]').forEach(function (e) { e.hidden = false; });
+      var pad = function (n) { return (n < 10 ? '0' : '') + n; };
+      var tick = function () {
+        var s = Math.max(0, Math.floor((m.promoEndsAt - Date.now()) / 1000)), d = Math.floor(s / 86400);
+        set('[data-promo-cd]', (d ? d + ' ngày ' : '') + pad(Math.floor(s % 86400 / 3600)) + ':' + pad(Math.floor(s % 3600 / 60)) + ':' + pad(s % 60));
+      };
+      tick(); setInterval(tick, 1000);
+    }
     set('[data-led-price]', money(m.ledPrice));
     set('[data-video-price]', money(m.videoPrice));
     set('[data-trial-days]', m.trialDays);

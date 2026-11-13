@@ -263,7 +263,9 @@ async function settings() {
   $('#view').innerHTML = `<form id="sf">
     <div class="setgrid">
       <section class="panel" style="padding:18px"><h3 style="margin-top:0">Giá bán (đồng)</h3>
-        <label class="field"><span>Thiệp cưới trọn gói</span><input name="price" inputmode="numeric" value="${s.price}"></label>
+        <div class="grid2"><label class="field"><span>Thiệp cưới — giá đang bán</span><input name="price" inputmode="numeric" value="${s.price}"></label>
+        <label class="field"><span>Giá gốc (gạch ngang)</span><input name="listPrice" inputmode="numeric" value="${s.listPrice || ''}" placeholder="Bỏ trống = không giảm giá"></label></div>
+        <label class="field"><span>Giá mở bán đến hết ngày</span><input name="promoEndsAt" type="date" value="${esc(s.promoEndsAt || '')}"><small>Qua ngày này web tự thu theo giá gốc. Bỏ trống = không có hạn, không hiện giá gạch.</small></label>
         <label class="field"><span>Màn hình LED</span><input name="ledPrice" inputmode="numeric" value="${s.ledPrice}"></label>
         <label class="field"><span>Video cưới</span><input name="videoPrice" inputmode="numeric" value="${s.videoPrice}"></label>
         <div class="grid2"><label class="field"><span>Số ngày dùng thử</span><input name="trialDays" inputmode="numeric" value="${s.trialDays}"></label>
@@ -292,7 +294,7 @@ async function settings() {
     $$('.coupon').forEach((r) => { const c = $('[data-cc]', r).value.trim(); if (c) coupons[c] = $('[data-cv]', r).value; });
     try {
       await api('/api/admin/settings', { method: 'PUT', body: {
-        price: v('price'), ledPrice: v('ledPrice'), videoPrice: v('videoPrice'), trialDays: v('trialDays'), trialGuestLimit: v('trialGuestLimit'),
+        price: v('price'), listPrice: v('listPrice'), promoEndsAt: v('promoEndsAt'), ledPrice: v('ledPrice'), videoPrice: v('videoPrice'), trialDays: v('trialDays'), trialGuestLimit: v('trialGuestLimit'),
         coupons, brand: v('brand'), tagline: v('tagline'),
         support: { zalo: v('sup.zalo'), email: v('sup.email') },
       } });

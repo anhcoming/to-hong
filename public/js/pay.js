@@ -83,7 +83,9 @@ window.openPayModal = async function (cardId, onDone, product = 'card') {
       <div style="text-align:center">
         <h2>Kích hoạt ${esc(o.productName.toLowerCase())}</h2>
         <p class="muted" style="margin:0 0 6px">${esc(o.card ? o.card.names || o.card.title : '')}</p>
+        ${o.listPrice ? `<div class="muted" style="font-size:16px;text-decoration:line-through;margin-top:4px">${money(o.listPrice)}</div>` : ''}
         <div style="font-family:var(--serif);font-size:36px;font-weight:600;color:var(--primary)">${money(o.amount)}</div>
+        ${o.listPrice ? `<span class="chip warn">Giá mở bán đến ${new Date(o.promoEndsAt).toLocaleDateString('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh' })}</span>` : ''}
         ${o.coupon ? `<span class="chip ok">Đã áp mã ${esc(o.coupon)}</span>` : ''}
         <p class="muted" style="margin:6px 0 0;font-size:13px">${product === 'video' ? 'Trả một lần · Tải MP4 Full HD · Bỏ dòng "Bản dùng thử"' : isLed ? 'Trả một lần · Bỏ dòng "Bản dùng thử" · Trình chiếu không giới hạn thời gian' :'Trả một lần · Mời khách không giới hạn · Dùng vĩnh viễn'}</p>
       </div>

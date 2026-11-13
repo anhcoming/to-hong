@@ -129,6 +129,18 @@ async function call(who, method, url, body, raw) {
   r = await call('u2', 'POST', `/api/cards/${r.json.card.id}/order`, {});
   assert.equal(r.json.order.bank.accountNo, require('../config.json').payment.accountNo, 'QR vẫn trỏ tài khoản trong config.json');
   assert.equal((await call('x', 'GET', '/api/meta')).json.price, 99000, 'giá mới áp dụng ngay');
+  // giá mở bán: còn hạn → thu giá đang bán, hiện giá gốc gạch; hết hạn → tự thu giá gốc
+  await call('admin', 'PUT', '/api/admin/settings', { listPrice: '179.000', promoEndsAt: '2099-01-31' });
+  r = await call('x', 'GET', '/api/meta');
+  assert.deepEqual([r.json.price, r.json.listPrice], [99000, 179000], 'còn hạn: giá mở bán + giá gốc gạch ngang');
+  assert.ok(r.json.promoEndsAt > Date.now());
+  await call('admin', 'PUT', '/api/admin/settings', { promoEndsAt: '2020-01-31' });
+  r = await call('x', 'GET', '/api/meta');
+  assert.deepEqual([r.json.price, r.json.listPrice], [179000, null], 'hết hạn: tự thu giá gốc, không hiện giá gạch');
+  r = await call('u2', 'POST', '/api/cards', { template: 'dodam' });
+  assert.equal((await call('u2', 'POST', `/api/cards/${r.json.card.id}/order`, {})).json.order.amount, 179000, 'đơn mới theo giá gốc');
+  await call('admin', 'PUT', '/api/admin/settings', { listPrice: '', promoEndsAt: '' });
+  assert.equal((await call('x', 'GET', '/api/meta')).json.price, 99000, 'bỏ giá gốc → về giá đang bán');
 
   // ---------- thiệp, đơn ----------
   r = await call('u2', 'POST', '/api/cards', { template: 'dodam' });

@@ -26,10 +26,20 @@ store.onLoad(() => Wd.migrate()); // dữ liệu từ trước khi có sổ tay 
 
 // Sản phẩm bán: thiệp, màn LED, video dạm ngõ (đều gắn với một thiệp)
 const PRODUCTS = {
-  card: { name: 'Thiệp cưới online', price: () => config.price, coupons: true, prefix: 'TH', sub: (c) => c },
+  card: { name: 'Thiệp cưới online', price: () => cardPrice(), coupons: true, prefix: 'TH', sub: (c) => c },
   led: { name: 'Màn hình LED tiệc cưới', price: () => config.ledPrice, coupons: false, prefix: 'LD', sub: (c) => c.led },
   video: { name: 'Video cưới', price: () => config.videoPrice, coupons: false, prefix: 'VD', sub: (c) => c.video },
 };
+
+// Giá thiệp: `price` là giá mở bán đang thu, `listPrice` là giá gốc (hiện gạch ngang) tới hết ngày `promoEndsAt`
+// (giờ Việt Nam). Qua ngày đó web tự thu theo giá gốc — không phải sửa gì.
+const promoEnd = () => (/^\d{4}-\d{2}-\d{2}$/.test(config.promoEndsAt || '') ? Date.parse(`${config.promoEndsAt}T23:59:59.999+07:00`) : 0);
+const promoActive = () => config.listPrice > config.price && Date.now() <= promoEnd();
+function cardPrice() {
+  if (config.listPrice > config.price && promoEnd() && Date.now() > promoEnd()) return config.listPrice;
+  return config.price;
+}
+const promoInfo = () => (promoActive() ? { listPrice: config.listPrice, promoEndsAt: promoEnd() } : { listPrice: null, promoEndsAt: null });
 
 const PORT = +process.env.PORT || config.port;
 const BASE_URL = (process.env.BASE_URL || config.baseUrl).replace(/\/$/, '');
@@ -146,6 +156,8 @@ function orderView(o) {
     product, productName: PRODUCTS[product].name,
     code: o.code, amount: o.amount, coupon: o.coupon || null, status: o.status, claimedAt: o.claimedAt || null,
     createdAt: o.createdAt, paidAt: o.paidAt || null, paidVia: o.paidVia || null, bankNote: o.bankNote || null,
+    // giá gốc gạch ngang trong cửa sổ thanh toán: chỉ đơn thiệp đang theo giá mở bán
+    ...(product === 'card' && o.status === 'pending' && promoActive() && o.amount + (o.coupon ? config.coupons[o.coupon] || 0 : 0) === config.price ? promoInfo() : {}),
     qr: qrPay(o.amount, o.code),
     bank: { name: config.payment.bankName, accountNo: config.payment.accountNo, accountName: config.payment.accountName },
     card: card ? { id: card.id, title: card.title, names: [card.data.groom.name, card.data.bride.name].filter(Boolean).join(' & ') } : null,
@@ -225,7 +237,7 @@ route('GET', '/auth/google/callback', async (req, res, ctx) => {
 
 route('GET', '/api/meta', async (req, res) => {
   json(res, 200, {
-    brand: config.brand, tagline: config.tagline, price: config.price, trialDays: config.trialDays,
+    brand: config.brand, tagline: config.tagline, price: cardPrice(), ...promoInfo(), trialDays: config.trialDays,
     trialGuestLimit: config.trialGuestLimit, banks, templates: templateList(), templateGroups, baseUrl: BASE_URL, support: config.support,
     ledPrice: config.ledPrice, led: ledLib.options(),
     videoPrice: config.videoPrice, video: videoLib.options(), blobUpload: !!process.env.BLOB_READ_WRITE_TOKEN,

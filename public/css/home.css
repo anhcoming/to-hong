@@ -259,6 +259,10 @@ img{display:block;max-width:100%}
 
 /* giá */
 .price-band{display:grid;grid-template-columns:auto 1fr auto;gap:40px;align-items:center;padding:40px 44px;border-radius:18px}
+.pb-price{display:grid;justify-items:center;gap:8px}
+.pb-was{font:600 22px/1 var(--sans);color:var(--muted)}
+.pb-promo{font-size:13px;color:var(--acc);font-weight:600;white-space:nowrap}
+.pb-promo b{font-variant-numeric:tabular-nums}
 .price-band .big{font:700 clamp(56px,8vw,96px)/1 var(--script);color:var(--acc);transform:rotate(-4deg)}
 .price-band h3{margin:0 0 6px;font:800 26px/1.25 var(--sans);text-transform:uppercase}
 .price-band ul{margin:10px 0 0;padding:0;list-style:none;display:flex;flex-wrap:wrap;gap:8px 20px;color:var(--muted);font-size:14px}

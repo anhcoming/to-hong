@@ -4,6 +4,8 @@
   "port": 3210,
   "baseUrl": "http://localhost:3210",
   "price": 129000,
+  "listPrice": 179000,
+  "promoEndsAt": "2027-01-31",
   "ledPrice": 29000,
   "videoPrice": 69000,
   "ffmpegPath": "ffmpeg",
