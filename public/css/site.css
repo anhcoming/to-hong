@@ -327,3 +327,5 @@ a.c:hover{transform:translateY(-4px)}
 .totop.on{opacity:1;visibility:visible;transform:none}
 .totop:hover{transform:translateY(-2px);box-shadow:0 14px 30px rgba(214,69,93,.45)}
 [data-theme="dark"] .totop{box-shadow:0 10px 26px rgba(0,0,0,.5)}
+/* màn cảm ứng: chữ trong ô nhập >= 16px, nếu không Safari trên iPhone tự phóng to cả trang mỗi lần chạm vào ô và không thu lại */
+@media (pointer:coarse){input:not([type=checkbox]):not([type=radio]):not([type=range]):not([type=color]),select,textarea{font-size:16px!important}}

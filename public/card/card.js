@@ -204,3 +204,28 @@
   applyFocus(document);
   window.__applyFocus = applyFocus;
 })();
+
+// Trang xem thử một mẫu (/demo/<mẫu>): thanh nổi "Mẫu khác · Dùng mẫu này" để khách đang xem trên điện thoại khỏi phải tự quay lại tìm nút.
+// Không hiện khi trang nằm trong khung xem trước (thẻ rê chuột, trình sửa).
+(function () {
+  var C = window.__CARD || {};
+  if (!C.demo || C.preview || !C.tpl || window.top !== window) return;
+  var css = document.createElement('style');
+  css.textContent = '.demobar{position:fixed;left:50%;bottom:calc(14px + env(safe-area-inset-bottom));transform:translateX(-50%);z-index:2147483000;display:flex;gap:6px;padding:6px;border-radius:999px;background:rgba(24,18,20,.88);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);box-shadow:0 10px 30px rgba(0,0,0,.3);font:600 15px/1 "Be Vietnam Pro",system-ui,sans-serif;white-space:nowrap}'
+    + '.demobar a{display:flex;align-items:center;height:44px;padding:0 18px;border-radius:999px;color:#fff;text-decoration:none}'
+    + '.demobar .go{background:#d6455d;padding:0 22px}';
+  document.head.appendChild(css);
+  var bar = document.createElement('nav');
+  bar.className = 'demobar';
+  bar.setAttribute('aria-label', 'Chọn mẫu');
+  var use = '/thiep-cua-toi?tao=' + encodeURIComponent(C.tpl) + (C.pal ? '&mau=' + encodeURIComponent(C.pal) : '');
+  bar.innerHTML = '<a href="/mau-thiep" class="back">‹ Mẫu khác</a><a href="' + use + '" class="go">Dùng mẫu này</a>';
+  bar.querySelector('.back').addEventListener('click', function (e) {
+    var r = document.referrer;
+    if (r && r.indexOf(location.origin + '/mau-thiep') === 0 && history.length > 1) { e.preventDefault(); history.back(); }
+  });
+  bar.querySelector('.go').addEventListener('click', function () {
+    try { navigator.sendBeacon('/api/t', JSON.stringify({ u: 'thiep:' + C.tpl })); } catch (e) { /* bỏ qua */ }
+  });
+  document.body.appendChild(bar);
+})();

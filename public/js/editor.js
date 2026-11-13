@@ -47,7 +47,7 @@ function tplPicker(cur) {
 // gom vào 6 nút công cụ, mỗi nút mở một bảng nhỏ (máy tính: bên trái cạnh thiệp; điện thoại: trượt từ dưới lên).
 const SHEETS = {
   tpl: 'Mẫu & màu',
-  date: 'Ngày & các lễ',
+  date: 'Tên, ngày & các lễ',
   media: 'Ảnh & nhạc',
   gift: 'Mừng cưới',
   guests: 'Khách mời & phản hồi',
@@ -65,6 +65,11 @@ const panes = {
   },
 
   date: () => `
+    <section class="group panel"><h3>Cô dâu chú rể</h3>
+      <div class="grid2">${f('groom.name', 'Tên chú rể', { ph: 'Đức Minh', max: 40 })}${f('bride.name', 'Tên cô dâu', { ph: 'Thu Hà', max: 40 })}</div>
+      <button class="btn soft block" id="famOpen" type="button">+ Họ tên đầy đủ, bố mẹ, địa chỉ hai nhà</button>
+      <div id="fam" hidden>${person('groom', 'Nhà trai')}${person('bride', 'Nhà gái')}</div>
+    </section>
     <section class="group panel"><h3>Ngày cưới <small>dùng cho trang bìa và đếm ngược</small></h3>
       <div class="grid2">${f('date', 'Ngày (dương lịch)', { type: 'date', hint: 'Ngày âm lịch tự tính và hiện trên thiệp' })}${f('time', 'Giờ', { type: 'time' })}</div>
     </section>
@@ -269,8 +274,41 @@ function renderHeader() {
   const sb = $('#shareBtn'); if (sb) sb.onclick = shareModal;
   const yb = $('#payBtn'); if (yb) yb.onclick = () => openPayModal(CARD_ID, reloadCard);
 }
+// Bảng "thông tin chính": tên đôi, ngày giờ, nơi tổ chức tiệc — điền một lần là thiệp có đủ nội dung để gửi.
+// Tự mở khi thiệp còn trống tên; mở lại khi bấm Phát hành mà còn thiếu.
+function quickStart(forPublish) {
+  const d = card.data;
+  const party = d.events.find((e) => /tiệc/i.test(e.name)) || d.events[d.events.length - 1];
+  const inp = (id, label, v, o = {}) => `<label class="field"><span>${label}</span><input id="${id}" type="${o.type || 'text'}" value="${esc(v || '')}" ${o.ph ? `placeholder="${esc(o.ph)}"` : ''} ${o.max ? `maxlength="${o.max}"` : ''} ${o.req ? 'required' : ''} autocomplete="off"></label>`;
+  openModal(`<h2 style="margin-top:0">${forPublish ? 'Còn thiếu vài thông tin' : 'Bắt đầu nhanh'}</h2>
+    <p class="muted" style="margin:-6px 0 14px;font-size:14px">${forPublish ? 'Điền đủ tên cô dâu, chú rể và ngày cưới để phát hành thiệp.' : 'Điền mấy dòng này là thiệp có đủ nội dung chính. Mọi thứ khác bấm thẳng lên thiệp để sửa.'}</p>
+    <form id="qsF">
+      <div class="grid2">${inp('qsG', 'Tên chú rể', d.groom.name, { ph: 'Đức Minh', max: 40, req: 1 })}${inp('qsB', 'Tên cô dâu', d.bride.name, { ph: 'Thu Hà', max: 40, req: 1 })}</div>
+      <div class="grid2">${inp('qsD', 'Ngày cưới', d.date, { type: 'date', req: 1 })}${inp('qsT', 'Giờ tiệc', (party && party.time) || d.time, { type: 'time' })}</div>
+      ${party ? inp('qsP', 'Nơi tổ chức tiệc (không bắt buộc)', party.place, { ph: 'Nhà hàng Hoa Sen — Sảnh A', max: 120 }) : ''}
+      <button class="btn block" style="margin-top:6px">${forPublish ? 'Lưu & phát hành' : 'Xong, xem thiệp'}</button>
+      ${forPublish ? '' : '<button type="button" class="btn block plain" id="qsSkip" style="margin-top:8px">Để sau</button>'}
+    </form>`, (box, close) => {
+    if (!d.groom.name) setTimeout(() => $('#qsG', box).focus(), 60);
+    const sk = $('#qsSkip', box); if (sk) sk.onclick = close;
+    $('#qsF', box).onsubmit = async (e) => {
+      e.preventDefault();
+      const v = (id) => ($(id, box) ? $(id, box).value.trim() : '');
+      d.groom.name = v('#qsG'); d.bride.name = v('#qsB');
+      const old = d.date;
+      d.date = v('#qsD');
+      d.events.forEach((ev) => { if (!ev.date || ev.date === old) ev.date = d.date; }); // các lễ chưa có ngày (hoặc đang theo ngày cũ) theo ngày cưới
+      if (party) { if (v('#qsT')) party.time = v('#qsT'); party.place = v('#qsP'); }
+      if (!d.time && v('#qsT')) d.time = v('#qsT');
+      close();
+      if (forPublish) { rerender(); renderHeader(); publish(); } else applyLive(); // publish tự lưu trước khi phát hành
+    };
+  });
+}
 async function publish() {
   clearTimeout(saveTimer);
+  if (!card.data.groom.name || !card.data.bride.name || !card.data.date) return quickStart(true);
+  while (saving) await new Promise((r) => setTimeout(r, 100)); // đợi lần lưu đang chạy xong rồi lưu bản mới nhất
   await save();
   try {
     await api(`/api/cards/${CARD_ID}/publish`, { method: 'POST', body: {} });
@@ -433,6 +471,7 @@ function bind() {
     const d = card.data;
     const ds = b.dataset;
     let changed = true;
+    if (b.id === 'famOpen') { b.hidden = true; $('#fam').hidden = false; return; }
     if (b.id === 'evAdd') d.events.push({ name: '', date: d.date, time: '', place: '', address: '', mapUrl: '' });
     else if (ds.evDel !== undefined) { if (!confirm('Xoá sự kiện này?')) return; d.events.splice(+ds.evDel, 1); }
     else if (ds.evUp !== undefined) { const i = +ds.evUp; [d.events[i - 1], d.events[i]] = [d.events[i], d.events[i - 1]]; }
@@ -713,6 +752,10 @@ window.addEventListener('message', (e) => {
   showTab(want in OLD ? OLD[want] : want);
   refreshPreview();
   status('Đã lưu ✓');
+  // thiệp mới chưa có tên đôi: mở bảng điền nhanh (mỗi thiệp một lần trong phiên này)
+  try {
+    if (!card.data.groom.name && !card.data.bride.name && !sessionStorage.getItem('qs:' + CARD_ID)) { sessionStorage.setItem('qs:' + CARD_ID, '1'); setTimeout(() => quickStart(false), 500); }
+  } catch (e) { /* bỏ qua */ }
   // lễ có link Google Maps nhưng chưa đọc được vị trí (link dán từ trước) → đọc lại một lần
   const todo = (card.data.events || []).filter((e) => e.mapUrl && !e.mapPin);
   if (todo.length) {

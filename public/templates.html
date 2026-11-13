@@ -70,6 +70,7 @@ main.wrap{padding-top:104px} /* không có phần giới thiệu: nội dung n�
 .tc .use{flex:none;display:inline-flex;align-items:center;height:32px;pointer-events:auto;padding:0 13px;border-radius:999px;background:var(--red);color:#fff;font-size:12px;font-weight:700;white-space:nowrap;box-shadow:0 4px 12px rgba(0,0,0,.25);opacity:0;transform:translateY(6px);transition:opacity .25s,transform .25s,filter .2s}
 .tc .pic:hover .sw,.tc .pic:focus-within .sw,.tc .pic:hover .use,.tc .pic:focus-within .use{opacity:1;transform:none}
 @media (hover:none){.sw,.tc .use{opacity:1;transform:none}}
+@media (max-width:560px){.tc .txt{flex-direction:column;align-items:stretch;gap:6px}.tc b{font-size:15px;line-height:1.25;white-space:normal;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}.tc .use{justify-content:center;height:34px}}
 .tc .use:hover{filter:brightness(1.08)}
 /* rê chuột: trang thiệp thật nạp vào thẻ (thu nhỏ từ 390px), hiện dần rồi tự trượt dọc; nằm dưới dải tối + tên */
 .tc .live{position:absolute;left:0;top:0;width:390px;border:0;pointer-events:none;transform-origin:0 0;opacity:0;transition:opacity .4s;background:#fff}

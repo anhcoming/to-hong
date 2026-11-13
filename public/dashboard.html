@@ -111,7 +111,7 @@ async function load() {
   }
   el.innerHTML = cards.map(c => `
     <article class="item panel" data-id="${c.id}">
-      <a class="thumb" href="/sua/${c.id}" style="${c.cover ? `background-image:url('${esc(c.cover)}')` : ''}">${c.cover ? '' : '♥'}</a>
+      <a class="thumb" href="/sua/${c.id}" style="background-image:url('${esc(c.cover ? c.cover.split('#')[0] : `/demo/cover-${c.template}-${c.palette}.jpg`)}');background-position:${c.cover ? 'center' : 'top'}"></a>
       <div class="info">
         <div class="top">
           <div style="min-width:0"><h3>${esc(c.names || c.title)}</h3><div class="link">${esc(c.title)} · ${esc(tplName(c.template))}${c.date ? ' · ' + c.date.split('-').reverse().join('/') : ''}</div></div>
