@@ -127,11 +127,6 @@ const panes = {
   more: () => {
     const tg = (k, l) => `<label class="check"><input type="checkbox" data-k="show.${k}" ${card.data.show[k] ? 'checked' : ''}>${l}</label>`;
     return `
-    <section class="group panel"><h3>Xem thiệp</h3>
-      <div class="pvmode2" id="pvMode2">
-        <button data-mode="edit" class="${liveEdit ? 'on' : ''}">✎ Sửa trực tiếp</button><button data-mode="view" class="${liveEdit ? '' : 'on'}">👁 Xem như khách</button>
-      </div>
-    </section>
     <section class="group panel"><h3>Hiện/ẩn các phần trên thiệp</h3>
       <div class="toggles">${tg('calendar', 'Lịch tháng')}${tg('countdown', 'Đếm ngược')}${tg('gallery', 'Album ảnh')}${tg('rsvp', 'Xác nhận tham dự')}${tg('gift', 'Hộp mừng cưới')}${tg('wishes', 'Sổ lưu bút')}</div>
     </section>
@@ -291,13 +286,8 @@ async function makeShareImage() {
     console.info('[ảnh chia sẻ] bỏ qua:', e && e.message); // ảnh không cho đọc (CORS) / mạng lỗi: dùng ảnh mặc định
   } finally { shareBusy = false; }
 }
-// Khung xem trước = khung sửa trực tiếp (bấm ảnh/chữ để sửa). "Xem như khách" tắt các viền sửa.
-let liveEdit = true;
-function setMode(edit) {
-  liveEdit = edit;
-  $$('#pvMode button').forEach((x) => x.classList.toggle('on', (x.dataset.m === 'edit') === edit));
-  refreshPreview();
-}
+// Khung xem trước luôn là khung sửa trực tiếp (bấm ảnh/chữ để sửa); khung sửa chỉ hiện khi rê chuột nên không cần chế độ "xem như khách".
+const liveEdit = true;
 // Vẽ lại thiệp sau mỗi lần lưu mà không "F5" trước mặt người dùng: tải bản mới vào một khung ẩn
 // đè lên khung cũ, cuộn tới đúng chỗ đang xem rồi mới đổi — không nháy trắng, không nhảy về đầu.
 function refreshPreview() {
@@ -628,7 +618,6 @@ function bind() {
     else if (ds.musicAuto !== undefined) { d.music = ''; d.musicOff = false; }
     else if (ds.musicOff !== undefined) { d.music = ''; d.musicOff = true; if (musicPrev) musicPrev.pause(); }
     else if (ds.tg !== undefined) { tplGroup = ds.tg; rerender(); return; }
-    else if (ds.mode) { setMode(ds.mode === 'edit'); rerender(); return; }
     else if (ds.tpl) { if (card.template !== ds.tpl) { card.template = ds.tpl; card.palette = ''; } }
     else if (ds.pal) card.palette = ds.pal;
     else if (b.id === 'slugSave') {
@@ -667,7 +656,6 @@ function bind() {
   $('#sheetX').onclick = () => showTab(null);
   $('#scrim').onclick = () => showTab(null);
   document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && curTab && !document.querySelector('.modal')) showTab(null); });
-  $('#pvMode').addEventListener('click', (e) => { const b = e.target.closest('[data-m]'); if (b) setMode(b.dataset.m === 'edit'); });
   window.addEventListener('beforeunload', (e) => { if (saveTimer && $('#saved').textContent.startsWith('Đang')) { e.preventDefault(); e.returnValue = ''; } });
 }
 
