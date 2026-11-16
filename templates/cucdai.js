@@ -152,8 +152,10 @@ module.exports = {
       <p class="cd-k">Tham dự tiệc mừng lễ cưới của</p>
     </div>
     <div class="cd-pair reveal">
+      ${d.groom.rank ? `<span class="cd-rk g">${esc(d.groom.rank)}</span>` : ''}
       <p class="g">${esc(d.groom.fullName || d.groom.name)}</p>
       ${daisyIcon('cd-amp', 20)}
+      ${d.bride.rank ? `<span class="cd-rk b">${esc(d.bride.rank)}</span>` : ''}
       <p class="b">${esc(d.bride.fullName || d.bride.name)}</p>
     </div>
     ${d.photos.length ? `<div class="cd-duo reveal">${ph(ctx, 1)}<div class="cd-strip"><span>Em là bình yên anh muốn giữ</span><svg viewBox="0 0 24 22" aria-hidden="true"><path d="M12 21S1 14 1 7a5.5 5.5 0 0111-2 5.5 5.5 0 0111 2c0 7-11 14-11 14z" fill="var(--cd-ring)"/></svg><span>Anh là hạnh phúc em muốn trao</span></div>${ph(ctx, 2)}</div>` : ''}
@@ -336,6 +338,7 @@ module.exports = {
 .tpl-cucdai .cd-pair p{margin:0;font-family:var(--font-script);font-size:clamp(34px,10vw,44px);line-height:1.2;color:var(--accent)}
 .tpl-cucdai .cd-pair .g{text-align:left}
 .tpl-cucdai .cd-pair .b{text-align:right}
+.tpl-cucdai .cd-pair .cd-rk{display:block;font-family:var(--font-title);font-size:13px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
 .tpl-cucdai .cd-amp{display:block;width:40px;margin:4px auto;animation:cdSpin 16s linear infinite}
 .tpl-cucdai .cd-duo{display:grid;grid-template-columns:1fr 46px 1fr;margin:0 -22px}
 .tpl-cucdai .cd-duo .ph{grid-column:auto;display:block;width:100%;aspect-ratio:3/5;border-radius:0}

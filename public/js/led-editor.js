@@ -14,6 +14,8 @@ const getP = (o, p) => p.split('.').reduce((a, k) => (a == null ? a : a[k]), o);
 const setP = (o, p, v) => { const ks = p.split('.'); let a = o; ks.slice(0, -1).forEach((k) => (a = a[k])); a[ks[ks.length - 1]] = v; };
 
 function status(t) { $('#saved').textContent = t; }
+// trình sửa kiểu CapCut: cột icon chọn bảng
+let curPanel = 'hieu';
 
 // ---------- giao diện ----------
 function renderSide() {
@@ -27,42 +29,39 @@ function renderSide() {
   const range = (k, label, min, max, step, unit = '') => `<label class="range"><span>${label}</span><input type="range" data-l="${k}" min="${min}" max="${max}" step="${step}" value="${led[k]}"><output>${led[k]}${unit}</output></label>`;
   const chk = (k, label) => `<label class="check"><input type="checkbox" data-s="${k}" ${led.slides[k] ? 'checked' : ''}>${label}</label>`;
 
-  $('#side').innerHTML = `
-    <section class="group panel"><h3>Tỉ lệ màn hình <small>hỏi kỹ thuật nhà hàng</small></h3>
-      <div class="opts">${META.led.ratios.map(ratioBox).join('')}</div>
-    </section>
-    <section class="group panel"><h3>Hiệu ứng nền</h3>
-      <div class="opts" style="margin-bottom:14px">${META.led.effects.map((e) => `<button class="opt ${led.effect === e.id ? 'on' : ''}" data-set="effect" data-v="${e.id}"><b>${esc(e.name)}</b></button>`).join('')}</div>
-      ${range('density', 'Mật độ', 0.2, 3, 0.1, '×')}
-      ${range('speed', 'Tốc độ', 0.2, 3, 0.1, '×')}
-      <h3 style="margin:16px 0 10px">Bảng màu</h3>
-      <div class="sws">${META.led.palettes.map((p) => `<button class="sw ${led.palette === p.id ? 'on' : ''}" title="${esc(p.name)}" data-set="palette" data-v="${p.id}" style="background:radial-gradient(circle at 50% 40%,${p.bg[1]} 0 45%,${p.bg[0]} 46% 70%,${p.accent} 71%)"></button>`).join('')}</div>
-    </section>
-    <section class="group panel"><h3>Các cảnh trình chiếu</h3>
-      <div class="checks">${chk('names', 'Tên cô dâu chú rể')}${chk('date', 'Ngày cưới + âm lịch')}${chk('countdown', 'Đếm ngược tới giờ lễ')}${chk('parents', 'Bố mẹ hai bên')}${chk('photo', 'Ảnh cưới')}${chk('message', 'Lời cảm ơn')}<label class="check"><input type="checkbox" data-l="hy" ${led.hy ? 'checked' : ''}>Chữ Hỷ 囍</label></div>
-      ${range('seconds', 'Mỗi cảnh', 4, 30, 1, 's')}
-      <label class="field"><span>Dòng tiêu đề</span><input data-l="kicker" value="${esc(led.kicker)}" maxlength="40" placeholder="Lễ Thành Hôn / Lễ Vu Quy / Tiệc Cưới"></label>
-      <label class="field"><span>Lời cảm ơn</span><textarea data-l="message" maxlength="200" rows="3">${esc(led.message)}</textarea></label>
-    </section>
-    <section class="group panel" id="info"><h3>Thông tin <small>dùng chung với thiệp</small></h3>
+  const head = (t, dsc) => `<h2 class="phd">${t}</h2>${dsc ? `<p class="pdesc">${dsc}</p>` : ''}`;
+  const next = (to, label) => `<div class="next"><button class="btn block" data-go="${to}">${label} →</button></div>`;
+  $$('#rail [data-panel]').forEach((b) => b.classList.toggle('on', b.dataset.panel === curPanel));
+  let h = '';
+  if (curPanel === 'hieu') h = head('Mẫu màn hình', 'Chọn một mẫu có sẵn — chữ sửa ở bảng Nội dung.') + `<section class="group">
+      <div class="lmau">${(META.led.templates || []).map((t) => `<button class="lm ${led.palette === t.palette && led.effect === t.effect ? 'on' : ''}" data-tpl="${t.id}"><i style="background-image:url('/demo/lposter-${t.palette}-${t.effect}.jpg')"></i><b>${esc(t.name)}</b></button>`).join('')}</div>
+    </section>` + next('chu', 'Tiếp theo: Nội dung');
+  else if (curPanel === 'chu') h = head('Nội dung', 'Tên, ngày, bố mẹ dùng chung với thiệp. Chọn các cảnh sẽ lần lượt hiện trên màn.') + `<section class="group">
       <div class="grid2">${fd('groom.name', 'Chú rể', 'text', 'Gia Huy')}${fd('bride.name', 'Cô dâu', 'text', 'Bảo Ngọc')}${fd('date', 'Ngày cưới', 'date')}${fd('time', 'Giờ', 'time')}
       ${fd('groom.father', 'Bố chú rể')}${fd('groom.mother', 'Mẹ chú rể')}${fd('bride.father', 'Bố cô dâu')}${fd('bride.mother', 'Mẹ cô dâu')}</div>
+      <label class="field"><span>Dòng tiêu đề</span><input data-l="kicker" value="${esc(led.kicker)}" maxlength="40" placeholder="Lễ Thành Hôn / Lễ Vu Quy / Tiệc Cưới"></label>
+      <label class="field"><span>Lời cảm ơn</span><textarea data-l="message" maxlength="200" rows="3">${esc(led.message)}</textarea></label>
+      <h3 style="margin:16px 0 10px">Các cảnh trình chiếu</h3>
+      <div class="checks">${chk('names', 'Tên cô dâu chú rể')}${chk('date', 'Ngày cưới + âm lịch')}${chk('countdown', 'Đếm ngược tới giờ lễ')}${chk('parents', 'Bố mẹ hai bên')}${chk('message', 'Lời cảm ơn')}<label class="check"><input type="checkbox" data-l="hy" ${led.hy ? 'checked' : ''}>Chữ Hỷ 囍</label></div>
+      ${range('seconds', 'Mỗi cảnh', 4, 30, 1, 's')}
+    </section>` + next('man', 'Tiếp theo: Khung màn');
+  else if (curPanel === 'anh') h = head('Ảnh cưới', 'Ảnh hiện ở cảnh "Ảnh cưới" trên màn LED (dùng chung ảnh bìa của thiệp).') + `<section class="group">
       <div style="display:flex;align-items:center;gap:12px">
-        ${localCover ? `<div style="position:relative;width:56px;height:70px;border-radius:8px;background:center/cover url('${localCover}');display:grid;place-items:center"><i class="upspin"></i></div>`
-          : d.cover ? `<div style="width:56px;height:70px;border-radius:8px;background:center/cover url('${esc(d.cover)}')"></div>` : ''}
+        ${localCover ? `<div style="position:relative;width:96px;height:120px;border-radius:12px;background:center/cover url('${localCover}');display:grid;place-items:center"><i class="upspin"></i></div>`
+          : d.cover ? `<div style="width:96px;height:120px;border-radius:12px;background:center/cover url('${esc(d.cover)}')"></div>` : ''}
         <label class="btn sm soft">${d.cover ? 'Đổi ảnh cưới' : 'Chọn ảnh cưới'}<input type="file" accept="image/*" id="coverIn" hidden></label>
-      </div>
-    </section>
-    <section class="group panel"><h3>Hướng dẫn cho kỹ thuật nhà hàng</h3>
+      </div></section>` + next('man', 'Tiếp theo: Khung màn');
+  else if (curPanel === 'man') h = head('Khung màn hình', 'Hỏi kỹ thuật nhà hàng màn LED ngang hay đứng để chọn đúng — không méo, không viền đen.') + `<section class="group"><div class="opts">${META.led.ratios.map(ratioBox).join('')}</div></section>` + next('chieu', 'Tiếp theo: Trình chiếu');
+  else h = head('Trình chiếu', 'Gửi link cho kỹ thuật nhà hàng, mở trên máy nối với màn hình.') + `<section class="group">
+      ${card.led.created ? `<div style="display:grid;gap:8px;margin-bottom:14px"><a class="btn block" target="_blank" href="${esc(card.led.url)}">▶ Mở trình chiếu toàn màn hình</a><button class="btn block soft" id="copyGuide">Chép link + hướng dẫn gửi kỹ thuật</button></div>` : ''}
       <ol class="tips">
         <li>Mở link bằng Chrome hoặc Edge trên máy nối với màn hình.</li>
         <li>Bấm <b>F</b> hoặc nháy đúp chuột để chạy toàn màn hình.</li>
         <li>Phím ← → chuyển cảnh, phím cách để tạm dừng.</li>
-        <li>Chọn đúng tỉ lệ ở trên cho khớp màn — không bị méo hay viền đen.</li>
-      </ol>
-      <button class="btn sm plain" id="copyGuide" style="margin-top:8px">Chép link + hướng dẫn gửi kỹ thuật</button>
-    </section>`;
-  infoFirst();
+        <li>Khung màn đã chọn: <b>${esc(led.ratio)}</b> — đổi ở bảng "Khung màn" nếu chưa khớp.</li>
+      </ol></section>`;
+  $('#side').innerHTML = h;
+  const rt = $('#ratioTxt'); if (rt) rt.textContent = (RATIO_INFO[led.ratio] || [led.ratio])[0] + ' ·';
 }
 
 // thiệp chưa có tên đôi: khối "Thông tin" lên đầu cột tuỳ chỉnh, khỏi phải cuộn tìm (màn LED đang hiện "Chú rể & Cô dâu")
@@ -145,7 +144,11 @@ async function reload() {
 // ---------- sự kiện ----------
 function bind() {
   const side = $('#side');
+  $('#rail').addEventListener('click', (e) => { const b = e.target.closest('[data-panel]'); if (!b) return; curPanel = b.dataset.panel; renderSide(); });
   side.addEventListener('click', (e) => {
+    const g = e.target.closest('[data-go]'); if (g) { curPanel = g.dataset.go; return renderSide(); }
+    const tp = e.target.closest('[data-tpl]');
+    if (tp) { const t = META.led.templates.find((x) => x.id === tp.dataset.tpl); led.palette = t.palette; led.effect = t.effect; led.slides.photo = false; renderSide(); pushPreview(); return schedule(300); }
     const b = e.target.closest('[data-set]');
     if (b) {
       led[b.dataset.set] = b.dataset.v;
@@ -232,6 +235,8 @@ function bind() {
 function start() {
   $('#introBox').innerHTML = '';
   $('#layout').hidden = false;
+  if (!card.data.groom.name || !card.data.bride.name) curPanel = 'chu';
+  if (led.slides.photo) { led.slides.photo = false; setTimeout(() => { pushPreview(); schedule(300); }, 0); } // màn LED chỉ còn mẫu có sẵn + chữ, không chiếu ảnh
   renderSide();
   renderHeader();
   bind();

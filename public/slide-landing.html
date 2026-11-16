@@ -1,0 +1,121 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<script src="/js/theme.js"></script>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Slide ảnh cưới chiếu màn hình tiệc cưới | Cưới Nha</title>
+<meta name="description" content="Làm slide ảnh cưới online: thả 20–34 ảnh cưới, chọn mẫu nền buổi lễ, video 2 phút tự xếp ảnh vào từng cảnh, chiếu lặp trên màn hình LED, TV tiệc cưới. Xem thử miễn phí, tải MP4 Full HD.">
+<meta property="og:title" content="Slide ảnh cưới — thả ảnh một lần, chiếu suốt buổi tiệc">
+<meta property="og:description" content="Chọn mẫu, chèn ảnh và chữ, video tự dựng. Tải MP4 Full HD.">
+<meta property="og:image" content="https://cuoinha.com/demo/vposter-ngoc.jpg">
+<meta name="theme-color" content="#fffafa">
+<meta property="og:url" content="https://cuoinha.com/slide-cuoi">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Cưới Nha">
+<meta property="og:locale" content="vi_VN">
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Cưới Nha","item":"https://cuoinha.com/"},{"@type":"ListItem","position":2,"name":"Slide ảnh cưới","item":"https://cuoinha.com/slide-cuoi"}]}</script>
+<link rel="canonical" href="https://cuoinha.com/slide-cuoi">
+<link rel="icon" href="/favicon.ico" sizes="48x48"><link rel="icon" href="/favicon.svg" type="image/svg+xml"><link rel="apple-touch-icon" href="/icons/apple-touch-icon.png">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&amp;family=Dancing+Script:wght@600;700&amp;display=swap">
+<link rel="stylesheet" href="/css/site.css">
+<style>
+/* bộ sưu tập mẫu video: ảnh xem trước 16:9, rê chuột thì phát thử ngay trong thẻ */
+.vgal{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:20px;margin-top:8px}
+.vt{display:flex;flex-direction:column;border-radius:18px;overflow:hidden;background:var(--card);border:1px solid var(--line);box-shadow:0 14px 34px rgba(120,40,50,.07);transition:transform .25s,box-shadow .25s}
+.vt:hover{transform:translateY(-4px);box-shadow:0 22px 44px rgba(120,40,50,.14)}
+.vt .pic{position:relative;display:block;aspect-ratio:16/9;background:#1a1012;overflow:hidden}
+.vt .pic img{width:100%;height:100%;object-fit:cover;display:block}
+.vt .pic iframe{position:absolute;left:0;top:0;width:1280px;height:720px;border:0;pointer-events:none;transform-origin:0 0;opacity:0;transition:opacity .4s}
+.vt .pic iframe.on{opacity:1}
+.vt .tag{position:absolute;top:12px;left:12px;z-index:2;padding:4px 11px;border-radius:999px;background:var(--red);color:#fff;font-size:12px;font-weight:700}
+.vt .body{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:14px 16px}
+.vt h3{margin:0;font-size:17px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.vt .body .btn{flex:none}
+.vt .tag.soft{background:rgba(0,0,0,.55)}
+.steps3{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;max-width:900px;margin:0 auto}
+.steps3 div{padding:22px;border-radius:18px;background:var(--card);border:1px solid var(--line);text-align:center}
+.steps3 b{display:grid;place-items:center;width:42px;height:42px;margin:0 auto 10px;border-radius:50%;background:var(--red);color:#fff;font-size:18px}
+.steps3 h3{margin:0 0 4px;font-size:17px}
+.steps3 p{margin:0;color:var(--muted);font-size:14px}
+@media (max-width:720px){.steps3{grid-template-columns:1fr}}
+</style>
+</head>
+<body data-page="slide">
+<header id="nav"></header>
+
+<section class="phero"><div class="wrap center">
+  <span class="eyebrow">Slide ảnh cưới · Video ảnh cưới</span>
+  <h1>Slide ảnh cưới <em>kể chuyện hai bạn</em></h1>
+  <p class="sub">Thả bộ ảnh cưới một lần, ảnh tự xếp vào từng cảnh: cặp ảnh treo như triển lãm, ảnh nguyên khung, dải ba ảnh, ảnh tràn màn. Video chiếu lặp trên màn LED, TV khi khách vào tiệc.</p>
+  <h2 class="h2" style="margin:34px 0 6px;text-align:left">Nền buổi lễ <small style="font-size:15px;color:var(--muted);font-weight:500">· khoảng 2 phút, chiếu lặp suốt tiệc</small></h2>
+  <div class="vgal" id="vgal" aria-live="polite"></div>
+  <h2 class="h2" style="margin:40px 0 6px;text-align:left">Phim kể chuyện <small style="font-size:15px;color:var(--muted);font-weight:500">· ngắn, nhiều hiệu ứng chuyển cảnh</small></h2>
+  <div class="vgal" id="vgal2"></div>
+</div></section>
+
+<section class="block alt"><div class="wrap">
+  <div class="head center rv"><div class="center"><span class="eyebrow">Không cần biết dựng phim</span><h2 class="h2">Ba bước <em>là có video</em></h2></div></div>
+  <div class="steps3">
+    <div class="rv"><b>1</b><h3>Chọn mẫu</h3><p>Nền buổi lễ ngà sáng, xám rêu, đen điện ảnh hay phim kể chuyện — đổi mẫu vẫn giữ nguyên ảnh.</p></div>
+    <div class="rv"><b>2</b><h3>Chèn ảnh &amp; chữ</h3><p>Chọn nhiều ảnh một lúc hoặc kéo thả, ảnh tự xếp vào cảnh. Ít ảnh thì tự lặp cho đủ.</p></div>
+    <div class="rv"><b>3</b><h3>Chiếu hoặc tải về</h3><p>Mở link trên Smart TV, hoặc tải MP4 Full HD chép USB cắm TV.</p></div>
+  </div>
+</div></section>
+
+<section class="block" id="gia"><div class="wrap">
+  <div class="head center rv"><div class="center"><span class="eyebrow">Bảng giá</span><h2 class="h2">Giá <em>rõ ràng</em></h2><p class="lead">Làm và xem thử miễn phí, ưng thì kích hoạt để tải video.</p></div></div>
+  <div class="prices one">
+    <div class="price hot rv" data-tag="Một lần, xuất thoải mái"><h3>Slide ảnh cưới</h3><div class="amt" data-video-price>99.000đ</div><span class="muted">mỗi video · trả một lần</span>
+      <ul><li>Mọi mẫu, đổi mẫu thoải mái</li><li>Tải MP4 Full HD 1920×1080, xuất lại thoải mái</li><li>Bỏ dòng "Bản dùng thử"</li><li>Trình chiếu bằng link không giới hạn</li></ul>
+      <a class="btn btn-main" href="#vgal">Chọn mẫu</a></div>
+  </div>
+</div></section>
+
+<section class="block alt"><div class="wrap">
+  <div class="head center rv"><div class="center"><span class="eyebrow">Hỏi đáp</span><h2 class="h2">Câu hỏi <em>thường gặp</em></h2></div></div>
+  <div class="faq rv">
+    <details><summary>Cần bao nhiêu ảnh?</summary><p>Mẫu nền buổi lễ dùng khoảng 27–34 ảnh, phim kể chuyện 6–12 ảnh — ghi ngay trên ảnh xem trước. Ít ảnh hơn vẫn được, video tự lặp ảnh cho đủ cảnh.</p></details>
+    <details><summary>TV nhà tôi không có mạng thì sao?</summary><p>Kích hoạt rồi tải MP4 về, chép vào USB và cắm vào TV. Hầu hết TV đời mới đều phát được MP4 H.264.</p></details>
+    <details><summary>Có nhạc nền không?</summary><p>Có — chọn trong thư viện nhạc cưới hoặc tải MP3 của hai bạn ở bảng Nhạc trong trình sửa; video MP4 xuất ra kèm nhạc.</p></details>
+    <details><summary>Một video dùng cho cả ăn hỏi và cưới được không?</summary><p>Được. Đổi tên buổi lễ, ngày giờ, địa điểm rồi xuất lại — bạn tải bao nhiêu lần cũng được.</p></details>
+  </div>
+</div></section>
+
+<footer id="foot"></footer>
+<script src="/js/site.js"></script>
+<script>
+(function () {
+  var esc = function (s) { return String(s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); };
+  // mẫu video ảnh (chèn nhiều ảnh) đứng đầu, rồi tới các mẫu chữ
+  document.addEventListener('meta', function (ev) {
+    var all = (ev.detail.video && ev.detail.video.templates || []);
+    var card = function (t) {
+      // thẻ gọn: ảnh xem trước (bấm để xem toàn màn) + tên mẫu + nút Dùng mẫu
+      return '<article class="vt" data-id="' + t.id + '"><a class="pic" href="/video/demo?template=' + t.id + '" aria-label="Xem thử mẫu ' + esc(t.name) + '">' +
+        '<span class="tag">' + (t.kind === 'le' ? '2:00 · ' : '') + t.slots + ' ảnh</span>' + '<img src="/demo/vposter-' + t.id + '.jpg" alt="Mẫu video ' + esc(t.name) + '" loading="lazy"></a>' +
+        '<div class="body"><h3>' + esc(t.name) + '</h3><a class="btn btn-main btn-sm" href="/tao-video?mau=' + t.id + '">Dùng mẫu</a></div></article>';
+    };
+    var g = document.getElementById('vgal');
+    g.innerHTML = all.filter(function (t) { return t.kind === 'le'; }).map(card).join('');
+    document.getElementById('vgal2').innerHTML = all.filter(function (t) { return t.photos && t.kind !== 'le'; }).map(card).join('');
+    // rê chuột: phát thử video thật trong khung, thu nhỏ từ 1280×720
+    if (!matchMedia('(hover:hover)').matches) return;
+    document.querySelectorAll('.vt').forEach(function (c) {
+      var pic = c.querySelector('.pic'), f = null, tm = 0;
+      c.addEventListener('mouseenter', function () {
+        tm = setTimeout(function () {
+          f = document.createElement('iframe');
+          f.src = '/video/demo?preview=1&template=' + c.dataset.id; f.tabIndex = -1; f.title = 'Xem trước';
+          f.style.transform = 'scale(' + pic.clientWidth / 1280 + ')';
+          f.onload = function () { setTimeout(function () { if (f) f.classList.add('on'); }, 300); };
+          pic.appendChild(f);
+        }, 250);
+      });
+      c.addEventListener('mouseleave', function () { clearTimeout(tm); if (f) { f.remove(); f = null; } });
+    });
+  });
+})();
+</script>
+</body>
+</html>

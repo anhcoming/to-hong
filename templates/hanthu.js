@@ -181,7 +181,7 @@ module.exports = {
       const row = (img, i, role, x, side) => `
     <div class="ht-pp ${side} reveal">
       ${img ? `<button class="ph ht-ph" data-i="${i % Math.max(1, d.photos.length)}" aria-label="Xem ảnh"><img loading="lazy" src="${esc(img)}" alt=""></button>` : ''}
-      <div class="t"><p class="role">${role}</p><p class="n">${esc(x.fullName || x.name)}</p>${x.address ? `<p class="a">${esc(x.address)}</p>` : ''}</div>
+      <div class="t"><p class="role">${esc(x.rank || role)}</p><p class="n">${esc(x.fullName || x.name)}</p>${x.address ? `<p class="a">${esc(x.address)}</p>` : ''}</div>
     </div>`;
       return `
   <section class="sec ht-couple">

@@ -148,7 +148,7 @@ ${PEARL_DEFS}
     <p class="nt-lead">${esc(d.inviteText)}</p>
     <p class="nt-guest">${guest ? esc(guest.name) : 'Quý khách'}</p>
     <p class="nt-to">tới dự lễ thành hôn của</p>
-    <h2 class="nt-pair"><span>${esc(d.groom.fullName || d.groom.name)}</span><i>&amp;</i><span>${esc(d.bride.fullName || d.bride.name)}</span></h2>
+    <h2 class="nt-pair">${d.groom.rank ? `<small class="nt-rk">${esc(d.groom.rank)}</small>` : ''}<span>${esc(d.groom.fullName || d.groom.name)}</span><i>&amp;</i>${d.bride.rank ? `<small class="nt-rk">${esc(d.bride.rank)}</small>` : ''}<span>${esc(d.bride.fullName || d.bride.name)}</span></h2>
     ${d.message ? `<p class="nt-msg">${esc(d.message)}</p>` : ''}
   </section>`;
     },
@@ -332,6 +332,7 @@ ${PEARL_DEFS}
 .nt-to{margin:0 0 18px;font-size:14px;color:var(--muted)}
 .nt-pair{margin:0;font-family:var(--font-title);font-weight:300;text-transform:uppercase;font-size:clamp(28px,8.4vw,40px);line-height:1.1;color:var(--accent);letter-spacing:.04em}
 .nt-pair span{display:block}
+.nt-pair .nt-rk{display:block;margin-bottom:4px;font-weight:600;font-size:13px;letter-spacing:.14em;color:var(--muted)}
 .nt-pair i{display:block;font-family:var(--font-title);font-style:italic;font-size:.85em;margin:2px 0}
 .nt-msg{margin:24px auto 0;max-width:330px;font-style:italic;font-size:14.5px;color:var(--muted)}
 

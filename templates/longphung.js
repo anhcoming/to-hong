@@ -140,9 +140,9 @@ module.exports = {
     <h2 class="lp-h lp-fr">Thông tin lễ cưới</h2>
     ${hasFam ? `<div class="lp-fams">${fam(d.groom)}<i></i>${fam(d.bride)}</div>` : ''}
     <div class="lp-couple">
-      <h3>${esc(d.groom.fullName || d.groom.name)}</h3>
+      <h3>${esc(d.groom.fullName || d.groom.name)}</h3>${d.groom.rank ? `<p class="lp-role">${esc(d.groom.rank)}</p>` : ''}
       <p class="amp">&amp;</p>
-      <h3>${esc(d.bride.fullName || d.bride.name)}</h3>
+      <h3>${esc(d.bride.fullName || d.bride.name)}</h3>${d.bride.rank ? `<p class="lp-role">${esc(d.bride.rank)}</p>` : ''}
     </div>
     <div class="lp-when-block">
       ${cer ? `<p class="lp-lead">${esc(cer.name || 'Lễ thành hôn')} được cử hành tại<br>${esc(cer.place)}</p>` : ''}
@@ -168,34 +168,49 @@ module.exports = {
       <p class="lp-count"><span>1</span> / ${ph.length}</p>
     </div>
     <script>(function(){
-      var s=document.currentScript.parentNode,cs=[].slice.call(s.querySelectorAll('.ph')),out=s.querySelector('.lp-count span'),k=0,n=cs.length,tm;
+      // Album vòng 3D chạy theo VỊ TRÍ LIÊN TỤC (pos, số thực): kéo / vuốt / lăn 2 ngón thì mọi ảnh xoay, lùi sâu, mờ dần
+      // đúng theo ngón tay từng khung hình; thả tay thì trôi êm vào ảnh gần nhất (hoặc ảnh kế nếu đã kéo quá 40px).
+      var s=document.currentScript.parentNode,cs=[].slice.call(s.querySelectorAll('.ph')),out=s.querySelector('.lp-count span'),n=cs.length,tm;
+      var st=s.querySelector('.lp-cf-stage'),pos=0,k=0,EASE='cubic-bezier(.22,.9,.25,1)',lastO=[];
       var SC=[1,.85,.7],OP=[1,.75,.5,.3];
-      function go(i){k=(i+n)%n;cs.forEach(function(c,j){var o=j-k;if(o>n/2)o-=n;if(o<-n/2)o+=n;var a=Math.abs(o);
-        c.style.transform='translateX('+(o*60)+'%) translateZ('+(-150*a)+'px) rotateY('+(45*o)+'deg) scale('+SC[Math.min(a,2)]+')';
-        c.style.opacity=OP[Math.min(a,3)];c.style.zIndex=100-a;c.dataset.o=o;});out.textContent=k+1;}
+      function lerp(t,a){if(a>=t.length-1)return t[t.length-1];var i=Math.floor(a);return t[i]+(t[i+1]-t[i])*(a-i);}
+      function wrap(o){o=((o%n)+n)%n;return o>n/2?o-n:o;}
+      // vẽ mọi ảnh theo pos; dur = thời gian trôi (0: bám tay)
+      function draw(dur){cs.forEach(function(c,j){var o=wrap(j-pos),a=Math.abs(o);
+        // ảnh vòng từ mép sau ra mép trước (nhảy hơn nửa vòng) thì đặt thẳng, không cho bay ngang qua giữa
+        var jump=lastO[j]!==undefined&&Math.abs(o-lastO[j])>n/2;lastO[j]=o;
+        c.style.transition=dur&&!jump?'transform '+dur+'s '+EASE+',opacity '+dur+'s':'none';
+        c.style.transform='translateX('+(o*60)+'%) translateZ('+(-150*a)+'px) rotateY('+(45*o)+'deg) scale('+lerp(SC,a)+')';
+        c.style.opacity=lerp(OP,a);c.style.zIndex=100-Math.round(a*10);c.dataset.o=Math.round(o);});
+        k=((Math.round(pos)%n)+n)%n;out.textContent=k+1;}
+      // tới ảnh i theo đường ngắn nhất
+      function go(i){var d=wrap(i-pos);pos=Math.round(pos+d);draw(.55);}
       function auto(){clearInterval(tm);if(!document.body.classList.contains('is-edit'))tm=setInterval(function(){go(k+1)},4000);}
-      var st=s.querySelector('.lp-cf-stage');
-      // vuốt (điện thoại) / kéo chuột (máy tính) sang hai bên: ảnh đi theo tay, thả quá 40px thì chuyển ảnh;
-      // lăn ngang bàn di chuột cũng chuyển. Vừa vuốt xong thì không tính là bấm ảnh (không mở ảnh lớn / tải ảnh)
-      var row=s.querySelector('.lp-cf-row'),x0=null,dx=0,swiped=0,wh=0,lock=0;
+      var W=function(){return (cs[0]&&cs[0].offsetWidth)||220;};
+      // kéo chuột / vuốt tay
+      var x0=null,p0=0,dx=0,swiped=0,raf=0;
       cs.forEach(function(c){var im=c.querySelector('img');if(im)im.draggable=false;});
       st.addEventListener('dragstart',function(e){e.preventDefault()});
-      st.addEventListener('pointerdown',function(e){if(e.button>0||e.target.closest('.lp-cf-nav'))return;x0=e.clientX;dx=0;});
-      st.addEventListener('pointermove',function(e){if(x0===null)return;dx=e.clientX-x0;if(Math.abs(dx)>6){row.style.transition='none';row.style.transform='translateX('+(dx*.35)+'px)';}});
-      function end(){if(x0===null)return;row.style.transition='transform .3s';row.style.transform='';if(Math.abs(dx)>40){go(k+(dx<0?1:-1));auto();swiped=Date.now();}x0=null;dx=0;}
+      st.addEventListener('pointerdown',function(e){if(e.button>0||e.target.closest('.lp-cf-nav'))return;x0=e.clientX;p0=pos;dx=0;clearInterval(tm);});
+      st.addEventListener('pointermove',function(e){if(x0===null)return;dx=e.clientX-x0;if(Math.abs(dx)<4||raf)return;
+        raf=requestAnimationFrame(function(){raf=0;if(x0===null)return;pos=p0-dx/W();draw(0);});});
+      function end(){if(x0===null)return;cancelAnimationFrame(raf);raf=0;x0=null;
+        if(Math.abs(dx)>4){var t=Math.round(p0-dx/W());if(t===Math.round(p0)&&Math.abs(dx)>40)t+=dx<0?1:-1;pos=p0-dx/W();go(t);if(Math.abs(dx)>8)swiped=Date.now();}
+        dx=0;auto();}
       st.addEventListener('pointerup',end);st.addEventListener('pointercancel',end);st.addEventListener('pointerleave',end);
+      // vừa vuốt xong thì không tính là bấm ảnh (không mở ảnh lớn / hộp tải ảnh)
       st.addEventListener('click',function(e){if(Date.now()-swiped<400){e.preventDefault();e.stopImmediatePropagation();}},true);
-      // lăn 2 ngón trên bàn di chuột: ảnh trượt theo ngón tay như khi kéo; dừng tay quá 50px thì chuyển ảnh, chưa đủ thì bật về.
-      // Sau khi chuyển, bỏ qua phần quán tính còn lại của cú lăn để không nhảy liền mấy ảnh.
-      var wt;st.addEventListener('wheel',function(e){if(Math.abs(e.deltaX)<=Math.abs(e.deltaY))return;e.preventDefault();if(Date.now()<lock)return;
-        wh+=e.deltaX;row.style.transition='none';row.style.transform='translateX('+Math.max(-140,Math.min(140,-wh*.35))+'px)';
-        if(Math.abs(wh)>140){clearTimeout(wt);wend();return;}
-        clearTimeout(wt);wt=setTimeout(wend,90);},{passive:false});
-      function wend(){row.style.transition='transform .35s cubic-bezier(.2,.8,.2,1)';row.style.transform='';if(Math.abs(wh)>50){go(k+(wh>0?1:-1));auto();lock=Date.now()+550;}wh=0;}
+      // lăn 2 ngón trên bàn di chuột: ảnh xoay theo ngón tay; dừng tay thì trôi vào ảnh gần nhất (đã lăn quá 50px thì sang ảnh kế).
+      // Sau khi trôi xong, bỏ qua phần quán tính còn lại của cú lăn.
+      var wb=null,wh=0,wt,lock=0;
+      st.addEventListener('wheel',function(e){if(Math.abs(e.deltaX)<=Math.abs(e.deltaY))return;e.preventDefault();if(Date.now()<lock)return;
+        if(wb===null){wb=pos;wh=0;clearInterval(tm);}wh+=e.deltaX;wh=Math.max(-W()*1.4,Math.min(W()*1.4,wh));pos=wb+wh/W();draw(0);
+        clearTimeout(wt);wt=setTimeout(wend,80);},{passive:false});
+      function wend(){var t=Math.round(pos);if(t===Math.round(wb)&&Math.abs(wh)>50)t+=wh>0?1:-1;go(t);wb=null;wh=0;lock=Date.now()+450;auto();}
       // chạm ảnh bên cạnh thì chuyển tới ảnh đó, chỉ ảnh giữa mới mở xem lớn
       st.addEventListener('click',function(e){var c=e.target.closest('.ph');if(c&&c.dataset.o!=='0'){e.stopPropagation();go(cs.indexOf(c));auto();}},true);
       s.querySelector('.prev').onclick=function(){go(k-1);auto()};s.querySelector('.next').onclick=function(){go(k+1);auto()};
-      go(0);auto();
+      draw(0);auto();
     })()</script>
   </section>`;
     },
@@ -413,6 +428,7 @@ module.exports = {
 .tpl-longphung .lp-couple{display:flex;flex-direction:column;align-items:center;gap:8px;width:100%}
 .tpl-longphung .lp-couple h3{display:flex;align-items:center;justify-content:center;width:100%;margin:0;font-family:'EB Garamond',serif;font-weight:400;font-size:clamp(28px,10.7vw,40px);line-height:50px;white-space:nowrap}
 .tpl-longphung .lp-couple .amp{font-family:'EB Garamond',serif;font-size:32px;opacity:.6}
+.tpl-longphung .lp-couple .lp-role{margin:-6px 0 0;font-size:13px;opacity:.6}
 .tpl-longphung .lp-when-block{display:flex;flex-direction:column;align-items:center;gap:12px}
 .tpl-longphung .lp-lead{margin:0;font-size:16px;font-weight:300;line-height:1.5;text-transform:uppercase;opacity:.8}
 .tpl-longphung .lp-at{font-size:13px;text-transform:uppercase}
@@ -589,8 +605,15 @@ ${[[-55, -130, 540, 0.05, 1], [46, -150, -460, 0.12, 1.1], [-12, -160, 620, 0.2,
   .tpl-longphung .lp-giftdlg .gift{max-width:none}
 }
 /* màn hình rộng: cột 900px có viền mảnh, các khối lớn hơn như bản gốc */
+/* máy tính: thiệp là cột 520px giữa màn, bên trong dùng đúng bố cục điện thoại (thiết kế cho cột 480px) */
 @media (min-width:768px){
-  .tpl-longphung .card{max-width:900px;border:1px solid rgba(255,190,137,.2)}
+  .tpl-longphung .card{max-width:520px;border:1px solid rgba(255,190,137,.2)}
+  .tpl-longphung .music-btn{right:max(14px,calc(50% - 246px))}
+  body.tpl-longphung:not(.is-edit):not(.is-lite){background:color-mix(in srgb,var(--bg) 62%,#000)}
+  /* cột thiệp 520px (bản gốc 900px trông loãng, mất cân đối trên màn to); nền hai bên cùng tông đỏ, tối hơn → không còn hai dải trắng */
+}
+/* bố cục cũ cho cột 900px — đã tắt (and (max-width:0)), cột 520px dùng bố cục điện thoại */
+@media (min-width:768px) and (max-width:0px){
   .tpl-longphung .lp-h{font-size:24px}
   .tpl-longphung .lp-bg>div{gap:50px}
   .tpl-longphung .lp-ocard{width:520px}
@@ -602,8 +625,9 @@ ${[[-55, -130, 540, 0.05, 1], [46, -150, -460, 0.12, 1.1], [-12, -160, 620, 0.2,
   .tpl-longphung .lp-names{max-width:480px;padding:0 40px}
   .tpl-longphung .lp-names p{font-size:22px}
   .tpl-longphung .lp-hy-top{width:82px}
-  .tpl-longphung .lp-hero{width:450px;margin-top:36px}
-  .tpl-longphung .lp-bird{width:110px}
+  /* khung ảnh bìa vừa một màn: không to quá chiều cao màn hình (360/525 = tỉ lệ khung) */
+  .tpl-longphung .lp-hero{width:min(400px,calc((100vh - 200px) * 360 / 525));min-width:300px;margin-top:32px}
+  .tpl-longphung .lp-bird{width:104px}
   .tpl-longphung .lp-invite{gap:32px;padding:48px 32px 16px}
   .tpl-longphung .lp-fams{column-gap:32px}
   .tpl-longphung .lp-fam{max-width:280px;font-size:14px}
@@ -653,13 +677,13 @@ ${[[-55, -130, 540, 0.05, 1], [46, -150, -460, 0.12, 1.1], [-12, -160, 620, 0.2,
   .tpl-longphung .lp-thanks{padding:32px 32px 56px}
   .tpl-longphung .lp-thanks p{max-width:560px;font-size:15px}
 }
-@media (min-width:1024px){
+@media (min-width:1024px) and (max-width:0px){
   .tpl-longphung .lp-bg>div{gap:80px}
   .tpl-longphung .lp-ocard{width:600px}
-  .tpl-longphung .lp-cover{padding-top:80px}
+  .tpl-longphung .lp-cover{padding-top:56px}
   .tpl-longphung .lp-names{max-width:540px}
-  .tpl-longphung .lp-hero{width:500px}
-  .tpl-longphung .lp-bird{top:-42px;width:128px}
+  .tpl-longphung .lp-hero{width:min(400px,calc((100vh - 210px) * 360 / 525))}
+  .tpl-longphung .lp-bird{top:-36px;width:112px}
 }
 `,
 };

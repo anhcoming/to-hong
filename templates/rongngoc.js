@@ -125,7 +125,7 @@ module.exports = {
     <p class="rn-lead">${esc(d.inviteText)}</p>
     <p class="rn-guest">${guest ? esc(guest.name) : 'Quý khách'}</p>
     <p class="rn-to">tới dự lễ thành hôn và bữa tiệc chung vui của</p>
-    <div class="rn-pair"><p>${esc(d.groom.fullName || d.groom.name)}</p><i>&amp;</i><p>${esc(d.bride.fullName || d.bride.name)}</p></div>
+    <div class="rn-pair">${d.groom.rank ? `<span class="rn-rk">${esc(d.groom.rank)}</span>` : ''}<p>${esc(d.groom.fullName || d.groom.name)}</p><i>&amp;</i>${d.bride.rank ? `<span class="rn-rk">${esc(d.bride.rank)}</span>` : ''}<p>${esc(d.bride.fullName || d.bride.name)}</p></div>
     ${orn.divider('rn-div')}
     ${d.message ? `<p class="rn-msg">${esc(d.message)}</p>` : ''}
   </section>`;
@@ -154,8 +154,7 @@ module.exports = {
       function auto(){clearTimeout(t);if(!document.body.classList.contains('is-edit')&&!matchMedia('(prefers-reduced-motion: reduce)').matches)t=setTimeout(function(){go(k+1)},4500);}
       s.querySelector('.prev').onclick=function(){go(k-1)};s.querySelector('.next').onclick=function(){go(k+1)};
       th.forEach(function(b,j){b.onclick=function(){go(j)}});
-      var st=s.querySelector('.rn-stage'),x0=null;st.addEventListener('pointerdown',function(e){x0=e.clientX});
-      st.addEventListener('pointerup',function(e){if(x0!==null&&Math.abs(e.clientX-x0)>40)go(k+(e.clientX<x0?1:-1));x0=null});
+      var st=s.querySelector('.rn-stage');cnSwipe(st,function(d){go(k+d)}); // kéo chuột / vuốt / lăn 2 ngón (lib/render.js)
       auto();
     })()</script>
   </section>`;
@@ -305,6 +304,7 @@ module.exports = {
 .rn-guest{margin:6px 0;font-family:var(--font-script);font-weight:700;font-size:32px;line-height:1.25;color:var(--accent)}
 .rn-to{margin:0 0 16px;font-size:14px;color:var(--muted)}
 .rn-pair p{margin:0;font-family:var(--font-title);font-style:italic;font-weight:600;font-size:23px;color:var(--accent)}
+.rn-pair .rn-rk{display:block;font-size:13px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
 .rn-pair i{display:block;font-family:var(--font-script);font-style:normal;font-size:28px;color:var(--gold);line-height:1.2}
 .rn-div{display:block;width:200px;margin:20px auto 0}
 .rn-msg{margin:14px auto 0;max-width:320px;font-size:14px;font-style:italic;color:var(--muted)}

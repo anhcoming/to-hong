@@ -168,8 +168,7 @@ module.exports = {
       // chạm ảnh bên cạnh thì chuyển tới ảnh đó, chỉ ảnh giữa mới mở xem lớn
       st.addEventListener('click',function(e){var c=e.target.closest('.ph');if(c&&!c.classList.contains('on')){e.stopPropagation();go(cs.indexOf(c));auto();}},true);
       s.querySelector('.prev').onclick=function(){go(k-1);auto()};s.querySelector('.next').onclick=function(){go(k+1);auto()};
-      var x0=null;st.addEventListener('pointerdown',function(e){x0=e.clientX});
-      st.addEventListener('pointerup',function(e){if(x0!==null&&Math.abs(e.clientX-x0)>40){go(k+(e.clientX<x0?1:-1));auto();}x0=null});
+      cnSwipe(st,function(d){go(k+d);auto()}); // kéo chuột / vuốt / lăn 2 ngón (lib/render.js)
       go(0);auto();
     })()</script>
   </section>`;
@@ -201,10 +200,10 @@ module.exports = {
     <div class="td-lead">${bi('TRÂN TRỌNG BÁO TIN\nLỄ THÀNH HÔN CỦA CON CHÚNG TÔI', 'WE JOYFULLY ANNOUNCE\nTHE WEDDING OF OUR CHILDREN')}</div>
     <div class="td-couple">
       <h3>${esc(d.groom.fullName || d.groom.name)}</h3>
-      <div class="td-role">Chú Rể / Groom</div>
+      <div class="td-role">${d.groom.rank ? esc(d.groom.rank) : 'Chú Rể / Groom'}</div>
       <div class="td-amp">&amp;</div>
       <h3>${esc(d.bride.fullName || d.bride.name)}</h3>
-      <div class="td-role">Cô Dâu / Bride</div>
+      <div class="td-role">${d.bride.rank ? esc(d.bride.rank) : 'Cô Dâu / Bride'}</div>
     </div>
     ${p ? `<div class="td-when">
       <div class="td-at">
@@ -581,8 +580,13 @@ module.exports = {
   .tpl-thanhdiep .td-giftdlg .gift{max-width:none}
 }
 /* màn hình rộng: cột 900px có viền mảnh, các khối lớn hơn như bản gốc */
+/* máy tính: thiệp là cột 520px giữa màn, bên trong dùng đúng bố cục điện thoại (thiết kế cho cột 480px) */
 @media (min-width:768px){
-  .tpl-thanhdiep .card{max-width:900px;border:1px solid color-mix(in srgb,var(--accent) 13%,transparent)}
+  .tpl-thanhdiep .card{max-width:520px;border:1px solid color-mix(in srgb,var(--accent) 13%,transparent)}
+  .tpl-thanhdiep .music-btn{right:max(14px,calc(50% - 246px))}
+}
+/* bố cục cũ cho cột 900px — đã tắt (and (max-width:0)), cột 520px dùng bố cục điện thoại */
+@media (min-width:768px) and (max-width:0px){
   .tpl-thanhdiep .td-ocard{width:520px}
   .tpl-thanhdiep .td-oleaf{width:250px}
   .tpl-thanhdiep .td-oleaf.tr{top:-40px;right:-60px}
@@ -659,7 +663,7 @@ module.exports = {
   .tpl-thanhdiep .td-thanks{padding:0 40px 56px}
   .tpl-thanhdiep .td-thanks .td-bi{font-size:18px;line-height:28px}
 }
-@media (min-width:1024px){
+@media (min-width:1024px) and (max-width:0px){
   .tpl-thanhdiep .td-ocard{width:600px}
   .tpl-thanhdiep .td-cover{min-height:900px;padding:72px 36px 222px}
   .tpl-thanhdiep .td-cv-la2,.tpl-thanhdiep .td-cv-la1,.tpl-thanhdiep .td-wh-la2,.tpl-thanhdiep .td-wh-la1{width:585px}

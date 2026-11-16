@@ -238,6 +238,7 @@
     var c = picks[i];
     if (!c || btn.disabled) return;
     btn.disabled = true; btn.textContent = 'Đang tạo thiệp…';
+    var tab = null; try { tab = window.open('', '_blank'); if (tab) tab.document.write('<title>Đang mở thiệp…</title><p style="font:16px system-ui;padding:40px;color:#888">Đang tạo thiệp…</p>'); } catch (e) { tab = null; }
     jsonFetch('/api/cards', 'POST', { template: c.t.id, palette: c.pal.id }).then(function (r) {
       var card = r.card, d = card.data, step = Promise.resolve();
       return step.then(function () {
@@ -249,9 +250,10 @@
           if (navigator.sendBeacon) navigator.sendBeacon('/api/t', b);
         } catch (e) { /* bỏ qua */ }
         dirty = false;
-        location.href = '/sua/' + card.id;
+        if (tab && !tab.closed) { tab.location.href = '/sua/' + card.id; btn.disabled = false; btn.textContent = 'Dùng thiệp này'; }
+        else location.href = '/sua/' + card.id; // trình duyệt chặn tab mới → mở ngay tại đây
       });
-    }).catch(function (e) { btn.disabled = false; btn.textContent = 'Dùng thiệp này'; say(e.message, true); });
+    }).catch(function (e) { if (tab && !tab.closed) tab.close(); btn.disabled = false; btn.textContent = 'Dùng thiệp này'; say(e.message, true); });
   }
 
   // ---------- sự kiện ----------

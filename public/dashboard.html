@@ -224,7 +224,7 @@ function videoChip(v) {
 function loadVideos(cards, el) {
   const vids = cards.filter((c) => c.video.created);
   if (!vids.length) {
-    el.innerHTML = `<div class="panel empty"><p style="font-size:40px;margin:0">🎬</p><h3 style="color:var(--ink)">Bạn chưa có video cưới nào</h3><p>Chọn một mẫu, chèn ảnh và chữ — video tự dựng, xem thử miễn phí.</p><a class="btn" href="/video-cuoi">Chọn mẫu video</a></div>`;
+    el.innerHTML = `<div class="panel empty"><p style="font-size:40px;margin:0">🎬</p><h3 style="color:var(--ink)">Bạn chưa có video cưới nào</h3><p>Chọn một mẫu, chèn ảnh và chữ — video tự dựng, xem thử miễn phí.</p><a class="btn" href="/slide-cuoi">Chọn mẫu video</a></div>`;
     return;
   }
   const tname = (id) => ((META.video.templates || []).find((t) => t.id === id) || {}).name || 'Video';
@@ -286,7 +286,7 @@ window.newCard = function () {
     $('#pageTitle').textContent = 'Video của tôi';
     $('#pageSub').textContent = 'Video cưới chiếu TV — sửa ảnh, chữ, tải MP4';
     $('#newBtn').textContent = '+ Tạo video mới';
-    $('#newBtn').onclick = () => (location.href = '/video-cuoi');
+    $('#newBtn').onclick = () => (location.href = '/slide-cuoi');
   } else $('#newBtn').onclick = newCard;
   const q = new URLSearchParams(location.search);
   if (q.get('tao')) return create(q.get('tao'), q.get('mau')).catch((e) => { // không tạo được → về lại trang Thiệp của tôi, báo lỗi

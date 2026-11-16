@@ -118,7 +118,7 @@ module.exports = {
       <h3>${label}</h3>
       ${x.father ? `<p>${up(x.father)}</p>` : ''}${x.mother ? `<p>${up(x.mother)}</p>` : ''}
       ${x.address ? `<p class="ad">${esc(x.address)}</p>` : ''}
-      <p class="who"><span>${role}</span>${esc(full)}</p>
+      <p class="who"><span>${esc(x.rank || role)}</span>${esc(full)}</p>
       <i></i>
     </div>`;
       return `

@@ -104,8 +104,10 @@ module.exports = {
       return `
   <section class="sec ad-invite reveal">
     <p class="ad-lead">Trân trọng báo tin lễ thành hôn của</p>
+    ${d.groom.rank ? `<p class="ad-cap">${esc(d.groom.rank)}</p>` : ''}
     <p class="ad-full">${esc(d.groom.fullName || d.groom.name || ctx.g)}</p>
     <p class="ad-amp">&amp;</p>
+    ${d.bride.rank ? `<p class="ad-cap">${esc(d.bride.rank)}</p>` : ''}
     <p class="ad-full">${esc(d.bride.fullName || d.bride.name || ctx.b)}</p>
     ${a ? `<button class="ph ad-ph ad-inv-ph" data-i="${phIdx(ctx, 0)}" aria-label="Xem ảnh"><img loading="lazy" src="${esc(a)}" alt=""></button>` : ''}
     <p class="ad-cap">${esc(d.inviteText)}</p>

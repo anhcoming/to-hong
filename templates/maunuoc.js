@@ -174,7 +174,7 @@ module.exports = {
         ${x.father ? `<p class="mn-side-p">${strip(x.father)}</p>` : ''}
         ${x.mother ? `<p class="mn-side-p">${strip(x.mother)}</p>` : ''}
         ${x.address ? `<p class="mn-side-a">${esc(x.address)}</p>` : ''}
-        <p class="mn-side-r">${role}</p>
+        <p class="mn-side-r">${esc(x.rank || role)}</p>
         <p class="mn-side-n">${esc(x.name)}</p>
       </div>
     </div>`;

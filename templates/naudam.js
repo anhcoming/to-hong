@@ -44,8 +44,8 @@ module.exports = {
   ],
   // dữ liệu xem thử theo bản gốc: tên, ngày, ảnh như trang demo; lịch trình lấy 6 mốc từ đón khách (thiệp giữ tối đa 6 sự kiện)
   demo: {
-    groom: { name: 'Gia Huy', fullName: 'Trần Gia Huy', father: 'Trần Quang Hải', mother: 'Nguyễn Thị Lan', address: '' },
-    bride: { name: 'Bảo Ngọc', fullName: 'Lê Bảo Ngọc', father: 'Lê Minh Tuấn', mother: 'Phạm Thị Hoa', address: '' },
+    groom: { name: 'Gia Huy', fullName: 'Trần Gia Huy', rank: 'Trưởng nam', father: 'Trần Quang Hải', mother: 'Nguyễn Thị Lan', address: '' },
+    bride: { name: 'Bảo Ngọc', fullName: 'Lê Bảo Ngọc', rank: 'Út nữ', father: 'Lê Minh Tuấn', mother: 'Phạm Thị Hoa', address: '' },
     date: '2027-11-17',
     time: '18:30',
     cover: '/demo/naudam-1.jpg',
@@ -137,10 +137,10 @@ module.exports = {
       <p class="mn-lead mn-intro">Trân trọng kính mời quý vị đến chung vui<br>cùng gia đình chúng tôi</p>
       <div class="mn-couple">
         <h3>${esc(d.groom.fullName || d.groom.name)}</h3>
-        <p class="mn-role">Chú rể</p>
+        <p class="mn-role">${esc(d.groom.rank || 'Chú rể')}</p>
         <p class="mn-amp">&amp;</p>
         <h3>${esc(d.bride.fullName || d.bride.name)}</h3>
-        <p class="mn-role">Cô dâu</p>
+        <p class="mn-role">${esc(d.bride.rank || 'Cô dâu')}</p>
       <script>(function(){
         // tên đầy đủ: cùng một cỡ chữ cho cả hai người, tối đa 43px, co lại cho vừa 97% bề ngang khung (như bản gốc)
         var hs=[].slice.call(document.currentScript.parentNode.querySelectorAll('h3'));
@@ -176,8 +176,7 @@ module.exports = {
       // chạm ảnh bên cạnh thì chuyển tới ảnh đó, chỉ ảnh giữa mới mở xem lớn
       st.addEventListener('click',function(e){var c=e.target.closest('.ph');if(c&&c.dataset.o!=='0'){e.stopPropagation();go(cs.indexOf(c));}},true);
       s.querySelector('.prev').onclick=function(){go(k-1)};s.querySelector('.next').onclick=function(){go(k+1)};
-      var x0=null;st.addEventListener('pointerdown',function(e){x0=e.clientX});
-      st.addEventListener('pointerup',function(e){if(x0!==null&&Math.abs(e.clientX-x0)>40){go(k+(e.clientX<x0?1:-1));}x0=null});
+      cnSwipe(st,function(d){go(k+d)}); // kéo chuột / vuốt / lăn 2 ngón (lib/render.js)
       go(0);
     })()</script>
   </section>`;
@@ -605,8 +604,13 @@ module.exports = {
   .tpl-naudam .mn-giftdlg .gift{max-width:none}
 }
 /* màn hình rộng: cột 900px có viền mảnh, các khối lớn hơn như bản gốc */
+/* máy tính: thiệp là cột 520px giữa màn, bên trong dùng đúng bố cục điện thoại (thiết kế cho cột 480px) */
 @media (min-width:768px){
-  .tpl-naudam .card{max-width:900px;border:1px solid color-mix(in srgb,var(--ink) 13%,transparent)}
+  .tpl-naudam .card{max-width:520px;border:1px solid color-mix(in srgb,var(--ink) 13%,transparent)}
+  .tpl-naudam .music-btn{right:max(14px,calc(50% - 246px))}
+}
+/* bố cục cũ cho cột 900px — đã tắt (and (max-width:0)), cột 520px dùng bố cục điện thoại */
+@media (min-width:768px) and (max-width:0px){
   .tpl-naudam .mn-ocard{width:520px}
   .tpl-naudam .mn-ofl img{height:280px}
   .tpl-naudam .mn-ofl .tl{top:-20%;transform:translateX(-11%) rotate(25deg)}
@@ -661,7 +665,7 @@ module.exports = {
   .tpl-naudam .mn-wform textarea{height:110px}
   .tpl-naudam .mn-thanks p{font-size:13px;max-width:560px}
 }
-@media (min-width:1024px){
+@media (min-width:1024px) and (max-width:0px){
   .tpl-naudam .mn-ocard{width:600px}
   .tpl-naudam .mn-oto{max-width:440px}
 }

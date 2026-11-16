@@ -13,6 +13,49 @@
     toast._t = setTimeout(function () { t.classList.remove('show'); }, 2200);
   }
 
+
+  // ----- hiệu ứng nền: hoa anh đào / tuyết / lá / hoa mai / tim rơi nhẹ phủ trên thiệp (không chặn bấm) -----
+  (function () {
+    var kind = C.fx;
+    if (!kind || C.lite) return;
+    try { if (matchMedia('(prefers-reduced-motion: reduce)').matches) return; } catch (e) { /* bỏ qua */ }
+    var cv = document.createElement('canvas');
+    cv.className = 'fx-layer';
+    cv.setAttribute('aria-hidden', 'true');
+    cv.style.cssText = 'position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-index:40';
+    document.body.appendChild(cv);
+    var g = cv.getContext('2d'), W = 0, H = 0, dpr = Math.min(2, window.devicePixelRatio || 1);
+    function size() { W = innerWidth; H = innerHeight; cv.width = W * dpr; cv.height = H * dpr; g.setTransform(dpr, 0, 0, dpr, 0, 0); }
+    size(); addEventListener('resize', size);
+    var COL = { sakura: ['#ffd1dc', '#ffb7c9', '#fbc4d4'], snow: ['#ffffff', '#f2f6ff'], leaves: ['#e3a23b', '#c9692c', '#b5452a', '#d9a441'], mai: ['#ffd23f', '#ffc21a', '#f6b800'], hearts: ['#ff6f8f', '#ff8fa8', '#e84a6f'] }[kind] || ['#fff'];
+    var N = kind === 'snow' ? 46 : 26, ps = [];
+    function mk(top) {
+      return { x: Math.random() * W, y: top ? -20 - Math.random() * 40 : Math.random() * H, s: (kind === 'snow' ? 1.5 + Math.random() * 2.5 : 6 + Math.random() * 6),
+        vy: (kind === 'snow' ? 0.35 : 0.55) + Math.random() * 0.6, sw: Math.random() * 6.28, sp: 0.01 + Math.random() * 0.02, r: Math.random() * 6.28, vr: (Math.random() - 0.5) * 0.04,
+        c: COL[Math.floor(Math.random() * COL.length)], o: 0.55 + Math.random() * 0.4 };
+    }
+    for (var i = 0; i < N; i++) ps.push(mk(false));
+    function petal(p) { g.beginPath(); g.ellipse(0, 0, p.s * 0.55, p.s, 0, 0, 6.283); g.fill(); }
+    function leaf(p) { g.beginPath(); g.moveTo(0, -p.s); g.quadraticCurveTo(p.s * 0.8, 0, 0, p.s); g.quadraticCurveTo(-p.s * 0.8, 0, 0, -p.s); g.fill(); }
+    function flower(p) { for (var k = 0; k < 5; k++) { g.save(); g.rotate(k * 1.2566); g.beginPath(); g.ellipse(0, -p.s * 0.45, p.s * 0.32, p.s * 0.5, 0, 0, 6.283); g.fill(); g.restore(); } g.fillStyle = '#e07b00'; g.beginPath(); g.arc(0, 0, p.s * 0.16, 0, 6.283); g.fill(); }
+    function heart(p) { var s = p.s * 0.55; g.beginPath(); g.moveTo(0, s * 0.6); g.bezierCurveTo(-s * 1.6, -s * 0.4, -s * 0.5, -s * 1.5, 0, -s * 0.5); g.bezierCurveTo(s * 0.5, -s * 1.5, s * 1.6, -s * 0.4, 0, s * 0.6); g.fill(); }
+    var draw = { sakura: petal, leaves: leaf, mai: flower, hearts: heart, snow: function (p) { g.beginPath(); g.arc(0, 0, p.s, 0, 6.283); g.fill(); } }[kind] || petal;
+    var run = true;
+    document.addEventListener('visibilitychange', function () { run = !document.hidden; if (run) requestAnimationFrame(tick); });
+    function tick() {
+      if (!run) return;
+      g.clearRect(0, 0, W, H);
+      for (var i = 0; i < ps.length; i++) {
+        var p = ps[i];
+        p.sw += p.sp; p.y += p.vy; p.x += Math.sin(p.sw) * 0.6; p.r += p.vr;
+        if (p.y > H + 20) ps[i] = p = mk(true);
+        g.save(); g.translate(p.x, p.y); g.rotate(p.r); g.globalAlpha = p.o; g.fillStyle = p.c; draw(p); g.restore();
+      }
+      requestAnimationFrame(tick);
+    }
+    requestAnimationFrame(tick);
+  })();
+
   // ----- nhạc nền -----
   var audio = $('#bgm');
   var mbtn = $('#musicBtn');
@@ -315,7 +358,7 @@
   bar.className = 'demobar';
   bar.setAttribute('aria-label', 'Chọn mẫu');
   var use = '/thiep-cua-toi?tao=' + encodeURIComponent(C.tpl) + (C.pal ? '&mau=' + encodeURIComponent(C.pal) : '');
-  bar.innerHTML = '<a href="/mau-thiep" class="back">‹ Mẫu khác</a><a href="' + use + '" class="go">Dùng mẫu này</a>';
+  bar.innerHTML = '<a href="/mau-thiep" class="back">‹ Mẫu khác</a><a href="' + use + '" class="go" target="_blank" rel="noopener">Dùng mẫu này</a>'; // trình sửa mở tab mới
   bar.querySelector('.back').addEventListener('click', function (e) {
     var r = document.referrer;
     if (r && r.indexOf(location.origin + '/mau-thiep') === 0 && history.length > 1) { e.preventDefault(); history.back(); }

@@ -107,9 +107,9 @@ module.exports = {
       <p class="tc-lab">tới dự buổi tiệc chung vui cùng gia đình chúng tôi</p>
     </div>
     <div class="tc-full reveal">
-      <div><p class="r">Chú rể</p><p class="n">${esc(d.groom.fullName || d.groom.name)}</p></div>
+      <div><p class="r">${esc(d.groom.rank || 'Chú rể')}</p><p class="n">${esc(d.groom.fullName || d.groom.name)}</p></div>
       <i aria-hidden="true">&amp;</i>
-      <div><p class="r">Cô dâu</p><p class="n">${esc(d.bride.fullName || d.bride.name)}</p></div>
+      <div><p class="r">${esc(d.bride.rank || 'Cô dâu')}</p><p class="n">${esc(d.bride.fullName || d.bride.name)}</p></div>
     </div>
     ${d.message ? `<p class="tc-msg reveal">${esc(d.message)}</p>` : ''}
   </section>`;

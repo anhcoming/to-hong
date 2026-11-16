@@ -131,7 +131,7 @@ module.exports = {
         <h3>${label}</h3>
         ${x.father ? `<p>${esc(x.father)}</p>` : ''}${x.mother ? `<p>${esc(x.mother)}</p>` : ''}
         ${x.address ? `<p class="a">${pin}${esc(x.address)}</p>` : ''}
-        <p class="dl-role">${role}</p>
+        <p class="dl-role">${esc(x.rank || role)}</p>
         <p class="dl-fn">${esc(x.fullName || x.name)}</p>
       </div>
     </div>`;

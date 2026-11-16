@@ -136,9 +136,9 @@ module.exports = {
       <p class="sv-guest">${guest ? esc(guest.name) : 'Bạn thân mến'}</p>
       <p class="sv-to">tới dự lễ thành hôn của chúng mình</p>
       <div class="sv-couple">
-        <div><p class="r">Chú rể</p><p class="n">${esc(d.groom.fullName || d.groom.name)}</p></div>
+        <div><p class="r">${esc(d.groom.rank || 'Chú rể')}</p><p class="n">${esc(d.groom.fullName || d.groom.name)}</p></div>
         <span class="sv-amp">&amp;</span>
-        <div><p class="r">Cô dâu</p><p class="n">${esc(d.bride.fullName || d.bride.name)}</p></div>
+        <div><p class="r">${esc(d.bride.rank || 'Cô dâu')}</p><p class="n">${esc(d.bride.fullName || d.bride.name)}</p></div>
       </div>
       ${hasFam ? `<div class="sv-fams">${fam(d.groom, 'Nhà trai')}${fam(d.bride, 'Nhà gái')}</div>` : ''}
       ${d.message ? `<p class="sv-msg">${esc(d.message)}</p>` : ''}

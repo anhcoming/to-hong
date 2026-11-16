@@ -8,7 +8,8 @@
   },
   "redirects": [
     { "source": "/", "has": [{ "type": "host", "value": "to-hong.vercel.app" }], "destination": "https://cuoinha.com/", "permanent": true },
-    { "source": "/:path*", "has": [{ "type": "host", "value": "to-hong.vercel.app" }], "destination": "https://cuoinha.com/:path*", "permanent": true }
+    { "source": "/:path*", "has": [{ "type": "host", "value": "to-hong.vercel.app" }], "destination": "https://cuoinha.com/:path*", "permanent": true },
+    { "source": "/video-cuoi", "destination": "/video-dam-ngo", "permanent": true }
   ],
   "rewrites": [
     { "source": "/", "destination": "/index.html" },
@@ -17,7 +18,8 @@
     { "source": "/video-cua-toi", "destination": "/dashboard.html" },
     { "source": "/admin", "destination": "/admin.html" },
     { "source": "/mau-thiep", "destination": "/templates.html" },
-    { "source": "/video-cuoi", "destination": "/video-landing.html" },
+    { "source": "/video-dam-ngo", "destination": "/video-landing.html" },
+    { "source": "/slide-cuoi", "destination": "/slide-landing.html" },
     { "source": "/man-hinh-led-dam-cuoi", "destination": "/led-landing.html" },
     { "source": "/so-tay", "destination": "/planner.html" },
     { "source": "/so-tay-cuoi", "destination": "/planner-landing.html" },

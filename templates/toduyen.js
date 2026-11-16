@@ -144,10 +144,10 @@ module.exports = {
         <p class="td-lead">Trân trọng báo tin\nlễ thành hôn của con chúng tôi</p>
         <div class="td-couple">
           <h3>${esc(d.groom.fullName || d.groom.name)}</h3>
-          <p class="td-role">Chú rể</p>
+          <p class="td-role">${esc(d.groom.rank || 'Chú rể')}</p>
           <p class="td-amp">&amp;</p>
           <h3>${esc(d.bride.fullName || d.bride.name)}</h3>
-          <p class="td-role">Cô dâu</p>
+          <p class="td-role">${esc(d.bride.rank || 'Cô dâu')}</p>
         </div>
         <div class="td-when-block">
           ${cer && cer.place ? `<p class="td-place">${esc(cer.name || 'Lễ thành hôn')} được cử hành tại\n${esc(cer.place)}</p>` : ''}
@@ -183,8 +183,7 @@ module.exports = {
       st.addEventListener('click',function(e){var c=e.target.closest('.ph');if(c&&!c.classList.contains('on')){e.stopPropagation();go(cs.indexOf(c));}},true);
       s.querySelector('.prev').onclick=function(){go(k-1)};s.querySelector('.next').onclick=function(){go(k+1)};
       ds.forEach(function(d,j){d.onclick=function(){go(j)}});
-      var x0=null;st.addEventListener('pointerdown',function(e){x0=e.clientX});
-      st.addEventListener('pointerup',function(e){if(x0!==null&&Math.abs(e.clientX-x0)>40){go(k+(e.clientX<x0?1:-1));}x0=null});
+      cnSwipe(st,function(d){go(k+d)}); // kéo chuột / vuốt / lăn 2 ngón (lib/render.js)
       go(k);
     })()</script>
   </div>`;
@@ -613,8 +612,13 @@ module.exports = {
   .tpl-toduyen .td-giftdlg .gift img{width:160px;height:160px}
 }
 /* màn rộng: cột 900px có viền mảnh, nội dung trong khung 600px, các khối lớn hơn như bản gốc */
+/* máy tính: thiệp là cột 520px giữa màn, bên trong dùng đúng bố cục điện thoại (thiết kế cho cột 480px) */
 @media (min-width:768px){
-  .tpl-toduyen .card{max-width:900px;border:1px solid color-mix(in srgb,var(--accent) 13%,transparent)}
+  .tpl-toduyen .card{max-width:520px;border:1px solid color-mix(in srgb,var(--accent) 13%,transparent)}
+  .tpl-toduyen .music-btn{right:max(14px,calc(50% - 246px))}
+}
+/* bố cục cũ cho cột 900px — đã tắt (and (max-width:0)), cột 520px dùng bố cục điện thoại */
+@media (min-width:768px) and (max-width:0px){
   .tpl-toduyen .td-wrap,.tpl-toduyen .td-album,.tpl-toduyen .td-venue,.tpl-toduyen .s-story{max-width:600px}
   .tpl-toduyen .td-body,.tpl-toduyen .td-gbody,.tpl-toduyen .td-gbx{padding-left:5px;padding-right:5px}
   .tpl-toduyen .td-venue{padding-left:5px;padding-right:5px}
@@ -696,7 +700,7 @@ module.exports = {
   .tpl-toduyen .td-end .td-d.l{right:157px;top:-139px;height:587px;width:196px}
   .tpl-toduyen .td-end .td-d.r{left:-573px;top:-27px;height:246px;width:1403px}
 }
-@media (min-width:1024px){
+@media (min-width:1024px) and (max-width:0px){
   .tpl-toduyen .td-ocard{width:600px}
   .tpl-toduyen .td-obg img{width:200px}
   .tpl-toduyen .td-oto{max-width:440px}

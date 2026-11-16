@@ -38,7 +38,8 @@ const eq = (a, b, msg) => { assert.deepEqual(a, b, msg); n++; };
   const pages = {
     '/': [/id="hb"/, /id="heroGo"/, /id="video"/, /class="hnav"/],
     '/mau-thiep': [/id="fStyle"/],
-    '/video-cuoi': [/id="vgal"/, /Video <em>cưới<\/em>/],
+    '/video-dam-ngo': [/id="vgal"/, /Video <em>dạm ngõ<\/em>/],
+    '/slide-cuoi': [/id="vgal"/, /Slide ảnh cưới/],
     '/so-tay-cuoi': [/Sổ tay/],
     '/dang-nhap': [/<form|id="/],
     '/thiep-cua-toi': [/id="list"/],
@@ -60,14 +61,14 @@ const eq = (a, b, msg) => { assert.deepEqual(a, b, msg); n++; };
   // menu trang chủ: đúng 3 chức năng chính
   r = await call('x', 'GET', '/');
   const menu = (r.text.match(/<nav class="menu"[^]*?<\/nav>/) || [''])[0];
-  eq((menu.match(/<a /g) || []).length, 4, 'menu trang chủ có 4 mục');
-  ok(/Thiệp cưới/.test(menu) && /Màn hình LED/.test(menu) && /Video cưới/.test(menu) && /Sổ tay cưới/.test(menu), 'menu: Thiệp / Màn LED / Video / Sổ tay');
+  eq((menu.match(/<a /g) || []).length, 5, 'menu trang chủ có 5 mục');
+  ok(/Thiệp cưới/.test(menu) && /Slide cưới/.test(menu) && /Màn hình LED/.test(menu) && /Video dạm ngõ/.test(menu) && /Sổ tay cưới/.test(menu), 'menu: Thiệp / Slide / Màn LED / Dạm ngõ / Sổ tay');
 
-  // đường dẫn cũ chuyển về trang Video cưới
-  for (const p of ['/video-dam-ngo']) {
+  // đường dẫn cũ /video-cuoi chuyển về trang Video dạm ngõ
+  for (const p of ['/video-cuoi']) {
     r = await call('x', 'GET', p, undefined, { redirect: 'manual' });
     eq(r.status, 301, `${p} phải chuyển hướng`);
-    eq(r.headers.get('location'), '/video-cuoi', `${p} → /video-cuoi`);
+    eq(r.headers.get('location'), '/video-dam-ngo', `${p} → /video-dam-ngo`);
   }
   r = await call('x', 'GET', '/man-hinh-led-dam-cuoi');
   ok(r.status === 200 && r.text.includes('data-page="led"'), 'trang giới thiệu Màn hình LED mở được');
@@ -92,7 +93,7 @@ const eq = (a, b, msg) => { assert.deepEqual(a, b, msg); n++; };
   ok(photoTpls.length >= 10, `phải có ít nhất 10 mẫu video ảnh (có ${photoTpls.length})`);
   eq(vt[0].photos, true, 'mẫu video ảnh đứng đầu danh sách');
   for (const t of vt) {
-    if (t.photos) ok(Number.isInteger(t.slots) && t.slots >= 6 && t.slots <= 12, `mẫu ${t.id}: số ô ảnh 6–12 (${t.slots})`);
+    if (t.photos) ok(Number.isInteger(t.slots) && (t.kind === "le" ? t.slots >= 20 && t.slots <= 36 : t.slots >= 6 && t.slots <= 12), `mẫu ${t.id}: số ô ảnh ${t.kind === "le" ? "20–36 (nền buổi lễ)" : "6–12"} (${t.slots})`);
     eq((await call('x', 'GET', `/video/demo?template=${t.id}&preview=1`)).status, 200, `video demo ${t.id}`);
     eq((await call('x', 'GET', `/demo/vposter-${t.id}.jpg`)).status, 200, `ảnh xem trước video ${t.id}`);
   }
@@ -110,7 +111,7 @@ const eq = (a, b, msg) => { assert.deepEqual(a, b, msg); n++; };
   eq(v.photoSec, 6, 'số giây mỗi ảnh tối đa 6');
   eq(videoLib.normalize({ photoSec: 0.2 }).photoSec, 2, 'số giây mỗi ảnh tối thiểu 2');
   eq(videoLib.normalize({ template: 'khong-co' }).template, 'sen', 'mẫu lạ → mẫu mặc định');
-  eq(videoLib.normalize({ photos: Array.from({ length: 30 }, (_, i) => `/demo/x${i}.jpg`) }).photos.length, 20, 'tối đa 20 ảnh lưu');
+  eq(videoLib.normalize({ photos: Array.from({ length: 50 }, (_, i) => `/demo/x${i}.jpg`) }).photos.length, 36, 'tối đa 36 ảnh lưu (mẫu nền buổi lễ)');
   const fakeCard = { data: { cover: '/demo/c.jpg', photos: ['/demo/1.jpg', '/demo/2.jpg', '/demo/c.jpg'] } };
   eq(videoLib.slidePhotos(fakeCard, { template: 'traitim', photos: [] }), ['/demo/c.jpg', '/demo/1.jpg', '/demo/2.jpg'], 'chưa chọn ảnh → ảnh bìa + album (bỏ trùng)');
   const twelve = Array.from({ length: 12 }, (_, i) => `/demo/p${i}.jpg`);
@@ -187,7 +188,7 @@ const eq = (a, b, msg) => { assert.deepEqual(a, b, msg); n++; };
     eq(u.photos.length, 2, 'bỏ ảnh có mức phóng to / định dạng căn ảnh sai');
     eq(u.photos[1], '/demo/dodam-3.jpg#p=0,100,2.25', 'lưu được điểm lấy nét và mức phóng to của ảnh album');
     let h = (await call('a', 'GET', `/t/${c.slug}?preview=1&edit=1`)).text;
-    ok(h.includes('/card/edit.js') && /#p=0,100,2.25(&amp;|&)k=photos\.1/.test(h) && h.includes('/card/slot.svg#k=photos.'), 'chủ thiệp: khung sửa trực tiếp có ô ảnh và ô trống');
+    ok(h.includes('/card/edit.js') && /#p=0,100,2.25(&amp;|&)k=photos\.1/.test(h) && /\/card\/slot\.svg(\?v=\d+)?#k=photos\./.test(h), 'chủ thiệp: khung sửa trực tiếp có ô ảnh và ô trống');
     ok(h.includes('+ Thêm lễ'), 'chế độ sửa có dòng "+ Thêm lễ" trong lịch trình');
     ok(!(await call('a', 'GET', `/t/${c.slug}?preview=1`)).text.includes('/card/edit.js'), 'xem trước thường không bật chế độ sửa');
     ok(!/\+ Thêm (lễ|tên bố|nơi tổ chức)/.test((await call('a', 'GET', `/t/${c.slug}?preview=1`)).text), 'xem trước thường không có chữ giữ chỗ "+ Thêm …"');

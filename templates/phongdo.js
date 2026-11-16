@@ -162,8 +162,10 @@ module.exports = {
     <div class="pd-cpl">
       <p class="pd-vert" aria-hidden="true"><i></i><span>Lễ</span><span>Thành</span><span>Hôn</span><i></i></p>
       <div class="pd-cpl-n">
+        ${d.groom.rank ? `<span class="pd-rk g">${esc(d.groom.rank)}</span>` : ''}
         <p class="g">${esc(d.groom.fullName || d.groom.name)}</p>
         <p class="amp">&amp;</p>
+        ${d.bride.rank ? `<span class="pd-rk b">${esc(d.bride.rank)}</span>` : ''}
         <p class="b">${esc(d.bride.fullName || d.bride.name)}</p>
       </div>
     </div>
@@ -216,7 +218,7 @@ module.exports = {
       if (!d.photos.length) return '';
       const row = (x, role, en, i, flip) => `
       <div class="pd-ab${flip ? ' flip' : ''} reveal">
-        <div class="pd-ab-t"><p class="r">${role}</p><p class="n">${esc(x.fullName || x.name)}</p>${x.address ? `<p class="a">${esc(x.address)}</p>` : ''}</div>
+        <div class="pd-ab-t"><p class="r">${esc(x.rank || role)}</p><p class="n">${esc(x.fullName || x.name)}</p>${x.address ? `<p class="a">${esc(x.address)}</p>` : ''}</div>
         <div class="pd-ab-p">${ph(ctx, i)}<span class="pd-en">${en}</span></div>
       </div>`;
       return `
@@ -402,6 +404,7 @@ module.exports = {
 .tpl-phongdo .pd-cpl-n p{margin:0;font-family:var(--font-script);font-size:40px;line-height:1.25;color:var(--accent)}
 .tpl-phongdo .pd-cpl-n .amp{margin:4px 0 4px 40%;font-size:34px;color:var(--ink)}
 .tpl-phongdo .pd-cpl-n .b{text-align:right}
+.tpl-phongdo .pd-cpl-n .pd-rk{display:block;font-size:12px;font-weight:600;letter-spacing:.2em;text-transform:uppercase;color:var(--muted)}
 .tpl-phongdo .pd-fams{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:40px}
 .tpl-phongdo .pd-fam h3{margin:0 0 6px;font-family:var(--font-title);font-weight:400;font-size:21px;color:var(--ink)}
 .tpl-phongdo .pd-fam p{margin:0 0 4px;font-size:14px;color:var(--ink)}

@@ -163,8 +163,17 @@ a{color:inherit}
 .wm{display:inline-block;padding:8px 14px;border-radius:999px;background:var(--paper);border:1px dashed var(--line)}
 
 /* nút nhạc */
-.music-btn{position:fixed;z-index:40;right:max(14px,calc(50% - 226px));bottom:18px;width:46px;height:46px;border-radius:50%;border:1px solid var(--line);background:var(--paper);color:var(--accent);font-size:20px;box-shadow:0 4px 14px rgba(0,0,0,.18)}
-.music-btn.playing span{display:inline-block;animation:spin 3s linear infinite}
+/* nút nhạc: nốt nhạc nét mảnh; đang phát có hai vòng sóng nhẹ lan ra, tắt thì nốt mờ + gạch chéo */
+.music-btn{position:fixed;z-index:40;right:max(14px,calc(50% - 226px));bottom:18px;width:46px;height:46px;padding:0;display:grid;place-items:center;border-radius:50%;border:1px solid var(--line);background:var(--paper);color:var(--accent);box-shadow:0 4px 14px rgba(0,0,0,.18);cursor:pointer}
+.music-btn svg{width:20px;height:20px;display:block;transition:opacity .2s}
+.music-btn::before,.music-btn::after{content:'';position:absolute;inset:-1px;border-radius:50%;border:2px solid currentColor;opacity:0;pointer-events:none}
+.music-btn.playing::before{animation:mbRing 1.8s ease-out infinite}
+.music-btn.playing::after{animation:mbRing 1.8s ease-out .9s infinite}
+@keyframes mbRing{from{transform:scale(1);opacity:.5}to{transform:scale(1.75);opacity:0}}
+.music-btn:not(.playing) svg{opacity:.55}
+.music-btn .mb-x{position:absolute;left:50%;top:50%;width:24px;height:2px;margin:-1px 0 0 -12px;border-radius:2px;background:currentColor;transform:rotate(-45deg);opacity:.85}
+.music-btn.playing .mb-x{display:none}
+@media (prefers-reduced-motion:reduce){.music-btn.playing::before,.music-btn.playing::after{animation:none}}
 @keyframes spin{to{transform:rotate(360deg)}}
 .mb-bars{display:none}
 
@@ -191,3 +200,19 @@ dialog > .dlg-bar > button{position:static!important;flex:none;margin:0!importan
 dialog > .dlg-bar.stuck{box-shadow:0 10px 14px -12px rgba(0,0,0,.35)}
 dialog > .dlg-bar.only-x{height:0;padding:0;justify-content:flex-end;overflow:visible;background:none}
 dialog > .dlg-bar.only-x > button{position:relative!important;top:12px;right:12px}
+
+/* khối thêm dùng chung mọi mẫu: Trang phục · Hỏi đáp · Liên hệ (lib/render.js sDress / sQa / sContact) */
+.s-extra{text-align:center;padding-top:28px;padding-bottom:28px}
+.s-extra .x-lead{margin:6px 0 10px;opacity:.8}
+.x-dots{display:flex;justify-content:center;gap:12px;flex-wrap:wrap;margin:6px 0 12px}
+.x-dots i{width:42px;height:42px;border-radius:50%;border:3px solid #fff;box-shadow:0 0 0 1px rgba(0,0,0,.12),0 4px 10px rgba(0,0,0,.12)}
+.x-note{max-width:340px;margin:0 auto;opacity:.85;font-style:italic}
+.x-qa{display:grid;gap:10px;max-width:400px;margin:8px auto 0;text-align:left}
+.x-q{padding:12px 14px;border-radius:14px;background:color-mix(in srgb,var(--accent,#d6455d) 7%,transparent);border:1px solid color-mix(in srgb,var(--accent,#d6455d) 18%,transparent)}
+.x-q b{display:block;color:var(--accent,#d6455d);margin-bottom:4px}
+.x-q p{margin:0;opacity:.9}
+.x-call{display:flex;justify-content:center;gap:10px;flex-wrap:wrap;margin-top:8px}
+.x-call a{display:inline-flex;align-items:center;gap:10px;padding:10px 16px 10px 12px;border-radius:999px;background:var(--accent,#d6455d);color:#fff;text-decoration:none;font-weight:600;box-shadow:0 6px 16px rgba(0,0,0,.15)}
+.x-call svg{width:20px;height:20px;flex:none}
+.x-call span{display:flex;flex-direction:column;line-height:1.2;text-align:left}
+.x-call small{font-size:11px;font-weight:500;opacity:.85}

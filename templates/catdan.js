@@ -142,7 +142,7 @@ module.exports = {
       <div class="cd-pp ${side} reveal">
         ${img ? `<div class="cd-pp-ph"><img loading="lazy" src="${esc(img)}" alt="${role}"></div>` : ''}
         <div class="cd-pp-tx">
-          <p class="cd-pp-role">${role}</p>
+          <p class="cd-pp-role">${esc(x.rank || role)}</p>
           <p class="cd-pp-name">${esc(x.fullName || x.name)}</p>
           ${x.father || x.mother ? `<p class="cd-pp-fam">Con ông bà<br>${[x.father, x.mother].filter(Boolean).map(esc).join('<br>')}</p>` : ''}
           ${x.address ? `<p class="cd-pp-addr">${esc(x.address)}</p>` : ''}

@@ -22,6 +22,18 @@
     '[data-ce-key].ce-ph{opacity:.55;font-style:italic}',
     '.ce-hl{position:fixed;z-index:2147483000;pointer-events:none;border:3px solid #d6455d;border-radius:6px;box-shadow:0 0 0 9999px rgba(0,0,0,0);transition:all .08s}',
     '.ce-hl b{position:absolute;top:6px;left:6px;padding:3px 9px;border-radius:999px;background:#d6455d;color:#fff;font:600 12px/1.4 system-ui,sans-serif;white-space:nowrap}',
+    // ảnh đã có: 2 nút bấm được ngay trên khung (Căn chỉnh / Thay ảnh); phần còn lại của khung vẫn cho bấm xuyên xuống ảnh
+    '.ce-hl .ce-act{position:absolute;top:8px;left:8px;display:none;gap:6px;pointer-events:auto}',
+    '.ce-hl.has .ce-act{display:flex}.ce-hl.has b{display:none}',
+    '.s-extra{cursor:pointer;outline:1.5px dashed transparent;outline-offset:-4px;border-radius:12px;transition:outline-color .15s}.s-extra:hover{outline-color:rgba(214,69,93,.6)}',
+    '.ce-flash{animation:ceFlash 1.5s ease-out}@keyframes ceFlash{0%,40%{box-shadow:inset 0 0 0 3px rgba(214,69,93,.75)}100%{box-shadow:inset 0 0 0 3px rgba(214,69,93,0)}}',
+    '.ce-hl .ce-alb{position:absolute;top:8px;left:50%;transform:translateX(-50%);display:none;pointer-events:auto}',
+    '.ce-hl.alb .ce-alb{display:flex}.ce-hl.alb b,.ce-hl.alb .ce-act{display:none}',
+    '.ce-alb button{all:unset;box-sizing:border-box;padding:7px 14px;border-radius:999px;background:#d6455d;color:#fff;font:600 13px/1.2 system-ui,sans-serif;cursor:pointer;box-shadow:0 4px 12px rgba(0,0,0,.25);white-space:nowrap}',
+    '.ce-act button{all:unset;box-sizing:border-box;display:inline-flex;align-items:center;gap:5px;padding:6px 11px;border-radius:999px;background:#d6455d;color:#fff;font:600 12.5px/1.2 system-ui,sans-serif;white-space:nowrap;cursor:pointer;box-shadow:0 4px 12px rgba(0,0,0,.25);transition:filter .12s,transform .12s}',
+    '.ce-act button.lt{background:#fff;color:#d6455d}',
+    '.ce-act button:hover{filter:brightness(1.08);transform:translateY(-1px)}',
+    '.ce-act svg{width:14px;height:14px;flex:none}',
     '.ce-map{position:absolute;inset:-6px;z-index:6;border:2px dashed rgba(214,69,93,.55);border-radius:12px;margin:0;padding:0;background:rgba(0,0,0,0);cursor:pointer;outline:none!important}',
     '.ce-map:hover{border-style:solid;border-color:#d6455d;background:rgba(214,69,93,.05)!important}',
     '.ce-venue [data-ce-key]:not(.ce-map){outline:none}',
@@ -46,16 +58,32 @@
 
   // ---------- ảnh ----------
   function keyOf(u) { var m = /[#&]k=([\w.]+)/.exec(u || ''); return m ? m[1] : ''; }
+  // Album: cả khối là một chỗ sửa (bấm → trang sửa mở hộp quản lý album: thêm nhiều ảnh, kéo đổi thứ tự, căn, xoá)
+  function markAlbums() {
+    var groups = new Map();
+    Array.prototype.forEach.call(document.querySelectorAll('[data-ce-photo^="photos."]'), function (el) {
+      var root = el.closest('section,[class*=album],[class*=-gal],[class*=film]'); if (!root) return;
+      groups.set(root, (groups.get(root) || 0) + 1);
+    });
+    groups.forEach(function (n, root) { if (n >= 6) root.dataset.ceAlbum = '1'; });
+  }
+  function albumMsg(root) { // tỉ lệ khung ảnh album (để căn ảnh đúng khung)
+    var ph = root && root.querySelector('[data-ce-photo]'), r = ph ? ph.getBoundingClientRect() : null;
+    return { type: 'album', ratio: r && r.height ? r.width / r.height : 0.75 };
+  }
+  function albumAt(t) { return t && t.closest ? t.closest('[data-ce-album]') : null; }
+  // nút điều khiển của album (mũi tên, chấm, ảnh nhỏ, xem toàn màn…) vẫn bấm được trong trình sửa
+  function albumCtl(t) { var b = t.closest && t.closest('button,a'); return !!(b && !b.dataset.cePhoto && !b.querySelector('[data-ce-photo]') && !b.classList.contains('ph')); }
   function markPhotos() {
     Array.prototype.forEach.call(document.querySelectorAll('img[src*="k="]'), function (im) {
-      var k = keyOf(im.getAttribute('src')); if (k) { im.dataset.cePhoto = k; im.dataset.ceEmpty = /\/card\/slot\.svg/.test(im.src) ? '1' : ''; }
+      var k = keyOf(im.getAttribute('src')); if (k) { im.dataset.cePhoto = k; im.dataset.ceEmpty = /\/card\/slot\.svg|[#&]s=1/.test(im.src) ? '1' : ''; }
     });
     Array.prototype.forEach.call(document.querySelectorAll('[style*="k="]'), function (el) {
-      var s = el.getAttribute('style'), k = keyOf(s); if (k) { el.dataset.cePhoto = k; el.dataset.ceEmpty = /\/card\/slot\.svg/.test(s) ? '1' : ''; }
+      var s = el.getAttribute('style'), k = keyOf(s); if (k) { el.dataset.cePhoto = k; el.dataset.ceEmpty = /\/card\/slot\.svg|[#&]s=1/.test(s) ? '1' : ''; }
     });
     // ảnh vẽ trong SVG (<image href>, vd. khung bìa Long Phụng)
     Array.prototype.forEach.call(document.querySelectorAll('image'), function (im) {
-      var h = svgHref(im), k = keyOf(h); if (k) { im.dataset.cePhoto = k; im.dataset.ceEmpty = /\/card\/slot\.svg/.test(h) ? '1' : ''; }
+      var h = svgHref(im), k = keyOf(h); if (k) { im.dataset.cePhoto = k; im.dataset.ceEmpty = /\/card\/slot\.svg|[#&]s=1/.test(h) ? '1' : ''; }
     });
   }
   function svgHref(im) { return im.getAttribute('href') || im.getAttribute('xlink:href') || ''; }
@@ -97,7 +125,7 @@
   var LIST = [];
   FIELDS.forEach(function (f) {
     var v = norm(f[1]); if (v.length < 2) return;
-    LIST.push({ key: f[0], v: v, raw: f[1], ph: !!f[2] });
+    LIST.push({ key: f[0], v: v, raw: f[1], ph: f[2] === 1 }); // 2 = chữ mẫu (thiệp chưa có ảnh): không làm mờ
     var u = unTitle(v); if (u !== v && u.length >= 2) LIST.push({ key: f[0], v: u, raw: f[1] });
   });
   LIST.sort(function (a, b) { return b.v.length - a.v.length; }); // ưu tiên đoạn dài nhất
@@ -243,7 +271,7 @@
       });
       // bỏ khối nằm trong khối lớn hơn của cùng lễ
       runs = runs.filter(function (r) { return !runs.some(function (o) { return o !== r && o.els.some(function (x) { return x !== r.C && x.contains(r.C) || x === r.C; }); }); });
-      var f = FIELDS.filter(function (x) { return x[0] === 'events.' + i + '.name' && !x[2]; })[0];
+      var f = FIELDS.filter(function (x) { return x[0] === 'events.' + i + '.name' && x[2] !== 1; })[0];
       runs.forEach(function (r) {
         var host = r.els.length === 1 ? r.els[0] : r.C;
         if (getComputedStyle(host).position === 'static') host.style.position = 'relative';
@@ -299,18 +327,45 @@
   }
 
   // ---------- khung đánh dấu ảnh khi rê chuột ----------
-  var hl = document.createElement('div'); hl.className = 'ce-hl'; hl.style.display = 'none'; hl.innerHTML = '<b></b>';
+  var SV = function (d) { return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">' + d + '</svg>'; };
+  var hl = document.createElement('div'); hl.className = 'ce-hl'; hl.style.display = 'none';
+  hl.innerHTML = '<b></b><span class="ce-alb"><button type="button" data-a="album">' + '✎ Sửa album ảnh' + '</button></span><span class="ce-act"><button type="button" data-a="crop">' + SV('<path d="M6 2v14a2 2 0 0 0 2 2h14"/><path d="M18 22V8a2 2 0 0 0-2-2H2"/>') + 'Căn chỉnh</button>'
+    + '<button type="button" class="lt" data-a="replace">' + SV('<path d="M3 12a9 9 0 0 1 15.5-6.2L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-15.5 6.2L3 16"/><path d="M3 21v-5h5"/>') + 'Thay ảnh</button></span>';
   document.body.appendChild(hl);
+  var hlEl = null;
+  function inHl(x, y) {
+    if (!hlEl || hl.style.display === 'none' || !hlEl.isConnected) return false;
+    var r = hlEl.getBoundingClientRect();
+    return x >= r.left && x <= r.right && y >= r.top && y <= r.bottom;
+  }
   function showHl(el) {
+    hlEl = el || null;
+    hl.classList.toggle('alb', !!(el && el.dataset.ceAlbum));
     if (!el) { hl.style.display = 'none'; return; }
     var r = el.getBoundingClientRect();
     hl.style.display = 'block';
     hl.style.left = r.left + 'px'; hl.style.top = r.top + 'px'; hl.style.width = r.width + 'px'; hl.style.height = r.height + 'px';
-    hl.firstChild.textContent = el.dataset.ceEmpty ? '+ Tải ảnh lên' : '✎ Đổi / căn ảnh';
+    hl.classList.toggle('has', !el.dataset.ceEmpty && !el.dataset.ceAlbum); hl.dataset.k = el.dataset.cePhoto || '';
+    hl.firstChild.textContent = '+ Tải ảnh lên';
   }
+  // bấm nút trên khung ảnh: bắt ở pha đầu (capture) để không bị trình bấm-ảnh chung bên dưới nhận mất
+  document.addEventListener('click', function (e) {
+    var b = e.target.closest && e.target.closest('.ce-hl [data-a]'); if (!b) return;
+    e.preventDefault(); e.stopImmediatePropagation();
+    if (b.dataset.a === 'album') { tell(albumMsg(hlEl)); return; }
+    var el = hlEl || document.querySelector('[data-ce-photo="' + hl.dataset.k + '"]'); if (!el) return;
+    var r = el.getBoundingClientRect();
+    tell({ type: 'photo', key: el.dataset.cePhoto, empty: false, ratio: r.width / Math.max(1, r.height), act: b.dataset.a });
+  }, true);
   document.addEventListener('pointermove', function (e) {
     if (e.pointerType !== 'mouse') { hl.style.display = 'none'; return; }
-    showHl(e.target.closest && e.target.closest('[data-ce-key]') ? null : photoAt(e.clientX, e.clientY));
+    // chuột đang trên nút "Căn chỉnh / Thay ảnh": giữ khung (góc ảnh vòm / bo tròn nằm ngoài phần ảnh thật)
+    if (hlEl && hl.contains(e.target)) return;
+    var alb = albumAt(e.target);
+    var hit = alb || (e.target.closest && e.target.closest('[data-ce-key]') ? null : photoAt(e.clientX, e.clientY));
+    // chuột còn trong khung chữ nhật của ảnh (kể cả góc ngoài ảnh vòm / bo tròn, chỗ đặt nút) → giữ khung + 2 nút
+    if (!hit && inHl(e.clientX, e.clientY)) return;
+    showHl(hit);
   }, { passive: true });
   document.addEventListener('scroll', function () { hl.style.display = 'none'; }, { passive: true });
   document.addEventListener('mouseleave', function () { hl.style.display = 'none'; });
@@ -437,7 +492,12 @@
       tell({ type: 'text', key: t.dataset.ceKey, value: f ? f[1] : '', map: t.classList.contains('ce-map') });
       return;
     }
-    var ph = photoAt(e.clientX, e.clientY);
+    var ex = e.target.closest && e.target.closest('.s-extra');
+    if (ex && !e.target.closest('a[href^="tel:"]')) { e.preventDefault(); e.stopPropagation(); tell({ type: 'extra', key: ex.classList.contains('s-dress') ? 'dress' : ex.classList.contains('s-qa') ? 'qa' : 'contact' }); return; }
+    if (ex) { e.preventDefault(); e.stopPropagation(); tell({ type: 'extra', key: 'contact' }); return; }
+    var ab = albumAt(e.target);
+    if (ab && !albumCtl(e.target)) { e.preventDefault(); e.stopPropagation(); tell(albumMsg(ab)); return; }
+    var ph = photoAt(e.clientX, e.clientY) || (inHl(e.clientX, e.clientY) ? hlEl : null); // bấm góc ngoài ảnh vòm (trong khung) = bấm ảnh
     // album trượt (ảnh giữa to, hai bên hẹp): chạm ảnh bên cạnh thì để mẫu chuyển ảnh đó vào giữa trước,
     // chạm lần nữa mới tải / căn ảnh — tránh căn ảnh theo khung hẹp của ảnh bên cạnh
     var side = ph && ph.closest('[data-o]');
@@ -501,10 +561,30 @@
     if (e.data.ceFocus) focusKey(e.data.key);
     if (e.data.ceBlur) select(null);
     if (e.data.ceGo !== undefined && secs[e.data.ceGo]) secs[e.data.ceGo].scrollIntoView({ behavior: 'smooth', block: 'start' });
+    if (e.data.ceSel) goSel(e.data.ceSel);
   });
+  // trang sửa (máy tính) mở một mục bên phải → thiệp cuộn tới phần tương ứng và nháy viền nhẹ
+  // sel: { top, css: [bộ chọn], keys: [đầu khoá data-ce-key], kind: [tên phần theo KINDS] } — thử lần lượt
+  function goSel(sel) {
+    if (sel.top) { window.scrollTo({ top: 0, behavior: 'smooth' }); return; }
+    var el = null, i;
+    for (i = 0; !el && sel.css && i < sel.css.length; i++) el = document.querySelector(sel.css[i]);
+    for (i = 0; !el && sel.keys && i < sel.keys.length; i++) {
+      var all = Array.prototype.slice.call(document.querySelectorAll('[data-ce-key^="' + sel.keys[i] + '"]'));
+      el = all.filter(function (x) { return x.offsetParent !== null; })[0] || null;
+    }
+    if (!el && sel.kind) { if (!secs.length) sections(); el = secs.filter(function (x) { return sel.kind.indexOf(kindOf(x)) >= 0; })[0] || null; }
+    if (!el) return;
+    tell({ type: 'selDone' });
+    var box = el.closest('section') || el;
+    if (box.offsetHeight > innerHeight * 0.9) box = el;
+    box.scrollIntoView({ behavior: 'smooth', block: box === el ? 'center' : 'start' });
+    box.classList.remove('ce-flash'); void box.offsetWidth; box.classList.add('ce-flash');
+    setTimeout(function () { box.classList.remove('ce-flash'); }, 1600);
+  }
 
   function init() {
-    markPhotos(); markText(); markMaps(); markEvents(); lockForms();
+    markPhotos(); markAlbums(); markText(); markMaps(); markEvents(); lockForms();
     freezePhotos();
     window.addEventListener('load', freezePhotos); // hiệu ứng bắt đầu khi ảnh tải xong
     tell({ type: 'ready' });

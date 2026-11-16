@@ -164,8 +164,10 @@ module.exports = {
       <span class="sh-ll l">${LINE_LOTUS}</span><span class="sh-ll r">${LINE_LOTUS}</span>
       <div class="sh-fams">${hasFam ? fam(d.groom, 'Nhà trai') : '<span></span>'}<span class="sh-hy">${HY}</span>${hasFam ? fam(d.bride, 'Nhà gái') : '<span></span>'}</div>
       <p class="sh-lead">Trân Trọng Báo Tin Lễ Thành Hôn Của</p>
+      ${d.groom.rank ? `<p class="sh-rk">${esc(d.groom.rank)}</p>` : ''}
       <p class="sh-full">${esc(d.groom.fullName || d.groom.name)}</p>
       <p class="sh-amp">&amp;</p>
+      ${d.bride.rank ? `<p class="sh-rk">${esc(d.bride.rank)}</p>` : ''}
       <p class="sh-full">${esc(d.bride.fullName || d.bride.name)}</p>
     </div>
   </section>`;
@@ -343,6 +345,7 @@ module.exports = {
 .sh-full{position:relative;margin:0;font-family:var(--font-script);font-size:38px;line-height:1.25;word-spacing:.08em}
 .sh-amp{position:relative;margin:2px 0;font-family:var(--font-script);font-size:30px;color:var(--sh-p2)}
 .sh-box .sh-lead{position:relative;font-size:15px}
+.sh-box .sh-rk{position:relative;margin:4px 0 0;font-family:var(--font-title);font-size:13px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
 
 /* ---------- ảnh + thư mời ---------- */
 .sh-guest{position:relative;text-align:center;padding-bottom:36px}

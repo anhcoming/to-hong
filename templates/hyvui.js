@@ -151,7 +151,7 @@ module.exports = {
     <p class="hv-wi">Wedding Invitation</p>
     ${hasFam ? `<div class="hv-fams">${fam(d.groom, 'Nhà trai')}<span class="hv-seal">${HY()}</span>${fam(d.bride, 'Nhà gái')}</div>` : ''}
     <p class="hv-lead">Trân trọng báo tin lễ thành hôn của</p>
-    <div class="hv-full"><p>${esc(d.groom.fullName || d.groom.name)}</p><i>&amp;</i><p>${esc(d.bride.fullName || d.bride.name)}</p></div>
+    <div class="hv-full">${d.groom.rank ? `<span class="hv-rk">${esc(d.groom.rank)}</span>` : ''}<p>${esc(d.groom.fullName || d.groom.name)}</p><i>&amp;</i>${d.bride.rank ? `<span class="hv-rk">${esc(d.bride.rank)}</span>` : ''}<p>${esc(d.bride.fullName || d.bride.name)}</p></div>
     <p class="hv-kinh">${esc(d.inviteText || 'Trân trọng kính mời')}</p>
     <p class="hv-guest">${guest ? esc(guest.name) : 'Bạn và gia đình'}</p>
     <p class="hv-dash" aria-hidden="true"></p>
@@ -268,6 +268,7 @@ module.exports = {
 .tpl-hyvui .hv-lead{margin:0;font-size:15px;color:var(--muted)}
 .tpl-hyvui .hv-full{margin:6px 0 4px;font-family:var(--font-script);font-weight:700;color:var(--ink)}
 .tpl-hyvui .hv-full p{margin:0;font-size:38px;line-height:1.25}
+.tpl-hyvui .hv-full .hv-rk{display:block;font-family:var(--font-body);font-weight:800;font-size:13px;letter-spacing:.06em;text-transform:uppercase;color:var(--accent)}
 .tpl-hyvui .hv-full i{display:block;font-style:normal;font-size:30px;color:var(--accent)}
 .tpl-hyvui .hv-kinh{margin:18px 0 0;font-family:var(--font-script);font-size:24px;color:var(--muted)}
 .tpl-hyvui .hv-guest{margin:2px 0 0;font-family:var(--font-script);font-weight:700;font-size:30px;line-height:1.3;color:var(--accent)}

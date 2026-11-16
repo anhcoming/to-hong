@@ -52,6 +52,14 @@
     // trời sao: nền xanh đêm, sao lấp lánh, ảnh trong khung tròn viền vàng
     saodem: { bg: 'night', base: '#0a1030', dark: true, frame: 'circle', single: 'side', pattern: [1, 2, 1, 3], fx: ['zoom', 'fade'], decor: 'stars', title: 'line', caption: false,
       theme: { main: '#fdf8ec', accent: '#e9cf8f', soft: '#cfd6ec', particle: '#ffffff' } },
+    // nền buổi lễ: plan = bố cục lần lượt từng cảnh (pair: cặp ảnh treo như triển lãm, full: một ảnh nguyên khung,
+    // strip: dải ba ảnh dọc, bleed: ảnh tràn màn hình). Mỗi cảnh dài shotSec giây, đủ scenes cảnh (~2 phút, thiếu ảnh thì lặp lại).
+    ngoc: { bg: 'ivory', base: '#efe7da', frame: 'mat', le: true, shotSec: 7, scenes: 16, plan: ['pair', 'full', 'strip', 'pair', 'bleed', 'full', 'pair', 'strip'], fx: ['fade', 'slide', 'fade', 'zoom'], decor: 'none', title: 'minimal', fonts: { serif: '"Playfair Display", serif', script: '"Dancing Script", cursive' },
+      theme: { main: '#3a3129', accent: '#a07c4f', soft: '#7a6d60', particle: '#c9b48f' } },
+    diudang: { bg: 'moss', base: '#2c312d', dark: true, frame: 'mat', le: true, shotSec: 7, scenes: 16, plan: ['full', 'pair', 'bleed', 'strip', 'full', 'pair', 'bleed', 'pair'], fx: ['fade', 'fade', 'zoom'], decor: 'dust', title: 'line',
+      theme: { main: '#f2ead9', accent: '#d7c08c', soft: '#c9c2b1', particle: '#f3e3b5' } },
+    kyuc: { bg: 'dark', base: '#0e0c0c', dark: true, frame: 'mat', le: true, shotSec: 7, scenes: 17, plan: ['strip', 'bleed', 'pair', 'strip', 'full', 'bleed', 'strip', 'pair'], fx: ['black', 'fade', 'slide'], decor: 'dust', title: 'cinema', fonts: { serif: '"Playfair Display", serif' },
+      theme: { main: '#ffffff', accent: '#d9c7a3', soft: '#cfc8bd', particle: '#ffffff' } },
     toigian: { bg: 'white', base: '#ffffff', frame: 'thin', single: 'center', pattern: [1, 2, 3, 1, 2], fx: ['slide', 'slideUp', 'wipe'], decor: 'none', title: 'minimal', fonts: { serif: '"Playfair Display", serif' },
       theme: { main: '#222222', accent: '#8a7a6a', soft: '#666666', particle: '#bbbbbb' } },
   };
@@ -387,7 +395,11 @@
         var light = st ? st.dark : !(video.template === 'dao' && !(video.photoBg && photo));
         ctx.shadowColor = light ? rgba(theme.accent, l.font === 'script' ? 0.45 : 0.25) : 'rgba(255,255,255,0.6)';
         ctx.shadowBlur = l.font === 'script' ? 26 : 12;
-        it.parts.forEach(function (ln, k) {
+        if (!exporting && alpha > 0.3) { // vị trí dòng chữ (trang sửa bấm vào để sửa tại chỗ)
+          var bw = Math.max.apply(0, it.parts.map(function (p) { return ctx.measureText(p).width; })), bh = it.parts.length * it.lh;
+          textHits.push({ l: l, text: resolve(l.text, vals), m: ctx.getTransform(), x: cx - bw / 2 - 24, y: y - 6, w: bw + 48, h: bh + 12, font: ctx.font, color: ctx.fillStyle, glow: ctx.shadowColor, ls: hasLS ? ctx.letterSpacing : '0px', caps: l.font === 'caps', lh: it.lh, n: it.parts.length });
+        }
+        if (l !== hideL) it.parts.forEach(function (ln, k) { // dòng đang sửa trên trang sửa: ẩn, ô nhập đè đúng chỗ
           ctx.fillText(ln, cx, y + it.lh * (k + 0.5) + (1 - pIn) * 34);
         });
         y += it.parts.length * it.lh + gap;
@@ -431,14 +443,42 @@
       }
       return c;
     }
+    function isClip(u) { return /\.(mp4|webm|mov)(\?|#|$)/i.test(String(u || '')); }
+    var exporting = false;
+    // xuất MP4: clip đang hiện trong khung hình phải tua đúng thời điểm (tính theo thời gian của cảnh), chờ tua xong mới vẽ
+    function syncClips(t) {
+      var waits = [];
+      if (!st || !shots.length) return Promise.resolve();
+      var k = 0; while (k < shots.length - 1 && t >= shots[k].t0 + shots[k].dur) k++;
+      [k - 1, k].forEach(function (j) {
+        var s = shots[j]; if (!s) return;
+        s.ids.forEach(function (id) {
+          var v = slides[id]; if (!v || !v.isClip) return;
+          var want = Math.max(0, t - s.t0) % (v.duration || 1);
+          if (Math.abs(v.currentTime - want) < 0.02) return;
+          waits.push(new Promise(function (ok) { var done = function () { v.removeEventListener('seeked', done); ok(); }; v.addEventListener('seeked', done); v.currentTime = want; setTimeout(ok, 1500); }));
+        });
+      });
+      return Promise.all(waits);
+    }
     function setPhotos(urls) {
-      slideUrls = (urls || []).filter(Boolean).slice(0, 20);
+      slideUrls = (urls || []).filter(Boolean).slice(0, 36);
       var list = slideUrls.slice(), loaded = list.map(function () { return null; });
-      slides = loaded; blurs = [];
+      // giữ ảnh cũ trên khung hình tới khi bộ ảnh mới tải xong (không chớp trắng khi thay / căn một ảnh)
       photosReady = Promise.all(list.map(function (u, i) {
         return new Promise(function (res) {
+          if (isClip(u)) { // video clip ngắn của slide cưới
+            var v = document.createElement('video');
+            v.crossOrigin = 'anonymous'; v.muted = true; v.loop = true; v.playsInline = true; v.preload = 'auto';
+            v.onloadeddata = function () { v.width = v.videoWidth; v.height = v.videoHeight; v.isClip = true; loaded[i] = v; if (!exporting) v.play().catch(function () {}); res(); };
+            v.onerror = function () { res(); };
+            v.src = u;
+            return;
+          }
           var img = new Image();
           img.crossOrigin = 'anonymous'; // ảnh trên kho lưu trữ khác tên miền vẫn quay video được
+          var fm = /#p=([\d.]+),([\d.]+)(?:,([\d.]+))?/.exec(u); // căn ảnh: điểm lấy nét (%) + mức phóng
+          if (fm) img._f = [+fm[1] / 100, +fm[2] / 100, Math.max(1, +fm[3] || 1)];
           img.onload = function () { loaded[i] = img; res(); };
           img.onerror = function () { res(); };
           img.src = u;
@@ -448,6 +488,7 @@
         slides = loaded.filter(Boolean);
         blurs = slides.map(blurOf);
         if (video) set(video);
+        if (pausedAt !== null) renderAt(pausedAt); // đang dừng hình: vẽ lại ngay với ảnh mới
       });
     }
     setPhotos(opts.photos);
@@ -456,6 +497,19 @@
       var sec = video.seconds || 7, ps = video.photoSec || 3, pat = st.pattern, fx = st.fx;
       introSec = sec;
       shots = [];
+      if (st.le && slides.length) { // nền buổi lễ: đủ số cảnh, mỗi cảnh một bố cục, ảnh lặp vòng khi thiếu
+        var NEED = { pair: 2, full: 1, strip: 3, bleed: 1 }, c = 0, dur = st.shotSec || 7;
+        for (var q = 0; q < st.scenes; q++) {
+          var lay = st.plan[q % st.plan.length], need = Math.min(NEED[lay], slides.length), ids = [];
+          if (lay !== 'pair' && lay !== 'strip') { // một ảnh: ưu tiên ảnh ngang cho tràn màn, ảnh dọc cho nguyên khung vẫn được
+            ids.push(c % slides.length); c++;
+          } else for (var r = 0; r < need; r++) { ids.push(c % slides.length); c++; }
+          shots.push({ ids: ids, lay: need < NEED[lay] ? 'full' : lay, dur: dur, fx: fx[q % fx.length], n: q });
+        }
+        var t0 = introSec; shots.forEach(function (s) { s.t0 = t0; t0 += s.dur; });
+        shotTotal = t0 - introSec;
+        return introSec + shotTotal + Math.max(0, scenes.length - 1) * sec;
+      }
       var i = 0, k = 0, n = slides.length;
       while (i < n) {
         var want = pat[k % pat.length], grp = [];
@@ -495,11 +549,19 @@
     }
     // vẽ ảnh lấp đầy vùng đang cắt (clip), zoom + trượt nhẹ theo p (0→1)
     function fillImg(img, x, y, w, h, p, dir, zoom) {
+      if (img && !exporting) { var si = slides.indexOf(img); if (si >= 0) photoHits.push({ i: si, m: ctx.getTransform(), x: x, y: y, w: w, h: h }); }
       if (!img) { ctx.fillStyle = '#2a2224'; ctx.fillRect(x, y, w, h); return; }
-      var z = 1.02 + (zoom || 0.08) * p;
+      var f = img._f, z = (1.02 + (zoom || 0.08) * p) * (f ? f[2] : 1);
       var sc = Math.max(w / img.width, h / img.height) * z;
       var iw = img.width * sc, ih = img.height * sc, ex = iw - w, ey = ih - h;
       var px = dir % 2 ? p : 1 - p;
+      if (f) { // đã căn: giữ đúng phần người dùng chọn, chỉ trôi rất nhẹ quanh điểm đó
+        var ax = Math.min(1, Math.max(0, f[0] + (px - 0.5) * 0.08)), ay = Math.min(1, Math.max(0, f[1]));
+        if (st && st.sepia && 'filter' in ctx) ctx.filter = 'sepia(' + st.sepia + ') contrast(1.06) saturate(0.85)';
+        ctx.drawImage(img, x - ex * ax, y - ey * ay, iw, ih);
+        if (st && st.sepia && 'filter' in ctx) ctx.filter = 'none';
+        return;
+      }
       if (st && st.sepia && 'filter' in ctx) ctx.filter = 'sepia(' + st.sepia + ') contrast(1.06) saturate(0.85)';
       ctx.drawImage(img, x - ex * (0.3 + 0.4 * px), y - ey * (dir > 1 ? 0.25 + 0.3 * p : 0.2), iw, ih);
       if (st && st.sepia && 'filter' in ctx) ctx.filter = 'none';
@@ -562,6 +624,11 @@
         return;
       }
       ctx.fillStyle = st.base; ctx.fillRect(0, 0, W, H);
+      if (b === 'ivory' || b === 'moss') { // nền buổi lễ: vệt sáng xiên rất nhẹ trôi chậm
+        var sx = W * (0.2 + 0.3 * Math.sin(p * 0.6)), lg = ctx.createLinearGradient(sx, 0, sx + W * 0.5, H);
+        lg.addColorStop(0, 'rgba(255,255,255,0)'); lg.addColorStop(0.5, b === 'ivory' ? 'rgba(255,255,255,0.35)' : 'rgba(255,255,255,0.05)'); lg.addColorStop(1, 'rgba(255,255,255,0)');
+        ctx.fillStyle = lg; ctx.fillRect(0, 0, W, H);
+      }
       if (b === 'paper' || b === 'news') { if (!paperTex) paperTex = texture('paper'); ctx.drawImage(paperTex, 0, 0, W, H); }
       if (b === 'night') { // dải ngân hà mờ chéo màn
         var mw = ctx.createLinearGradient(0, H, W, 0);
@@ -569,7 +636,7 @@
         ctx.fillStyle = mw; ctx.fillRect(0, 0, W, H);
       }
       var g = ctx.createRadialGradient(W / 2, H * 0.45, H * 0.2, W / 2, H / 2, W * 0.7);
-      var edge = { dark: 'rgba(0,0,0,0.55)', black: 'rgba(0,0,0,0)', paper: 'rgba(120,80,40,0.18)', white: 'rgba(0,0,0,0.04)', cream: 'rgba(160,110,80,0.12)', news: 'rgba(90,60,20,0.3)', night: 'rgba(0,0,10,0.6)', blush: 'rgba(214,92,120,0.22)', red: 'rgba(30,0,4,0.6)', sage: 'rgba(80,110,60,0.22)' }[b] || 'rgba(0,0,0,0)';
+      var edge = { ivory: 'rgba(140,110,70,0.16)', moss: 'rgba(0,0,0,0.45)', dark: 'rgba(0,0,0,0.55)', black: 'rgba(0,0,0,0)', paper: 'rgba(120,80,40,0.18)', white: 'rgba(0,0,0,0.04)', cream: 'rgba(160,110,80,0.12)', news: 'rgba(90,60,20,0.3)', night: 'rgba(0,0,10,0.6)', blush: 'rgba(214,92,120,0.22)', red: 'rgba(30,0,4,0.6)', sage: 'rgba(80,110,60,0.22)' }[b] || 'rgba(0,0,0,0)';
       g.addColorStop(0, 'rgba(0,0,0,0)'); g.addColorStop(1, edge);
       ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
       if (b === 'red') { // lưới thoi chìm
@@ -580,7 +647,47 @@
     }
 
     // ---------- khung ảnh ----------
+    // ảnh có viền nền (mat) và bóng như treo tường; ảnh nhích rất chậm trong khung
+    function matted(img, x, y, w, h, p, dir, mat) {
+      if (!img) return;
+      shadowed(function () { ctx.fillStyle = st.dark ? '#f4efe6' : '#ffffff'; ctx.fillRect(x - mat, y - mat, w + mat * 2, h + mat * 2); }, st.dark ? 50 : 34, st.dark ? 22 : 16, st.dark ? 0.55 : 0.22);
+      ctx.save(); ctx.beginPath(); ctx.rect(x, y, w, h); ctx.clip(); fillImg(img, x, y, w, h, p, dir, 0.06); ctx.restore();
+    }
+    function drawLe(s, local) {
+      var p = clamp(local / s.dur), ids = s.ids, dir = s.n % 4;
+      var inA = function (j) { return easeOut(clamp((local - 0.15 - j * 0.18) / 0.9)); };
+      bgFill(ids[0], p);
+      if (s.lay === 'bleed') {
+        var bi = slides[ids[0]];
+        if (bi && bi.height > bi.width * 1.05) { // ảnh dọc: nền mờ chính ảnh đó tràn màn, ảnh nguyên vẹn ở giữa (không cắt mất đầu)
+          if (blurs[ids[0]]) { var zz = 1.1 + 0.06 * p; ctx.drawImage(blurs[ids[0]], (W - W * zz) / 2, (H - H * zz) / 2, W * zz, H * zz); }
+          ctx.fillStyle = 'rgba(0,0,0,0.25)'; ctx.fillRect(0, 0, W, H);
+          var bh = H * 0.9, bw = bh * bi.width / bi.height;
+          shadowed(function () { ctx.save(); ctx.beginPath(); ctx.rect((W - bw) / 2, (H - bh) / 2, bw, bh); ctx.clip(); fillImg(bi, (W - bw) / 2, (H - bh) / 2, bw, bh, p, dir, 0.05); ctx.restore(); }, 60, 20, 0.5);
+          return;
+        }
+        ctx.save(); ctx.beginPath(); ctx.rect(0, 0, W, H); ctx.clip(); fillImg(bi, 0, 0, W, H, p, dir, 0.12); ctx.restore(); vignette(0.35); return;
+      }
+      if (s.lay === 'full') {
+        var im = slides[ids[0]]; if (!im) return;
+        var land = im.width > im.height * 1.1, hh = H * (land ? 0.7 : 0.8), ww = land ? Math.min(W * 0.72, hh * im.width / im.height) : hh * 0.75;
+        if (land) hh = ww * im.height / im.width;
+        ctx.save(); ctx.globalAlpha = inA(0); matted(im, (W - ww) / 2, (H - hh) / 2 + (1 - inA(0)) * 30, ww, hh, p, dir, 18); ctx.restore();
+        return;
+      }
+      var n = ids.length, ph = H * (n === 3 ? 0.66 : 0.7), pw = ph * (n === 3 ? 0.68 : 0.76), gap = n === 3 ? 64 : 90;
+      var x0 = (W - (pw * n + gap * (n - 1))) / 2;
+      for (var j = 0; j < n; j++) {
+        var a = inA(j);
+        ctx.save(); ctx.globalAlpha = a;
+        // cặp ảnh triển lãm: lệch cao thấp nhẹ như treo tường; dải ba: thẳng hàng
+        var dy = n === 2 ? (j ? 26 : -26) : 0;
+        matted(slides[ids[j]], x0 + j * (pw + gap), (H - ph) / 2 + dy + (1 - a) * 36, pw, ph, p, (dir + j) % 4, n === 3 ? 12 : 16);
+        ctx.restore();
+      }
+    }
     function drawShot(s, local) {
+      if (s.lay) return drawLe(s, local);
       var p = clamp(local / s.dur), ids = s.ids, n = ids.length, dir = s.n % 4;
       if (st.frame === 'film') return drawFilm(s, local);
       if (st.frame === 'polaroid') return drawPile(s, local);
@@ -661,6 +768,7 @@
 
     // polaroid: ảnh mới rơi xuống chồng lên các ảnh trước, mỗi tấm nghiêng một chút, có băng dính và chữ viết tay
     var NOTES = ['Ngày đầu tiên', 'Mình cưới nhau nhé!', 'Hạnh phúc', 'Bên nhau', 'Thương lắm', 'Mãi yêu', 'Kỷ niệm', 'Về chung nhà'];
+    function noteOf(j) { return (video.notes && video.notes[j]) || (j === 0 && vals.chu_re ? [vals.chu_re, vals.co_dau].filter(Boolean).join(' & ') : NOTES[j % NOTES.length]); }
     function pose(j) { var r = rng(j * 7919 + 13); r(); return { rot: (r() - 0.5) * 0.24, x: W / 2 + (r() - 0.5) * 700, y: H / 2 + (r() - 0.5) * 40 }; }
     function polaroid(j, a, drop) {
       var im = slides[shots[j].ids[0]], land = im && im.width > im.height * 1.1;
@@ -677,7 +785,11 @@
       ctx.save(); ctx.translate(0, -ch / 2); ctx.rotate((j % 2 ? 1 : -1) * 0.06); ctx.fillRect(-80, -20, 160, 40); ctx.restore();
       ctx.fillStyle = theme.main; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
       ctx.font = font('script', 54);
-      ctx.fillText(j === 0 && vals.chu_re ? [vals.chu_re, vals.co_dau].filter(Boolean).join(' & ') : NOTES[j % NOTES.length], 0, ch / 2 - 56);
+      var note = noteOf(j);
+      if (j !== hideJ) ctx.fillText(note, 0, ch / 2 - 56);
+      // vị trí dòng chữ trên khung (điểm ảnh của canvas) — trang sửa bấm vào để sửa chữ tại chỗ
+      var m = ctx.getTransform(), ty = ch / 2 - 56, sc = Math.hypot(m.a, m.b);
+      noteHits.push({ j: j, text: note, x: m.c * ty + m.e, y: m.d * ty + m.f, w: (ctx.measureText(note).width + 60) * sc, h: 90 * sc, rot: Math.atan2(m.b, m.a), sc: sc, font: ctx.font, color: ctx.fillStyle });
       ctx.restore();
     }
     function drawPile(s, local) {
@@ -938,8 +1050,22 @@
       return i === 0 ? 0 : introSec + shotTotal + (i - 1) * sec;
     }
 
+    // dòng thời gian cho trình sửa kiểu CapCut: thẻ chữ mở đầu, từng khung ảnh (1–3 ảnh), các thẻ chữ kết thúc
+    // → [{ kind: 'text'|'shot', scene, ids, t0, dur }]
+    function timeline() {
+      var sec = video ? video.seconds || 7 : 7, out = [];
+      if (!video) return out;
+      if (!st || !shots.length) { for (var i = 0; i < scenes.length; i++) out.push({ kind: 'text', scene: i, t0: i * sec, dur: sec }); return out; }
+      out.push({ kind: 'text', scene: 0, t0: 0, dur: introSec });
+      shots.forEach(function (s) { out.push({ kind: 'shot', ids: s.ids.slice(), t0: s.t0, dur: s.dur }); });
+      for (var j = 1; j < scenes.length; j++) out.push({ kind: 'text', scene: j, t0: introSec + shotTotal + (j - 1) * sec, dur: sec });
+      return out;
+    }
+
+    var noteHits = [], photoHits = [], textHits = [], hideL = null, hideJ = -1; // dòng chữ / ảnh trên khung hình vừa vẽ (trang sửa bấm vào để sửa)
     function renderAt(t) {
       if (!video) return;
+      noteHits = []; photoHits = []; textHits = [];
       t = ((t % D) + D) % D;
       ctx.setTransform(canvas.width / W, 0, 0, canvas.height / H, 0, 0);
       ctx.globalAlpha = 1;
@@ -996,15 +1122,16 @@
           if (failed) return Promise.reject(failed);
           if (i >= total) return enc.flush();
           if (enc.encodeQueueSize > 6) return breathe().then(next);
-          renderAt(i / fps);
+          return syncClips(i / fps).then(function () { renderAt(i / fps);
           var f = new VideoFrame(canvas, { timestamp: Math.round(i * 1e6 / fps), duration: Math.round(1e6 / fps) });
           enc.encode(f, { keyFrame: i % (fps * 2) === 0 });
           f.close();
           i++;
           if (onProgress && i % 10 === 0) onProgress(i / total);
-          return (i % 15 === 0 ? breathe() : Promise.resolve()).then(next);
+          return (i % 15 === 0 ? breathe() : Promise.resolve()).then(next); });
         }
-        return next();
+        exporting = true; slides.forEach(function (v) { if (v && v.isClip) v.pause(); });
+        return next().then(function (x) { exporting = false; return x; }, function (e) { exporting = false; throw e; });
       }).then(function () {
         enc.close();
         if (failed) throw failed;
@@ -1083,15 +1210,16 @@
           if (failed) return Promise.reject(failed);
           if (i >= total) return enc.flush();
           if (enc.encodeQueueSize > 6) return breathe().then(next);
-          renderAt(i / fps);
+          return syncClips(i / fps).then(function () { renderAt(i / fps);
           var f = new VideoFrame(canvas, { timestamp: Math.round(i * 1e6 / fps), duration: Math.round(1e6 / fps) });
           enc.encode(f, { keyFrame: i % (fps * 2) === 0 }); // khung khoá 2 giây/lần, khung đầu luôn là khung khoá → lặp vòng được
           f.close();
           i++;
           if (onProgress && i % 10 === 0) onProgress(i / total);
-          return (i % 15 === 0 ? breathe() : Promise.resolve()).then(next);
+          return (i % 15 === 0 ? breathe() : Promise.resolve()).then(next); });
         }
-        return next();
+        exporting = true; slides.forEach(function (v) { if (v && v.isClip) v.pause(); });
+        return next().then(function (x) { exporting = false; return x; }, function (e) { exporting = false; throw e; });
       }).then(function () {
         enc.close();
         if (failed) throw failed;
@@ -1183,9 +1311,44 @@
     ready();
 
     return {
-      set: set, setPhoto: setPhoto, setPhotos: setPhotos, sceneTime: sceneTime, renderAt: renderAt, play: play, stop: stop, seek: seek, record: record, exportMp4: exportMp4, ready: ready,
+      set: set, setPhoto: setPhoto, setPhotos: setPhotos, sceneTime: sceneTime, timeline: timeline, photosReady: function () { return photosReady; }, renderAt: renderAt, play: play, stop: stop, seek: seek, record: record, exportMp4: exportMp4, ready: ready,
       duration: function () { return D; },
       time: now, pause: pause, resume: resume, paused: function () { return pausedAt !== null; },
+      // (x, y) theo điểm ảnh canvas → dòng chữ dưới ảnh nằm ở đó (tấm trên cùng trước) hoặc null
+      noteOf: function (j) { return noteOf(j); },
+      // ẩn một dòng chữ (đang sửa tại chỗ trên trang sửa): { l } dòng của cảnh chữ, { j } chữ dưới ảnh; null = hiện lại
+      hideText: function (o) { hideL = (o && o.l) || null; hideJ = o && o.j != null ? o.j : -1; if (pausedAt !== null) renderAt(pausedAt); },
+      // (x, y) theo điểm ảnh canvas → dòng chữ của cảnh chữ nằm ở đó: { l: dòng (sửa l.text), text, box, sc: điểm ảnh / đơn vị } hoặc null
+      textAt: function (x, y) {
+        for (var k = textHits.length - 1; k >= 0; k--) {
+          var h = textHits[k], q = h.m.inverse().transformPoint({ x: x, y: y });
+          if (q.x >= h.x && q.x <= h.x + h.w && q.y >= h.y && q.y <= h.y + h.h) {
+            var a = h.m.transformPoint({ x: h.x, y: h.y }), b = h.m.transformPoint({ x: h.x + h.w, y: h.y + h.h });
+            return { l: h.l, text: h.text, sc: h.m.a, box: { l: a.x, t: a.y, r: b.x, b: b.y }, font: h.font, color: h.color, glow: h.glow, ls: h.ls, caps: h.caps, lh: h.lh, n: h.n };
+          }
+        }
+        return null;
+      },
+      // (x, y) theo điểm ảnh canvas → ảnh trên cùng nằm ở đó: { i: thứ tự ảnh, box: khung bao (điểm ảnh canvas) } hoặc null
+      photoAt: function (x, y) {
+        for (var k = photoHits.length - 1; k >= 0; k--) {
+          var h = photoHits[k], q = h.m.inverse().transformPoint({ x: x, y: y });
+          if (q.x >= h.x && q.x <= h.x + h.w && q.y >= h.y && q.y <= h.y + h.h) {
+            var pts = [[h.x, h.y], [h.x + h.w, h.y], [h.x, h.y + h.h], [h.x + h.w, h.y + h.h]].map(function (c) { return h.m.transformPoint({ x: c[0], y: c[1] }); });
+            var xs = pts.map(function (p) { return p.x; }), ys = pts.map(function (p) { return p.y; });
+            return { i: h.i, ratio: h.w / h.h, box: { l: Math.min.apply(0, xs), t: Math.min.apply(0, ys), r: Math.max.apply(0, xs), b: Math.max.apply(0, ys) } }; // ratio: tỉ lệ khung ảnh của mẫu (để căn đúng khung)
+          }
+        }
+        return null;
+      },
+      noteAt: function (x, y) {
+        for (var i = noteHits.length - 1; i >= 0; i--) {
+          var h = noteHits[i], c = Math.cos(-h.rot), s = Math.sin(-h.rot), dx = x - h.x, dy = y - h.y;
+          var lx = dx * c - dy * s, ly = dx * s + dy * c;
+          if (Math.abs(lx) <= h.w / 2 && Math.abs(ly) <= h.h / 2) return h;
+        }
+        return null;
+      },
     };
   }
 

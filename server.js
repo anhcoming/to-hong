@@ -120,10 +120,12 @@ function claimGuestCards(req, res, user) {
   const mine = db.cards.filter((c) => c.guestId === gid && !c.userId);
   if (mine.length) {
     const w = Wd.ensure(user);
-    // sổ tay còn trống (tài khoản mới) → lấy tên đôi, ngày cưới từ thiệp nháp; đã có thông tin thì giữ nguyên sổ tay
-    const fresh = !w.couple.groom.name && !w.couple.bride.name && !db.cards.some((c) => c.weddingId === w.id);
+    // sổ tay chưa có tên đôi → lấy tên đôi, ngày cưới từ thiệp nháp vừa điền (kể cả khi tài khoản đã có thiệp cũ còn trống tên);
+    // sổ tay đã có tên thì giữ nguyên sổ tay
+    const src = mine.filter((c) => c.data.groom.name || c.data.bride.name).sort((a, b) => b.updatedAt - a.updatedAt)[0];
+    const fresh = !w.couple.groom.name && !w.couple.bride.name;
     mine.forEach((c) => { c.userId = user.id; c.weddingId = w.id; delete c.guestId; c.updatedAt = Date.now(); });
-    if (fresh) Wd.syncFromCard(mine[0], true);
+    if (fresh && src) Wd.syncFromCard(src, true);
     save();
   }
   const prev = res.getHeader('Set-Cookie');
@@ -199,7 +201,8 @@ function cardSummary(card) {
   };
 }
 function cardFull(card) {
-  return { ...cardSummary(card), data: card.data, ledConfig: card.led || null, videoConfig: card.video || null };
+  // chuẩn hoá khi trả về: thiệp lưu từ trước có đủ các trường mới (trang phục, hỏi đáp, hiệu ứng…)
+  return { ...cardSummary(card), data: cd.normalize(card.data), ledConfig: card.led || null, videoConfig: card.video || null };
 }
 
 function qrPay(amount, code) {
@@ -355,7 +358,7 @@ route('GET', '/api/meta', async (req, res) => {
     brand: config.brand, tagline: config.tagline, price: cardPrice(), ...promoInfo(), trialDays: config.trialDays,
     trialGuestLimit: config.trialGuestLimit, banks, templates: templateList(), templateGroups, baseUrl: BASE_URL, support: config.support,
     ledPrice: config.ledPrice, led: ledLib.options(),
-    videoPrice: config.videoPrice, video: videoLib.options(), music: musicLib.options(),
+    videoPrice: config.videoPrice, video: { ...videoLib.options(), samples: Object.fromEntries(videoLib.options().templates.filter((t) => t.photos).map((t) => [t.id, videoSamples(t)])) }, music: musicLib.options(),
     comboPrice: comboPrice(), comboListPrice: comboPromo() ? config.comboListPrice : null, promoEndsAt: promoActive() || comboPromo() ? promoEnd() : null, blobUpload: !!process.env.BLOB_READ_WRITE_TOKEN,
     googleLogin: google.enabled(), facebookLogin: facebook.enabled(), emailSignup: emailSignup(),
   });
@@ -364,7 +367,7 @@ route('GET', '/api/meta', async (req, res) => {
 // ---------------- thống kê truy cập ----------------
 // Trang giới thiệu gửi về (public/js/site.js): p = đường dẫn, v = lượt đầu trong ngày của trình duyệt này, n = lần đầu ghé,
 // r = nguồn tới, m = điện thoại; hoặc u = bấm "Dùng mẫu" (thiep:<mẫu> | video:<mẫu> | led:<màu>-<hiệu ứng>).
-const TRACK_PAGES = { '/': 'Trang chủ', '/mau-thiep': 'Mẫu thiệp', '/video-cuoi': 'Video cưới', '/man-hinh-led-dam-cuoi': 'Màn hình LED', '/so-tay-cuoi': 'Sổ tay cưới', '/dang-nhap': 'Đăng nhập', '/goi-y': 'Gợi ý thiệp từ ảnh' };
+const TRACK_PAGES = { '/': 'Trang chủ', '/mau-thiep': 'Mẫu thiệp', '/video-dam-ngo': 'Video dạm ngõ', '/slide-cuoi': 'Slide cưới', '/man-hinh-led-dam-cuoi': 'Màn hình LED', '/so-tay-cuoi': 'Sổ tay cưới', '/dang-nhap': 'Đăng nhập', '/goi-y': 'Gợi ý thiệp từ ảnh' };
 route('POST', '/api/t', async (req, res, ctx) => {
   try {
     if (stats.isBot(req) || stats.isOwner(req, ctx)) throw 0; // bot và máy của chủ web không tính
@@ -480,11 +483,13 @@ function newCard(user, b = {}) {
   const tpl = templates[b.template] ? b.template : DEFAULT_TEMPLATE;
   const now = Date.now();
   const data = cd.defaults();
-  Wd.prefill(data, w); // tên đôi, bố mẹ, ngày cưới đã nhập trong sổ tay
-  data.events = [
-    { name: 'Lễ Thành Hôn', date: w.date, time: '10:00', place: '', address: '', mapUrl: '' },
-    { name: 'Tiệc Cưới', date: w.date, time: '18:00', place: '', address: '', mapUrl: '' },
-  ];
+  // hồ sơ cưới (sổ tay): tên đôi, danh xưng, bố mẹ, ngày cưới; các lễ + tài khoản mừng cưới của thiệp đã lưu trước đó
+  if (!Wd.prefill(data, w)) {
+    data.events = [
+      { name: 'Lễ Thành Hôn', date: w.date, time: '10:00', place: '', address: '', mapUrl: '' },
+      { name: 'Tiệc Cưới', date: w.date, time: '18:00', place: '', address: '', mapUrl: '' },
+    ];
+  }
   const card = {
     id: rid(12), userId: user.id, weddingId: w.id, slug: uniqueSlug('thiep-' + rid(6)),
     title: str(b.title, 60) || `Thiệp ${db.cards.filter((c) => c.userId === user.id).length + 1}`,
@@ -702,13 +707,14 @@ route('GET', '/api/maplink', async (req, res, ctx) => {
 });
 
 // ---------------- API: tải ảnh / nhạc ----------------
-const UPLOAD_TYPES = { 'image/jpeg': ['.jpg', 6e6], 'image/png': ['.png', 6e6], 'image/webp': ['.webp', 6e6], 'audio/mpeg': ['.mp3', 12e6] };
+// video clip ngắn cho slide cưới (MP4 / WebM / MOV, tối đa 60MB — bản chạy thật gửi thẳng lên kho Blob, không qua máy chủ)
+const UPLOAD_TYPES = { 'image/jpeg': ['.jpg', 6e6], 'image/png': ['.png', 6e6], 'image/webp': ['.webp', 6e6], 'audio/mpeg': ['.mp3', 12e6], 'video/mp4': ['.mp4', 60e6], 'video/webm': ['.webm', 60e6], 'video/quicktime': ['.mov', 60e6] };
 route('POST', '/api/upload', async (req, res, ctx) => {
   const user = needUser(ctx);
   rateLimit('up:' + user.id, 200, 36e5);
   const type = String(req.headers['content-type'] || '').split(';')[0].trim();
   const t = UPLOAD_TYPES[type];
-  if (!t) throw httpError(415, 'Chỉ nhận ảnh JPG/PNG/WEBP hoặc nhạc MP3');
+  if (!t) throw httpError(415, 'Chỉ nhận ảnh JPG/PNG/WEBP, nhạc MP3 hoặc video MP4/MOV');
   const buf = await readBody(req, t[1]);
   ctx.tm.mark('body');
   if (!buf.length) throw httpError(400, 'Tệp rỗng');
@@ -731,6 +737,7 @@ route('POST', '/api/upload', async (req, res, ctx) => {
 // Ảnh gửi thẳng từ trình duyệt lên Vercel Blob (không đi qua hàm máy chủ): máy chủ chỉ cấp vé.
 // Tên tệp bắt buộc bắt đầu bằng mã người dùng để biết ảnh của ai (dùng khi xoá ảnh bỏ dở).
 const IMG_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
+const CLIP_TYPES = ['video/mp4', 'video/webm', 'video/quicktime'];
 route('POST', '/api/upload/blob', async (req, res, ctx) => {
   const user = needUser(ctx);
   if (!process.env.BLOB_READ_WRITE_TOKEN) throw httpError(501, 'Chưa cấu hình kho lưu trữ');
@@ -741,8 +748,9 @@ route('POST', '/api/upload/blob', async (req, res, ctx) => {
   const out = await handleUpload({
     body, request: req,
     onBeforeGenerateToken: async (pathname) => {
-      if (!new RegExp(`^uploads/${user.id}-[\\w-]+\\.(webp|jpg|png)$`).test(pathname)) throw httpError(400, 'Tên tệp không hợp lệ');
-      return { allowedContentTypes: IMG_TYPES, maximumSizeInBytes: 6e6, addRandomSuffix: true };
+      if (!new RegExp(`^uploads/${user.id}-[\\w-]+\\.(webp|jpg|png|mp4|webm|mov)$`).test(pathname)) throw httpError(400, 'Tên tệp không hợp lệ');
+      const clip = /\.(mp4|webm|mov)$/.test(pathname);
+      return { allowedContentTypes: clip ? CLIP_TYPES : IMG_TYPES, maximumSizeInBytes: clip ? 60e6 : 6e6, addRandomSuffix: true };
     },
   });
   res.setHeader('Server-Timing', ctx.tm.header());
@@ -1113,6 +1121,29 @@ route('GET', '/led/:slug', async (req, res, ctx) => {
   html(res, 200, ledLib.renderLed(card, card.led, { preview: isOwner && ctx.query.get('preview') === '1', trial: !st.paid }));
 });
 
+// mẫu album xem thử với một bộ ảnh cưới đầy đủ
+const P = (pool, ns, ext = 'jpg') => ns.map((n) => `/demo/${pool}-${n}.${ext}`);
+const VIDEO_SETS = { // bộ ảnh xem thử hợp từng mẫu
+  album: P('longphung', [2, 5, 1, 3, 6, 4, 8, 7, 9, 10]).concat(P('dodam', [1, 2, 4, 3])),
+  songhy: P('longphung', [3, 1, 6, 2, 8, 4, 9, 5, 10, 7]),
+  dienanh: P('tim', [2, 6, 1, 5, 3, 8, 4, 7]),
+  phimcu: P('nau', [2, 4, 6, 1, 5, 8, 3, 7]),
+  polaroid: P('hoamoc', [2, 5, 3, 7, 4, 8, 6], 'webp'),
+  tapchi: P('naudam', [7, 5, 6, 9, 3, 4, 10, 8]),
+  traitim: P('toduyen', [3, 1, 4, 2, 5, 6, 7], 'webp'),
+  hoadao: P('toduyen', [2, 5, 3, 6, 1, 4, 7], 'webp'),
+  laxanh: P('hoamoc', [6, 2, 7, 3, 1, 4, 8, 5], 'webp'),
+  toigian: P('xanhla', [1, 3, 2, 5, 4, 6, 8, 7, 9]),
+  baocuoi: P('nau', [1, 3, 5, 2, 6, 4, 7, 8]),
+  lichhen: P('toduyen', [1, 4, 2, 6, 3, 5, 7], 'webp'),
+  saodem: P('tim', [1, 3, 5, 2, 7, 4, 6, 8]),
+};
+// ảnh mẫu cho trang sửa video khi người dùng chưa có ảnh nào: đủ số ô của mẫu (lặp lại bộ ảnh nếu thiếu)
+function videoSamples(t) {
+  const base = VIDEO_SETS[t.id] || VIDEO_SETS.album, n = t.slots || base.length;
+  return Array.from({ length: n }, (_, i) => base[i % base.length]);
+}
+
 // ---------------- video dạm ngõ ----------------
 route('GET', '/video/:slug', async (req, res, ctx) => {
   const slug = ctx.params.slug;
@@ -1120,27 +1151,11 @@ route('GET', '/video/:slug', async (req, res, ctx) => {
   if (slug === 'demo') {
     const q = Object.fromEntries(ctx.query);
     const card = { data: cd.normalize(cd.sample()) };
-    // mẫu album xem thử với một bộ ảnh cưới đầy đủ
-    const P = (pool, ns, ext = 'jpg') => ns.map((n) => `/demo/${pool}-${n}.${ext}`);
-    const SETS = { // bộ ảnh xem thử hợp từng mẫu
-      album: P('longphung', [2, 5, 1, 3, 6, 4, 8, 7, 9, 10]).concat(P('dodam', [1, 2, 4, 3])),
-      songhy: P('longphung', [3, 1, 6, 2, 8, 4, 9, 5, 10, 7]),
-      dienanh: P('tim', [2, 6, 1, 5, 3, 8, 4, 7]),
-      phimcu: P('nau', [2, 4, 6, 1, 5, 8, 3, 7]),
-      polaroid: P('hoamoc', [2, 5, 3, 7, 4, 8, 6], 'webp'),
-      tapchi: P('naudam', [7, 5, 6, 9, 3, 4, 10, 8]),
-      traitim: P('toduyen', [3, 1, 4, 2, 5, 6, 7], 'webp'),
-      hoadao: P('toduyen', [2, 5, 3, 6, 1, 4, 7], 'webp'),
-      laxanh: P('hoamoc', [6, 2, 7, 3, 1, 4, 8, 5], 'webp'),
-      toigian: P('xanhla', [1, 3, 2, 5, 4, 6, 8, 7, 9]),
-      baocuoi: P('nau', [1, 3, 5, 2, 6, 4, 7, 8]),
-      lichhen: P('toduyen', [1, 4, 2, 6, 3, 5, 7], 'webp'),
-      saodem: P('tim', [1, 3, 5, 2, 7, 4, 6, 8]),
-    };
-    const photos = SETS[q.template] || [];
+    const photos = VIDEO_SETS[q.template] || [];
     await demoView(req, ctx, 'video:' + (videoLib.options().templates.some((t) => t.id === q.template) ? q.template : 'chung'));
     const v = videoLib.normalize({ template: q.template, photoBg: q.photo === '1', photos, event: { kind: 'Lễ Dạm Ngõ', date: '2026-11-22', time: '09:00', place: 'Tư gia nhà gái' } });
-    return html(res, 200, videoLib.renderVideo(card, v, { preview: q.preview === '1' }));
+    const useUrl = videoLib.options().templates.some((t) => t.id === q.template) ? `/tao-video?mau=${encodeURIComponent(q.template)}` : '';
+    return html(res, 200, videoLib.renderVideo(card, v, { preview: q.preview === '1', useUrl }));
   }
   const card = cardBySlug(slug);
   const isOwner = canManage(ctx.user, card);
@@ -1288,7 +1303,8 @@ route('POST', '/api/cards/:id/video/saved-file', async (req, res, ctx) => {
 // Trên Vercel các trang này được CDN trả thẳng (rewrites trong vercel.json) — thêm/đổi trang thì sửa cả hai nơi.
 const PAGES = {
   '/': 'index.html', '/dang-nhap': 'auth.html', '/thiep-cua-toi': 'dashboard.html', '/admin': 'admin.html', '/mau-thiep': 'templates.html',
-  '/video-cuoi': 'video-landing.html',
+  '/video-dam-ngo': 'video-landing.html',
+  '/slide-cuoi': 'slide-landing.html',
   '/man-hinh-led-dam-cuoi': 'led-landing.html',
   '/so-tay': 'planner.html',
   '/video-cua-toi': 'dashboard.html', // cùng trang với "Thiệp của tôi", hiện danh sách video
@@ -1330,7 +1346,7 @@ function serveFile(res, file, cache, req) {
 }
 
 // trang cũ gộp vào "Video cưới" (màn LED không còn bán riêng; khách cũ vẫn sửa & chiếu ở /sua-led, /led/…)
-const MOVED = { '/video-dam-ngo': '/video-cuoi' };
+const MOVED = { '/video-cuoi': '/video-dam-ngo' }; // video ảnh chuyển sang trang Slide cưới, mẫu chữ ở Video dạm ngõ
 
 function serveStatic(req, res, pathname) {
   if (MOVED[pathname]) { res.writeHead(301, { Location: MOVED[pathname] }); return res.end(); }

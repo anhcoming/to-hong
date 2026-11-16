@@ -155,9 +155,9 @@ module.exports = {
       ${hasFam ? `<div class="sh-fams">${fam(d.groom)}<i></i>${fam(d.bride)}</div>` : ''}
       <p class="sh-lead">Hai gia đình trân trọng báo tin lễ thành hôn của hai con chúng tôi</p>
       <div class="sh-couple">
-        <h3>${esc(d.groom.fullName || d.groom.name)}</h3>
+        <h3>${esc(d.groom.fullName || d.groom.name)}</h3>${d.groom.rank ? `<p class="sh-role">${esc(d.groom.rank)}</p>` : ''}
         <p class="sh-amp">&amp;</p>
-        <h3>${esc(d.bride.fullName || d.bride.name)}</h3>
+        <h3>${esc(d.bride.fullName || d.bride.name)}</h3>${d.bride.rank ? `<p class="sh-role">${esc(d.bride.rank)}</p>` : ''}
       </div>
       ${evs.map(block).join('')}
       <script>(function(){var s=document.currentScript.parentNode;function fit(){s.querySelectorAll('.sh-couple h3').forEach(function(h){h.style.fontSize='';var w=h.clientWidth,f=parseFloat(getComputedStyle(h).fontSize);while(h.scrollWidth>w&&f>18){f-=1;h.style.fontSize=f+'px';}});}fit();addEventListener('resize',fit);document.fonts&&document.fonts.ready.then(fit);})()</script>`,
@@ -195,8 +195,7 @@ module.exports = {
       // chạm ảnh bên cạnh thì chuyển tới ảnh đó, chỉ ảnh giữa mới mở xem lớn
       st.addEventListener('click',function(e){var c=e.target.closest('.ph');if(c&&!c.classList.contains('on')){e.stopPropagation();go(cs.indexOf(c));}},true);
       s.querySelector('.prev').onclick=function(){go(k-1)};s.querySelector('.next').onclick=function(){go(k+1)};
-      var x0=null;st.addEventListener('pointerdown',function(e){x0=e.clientX});
-      st.addEventListener('pointerup',function(e){if(x0!==null&&Math.abs(e.clientX-x0)>40){go(k+(e.clientX<x0?1:-1));}x0=null});
+      cnSwipe(st,function(d){go(k+d)}); // kéo chuột / vuốt / lăn 2 ngón (lib/render.js)
       go(0);
       // tự chuyển ảnh mỗi ~1,4s khi album đang trên màn hình (như bản gốc); bấm/vuốt thì đếm lại từ đầu
       var on=false,t;function run(){clearInterval(t);if(!document.body.classList.contains('is-edit'))t=setInterval(function(){if(on&&!document.hidden)go(k+1)},1400);}
@@ -459,6 +458,7 @@ module.exports = {
 .tpl-songhy2 .sh-evn{font-family:Baskerville,'Libre Baskerville','Times New Roman',serif;font-size:16px;line-height:26px;text-transform:uppercase;white-space:pre-line}
 .tpl-songhy2 .sh-when{display:flex;justify-content:space-between;align-items:center;column-gap:12px;width:100%;max-width:161px;min-width:max-content;font-family:'Times New Roman',Times,serif;font-size:12px;line-height:18px;text-transform:uppercase;white-space:nowrap;color:var(--muted)}
 .tpl-songhy2 .sh-couple h3{margin-bottom:10px}
+.tpl-songhy2 .sh-couple .sh-role{margin-top:-16px;font-family:Baskerville,'Libre Baskerville','Times New Roman',serif;font-size:12px;line-height:18px;color:var(--muted)}
 
 /* album */
 .tpl-songhy2 .sh-album{margin-top:23px}
@@ -654,8 +654,13 @@ module.exports = {
   .tpl-songhy2 .sh-gcard .qr{width:192px;height:192px}
 }
 /* màn hình rộng: cột 900px có viền mảnh, khối nội dung rộng 600px, cỡ chữ & khoảng cách ×1.36 như bản gốc */
+/* máy tính: thiệp là cột 520px giữa màn, bên trong dùng đúng bố cục điện thoại (thiết kế cho cột 480px) */
 @media (min-width:768px){
-  .tpl-songhy2 .card{max-width:900px;border:1px solid rgba(255,232,164,.2)}
+  .tpl-songhy2 .card{max-width:520px;border:1px solid rgba(255,232,164,.2)}
+  .tpl-songhy2 .music-btn{right:max(14px,calc(50% - 246px))}
+}
+/* bố cục cũ cho cột 900px — đã tắt (and (max-width:0)), cột 520px dùng bố cục điện thoại */
+@media (min-width:768px) and (max-width:0px){
   .tpl-songhy2 .sh-in{max-width:600px}
   .tpl-songhy2 .sh-h{font-size:27px;line-height:40.5px}
   .tpl-songhy2 .sh-fl{width:373px;height:423px}
@@ -757,7 +762,7 @@ module.exports = {
   .tpl-songhy2 .sh-thanks{margin-top:31px;padding:23px 50px 0}
   .tpl-songhy2 .sh-thanks p{max-width:560px;font-size:15px}
 }
-@media (min-width:1024px){
+@media (min-width:1024px) and (max-width:0px){
   .tpl-songhy2 .sh-ocard{width:600px}
 }
 `,

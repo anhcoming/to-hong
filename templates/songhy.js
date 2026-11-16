@@ -133,10 +133,10 @@ module.exports = {
     <p class="sh-lead">Trân trọng báo tin<br>lễ thành hôn của con chúng tôi</p>
     <div class="sh-couple">
       <h3>${esc(d.groom.fullName || d.groom.name)}</h3>
-      <p class="sh-role">Chú rể</p>
+      <p class="sh-role">${esc(d.groom.rank || 'Chú rể')}</p>
       <p class="sh-amp">&amp;</p>
       <h3>${esc(d.bride.fullName || d.bride.name)}</h3>
-      <p class="sh-role">Cô dâu</p>
+      <p class="sh-role">${esc(d.bride.rank || 'Cô dâu')}</p>
     </div>
     ${p ? `<div class="sh-when-block">
       ${cer && cer.place ? `<p class="sh-where">${esc(cer.name || 'Lễ thành hôn')} được cử hành tại<br>${esc(cer.place)}</p>` : ''}
@@ -173,8 +173,7 @@ module.exports = {
       st.addEventListener('click',function(e){var c=e.target.closest('.ph');if(c&&c.dataset.o!=='0'){e.stopPropagation();go(cs.indexOf(c));}},true);
       s.querySelector('.prev').onclick=function(){go(k-1)};s.querySelector('.next').onclick=function(){go(k+1)};
       ds.forEach(function(d,j){d.onclick=function(){go(j)}});
-      var x0=null;st.addEventListener('pointerdown',function(e){x0=e.clientX});
-      st.addEventListener('pointerup',function(e){if(x0!==null&&Math.abs(e.clientX-x0)>40){go(k+(e.clientX<x0?1:-1));}x0=null});
+      cnSwipe(st,function(d){go(k+d)}); // kéo chuột / vuốt / lăn 2 ngón (lib/render.js)
       go(0);
     })()</script>
   </section>`;
@@ -575,8 +574,13 @@ module.exports = {
   .tpl-songhy .sh-giftdlg .gift{max-width:none}
 }
 /* màn hình rộng: cột 900px có viền mảnh, các khối lớn hơn như bản gốc */
+/* máy tính: thiệp là cột 520px giữa màn, bên trong dùng đúng bố cục điện thoại (thiết kế cho cột 480px) */
 @media (min-width:768px){
-  .tpl-songhy .card{max-width:900px;border:1px solid color-mix(in srgb,var(--accent) 13%,transparent)}
+  .tpl-songhy .card{max-width:520px;border:1px solid color-mix(in srgb,var(--accent) 13%,transparent)}
+  .tpl-songhy .music-btn{right:max(14px,calc(50% - 246px))}
+}
+/* bố cục cũ cho cột 900px — đã tắt (and (max-width:0)), cột 520px dùng bố cục điện thoại */
+@media (min-width:768px) and (max-width:0px){
   .tpl-songhy .sh-ocard{width:520px}
   .tpl-songhy .sh-obg>*{width:300px}
   .tpl-songhy .sh-obg .tl{top:-104px;left:-130px}
@@ -636,7 +640,7 @@ module.exports = {
   .tpl-songhy .sh-wform,.tpl-songhy .wish-list{max-width:600px}
   .tpl-songhy .sh-giftdlg .sh-dlg-head h2{font-size:24px;line-height:32px}
 }
-@media (min-width:1024px){
+@media (min-width:1024px) and (max-width:0px){
   .tpl-songhy .sh-ocard{width:600px}
   .tpl-songhy .sh-arch-text{transform:translateY(-20px)}
 }

@@ -289,6 +289,42 @@ async function call(who, method, url, body, raw) {
   assert.equal((await call('gia', 'GET', '/api/admin/stats')).status, 403, 'phiên mật khẩu cũ của kẻ xấu vẫn bị chặn sau khi chủ web gắn Google');
   delete process.env.ADMIN_EMAILS;
 
+  // ---------- tên cô dâu chú rể không bị xoá khi đồng bộ thiệp ↔ sổ tay ----------
+  // Lỗi cũ: tài khoản đã có thiệp trống tên (sổ tay chưa có tên đôi) → điền tên ở thiệp nháp lúc chưa đăng nhập, đăng nhập →
+  // lưu một thiệp khác còn trống tên là server chép tên TRỐNG của sổ tay đè lên thiệp đã điền → phát hành báo thiếu tên.
+  const gLogin = async (who, next) => {
+    const rr = await call(who, 'GET', '/auth/google?next=' + encodeURIComponent(next));
+    fakeGoogle = { sub: 'g-ten', email: 'ten@gmail.com', name: 'Thử Tên' };
+    return call(who, 'GET', `/auth/google/callback?state=${new URL(rr.location).searchParams.get('state')}&code=ma-dung`);
+  };
+  await gLogin('tn', '/thiep-cua-toi');
+  const ka = (await call('tn', 'POST', '/api/cards', { template: 'dodam' })).json.card; // thiệp cũ, chưa điền tên
+  await call('tn', 'POST', '/api/auth/logout');
+  const kx = (await call('tn', 'POST', '/api/cards', { template: 'longphung' })).json.card; // khách chưa đăng nhập: thiệp nháp mới
+  const dx = (await call('tn', 'GET', `/api/cards/${kx.id}`)).json.card.data;
+  dx.groom.name = 'Đức Anh'; dx.bride.name = 'Phạm Nga'; dx.date = '2026-12-20';
+  assert.equal((await call('tn', 'PUT', `/api/cards/${kx.id}`, { data: dx })).status, 200);
+  r = await gLogin('tn', `/sua/${kx.id}`);
+  assert.equal(r.location, `/sua/${kx.id}`);
+  const da = (await call('tn', 'GET', `/api/cards/${ka.id}`)).json.card.data; da.message = 'sửa thiệp cũ';
+  assert.equal((await call('tn', 'PUT', `/api/cards/${ka.id}`, { data: da })).status, 200); // lưu thiệp cũ (vẫn trống tên)
+  r = (await call('tn', 'GET', `/api/cards/${kx.id}`)).json.card.data;
+  assert.deepEqual([r.groom.name, r.bride.name, r.date], ['Đức Anh', 'Phạm Nga', '2026-12-20'], 'thiệp đã điền tên giữ nguyên tên');
+  assert.equal((await call('tn', 'POST', `/api/cards/${kx.id}/publish`, {})).status, 200, 'phát hành được');
+  r = (await call('tn', 'GET', '/api/wedding')).json.wedding.couple;
+  assert.deepEqual([r.groom.name, r.bride.name], ['Đức Anh', 'Phạm Nga'], 'sổ tay nhận tên đôi từ thiệp đã điền');
+  // hồ sơ cưới dùng chung: danh xưng, số điện thoại, các lễ, tài khoản mừng cưới của thiệp đã lưu → thiệp mới tự điền sẵn
+  const dx2 = (await call('tn', 'GET', `/api/cards/${kx.id}`)).json.card.data;
+  dx2.groom.rank = 'Trưởng nam'; dx2.bride.rank = 'Út nữ'; dx2.groom.phone = '0901234567';
+  dx2.events = [{ name: 'Lễ Vu Quy', date: '2026-12-19', time: '08:00', welcome: '07:30', place: 'Tư gia nhà gái', main: false }, { name: 'Tiệc Cưới', date: '2026-12-20', time: '18:00', place: 'Nhà hàng Ngọc Lan', main: true }];
+  dx2.gifts.groom = { bin: '970436', acc: '0123456789', holder: 'VU DUC ANH' };
+  assert.equal((await call('tn', 'PUT', `/api/cards/${kx.id}`, { data: dx2 })).status, 200);
+  const kn = (await call('tn', 'POST', '/api/cards', { template: 'songhy' })).json.card;
+  r = (await call('tn', 'GET', `/api/cards/${kn.id}`)).json.card.data;
+  assert.deepEqual([r.groom.name, r.groom.rank, r.bride.rank, r.groom.phone], ['Đức Anh', 'Trưởng nam', 'Út nữ', '0901234567'], 'thiệp mới có tên, danh xưng, số điện thoại từ hồ sơ');
+  assert.deepEqual(r.events.map((e) => [e.name, e.welcome, e.main]), [['Lễ Vu Quy', '07:30', false], ['Tiệc Cưới', '', true]], 'thiệp mới có các lễ từ hồ sơ');
+  assert.equal(r.gifts.groom.acc, '0123456789', 'thiệp mới có tài khoản mừng cưới từ hồ sơ');
+
   console.log('✓ Đăng nhập Google & trang quản trị: tất cả kiểm thử đều qua');
   server.close();
   process.exit(0);

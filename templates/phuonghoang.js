@@ -193,8 +193,10 @@ module.exports = {
     <h2 class="ph-cap ph-cap-sm reveal">Thông tin lễ cưới</h2>
     ${hasFam ? `<div class="ph-fams reveal">${fam(d.groom, 'Nhà Trai')}<span class="ph-fams-mid">${hy('ph-mini-hy')}</span>${fam(d.bride, 'Nhà Gái')}</div>` : ''}
     <div class="ph-couple reveal">
+      ${d.groom.rank ? `<p class="ph-to">${esc(d.groom.rank)}</p>` : ''}
       <p class="ph-full">${esc(d.groom.fullName || d.groom.name)}</p>
       <p class="ph-amp">&amp;</p>
+      ${d.bride.rank ? `<p class="ph-to">${esc(d.bride.rank)}</p>` : ''}
       <p class="ph-full">${esc(d.bride.fullName || d.bride.name)}</p>
     </div>
     ${ep ? `<div class="ph-cer reveal">

@@ -269,11 +269,11 @@ const blobClient = once(() => (window.BlobClient ? Promise.resolve(window.BlobCl
 })));
 // gọi sớm (vd. lúc vừa chọn ảnh) để lúc tải không phải chờ nạp thư viện
 window.warmUpload = () => uploadInfo().then((i) => (i.blob ? blobClient() : null)).catch(() => {});
-const EXT = { 'image/webp': 'webp', 'image/jpeg': 'jpg', 'image/png': 'png' };
+const EXT = { 'image/webp': 'webp', 'image/jpeg': 'jpg', 'image/png': 'png', 'video/mp4': 'mp4', 'video/webm': 'webm', 'video/quicktime': 'mov' };
 async function blobDirect(file, info) {
   const BC = await blobClient();
   const ac = new AbortController();
-  const stop = setTimeout(() => ac.abort(), 45000);
+  const stop = setTimeout(() => ac.abort(), file.type.startsWith('video/') ? 300000 : 45000);
   try {
     const name = `uploads/${info.uid}-${Math.random().toString(36).slice(2, 10)}.${EXT[file.type]}`;
     const r = await BC.upload(name, file, { access: 'public', contentType: file.type, handleUploadUrl: '/api/upload/blob', abortSignal: ac.signal });
@@ -297,13 +297,14 @@ async function viaServer(file, quiet) {
 // quiet: để uploadFiles tự quản màn chờ (hiện tiến độ chung), khỏi mỗi tệp một màn chờ
 // resized: tệp đã qua resizeImage rồi (khỏi nén lại lần nữa)
 window.uploadFile = async function (file, { quiet = false, resized = false } = {}) {
-  const isImg = file.type.startsWith('image/');
-  if (!isImg && file.type !== 'audio/mpeg') throw new Error('Chỉ nhận ảnh hoặc nhạc MP3');
+  const isImg = file.type.startsWith('image/'), isClip = /^video\/(mp4|webm|quicktime)$/.test(file.type);
+  if (!isImg && !isClip && file.type !== 'audio/mpeg') throw new Error('Chỉ nhận ảnh, video MP4/MOV hoặc nhạc MP3');
+  if (isClip && file.size > 60e6) throw new Error('Video tối đa 60MB — cắt ngắn đoạn clip rồi thử lại nhé');
   if (!quiet) loading.show(isImg ? 'Đang tải ảnh lên…' : 'Đang tải nhạc lên…');
   const t0 = performance.now(), log = {};
   try {
     if (isImg && !resized) { file = await resizeImage(file); log.nen = Math.round(performance.now() - t0); }
-    if (isImg && EXT[file.type]) {
+    if ((isImg || isClip) && EXT[file.type]) {
       const info = await uploadInfo().catch(() => ({}));
       if (info.blob && info.uid) {
         const t1 = performance.now();
@@ -379,3 +380,6 @@ window.renderTopbar = async function (active) {
   }
   return { meta, user: me.user };
 };
+
+// bộ chọn ngày / giờ theo giao diện Cưới Nha (máy có chuột) cho mọi ô ngày, giờ trên các trang dùng common.js
+(function () { const s = document.createElement('script'); s.src = '/js/pickers.js'; s.defer = true; document.head.appendChild(s); })();

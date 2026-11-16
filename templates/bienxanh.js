@@ -130,7 +130,7 @@ module.exports = {
     lover(ctx) {
       const { d } = ctx;
       const a = photoAt(ctx, 1), b = photoAt(ctx, 3);
-      const one = (img, i, x, role, pos) => `<div class="bx-pp"><button class="ph bx-ph" data-i="${phIdx(ctx, i)}" aria-label="Xem ảnh"${img ? '' : ' hidden'}><img loading="lazy" src="${esc(img)}" alt="" style="object-position:${pos}"></button><i></i><p class="r">${role}</p><p class="n">${esc(x.fullName || x.name)}</p></div>`;
+      const one = (img, i, x, role, pos) => `<div class="bx-pp"><button class="ph bx-ph" data-i="${phIdx(ctx, i)}" aria-label="Xem ảnh"${img ? '' : ' hidden'}><img loading="lazy" src="${esc(img)}" alt="" style="object-position:${pos}"></button><i></i><p class="r">${esc(x.rank || role)}</p><p class="n">${esc(x.fullName || x.name)}</p></div>`;
       return `
   <section class="sec bx-lover reveal">
     ${heart}

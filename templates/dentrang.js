@@ -126,9 +126,9 @@ module.exports = {
       <p class="dt-gname">${guest ? esc(guest.name) : 'Quý khách'}</p>
       <p class="dt-small">tới dự buổi tiệc chung vui cùng gia đình chúng tôi</p>
       <div class="dt-pair">
-        <div><p class="r">Chú rể</p><p class="n">${esc(d.groom.fullName || d.groom.name)}</p></div>
+        <div><p class="r">${esc(d.groom.rank || 'Chú rể')}</p><p class="n">${esc(d.groom.fullName || d.groom.name)}</p></div>
         <i aria-hidden="true"></i>
-        <div><p class="r">Cô dâu</p><p class="n">${esc(d.bride.fullName || d.bride.name)}</p></div>
+        <div><p class="r">${esc(d.bride.rank || 'Cô dâu')}</p><p class="n">${esc(d.bride.fullName || d.bride.name)}</p></div>
       </div>
     </div>
   </section>`;

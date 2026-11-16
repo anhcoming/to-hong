@@ -162,8 +162,8 @@ module.exports = {
       return `
   <section class="sec rt-cpl">
     ${sprig('rt-sp cpl')}
-    <div class="rt-cpl-row reveal">${pol(2, 'a')}<p class="rt-who"><span>Chú rể</span><b>${esc(d.groom.fullName || d.groom.name)}</b></p></div>
-    <div class="rt-cpl-row b reveal"><p class="rt-who"><span>Cô dâu</span><b>${esc(d.bride.fullName || d.bride.name)}</b></p>${pol(3, 'b')}</div>
+    <div class="rt-cpl-row reveal">${pol(2, 'a')}<p class="rt-who"><span>${esc(d.groom.rank || 'Chú rể')}</span><b>${esc(d.groom.fullName || d.groom.name)}</b></p></div>
+    <div class="rt-cpl-row b reveal"><p class="rt-who"><span>${esc(d.bride.rank || 'Cô dâu')}</span><b>${esc(d.bride.fullName || d.bride.name)}</b></p>${pol(3, 'b')}</div>
   </section>`;
     },
 
