@@ -42,9 +42,16 @@
   <div class="wall" id="cols" aria-hidden="true"></div>
   <div class="bb-in">
     <div class="kick"><b>CN</b>THIỆP CƯỚI ONLINE</div>
-    <h1>Gửi lời mời cưới<em>có tên từng khách</em></h1>
+    <h1>Thả ảnh cưới vào,<em>xem ngay thiệp của bạn</em></h1>
     <p class="lead">Mỗi khách một tấm thiệp mang tên riêng — có nhạc, bản đồ, hộp mừng cưới.</p>
-    <div class="acts"><a class="b b-play" href="#mau">▶ Xem các mẫu</a><a class="b b-more" href="/goi-y">📷 Thả ảnh, xem thiệp của bạn</a></div>
+    <!-- ảnh của bạn → thiệp của bạn: cho thấy kết quả trước khi bấm; cả khối dẫn tới trang gợi ý thiệp từ ảnh (/goi-y) -->
+    <a class="ba" href="/goi-y" aria-label="Chọn ảnh cưới để xem thiệp của bạn">
+      <span class="ba-stack"><img src="/demo/goiy-2.jpg" alt="" width="86" height="112"><img src="/demo/goiy-3.jpg" alt="" width="86" height="112"><img src="/demo/goiy-1.jpg" alt="" width="86" height="112"><small>Ảnh của bạn</small></span>
+      <span class="ba-arrow" aria-hidden="true">→</span>
+      <span class="ba-card"><img src="/demo/cover-songhy-do.jpg" alt="" width="300" height="400"><small>Thiệp của bạn, sau vài giây</small></span>
+    </a>
+    <div class="acts"><a class="b b-photo" href="/goi-y">📷 Chọn ảnh cưới</a><a class="b b-more" href="#mau">▶ Xem các mẫu</a></div>
+    <p class="ba-lock">🔒 Ảnh chỉ nằm trên máy bạn cho tới khi bạn chọn dùng một thiệp.</p>
   </div>
 </section>
 
