@@ -11,8 +11,14 @@
   var st = document.createElement('style');
   st.textContent = [
     '[data-ce-photo]{cursor:pointer}',
-    '[data-ce-key]{cursor:text;outline:1.5px dashed rgba(214,69,93,.5);outline-offset:3px;border-radius:2px}',
-    '[data-ce-key]:hover,[data-ce-key].ce-on{outline:2px solid #d6455d;background:rgba(214,69,93,.06)}',
+    // chữ sửa được: không viền cả khối (khối chữ mẫu canvas rộng hết thiệp → vạch đỏ cắt ngang ảnh);
+    // rê chuột / đang chọn thì khung .ce-tx bao sát đúng dòng chữ; màn cảm ứng có gạch chân chấm mờ để biết bấm được
+    '[data-ce-key]{cursor:text}',
+    '@media (hover:none){[data-ce-key]:not(.ce-map):not(.ce-ev){text-decoration:underline dotted rgba(214,69,93,.6);text-decoration-thickness:1.5px;text-underline-offset:5px}}',
+    '.ce-tx{position:absolute;z-index:2147482999;pointer-events:none;border:1.5px solid #d6455d;border-radius:6px;background:rgba(214,69,93,.07);display:none}',
+    '.ce-tx.sel{border-width:2px;box-shadow:0 0 0 4px rgba(214,69,93,.18)}',
+    '.ce-tx b{position:absolute;left:-2px;bottom:100%;margin-bottom:3px;padding:2px 8px;border-radius:6px;background:#d6455d;color:#fff;font:600 11.5px/1.5 system-ui,sans-serif;white-space:nowrap}',
+    '.ce-tx.up b{bottom:auto;top:100%;margin:3px 0 0}',
     '[data-ce-key].ce-ph{opacity:.55;font-style:italic}',
     '.ce-hl{position:fixed;z-index:2147483000;pointer-events:none;border:3px solid #d6455d;border-radius:6px;box-shadow:0 0 0 9999px rgba(0,0,0,0);transition:all .08s}',
     '.ce-hl b{position:absolute;top:6px;left:6px;padding:3px 9px;border-radius:999px;background:#d6455d;color:#fff;font:600 12px/1.4 system-ui,sans-serif;white-space:nowrap}',
@@ -304,6 +310,112 @@
   document.addEventListener('scroll', function () { hl.style.display = 'none'; }, { passive: true });
   document.addEventListener('mouseleave', function () { hl.style.display = 'none'; });
 
+  // ---------- khung bao sát chữ (rê chuột / đang sửa) ----------
+  var LBL = { name: 'Tên', fullName: 'Họ tên', father: 'Tên bố', mother: 'Tên mẹ', address: 'Địa chỉ', place: 'Nơi tổ chức', inviteText: 'Lời mời', message: 'Lời nhắn', story: 'Câu chuyện', time: 'Giờ', date: 'Ngày' };
+  function labelOf(key) {
+    var p = key.split('.'), last = p[p.length - 1];
+    var who = p[0] === 'groom' ? (last === 'name' ? 'Tên chú rể' : 'Chú rể · ') : p[0] === 'bride' ? (last === 'name' ? 'Tên cô dâu' : 'Cô dâu · ') : '';
+    if (who.indexOf('Tên') === 0) return who;
+    return who + (LBL[last] || 'Sửa chữ');
+  }
+  function textRect(el) {
+    var r = document.createRange();
+    try { r.selectNodeContents(el); } catch (e) { return el.getBoundingClientRect(); }
+    var b = r.getBoundingClientRect();
+    return b.width && b.height ? b : el.getBoundingClientRect();
+  }
+  function txBox() { var d = document.createElement('div'); d.className = 'ce-tx'; d.innerHTML = '<b></b>'; document.documentElement.appendChild(d); return d; }
+  var hov = txBox(), sel = txBox(); sel.classList.add('sel');
+  var selEl = null;
+  function placeTx(box, el) {
+    if (!el || !el.isConnected) { box.style.display = 'none'; return; }
+    var b = textRect(el), pad = 4, sx = window.scrollX, sy = window.scrollY;
+    box.style.display = 'block';
+    box.style.left = (b.left + sx - pad) + 'px'; box.style.top = (b.top + sy - pad) + 'px';
+    box.style.width = (b.width + pad * 2) + 'px'; box.style.height = (b.height + pad * 2) + 'px';
+    box.classList.toggle('up', b.top < 28);
+    box.firstChild.textContent = '✎ ' + labelOf(el.dataset.ceKey || '');
+  }
+  var plain = function (el) { return el && !el.classList.contains('ce-map') && !el.classList.contains('ce-ev') && !el.closest('.ce-evbox'); };
+  document.addEventListener('pointerover', function (e) {
+    if (e.pointerType !== 'mouse') return;
+    var t = e.target.closest && e.target.closest('[data-ce-key]');
+    if (t && plain(t) && t !== selEl) placeTx(hov, t); else hov.style.display = 'none';
+  }, { passive: true });
+  document.addEventListener('mouseleave', function () { hov.style.display = 'none'; });
+  function select(el) {
+    document.querySelectorAll('.ce-on').forEach(function (x) { x.classList.remove('ce-on'); });
+    selEl = el && plain(el) ? el : null;
+    if (el) el.classList.add('ce-on');
+    hov.style.display = 'none';
+    placeTx(sel, selEl);
+  }
+  function refreshTx() { if (selEl) placeTx(sel, selEl); }
+  window.addEventListener('resize', refreshTx);
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(refreshTx);
+  // trang sửa đang gõ ô nào → cuộn tới chữ đó trên thiệp + bao khung
+  function focusKey(key) {
+    var m = /^events\.(\d+)\./.exec(key), el = null;
+    var all = Array.prototype.slice.call(document.querySelectorAll('[data-ce-key="' + key + '"]'));
+    el = all.filter(plain)[0] || all[0];
+    if (!el && m) el = document.querySelector('.ce-ev[data-ce-key^="events.' + m[1] + '."]') || document.querySelector('[data-ce-key^="events.' + m[1] + '."]');
+    if (!el) { select(null); return; }
+    select(el);
+    var r = el.getBoundingClientRect();
+    if (r.top < 60 || r.bottom > innerHeight - 60) el.scrollIntoView({ block: 'center', behavior: 'smooth' });
+    setTimeout(refreshTx, 450);
+  }
+
+  // ---------- các phần của thiệp (cột "Các phần" trong trang sửa) ----------
+  var secs = [];
+  // đặt tên phần theo nội dung (mẫu nhập hay có tiêu đề kiểu "and", "Beautiful"…)
+  var KINDS = [
+    [function (x, t) { return x.querySelector('form textarea') || /lưu bút|gửi lời chúc|lời chúc/.test(t); }, 'Sổ lưu bút'],
+    [function (x, t) { return x.querySelector('form select,form input[type=radio]') || /^(hãy )?xác nhận|rsvp/.test(t); }, 'Xác nhận tham dự'],
+    [function (x, t) { return /mừng cưới|hộp mừng|quà cưới|chuyển khoản/.test(t); }, 'Mừng cưới'],
+    [function (x, t) { return x.querySelector('.mh-cal,.cal,[class*="calendar"]') || /tháng \d{1,2}\s*\/\s*\d{4}/.test(t); }, 'Lịch tháng'],
+    [function (x, t) { return /đếm ngược|countdown|until we|ngày\s*giờ\s*phút/.test(t) || x.querySelector('[data-cd]'); }, 'Đếm ngược'],
+    [function (x, t) { return /timeline|lịch trình|\d{1,2}\s*:\s*\d{2}.*\d{1,2}\s*:\s*\d{2}.*\d{1,2}\s*:\s*\d{2}/.test(t); }, 'Lịch trình'],
+    [function (x, t) { return /câu chuyện|love story|chuyện tình|hành trình/.test(t); }, 'Chuyện tình yêu'],
+    [function (x, t) { return /album|khoảnh khắc|beautiful|gallery|kỷ niệm/.test(t); }, 'Album ảnh'],
+    [function (x, t) { return /hôn lễ|trân trọng|kính mời|thành hôn|vu quy|tiệc cưới|nhà trai|nhà gái/.test(t); }, 'Lời mời & lễ cưới'],
+    [function (x, t) { return /chú rể.*cô dâu|cô dâu.*chú rể|groom|bride/.test(t); }, 'Cô dâu & chú rể'],
+    [function (x, t) { return /cảm ơn|thank/.test(t); }, 'Lời cảm ơn'],
+  ];
+  // xét phần chữ đầu tiên của phần (tiêu đề) trước, không khớp mới xét cả phần — tránh lấy tên theo một nút lẻ
+  // (vd. phần lời mời có nút "Xác nhận tham dự")
+  function kindOf(x) {
+    var parts = [], w = document.createTreeWalker(x, NodeFilter.SHOW_TEXT), n;
+    while ((n = w.nextNode())) { var v = n.nodeValue.trim(); if (v && n.parentElement && !/^(SCRIPT|STYLE|OPTION)$/.test(n.parentElement.tagName)) parts.push(v); }
+    var head = parts.slice(0, 3).join(' ').toLowerCase(), all = parts.join(' ').toLowerCase().slice(0, 700);
+    var none = document.createElement('i');
+    for (var k = 0; k < KINDS.length; k++) if (KINDS[k][0](none, head)) return KINDS[k][1];
+    for (k = 0; k < KINDS.length; k++) if (KINDS[k][0](x, all)) return KINDS[k][1];
+    return '';
+  }
+  function sections() {
+    var root = document.querySelector('main.card') || document.body;
+    var mh = root.querySelector('.mh-canvas');
+    var list = mh ? Array.prototype.slice.call(mh.children).filter(function (x) { return x.tagName === 'SECTION'; }) : Array.prototype.slice.call(root.children);
+    secs = list.filter(function (x) { return x.offsetHeight > 120 && !/^(SCRIPT|STYLE|DIALOG|TEMPLATE)$/.test(x.tagName); });
+    return secs.map(function (x, i) {
+      var h = x.querySelector('h1,h2,h3');
+      var t = (h && h.textContent.trim()) || '';
+      if (!t) {
+        var w = document.createTreeWalker(x, NodeFilter.SHOW_TEXT, { acceptNode: function (n) { var p = n.parentElement; return p && !/^(SCRIPT|STYLE|OPTION|BUTTON)$/.test(p.tagName) && n.nodeValue.trim().length > 2 ? NodeFilter.FILTER_ACCEPT : NodeFilter.FILTER_REJECT; } });
+        var n = w.nextNode(); t = n ? n.nodeValue.trim() : '';
+      }
+      t = t.replace(/\s+/g, ' ');
+      return { i: i, label: i === 0 ? 'Trang bìa' : kindOf(x) || (t.length > 34 ? t.slice(0, 32) + '…' : t) || 'Phần ' + (i + 1) };
+    });
+  }
+  window.addEventListener('scroll', function () {
+    if (!secs.length) return;
+    var mid = innerHeight * 0.4, cur = 0;
+    secs.forEach(function (x, i) { if (x.getBoundingClientRect().top <= mid) cur = i; });
+    if (cur !== window.__ceSec) { window.__ceSec = cur; tell({ type: 'section', i: cur }); }
+  }, { passive: true });
+
   // ---------- bấm: báo cho trang sửa ----------
   function tell(msg) { try { window.parent.postMessage(Object.assign({ ce: 1 }, msg), location.origin); } catch (e) { /* không ở trong khung */ } }
   document.addEventListener('click', function (e) {
@@ -315,8 +427,7 @@
     if (eb && eb._ceEv && eb._ceEv.isConnected && !(t && t.classList.contains('ce-map'))) t = eb._ceEv;
     if (t) {
       e.preventDefault(); e.stopPropagation();
-      document.querySelectorAll('.ce-on').forEach(function (x) { x.classList.remove('ce-on'); });
-      t.classList.add('ce-on');
+      select(t);
       var f = FIELDS.filter(function (x) { return x[0] === t.dataset.ceKey; })[0];
       tell({ type: 'text', key: t.dataset.ceKey, value: f ? f[1] : '', map: t.classList.contains('ce-map') });
       return;
@@ -353,6 +464,7 @@
       el.classList.remove('ce-ph');
     });
     f[1] = val; f[2] = 0;
+    refreshTx();
     re = new RegExp(escRx(String(val).normalize('NFC').trim()), 'giu');
     RX.forEach(function (r) { if (r.f.key === key) { r.f.raw = val; r.re = re; } });
   }
@@ -379,6 +491,9 @@
     if (e.origin !== location.origin || !e.data) return;
     if (e.data.cePatch) patch(e.data.key, e.data.value);
     if (e.data.cePhoto) photoPatch(e.data.key, e.data.src, e.data.final);
+    if (e.data.ceFocus) focusKey(e.data.key);
+    if (e.data.ceBlur) select(null);
+    if (e.data.ceGo !== undefined && secs[e.data.ceGo]) secs[e.data.ceGo].scrollIntoView({ behavior: 'smooth', block: 'start' });
   });
 
   function init() {
@@ -386,10 +501,11 @@
     freezePhotos();
     window.addEventListener('load', freezePhotos); // hiệu ứng bắt đầu khi ảnh tải xong
     tell({ type: 'ready' });
+    tell({ type: 'sections', list: sections() });
     // gợi ý chỉ hiện lần đầu, không hiện lại mỗi lần thiệp vẽ lại sau khi lưu
     try { if (sessionStorage.getItem('ceTip')) return; sessionStorage.setItem('ceTip', '1'); } catch (e) { /* bỏ qua */ }
     var tip = document.createElement('div'); tip.className = 'ce-tip';
-    tip.textContent = 'Bấm vào ảnh hoặc chữ có viền để sửa';
+    tip.textContent = 'Bấm vào ảnh hoặc chữ trên thiệp để sửa';
     document.body.appendChild(tip);
     setTimeout(function () { tip.style.opacity = '0'; }, 3500);
     setTimeout(function () { tip.remove(); }, 4200);

@@ -156,7 +156,7 @@ function showTab(t) {
   if (t !== 'media' && musicPrev && !musicPrev.paused) musicPrev.pause(); // đóng bảng thì thôi nghe thử
   $$('#tools button').forEach((b) => b.classList.toggle('on', b.dataset.tab === t));
   document.body.classList.toggle('sheet-open', !!t);
-  if (!t) { $('#panes').innerHTML = ''; return; }
+  if (!t) { $('#panes').innerHTML = ''; if (wide()) closeQe(); return; }
   if (t === 'guests' && card.guest) { showTab(null); return askLogin('guests'); }
   $('#sheetTitle').textContent = SHEETS[t];
   $('#panes').innerHTML = `<div class="pane">${panes[t]()}</div>`;
@@ -656,6 +656,12 @@ function bind() {
       rerender();
     } else save();
   });
+  // gõ ô nào trong bảng → thiệp cuộn tới chữ đó và bao khung
+  panesEl.addEventListener('focusin', (e) => { const k = e.target.dataset && e.target.dataset.k; if (k) { closeQe(); cardFocus(k); } });
+  $('#outl').addEventListener('click', (e) => {
+    const b = e.target.closest('[data-go]'); if (!b) return;
+    try { $('#frame').contentWindow.postMessage({ ceGo: +b.dataset.go }, location.origin); } catch (err) { /* bỏ qua */ }
+  });
   // nút công cụ: bấm lần nữa (hoặc ×, hoặc nền mờ trên điện thoại) để đóng bảng
   $('#tools').addEventListener('click', (e) => { const t = e.target.closest('[data-tab]'); if (t) showTab(curTab === t.dataset.tab ? null : t.dataset.tab); });
   $('#sheetX').onclick = () => showTab(null);
@@ -848,21 +854,52 @@ function cropModal(key, ratio = 1, opt = {}) {
 }
 const LONG_FIELDS = /^(message|story)$|\.address$/;
 const FIELD_NAMES = { name: 'Tên gọi', fullName: 'Họ và tên đầy đủ', father: 'Tên bố', mother: 'Tên mẹ', address: 'Địa chỉ', place: 'Nơi tổ chức', inviteText: 'Lời mời', message: 'Lời nhắn', story: 'Chuyện tình yêu' };
-function textModal(key) {
-  const cur = getP(card.data, key) || '';
+function labelOf(key) {
   const parts = key.split('.');
   const who = parts[0] === 'groom' ? 'Chú rể · ' : parts[0] === 'bride' ? 'Cô dâu · ' : parts[0] === 'events' ? `${(card.data.events[+parts[1]] || {}).name || 'Sự kiện'} · ` : '';
-  const label = who + (FIELD_NAMES[parts[parts.length - 1]] || 'Nội dung');
-  const long = LONG_FIELDS.test(key);
-  openModal(`<h2 style="margin-top:0">Sửa chữ</h2>
-    <label class="field"><span>${esc(label)}</span>${long ? `<textarea id="ceIn" rows="4">${esc(cur)}</textarea>` : `<input id="ceIn" value="${esc(cur)}">`}</label>
-    <button class="btn block" id="ceOk">Lưu</button>`, (box, close) => {
-    const inp = $('#ceIn', box);
-    setTimeout(() => { inp.focus(); inp.select(); }, 30);
-    const ok = () => { const v = inp.value.trim(); setP(card.data, key, v); livePatch(key, v); close(); applyLive(); };
-    $('#ceOk', box).onclick = ok;
-    inp.addEventListener('keydown', (e) => { if (e.key === 'Enter' && !long) ok(); });
+  return who + (FIELD_NAMES[parts[parts.length - 1]] || 'Nội dung');
+}
+const wide = () => matchMedia('(min-width:761px)').matches;
+// báo khung thiệp: cuộn tới chữ của ô đang sửa và bao khung quanh chữ đó
+function cardFocus(key) { try { $('#frame').contentWindow.postMessage(key ? { ceFocus: 1, key } : { ceBlur: 1 }, location.origin); } catch (e) { /* bỏ qua */ } }
+// ô nhập trong bảng bên trái: mở đúng bảng, mở nhóm đang gập, cuộn tới + sáng ô
+function focusField(tab, key) {
+  if (curTab !== tab) showTab(tab);
+  const inp = $(`#panes [data-k="${key}"]`);
+  if (!inp) return false;
+  const hid = inp.closest('[hidden]');
+  if (hid) { hid.hidden = false; const fo = $('#famOpen'); if (fo) fo.hidden = true; }
+  inp.scrollIntoView({ block: 'center', behavior: 'smooth' });
+  inp.focus({ preventScroll: true });
+  if (inp.select && inp.type !== 'date' && inp.type !== 'time') inp.select();
+  inp.classList.remove('flash'); void inp.offsetWidth; inp.classList.add('flash');
+  return true;
+}
+// Bấm một dòng chữ trên thiệp mà bảng bên trái không có ô cho nó (lời mời, lời nhắn…), hoặc đang ở điện thoại:
+// một ô sửa nhỏ — máy tính: đầu bảng bên trái; điện thoại: ngăn trượt lên từ dưới, thiệp vẫn thấy phía trên.
+// Gõ tới đâu thiệp đổi tới đó, không có nút "Lưu" (tự lưu như mọi ô khác).
+let qeKey = null;
+function closeQe() {
+  const q = $('#qe'); if (!q) return;
+  q.parentNode.removeChild(q); qeKey = null; document.body.classList.remove('qe-open'); cardFocus(null);
+}
+function quickEdit(key) {
+  closeQe();
+  qeKey = key;
+  const cur = getP(card.data, key) || '', long = LONG_FIELDS.test(key);
+  const q = document.createElement('section');
+  q.id = 'qe'; q.className = 'qe';
+  q.innerHTML = `<div class="qe-h"><b>✎ ${esc(labelOf(key))}</b><button type="button" class="qe-x">Xong</button></div>
+    ${long ? `<textarea id="qeIn" rows="3">${esc(cur)}</textarea>` : `<input id="qeIn" value="${esc(cur)}" autocomplete="off">`}`;
+  if (wide()) { if (!curTab) showTab('date'); $('#sheet').insertBefore(q, $('#sheetBody')); } else { document.body.appendChild(q); document.body.classList.add('qe-open'); }
+  const inp = $('#qeIn', q);
+  setTimeout(() => { inp.focus(); if (!long) inp.select(); }, 40);
+  inp.addEventListener('input', () => {
+    setP(card.data, key, inp.value); livePatch(key, inp.value.trim()); scheduleSave(700);
+    if (/^(groom|bride)\.name$/.test(key)) renderHeader();
   });
+  inp.addEventListener('keydown', (e) => { if ((e.key === 'Enter' && !long) || e.key === 'Escape') { e.preventDefault(); closeQe(); } });
+  $('.qe-x', q).onclick = closeQe;
 }
 // một lễ trong lịch trình: bấm tên / giờ / nơi / địa chỉ trên thiệp (hoặc dòng "+ Thêm lễ") → sửa đủ thông tin của lễ đó
 function eventModal(i, focus) {
@@ -975,6 +1012,12 @@ async function adoptSuggested() {
   toast(failed ? `${failed} ảnh chưa tải lên được — tải lại trang để thử lại` : 'Đã lưu ảnh của bạn vào thiệp', !!failed);
 }
 
+// cột "Các phần của thiệp" (màn rộng): bấm để thiệp cuộn tới phần đó
+function outline(list) {
+  const box = $('#outl'); if (!box) return;
+  box.innerHTML = `<h3>Các phần của thiệp</h3>${(list || []).map((x) => `<button type="button" data-go="${x.i}"><i>${x.i + 1}</i><span>${esc(x.label)}</span></button>`).join('')}`;
+  box.hidden = !(list && list.length > 1);
+}
 window.addEventListener('message', (e) => {
   if (e.origin !== location.origin || !e.data || !e.data.ce) return;
   const m = e.data;
@@ -984,11 +1027,23 @@ window.addEventListener('message', (e) => {
     return;
   }
   if (m.type === 'photo') { if (m.empty || !photoGet(m.key)) livePhotoUpload(m.key, m.ratio); else photoActions(m.key, m.ratio); return; }
+  if (m.type === 'sections') { outline(m.list); return; }
+  if (m.type === 'section') { $$('#outl [data-go]').forEach((b) => b.classList.toggle('on', +b.dataset.go === m.i)); return; }
   if (m.type !== 'text') return;
-  if (/^events\.\d+\./.test(m.key)) eventModal(+m.key.split('.')[1], m.map ? 'map' : '');
+  const ev = /^events\.(\d+)\.(\w+)$/.exec(m.key);
+  if (wide()) {
+    // máy tính: bảng bên trái luôn mở — bấm chữ trên thiệp thì sáng đúng ô tương ứng để gõ
+    closeQe();
+    if (ev) { if (!focusField('date', `events.${ev[1]}.${m.map ? 'mapUrl' : ev[2]}`)) eventModal(+ev[1], m.map ? 'map' : ''); return; }
+    if (m.key.startsWith('gifts.')) { if (!focusField('gift', m.key)) showTab('gift'); return; }
+    if (focusField('date', m.key)) return;
+    quickEdit(m.key);
+    return;
+  }
+  if (ev) eventModal(+ev[1], m.map ? 'map' : '');
   else if (m.key === 'time') showTab('date');
   else if (m.key.startsWith('gifts.')) showTab('gift');
-  else textModal(m.key);
+  else quickEdit(m.key);
 });
 
 (async () => {
@@ -1007,7 +1062,8 @@ window.addEventListener('message', (e) => {
   // ?tab=… (link cũ: info/events/look/resp…) mở thẳng bảng tương ứng; mặc định chỉ hiện thiệp
   const OLD = { events: 'date', look: 'tpl', resp: 'guests', info: null };
   const want = new URLSearchParams(location.search).get('tab');
-  showTab(want in OLD ? OLD[want] : want);
+  // máy tính: bảng "Thông tin" mở sẵn bên trái (khỏi phải đoán sửa ở đâu); điện thoại: chỉ hiện thiệp
+  showTab(want ? (want in OLD ? OLD[want] : want) : wide() ? 'date' : null);
   refreshPreview();
   status('Đã lưu ✓');
   adoptSuggested(); // ảnh khách chọn ở trang gợi ý

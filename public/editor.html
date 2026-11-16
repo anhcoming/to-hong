@@ -98,6 +98,28 @@ body{height:100vh;height:100dvh;display:flex;flex-direction:column;overflow:hidd
 .sum{flex:1;min-width:110px;padding:14px;text-align:center}
 .sum b{display:block;font-size:24px;font-family:var(--serif)}
 .sum span{font-size:12px;color:var(--muted)}
+.btn[hidden]{display:none}
+/* bấm chữ trên thiệp → ô tương ứng ở bảng trái sáng lên */
+.field input.flash,.field textarea.flash{animation:fflash 1.1s ease}
+@keyframes fflash{0%{background:#ffe1e7;box-shadow:0 0 0 4px rgba(214,69,93,.25)}100%{box-shadow:0 0 0 0 rgba(214,69,93,0)}}
+/* ô sửa nhanh cho chữ không có trong bảng (lời mời, lời nhắn…): máy tính = đầu bảng trái; điện thoại = ngăn nhỏ dưới đáy */
+.qe{flex:none;margin:6px 16px 4px;padding:12px 14px;border:1.5px solid var(--primary);border-radius:14px;background:var(--surface);box-shadow:0 0 0 4px rgba(214,69,93,.1)}
+.qe-h{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:8px}
+.qe-h b{font-size:14px;color:var(--primary)}
+.qe-x{border:0;border-radius:999px;padding:6px 14px;background:var(--primary);color:#fff;font:inherit;font-size:13px;font-weight:700;cursor:pointer}
+.qe input,.qe textarea{width:100%;box-sizing:border-box;font:inherit;font-size:16px;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:10px 12px;outline:none}
+.qe input:focus,.qe textarea:focus{border-color:var(--primary)}
+/* cột "Các phần của thiệp" (màn rộng) */
+.outl{flex:none;width:220px;padding:16px 10px;background:var(--surface);border-left:1px solid var(--line);overflow-y:auto}
+.outl[hidden]{display:none}
+.outl h3{margin:0 0 10px 8px;font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.outl button{display:flex;align-items:center;gap:10px;width:100%;border:0;background:none;padding:8px;border-radius:10px;font:inherit;font-size:13px;color:var(--ink);text-align:left;cursor:pointer}
+.outl button:hover{background:var(--primary-soft)}
+.outl button.on{background:var(--primary-soft);color:var(--primary);font-weight:600}
+.outl button i{flex:none;display:grid;place-items:center;width:22px;height:22px;border-radius:7px;background:var(--bg);color:var(--muted);font:700 11px/1 var(--sans);font-style:normal}
+.outl button.on i{background:var(--primary);color:#fff}
+.outl button span{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+@media (max-width:1279px){.outl{display:none}}
 @media (max-width:760px){
   .ebar{padding:8px 10px;gap:6px}
   .saved{font-size:11px}
@@ -124,6 +146,7 @@ body{height:100vh;height:100dvh;display:flex;flex-direction:column;overflow:hidd
   .sheet-body{padding-bottom:env(safe-area-inset-bottom)}
   .sheet-open .scrim{display:block;position:fixed;inset:0;background:rgba(0,0,0,.32);z-index:29}
   .grid2{grid-template-columns:1fr}
+  .qe{position:fixed;left:0;right:0;bottom:0;z-index:31;margin:0;border:0;border-radius:20px 20px 0 0;padding:14px 16px calc(14px + env(safe-area-inset-bottom));box-shadow:0 -14px 40px rgba(0,0,0,.22);animation:sheetUp .2s ease-out}
 }
 /* điện thoại rất hẹp / cỡ chữ lớn: nút gọn "Phát hành", nhãn "Đã lưu" thu thành ✓ để tên đôi còn chỗ */
 .ebar .xs{display:none}
@@ -163,6 +186,7 @@ body{height:100vh;height:100dvh;display:flex;flex-direction:column;overflow:hidd
     <div class="pvmode" id="pvMode" role="group" aria-label="Chế độ"><button data-m="edit" class="on">✎ Sửa trực tiếp</button><button data-m="view">👁 Xem như khách</button></div>
     <div class="phone"><iframe id="frame" title="Thiệp — bấm ảnh hoặc chữ để sửa"></iframe></div>
   </main>
+  <aside class="outl" id="outl" hidden aria-label="Các phần của thiệp"></aside>
 </div>
 <script src="/js/common.js"></script>
 <script src="/js/pay.js"></script>
