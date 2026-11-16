@@ -1,60 +1,79 @@
 // Đầu trang chủ: chọn / kéo thả ảnh cưới ngay tại trang chủ.
-// Ảnh của khách bay vào khung "Đang dựng thiệp…" của hoạt hình rồi tự sang /goi-y.
-// Ảnh được cất vào đúng kho tạm của trang gợi ý (IndexedDB "cuoinha-goiy", khoá "incoming") — /goi-y (suggest.js) đọc ra
-// và gợi ý mẫu luôn, khách không phải chọn lại. Ảnh không gửi lên máy chủ.
+// Ảnh của khách bay vào khung thiệp (chỉ ảnh của họ, không hiện thiệp mẫu) trong lúc trang chủ ĐỌC ẢNH THẬT: thu nhỏ + phân tích màu
+// (public/js/photoprep.js, cùng đoạn mã trang /goi-y dùng), cất vào kho tạm IndexedDB "cuoinha-goiy" (khoá "photos"). Xong hết mới
+// sang /goi-y — trang đó mở ra là có sẵn ảnh, tự gợi ý mẫu, khách không phải chọn lại. Ảnh không gửi lên máy chủ.
 (function () {
   'use strict';
   var hb = document.getElementById('hb');
-  if (!hb) return;
+  if (!hb || !window.PhotoPrep) return;
+  var P = window.PhotoPrep, idb = P.idb;
   var stage = document.getElementById('stage'), fan = document.getElementById('fan'), file = document.getElementById('heroFile');
-  var go = document.getElementById('heroGo'), goText = go.textContent;
-  var MAX = 12, urls = [], saving = null;
+  var go = document.getElementById('heroGo'), goText = go.textContent, msg = document.getElementById('heroMsg');
+  var MAX = 12, urls = [], busy = false;
+  var say = function (t) { msg.textContent = t || ''; msg.hidden = !t; };
+  var wait = function (ms) { return new Promise(function (ok) { setTimeout(ok, ms); }); };
 
-  function save(list) {
-    return new Promise(function (ok) {
-      try {
-        var r = indexedDB.open('cuoinha-goiy', 1);
-        r.onupgradeneeded = function () { r.result.createObjectStore('kv'); };
-        r.onerror = function () { ok(false); };
-        r.onsuccess = function () {
-          try {
-            var tx = r.result.transaction('kv', 'readwrite');
-            tx.objectStore('kv').put(list, 'incoming');
-            tx.oncomplete = function () { ok(true); };
-            tx.onerror = tx.onabort = function () { ok(false); };
-          } catch (e) { ok(false); }
-        };
-      } catch (e) { ok(false); } // duyệt ẩn danh / trình duyệt chặn: sang /goi-y rồi chọn lại
-    });
+  function pick() { if (!busy) file.click(); }
+
+  // đọc từng ảnh: thu nhỏ rồi phân tích màu; báo tiến độ trên nút
+  function prep(list) {
+    var out = [], i = 0;
+    var one = function () {
+      if (i >= list.length) return Promise.resolve(out);
+      var f = list[i++];
+      go.textContent = 'Đang đọc ảnh ' + i + '/' + list.length + '…';
+      return P.shrink(f).then(function (s) {
+        var url = URL.createObjectURL(s.blob);
+        return P.analyze(url).then(function (feat) {
+          out.push({ id: Date.now().toString(36) + Math.random().toString(36).slice(2, 7), blob: s.blob, w: s.w, h: s.h, feat: feat });
+        }).finally(function () { URL.revokeObjectURL(url); });
+      }).catch(function () { /* ảnh lỗi: bỏ qua */ }).then(one);
+    };
+    return one();
+  }
+  // đưa trang gợi ý (HTML, mã, danh sách mẫu) vào bộ nhớ đệm để mở ra là chạy ngay; chờ tối đa 5 giây
+  function warm() {
+    var get = function (u) { return fetch(u, { credentials: 'same-origin' }).catch(function () {}); };
+    return Promise.race([Promise.all([get('/goi-y'), get('/js/photoprep.js'), get('/js/suggest.js'), get('/css/site.css'), get('/api/meta')]), wait(5000)]);
+  }
+  function reset(text) {
+    busy = false; hb.classList.remove('busy'); go.disabled = false; go.textContent = goText; say(text);
   }
 
-  function pick() { file.click(); }
   function take(files) {
-    if (hb.classList.contains('busy')) return;
+    if (busy) return;
     var list = Array.prototype.filter.call(files || [], function (f) { return /^image\//.test(f.type) || /\.(jpe?g|png|webp|heic|heif)$/i.test(f.name); }).slice(0, MAX);
-    if (!list.length) return;
-    saving = save(list);
+    if (!list.length) return say('Bạn chọn ảnh JPG, PNG hoặc ảnh chụp từ điện thoại nhé.');
+    busy = true; say('');
+    // ảnh của khách bay vào khung ngay lập tức (ảnh gốc, chưa cần đọc xong)
     urls.forEach(URL.revokeObjectURL);
-    urls = list.map(function (f) { return URL.createObjectURL(f); });
-    // ảnh của khách bay vào khung "Đang dựng thiệp…"; tới lúc khung loé sáng thì sang /goi-y — nơi dựng thiệp thật
-    // bằng các mẫu đang bán với chính ảnh này (5 thẻ bung ra ở trang chủ chỉ là ảnh bìa mẫu, không ghép ảnh khách vào)
+    urls = list.slice(0, 3).map(function (f) { return URL.createObjectURL(f); });
     var u = function (i) { return urls[i % urls.length]; };
     var set = { p0: u(1), p1: u(2), p2: u(0) };
-    fan.querySelectorAll('img[data-k]').forEach(function (img) { img.src = set[img.dataset.k]; });
+    fan.querySelectorAll('img[data-k]').forEach(function (img) { if (set[img.dataset.k]) img.src = set[img.dataset.k]; });
     fan.classList.add('restart'); void fan.offsetWidth; fan.classList.remove('restart');
     hb.classList.add('busy');
     go.disabled = true;
-    go.textContent = 'Đang dựng thiệp của bạn…';
-    var reduce = matchMedia('(prefers-reduced-motion:reduce)').matches;
-    setTimeout(next, reduce ? 300 : 3300);
+    var t0 = Date.now(), reduce = matchMedia('(prefers-reduced-motion:reduce)').matches;
+    prep(list).then(function (photos) {
+      if (!photos.length) return reset('Không đọc được ảnh nào — bạn thử ảnh JPG, PNG hoặc chụp màn hình ảnh đó nhé.');
+      go.textContent = 'Đang tìm mẫu hợp ảnh của bạn…';
+      return idb.set('photos', photos).then(function () { return idb.set('fresh', 1); }).then(function () { return idb.del('incoming'); })
+        .then(function () { return idb.get('photos'); }).then(function (saved) {
+          // kho tạm bị chặn (vd. duyệt ẩn danh): ảnh không giữ được → sang /goi-y để chọn lại, không bỏ kẹt ở đây
+          return Promise.all([warm(), wait(reduce ? 0 : Math.max(0, 1600 - (Date.now() - t0)))]).then(function () {
+            if (!Array.isArray(saved) || !saved.length) idb.del('fresh');
+            location.href = '/goi-y';
+          });
+        });
+    }).catch(function () { reset('Chưa đọc được ảnh, bạn thử lại nhé.'); });
   }
-  function next() { (saving || Promise.resolve()).then(function () { location.href = '/goi-y'; }); }
 
   stage.addEventListener('click', pick);
   stage.addEventListener('keydown', function (e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); pick(); } });
   go.addEventListener('click', pick);
   // bấm Quay lại từ /goi-y (trang được trình duyệt giữ nguyên trong bộ nhớ): trả nút về như cũ
-  addEventListener('pageshow', function (e) { if (e.persisted) { hb.classList.remove('busy'); go.disabled = false; go.textContent = goText; } });
+  addEventListener('pageshow', function (e) { if (e.persisted) reset(''); });
   file.addEventListener('change', function () { take(file.files); file.value = ''; });
 
   // kéo ảnh vào bất kỳ đâu trên trang chủ: khung hoạt hình hiện viền "Thả ảnh vào đây"

@@ -430,6 +430,14 @@ body.drag .drophint{opacity:1}
 .hcta .go{display:inline-flex;align-items:center;gap:10px;padding:15px 34px;border:0;border-radius:999px;font:700 17px var(--sans);color:#fff;background:linear-gradient(135deg,#d6455d,#ef7d8d);box-shadow:0 14px 34px rgba(214,69,93,.35);cursor:pointer;transition:transform .2s}
 .hcta .go:hover{transform:translateY(-2px)}
 .hcta .go[disabled]{cursor:progress;opacity:.9;transform:none}
+.hcta .hmsg{margin:2px 0 0;max-width:340px;font-size:13px;line-height:1.5;color:#e0707f;text-align:center}
+/* khách thả ảnh: ẩn thiệp mẫu, chỉ còn ảnh CỦA KHÁCH bay vào khung rỗng (lặp, nhanh hơn) trong lúc trang đọc ảnh thật; khung nhấp nháy + vòng xoay */
+.hb.busy .fan .tpl,.hb.busy .fan .flash,.hb.busy .fan .sp{display:none}
+.hb.busy .fan .fp0,.hb.busy .fan .fp1,.hb.busy .fan .fp2,.hb.busy .fan .hand{animation-duration:3.2s}
+.hb.busy .fan .slot{animation:slotBusy 1.5s ease-in-out infinite}
+.hb.busy .fan .slot i{border-style:solid;border-color:currentColor transparent currentColor transparent;animation:spin .9s linear infinite}
+@keyframes slotBusy{0%,100%{transform:none;box-shadow:none}50%{transform:scale(1.03);box-shadow:0 0 0 7px rgba(243,215,154,.2),0 0 38px 6px rgba(239,125,141,.4)}}
+@keyframes spin{to{transform:rotate(360deg)}}
 @media (max-width:700px){
   .hb{padding:104px 16px 70px}
   .hb h1{font-size:32px}

@@ -42,7 +42,7 @@
   <div class="wall" id="cols" aria-hidden="true"></div>
   <div class="kick"><b>CN</b>THIỆP CƯỚI ONLINE</div>
   <h1>Thả ảnh cưới vào,<em>xem ngay thiệp của bạn</em></h1>
-  <!-- vài ảnh bay vào khung thiệp rỗng → bung ra 5 mẫu thiệp thật (ảnh bìa mẫu); cả khối là chỗ bấm / thả ảnh (public/js/hero.js) -->
+  <!-- vài ảnh bay vào khung thiệp rỗng → bung ra 5 mẫu thiệp thật (ảnh bìa mẫu); khách thả ảnh thì chỉ ảnh của họ bay vào + loading cho tới khi đọc xong; cả khối là chỗ bấm / thả ảnh (public/js/hero.js) -->
   <div class="stage" id="stage" role="button" tabindex="0" aria-label="Chọn hoặc kéo thả ảnh cưới để xem thiệp của bạn">
     <span class="drophint">Thả ảnh vào đây</span>
     <span class="fan" id="fan" aria-hidden="true">
@@ -62,6 +62,7 @@
   </div>
   <div class="hcta">
     <button class="go" id="heroGo" type="button">📷 Chọn ảnh cưới</button>
+    <p class="hmsg" id="heroMsg" role="status" hidden></p>
   </div>
   <input type="file" id="heroFile" accept="image/*" multiple hidden>
 </section>
@@ -183,6 +184,7 @@
 
 <footer id="foot"></footer>
 <script src="/js/site.js"></script>
+<script src="/js/photoprep.js"></script>
 <script src="/js/hero.js"></script>
 <script>
 (function () {
