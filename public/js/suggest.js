@@ -91,10 +91,9 @@
 
   // ---------- trạng thái ----------
   var photos = [];   // { id, blob, url, w, h, feat }
-  var info = { groom: '', bride: '', date: '' };
   var META = null, picks = [], slots = [], busy = false, seq = 0;
   var persist = function () {
-    return idb.set('photos', photos.map(function (p) { return { id: p.id, blob: p.blob, w: p.w, h: p.h, feat: p.feat }; })).then(function () { return idb.set('info', info); });
+    return idb.set('photos', photos.map(function (p) { return { id: p.id, blob: p.blob, w: p.w, h: p.h, feat: p.feat }; }));
   };
 
   // ---------- giao diện ----------
@@ -109,18 +108,10 @@
     $('#count').textContent = photos.length + ' ảnh';
     $('#mPhI').innerHTML = photos.slice(0, 3).map(function (p) { return '<b style="background-image:url(\'' + p.url + '\')"></b>'; }).join('');
     $('#mPhN').textContent = photos.length + ' ảnh · Đổi';
-    renderWho();
-  }
-  function renderWho() {
-    var names = [info.groom, info.bride].filter(Boolean).join(' & '), d = /^(\d{4})-(\d\d)-(\d\d)$/.exec(info.date || '');
-    $('#mWho').innerHTML = '<b>' + esc(names || 'Thêm tên cô dâu chú rể') + '</b>' + (d ? ' · ' + d[3] + '.' + d[2] + '.' + d[1] : '') + '<span>' + (names ? 'Sửa' : '+ Thêm') + '</span>';
   }
 
   function previewUrl(c) {
     var q = new URLSearchParams({ palette: c.pal.id, n: String(Math.max(0, slots.length - 1)), lite: '1' });
-    if (info.groom) q.set('groom', info.groom);
-    if (info.bride) q.set('bride', info.bride);
-    if (info.date) q.set('date', info.date);
     return '/goi-y/xem/' + c.t.id + '?' + q;
   }
   // thay ảnh trong máy vào các ô giữ chỗ (#k=<vị trí>) của thiệp trong khung — cùng cách trình sửa hiện ảnh đang tải
@@ -171,9 +162,8 @@
     var c = picks[i]; if (!c) return;
     cur = i;
     Array.prototype.forEach.call(elStrip.querySelectorAll('[data-pick]'), function (b) { var on = +b.dataset.pick === i; b.classList.toggle('on', on); b.setAttribute('aria-selected', on); });
-    $('#pmeta').innerHTML = '<span class="sg-chip' + (i === 0 ? ' best' : '') + '">' + esc(c.label) + '</span><b>' + esc(c.t.name) + '</b><span>· ' + esc(c.pal.name) + '</span>';
     $('#pwhy').textContent = c.why;
-    var u = $('#useBtn'); u.disabled = false; u.textContent = 'Dùng thiệp này';
+    ['#useBtn', '#useBtnM'].forEach(function (id) { var u = $(id); if (u) { u.disabled = false; u.textContent = 'Dùng thiệp này'; } });
     if (scroll) { var b = elStrip.querySelector('[data-pick="' + i + '"]'); if (b && elStrip.scrollWidth > elStrip.clientWidth + 8) elStrip.scrollTo({ left: b.offsetLeft - elStrip.clientWidth / 2 + b.offsetWidth / 2, behavior: 'smooth' }); }
     loadBig();
   }
@@ -246,18 +236,11 @@
     btn.disabled = true; btn.textContent = 'Đang tạo thiệp…';
     jsonFetch('/api/cards', 'POST', { template: c.t.id, palette: c.pal.id }).then(function (r) {
       var card = r.card, d = card.data, step = Promise.resolve();
-      if (info.groom || info.bride || info.date) {
-        if (info.groom) d.groom.name = info.groom;
-        if (info.bride) d.bride.name = info.bride;
-        if (info.date) { d.date = info.date; (d.events || []).forEach(function (e) { if (!e.date) e.date = info.date; }); }
-        step = jsonFetch('/api/cards/' + card.id, 'PUT', { data: d });
-      }
       return step.then(function () {
         // ảnh + vị trí + điểm lấy nét để trình sửa đưa vào thiệp (đã đăng nhập: tải lên ngay; chưa: hiện tạm, mời đăng nhập)
         return idb.set('pending', { cardId: card.id, at: Date.now(), items: slots.map(function (s) { var f = focus(s.p); return { key: s.key, blob: s.p.blob, x: f[0], y: f[1] }; }) });
       }).then(function () {
         try {
-          if (info.groom || info.bride) sessionStorage.setItem('qs:' + card.id, '1'); // đã có tên → khỏi hiện bảng "Bắt đầu nhanh"
           var b = JSON.stringify({ u: 'thiep:' + c.t.id });
           if (navigator.sendBeacon) navigator.sendBeacon('/api/t', b);
         } catch (e) { /* bỏ qua */ }
@@ -275,13 +258,13 @@
   ['dragleave', 'drop'].forEach(function (t) { document.addEventListener(t, function () { elDrop.classList.remove('over'); }); });
   document.addEventListener('drop', function (e) { if (e.dataTransfer && e.dataTransfer.files.length) { e.preventDefault(); dirty = true; addFiles(e.dataTransfer.files); } });
   document.addEventListener('click', function (e) {
-    var rm = e.target.closest('[data-rm]'), u = e.target.closest('#useBtn'), pk = e.target.closest('[data-pick]');
+    var rm = e.target.closest('[data-rm]'), u = e.target.closest('#useBtn,#useBtnM'), pk = e.target.closest('[data-pick]');
     if (rm) {
       var k = photos.findIndex(function (p) { return p.id === rm.dataset.rm; });
       if (k >= 0) { URL.revokeObjectURL(photos[k].url); photos.splice(k, 1); persist(); refresh(false); }
     } else if (pk) { if (+pk.dataset.pick !== cur) select(+pk.dataset.pick, true);
-    } else if (e.target.closest('#mPh')) { elWork.classList.toggle('ph'); elWork.classList.remove('wh'); setTimeout(fit, 0);
-    } else if (e.target.closest('#mWho')) { elWork.classList.toggle('wh'); elWork.classList.remove('ph'); setTimeout(fit, 0); if (elWork.classList.contains('wh')) $('#f-groom').focus();
+    } else if (e.target.closest('#mPh')) { elWork.classList.toggle('ph');
+    } else if (e.target.id === 'phX' || (elWork.classList.contains('ph') && !e.target.closest('#phbox'))) { elWork.classList.remove('ph'); // chạm ra ngoài / Xong: đóng hộp ảnh
     } else if (e.target.closest('#more') || e.target.closest('#pick')) elFile.click();
     else if (e.target.closest('#reset')) {
       photos.forEach(function (p) { URL.revokeObjectURL(p.url); });
@@ -289,23 +272,14 @@
       idb.del('photos'); refresh(false);
     } else if (u) use(cur, u);
   });
-  var t = null;
-  ['groom', 'bride', 'date'].forEach(function (k) {
-    $('#f-' + k).addEventListener('input', function (e) {
-      info[k] = e.target.value.trim().slice(0, 40);
-      renderWho();
-      clearTimeout(t);
-      t = setTimeout(function () { idb.set('info', info); if (photos.length) loadFrames(); }, 700);
-    });
-  });
 
   // ---------- khởi động: lấy danh sách mẫu, khôi phục ảnh đang làm dở ----------
   // mạng lỗi, danh sách mẫu không về: sau 8 giây vẫn hiện ô chọn ảnh (không treo ở "Đang mở…")
   setTimeout(function () { if (!META && !$('#restoring').hidden) { $('#restoring').hidden = true; elDrop.hidden = false; } }, 8000);
   document.addEventListener('meta', function (e) {
     META = e.detail;
-    Promise.all([idb.get('photos'), idb.get('info'), idb.get('incoming'), idb.get('fresh')]).then(function (r) {
-      if (r[1]) { info = Object.assign(info, r[1]); ['groom', 'bride', 'date'].forEach(function (k) { $('#f-' + k).value = info[k] || ''; }); renderWho(); }
+    Promise.all([idb.get('photos'), null, idb.get('incoming'), idb.get('fresh')]).then(function (r) {
+      idb.del('info'); // tên / ngày không còn nhập ở đây (điền trong trình sửa)
       // ảnh vừa chọn / thả ở trang chủ (public/js/hero.js): thay bộ ảnh cũ, gợi ý mẫu luôn
       if (Array.isArray(r[2]) && r[2].length) {
         idb.del('incoming');
