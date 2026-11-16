@@ -58,7 +58,7 @@ module.exports = {
   palettes: [
     { id: 'do-son', name: 'Đỏ son', swatch: ['#8c0000', '#ffe8a4'], vars: { ...base, '--page': '#ffffff', '--bg': '#8c0000', '--paper': '#fff9e6', '--ink': '#990000', '--muted': '#2f0000', '--accent': '#920002', '--accent-ink': '#fff9e6', '--gold': '#ffe8a4', '--line': '#fdcb9c', '--sh-peach': '#f6c89c', '--sh-deep': '#420000', '--sh-dlg': '#5a0000', '--sh-hi': '#A50000' } },
   ],
-  // dữ liệu xem thử theo bản gốc: ảnh cưới của mẫu, ngày 04/01/2027, tiệc ở Sen Vang Palace (Phú Thọ);
+  // dữ liệu xem thử theo bản gốc: ảnh cưới của mẫu, ngày 04/01/2027, tiệc ở Sen Hồng Palace;
   // bản gốc có 9 mốc lịch trình nhưng thiệp chỉ lưu tối đa 6 sự kiện nên bỏ Đón dâu, Gia tiên nhà trai, Chúc mừng từng bàn
   demo: {
     date: '2027-01-04',
