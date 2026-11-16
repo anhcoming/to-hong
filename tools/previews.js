@@ -48,7 +48,9 @@ const kb = (f) => Math.round(fs.statSync(f).size / 1024) + 'KB';
       await send('Page.navigate', { url: `${BASE}/demo/${t.id}?palette=${p.id}&preview=1` });
       await sleep(2200);
       // mở sẵn mọi khối hiện dần; cuộn qua cả trang để ảnh nạp lười cũng nạp, rồi quay về đầu
+      // ảnh loading="lazy" ngoài khung nhìn không tự nạp khi cuộn nhanh trong Chrome headless → ép nạp ngay (ảnh dài khỏi ô trắng)
       const h = await evaluate(`(async()=>{document.querySelectorAll('.reveal').forEach(e=>e.classList.add('in'));
+        document.querySelectorAll('img[loading=lazy]').forEach(i=>{i.loading='eager'});
         const H=Math.min(${MAXH},document.documentElement.scrollHeight);
         for(let y=0;y<H;y+=${H}){window.scrollTo({top:y,behavior:'instant'});await new Promise(r=>setTimeout(r,60));}
         window.scrollTo({top:0,behavior:'instant'});
