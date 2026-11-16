@@ -386,6 +386,15 @@ route('POST', '/api/t', async (req, res, ctx) => {
 // lượt mở trang xem thử một mẫu (không tính ảnh xem trước nhúng ở trang chủ, không tính bot)
 const demoView = (req, ctx, key) => (ctx.query.get('preview') === '1' || stats.isBot(req) || stats.isOwner(req, ctx) ? null : stats.hit([['view', key]]));
 
+// Xoá sạch báo cáo truy cập (không hoàn tác) — phải gửi kèm confirm: 'XOÁ'
+route('POST', '/api/admin/traffic/clear', async (req, res, ctx) => {
+  needAdmin(ctx);
+  const b = await readJson(req);
+  if (b.confirm !== 'XOÁ') throw httpError(400, 'Gõ đúng chữ XOÁ để xoá báo cáo truy cập');
+  const n = await stats.clear();
+  adminLib.audit(ctx, 'Xoá báo cáo truy cập', `${n} dòng số liệu`);
+  json(res, 200, { ok: true, cleared: n });
+});
 route('GET', '/api/admin/traffic', async (req, res, ctx) => {
   needAdmin(ctx);
   const days = Math.min(180, Math.max(7, parseInt(ctx.query.get('days'), 10) || 30));

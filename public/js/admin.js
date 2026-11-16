@@ -528,7 +528,7 @@ async function traffic() {
   const KIND = { thiep: 'Thiệp', video: 'Video', led: 'Màn LED' };
   const rankList = (list, unit) => (list.length ? `<ul class="todo">${list.map((r) => `<li><div><b>${esc(r.key)}</b></div><span class="v">${num(r.n)} ${unit}</span></li>`).join('')}</ul>` : '<p class="empty">Chưa có số liệu.</p>');
   const tplTable = (list) => (list.length ? `<table class="tb"><thead><tr><th>Mẫu</th><th class="hm">Loại</th><th class="num">Xem thử</th><th class="num">Dùng mẫu</th><th class="num">Tỉ lệ</th></tr></thead><tbody>${list.map((r) => `<tr><td><b>${esc(r.name)}</b><span class="s">${KIND[r.kind] || ''}</span></td><td class="hm">${KIND[r.kind] || ''}</td><td class="num">${num(r.views)}</td><td class="num">${num(r.uses)}</td><td class="num">${pct(r.uses, r.views)}</td></tr>`).join('')}</tbody></table>` : '<p class="empty">Chưa có ai mở mẫu nào.</p>');
-  $('#view').innerHTML = `${page('Truy cập', 'Lượt ghé các trang giới thiệu và lượt mở xem thử mẫu. Không tính bot.', `<select class="sel" id="tdays">${[7, 30, 90].map((n) => `<option value="${n}" ${n === days ? 'selected' : ''}>${n} ngày</option>`).join('')}</select>`)}
+  $('#view').innerHTML = `${page('Truy cập', 'Lượt ghé các trang giới thiệu và lượt mở xem thử mẫu. Không tính bot.', `<select class="sel" id="tdays">${[7, 30, 90].map((n) => `<option value="${n}" ${n === days ? 'selected' : ''}>${n} ngày</option>`).join('')}</select><button class="btn sm plain" id="tclear" style="color:var(--danger)">Xoá báo cáo truy cập</button>`)}
     <div class="note ${x.device ? '' : 'w'}">${x.device ? '✓ Chỉ đếm khách ngoài — máy này' : 'Máy này chưa được loại khỏi thống kê'}${x.accounts.length ? ` và tài khoản ${x.accounts.map(esc).join(', ')}` : ''}${x.device ? ' không được tính' : ''}<button class="lk" id="xinfo">Chi tiết</button></div>
     <div class="kp">
       <div class="box"><span>Khách hôm nay</span><b>${num(d.today.visitors)}</b><small>Hôm qua ${num(y.visitors)} · ${num(d.today.pv)} lượt xem trang</small></div>
@@ -547,6 +547,11 @@ async function traffic() {
         ${d.templates.length ? `<ul class="todo">${d.templates.slice(0, 5).map((r) => `<li><div><b>${esc(r.name)}</b><small>${KIND[r.kind] || ''} · ${num(r.uses)} lượt dùng mẫu</small></div><span class="v">${num(r.views)} xem</span></li>`).join('')}</ul>` : '<p class="empty">Chưa có ai mở mẫu nào.</p>'}</div>
     </div>`;
   $('#tdays').onchange = (e) => { A.f.tdays = +e.target.value; render(); };
+  $('#tclear').onclick = () => ask({
+    title: 'Xoá báo cáo truy cập?', danger: true, ok: 'Xoá báo cáo', word: 'XOÁ',
+    text: 'Xoá vĩnh viễn toàn bộ số liệu truy cập từ trước tới nay: lượt khách ghé, lượt xem trang, nguồn tới, thiết bị, lượt xem thử và dùng từng mẫu. Trang Truy cập và phễu khách ở Tổng quan sẽ về 0, đếm lại từ lúc này. <b>Không hoàn tác được.</b><br><br>Thiệp, đơn hàng và tài khoản không bị ảnh hưởng.',
+    run: async () => { await api('/api/admin/traffic/clear', { method: 'POST', body: { confirm: 'XOÁ' } }); toast('Đã xoá báo cáo truy cập'); render(); },
+  });
   $('#xinfo').onclick = () => modal({
     title: x.device ? 'Chỉ đếm khách ngoài' : 'Máy này chưa được loại', size: 'sm',
     body: `<p>Không tính lượt vào từ máy đã mở /admin hoặc đăng nhập tài khoản chủ web${x.accounts.length ? ` (<b>${x.accounts.map(esc).join(', ')}</b>)` : ''}. Thiệp, đăng ký, đơn của các tài khoản đó cũng bỏ khỏi phễu.</p>
