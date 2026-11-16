@@ -60,7 +60,15 @@ body.active{cursor:default}
 
 .ctl{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);display:flex;gap:8px;padding:8px;border-radius:999px;background:rgba(0,0,0,.55);backdrop-filter:blur(6px);opacity:0;transition:opacity .3s;z-index:5}
 body.active .ctl{opacity:1}
-body.preview .ctl{display:none}
+body.preview .ctl,body.preview .back{display:none}
+/* nút đóng (X) góc trên phải: hiện cùng thanh điều khiển khi rê chuột / chạm */
+.back{position:fixed;right:20px;top:max(20px,env(safe-area-inset-top));z-index:5;display:grid;place-items:center;width:44px;height:44px;border-radius:50%;background:rgba(0,0,0,.55);backdrop-filter:blur(6px);color:#fff;text-decoration:none;opacity:0;pointer-events:none;transition:opacity .3s}
+body.active .back{opacity:1;pointer-events:auto}
+.back:hover{background:rgba(0,0,0,.8)}
+.ctl button{display:grid;place-items:center}
+.ctl button[hidden]{display:none}
+.ctl .i-off,body.fs .ctl .i-on{display:none}
+body.fs .ctl .i-off{display:block}
 .ctl button{flex:none;border:0;border-radius:999px;background:rgba(255,255,255,.14);color:#fff;font:500 15px 'Hanken Grotesk',sans-serif;width:44px;height:44px;cursor:pointer}
 .ctl button:hover{background:rgba(255,255,255,.28)}
 /* thanh tua giống trình chiếu video cưới: phát/dừng · kéo để tua · thời gian */

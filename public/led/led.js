@@ -574,7 +574,24 @@
   var pauseBtn = document.querySelector('[data-c=pause]');
   function togglePause() { paused = !paused; pauseBtn.textContent = paused ? '▶︎' : '❚❚'; pauseBtn.setAttribute('aria-label', paused ? 'Phát' : 'Tạm dừng'); lastTick = performance.now(); tell(); }
   document.getElementById('ctl').addEventListener('click', function (e) {
-    if (e.target.getAttribute('data-c') === 'pause') togglePause();
+    var b = e.target.closest('[data-c]'), c = b && b.getAttribute('data-c');
+    if (c === 'pause') togglePause();
+    else if (c === 'fs') fullscreen();
+  });
+  // nút toàn màn hình: đổi icon khi vào / thoát; trình duyệt không cho (iPhone) thì ẩn nút, vẫn còn chạm đúp
+  var fsBtn = document.querySelector('[data-c=fs]');
+  if (!document.fullscreenEnabled) fsBtn.hidden = true;
+  document.addEventListener('fullscreenchange', function () {
+    var on = !!document.fullscreenElement;
+    document.body.classList.toggle('fs', on);
+    fsBtn.setAttribute('aria-label', on ? 'Thoát toàn màn hình' : 'Toàn màn hình');
+    fsBtn.title = on ? 'Thoát toàn màn hình (F / Esc)' : 'Toàn màn hình (F)';
+  });
+  // nút đóng (X): mở từ trang khác trong web thì lùi đúng trang đó, mở thẳng link thì về trang mặc định
+  document.getElementById('back').addEventListener('click', function (e) {
+    var ref = document.referrer;
+    if (document.fullscreenElement) document.exitFullscreen().catch(function () {});
+    if (ref && ref.indexOf(location.origin + '/') === 0 && ref !== location.href && history.length > 1) { e.preventDefault(); history.back(); }
   });
   // thanh tua: kéo để tới đúng chỗ (cảnh + giây trong cảnh), thời gian "đã chạy / cả vòng"
   var sk = document.getElementById('seek'), tm = document.getElementById('tm'), drag = false;
