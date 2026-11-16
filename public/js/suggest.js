@@ -1,4 +1,5 @@
-// Trang /goi-y: thả ảnh cưới vào → trình duyệt tự đọc màu ảnh, chọn các mẫu thiệp hợp (5 mẫu một lần, bấm "Xem thêm" để hiện tiếp) và hiện ngay với ảnh của khách.
+// Trang /goi-y: thả ảnh cưới vào → trình duyệt tự đọc màu ảnh, chọn các mẫu thiệp hợp và hiện ngay với ảnh của khách:
+// một thiệp lớn + dải ảnh bìa các mẫu gợi ý (chạm để đổi), nút "Dùng thiệp này" luôn ở dưới.
 // Ảnh KHÔNG rời máy cho tới khi khách bấm "Dùng thiệp này" và đăng nhập: bản xem thử lấy ảnh thẳng từ bộ nhớ trình duyệt
 // (blob:), và ảnh được cất tạm trong IndexedDB để tải lại trang / lỡ đóng tab vẫn còn.
 // Trình sửa thiệp (editor.js → adoptSuggested) đọc lại đúng kho này để đưa ảnh vào thiệp.
@@ -97,7 +98,8 @@
   };
 
   // ---------- giao diện ----------
-  var elDrop = $('#drop'), elFile = $('#file'), elWork = $('#work'), elThumbs = $('#thumbs'), elList = $('#list'), elMsg = $('#msg');
+  var elDrop = $('#drop'), elFile = $('#file'), elWork = $('#work'), elThumbs = $('#thumbs'), elMsg = $('#msg');
+  var elBig = $('#big'), elStrip = $('#strip'), cur = 0;
   function say(t, bad) { elMsg.textContent = t || ''; elMsg.hidden = !t; elMsg.classList.toggle('bad', !!bad); }
 
   function renderThumbs() {
@@ -105,6 +107,13 @@
       return '<span class="th" style="background-image:url(\'' + p.url + '\')"><button type="button" data-rm="' + p.id + '" aria-label="Bỏ ảnh này">×</button></span>';
     }).join('') + (photos.length < MAX ? '<button type="button" class="th add" id="more" aria-label="Thêm ảnh">+</button>' : '');
     $('#count').textContent = photos.length + ' ảnh';
+    $('#mPhI').innerHTML = photos.slice(0, 3).map(function (p) { return '<b style="background-image:url(\'' + p.url + '\')"></b>'; }).join('');
+    $('#mPhN').textContent = photos.length + ' ảnh · Đổi';
+    renderWho();
+  }
+  function renderWho() {
+    var names = [info.groom, info.bride].filter(Boolean).join(' & '), d = /^(\d{4})-(\d\d)-(\d\d)$/.exec(info.date || '');
+    $('#mWho').innerHTML = '<b>' + esc(names || 'Thêm tên cô dâu chú rể') + '</b>' + (d ? ' · ' + d[3] + '.' + d[2] + '.' + d[1] : '') + '<span>' + (names ? 'Sửa' : '+ Thêm') + '</span>';
   }
 
   function previewUrl(c) {
@@ -141,61 +150,57 @@
   }
   function fit() { // khung thiệp vẽ ở 375px rồi thu nhỏ cho vừa thẻ
     Array.prototype.forEach.call(document.querySelectorAll('.sg-view'), function (v) {
-      var sc = v.clientWidth / 375, fr = v.firstElementChild;
-      if (!fr) return;
-      fr.style.transform = 'scale(' + sc + ')';
-      fr.style.height = Math.round(v.clientHeight / sc) + 'px';
+      var sc = v.clientWidth / 375;
+      Array.prototype.forEach.call(v.querySelectorAll('iframe'), function (fr) {
+        fr.style.transform = 'scale(' + sc + ')';
+        fr.style.height = Math.round(v.clientHeight / sc) + 'px';
+      });
     });
   }
   window.addEventListener('resize', fit);
 
-  var PAGE = 5, shown = 0; // mỗi lần hiện 5 thẻ; "Xem thêm" hiện tiếp 5
-  var elMore = $('#moreWrap'), elMoreBtn = $('#moreBtn');
-  function cardHtml(c, i) {
-      return '<article class="sg" data-i="' + i + '">'
-        + '<div class="sg-top"><span class="sg-chip">' + esc(c.label) + '</span><b>' + esc(c.t.name) + '</b><span class="muted"> · ' + esc(c.pal.name) + '</span></div>'
-        + '<div class="sg-view"><iframe title="Xem thử mẫu ' + esc(c.t.name) + ' với ảnh của bạn" loading="lazy"></iframe><span class="sg-wait">Đang dựng thiệp…</span></div>'
-        + '<p class="sg-why">' + esc(c.why) + '</p>'
-        + '<button type="button" class="btn btn-main" data-use="' + i + '">Dùng thiệp này</button>'
-        + '</article>';
+  // dải mẫu: ảnh bìa có sẵn của từng mẫu theo đúng bảng màu (nhẹ, không phải dựng thiệp); chỉ thiệp lớn là dựng thật với ảnh của khách
+  var coverOf = function (c) { return '/demo/cover-' + c.t.id + '-' + c.pal.id + '.jpg'; };
+  function renderStrip() {
+    elStrip.innerHTML = picks.map(function (c, i) {
+      return '<button type="button" role="option" data-pick="' + i + '" class="' + (i === cur ? 'on' : '') + '" aria-selected="' + (i === cur) + '" title="' + esc(c.t.name + ' · ' + c.pal.name) + '">'
+        + '<i style="background-image:url(\'' + coverOf(c) + '\')"></i><small>' + esc(c.t.name) + '</small></button>';
+    }).join('') + '<a href="/mau-thiep"><i>Xem tất cả mẫu →</i><small>&nbsp;</small></a>';
   }
-  function updateMore() {
-    var left = picks.length - shown;
-    elMore.hidden = left <= 0;
-    if (left > 0) elMoreBtn.textContent = 'Xem thêm ' + Math.min(PAGE, left) + ' mẫu';
+  function select(i, scroll) {
+    var c = picks[i]; if (!c) return;
+    cur = i;
+    Array.prototype.forEach.call(elStrip.querySelectorAll('[data-pick]'), function (b) { var on = +b.dataset.pick === i; b.classList.toggle('on', on); b.setAttribute('aria-selected', on); });
+    $('#pmeta').innerHTML = '<span class="sg-chip' + (i === 0 ? ' best' : '') + '">' + esc(c.label) + '</span><b>' + esc(c.t.name) + '</b><span>· ' + esc(c.pal.name) + '</span>';
+    $('#pwhy').textContent = c.why;
+    var u = $('#useBtn'); u.disabled = false; u.textContent = 'Dùng thiệp này';
+    if (scroll) { var b = elStrip.querySelector('[data-pick="' + i + '"]'); if (b && elStrip.scrollWidth > elStrip.clientWidth + 8) elStrip.scrollTo({ left: b.offsetLeft - elStrip.clientWidth / 2 + b.offsetWidth / 2, behavior: 'smooth' }); }
+    loadBig();
   }
-  // thêm n thẻ vào cuối danh sách (không dựng lại các thẻ đã có)
-  function showMore(n) {
-    var from = shown, to = Math.min(picks.length, shown + n);
-    elList.insertAdjacentHTML('beforeend', picks.slice(from, to).map(function (c, k) { return cardHtml(c, from + k); }).join(''));
-    shown = to;
-    updateMore(); fit();
-    loadFrames(from);
-    return from;
-  }
-  function renderList() {
-    elList.innerHTML = ''; shown = 0;
-    showMore(PAGE);
-  }
-  // nạp lần lượt từng khung (nhiều thiệp dựng cùng lúc làm điện thoại khựng); from = vị trí khung bắt đầu nạp
-  function loadFrames(from) {
-    var my = ++seq, frames = Array.prototype.slice.call(elList.querySelectorAll('iframe'));
-    var next = function (i) {
-      if (my !== seq || i >= frames.length) return;
-      var fr = frames[i], done = false;
-      var go = function () { if (done) return; done = true; if (my !== seq) return; inject(fr); next(i + 1); };
-      fr.classList.remove('on');
-      fr.onload = go;
-      setTimeout(go, 9000);
-      fr.src = previewUrl(picks[i]);
+  // dựng thiệp lớn: khung mới tải xong mới hiện (giữ thiệp cũ tới lúc đó, không nháy trắng)
+  function loadBig() {
+    var my = ++seq, old = elBig.querySelector('iframe'), fr = document.createElement('iframe');
+    fr.title = old ? old.title : 'Xem thử thiệp với ảnh của bạn';
+    var done = false;
+    var go = function () {
+      if (done || my !== seq) return; done = true;
+      inject(fr); fit();
+      Array.prototype.forEach.call(elBig.querySelectorAll('iframe'), function (x) { if (x !== fr) x.remove(); });
     };
-    next(from || 0);
+    // gắn link trước rồi mới đưa vào trang: khung chưa có link sẽ báo "tải xong" ngay với trang trắng
+    fr.src = previewUrl(picks[cur]);
+    elBig.insertBefore(fr, elBig.firstChild);
+    fr.onload = go; setTimeout(go, 9000);
+    fit();
   }
+  function loadFrames() { if (picks.length) loadBig(); } // tên / ngày đổi → dựng lại thiệp đang xem
+  function renderList() { cur = 0; renderStrip(); select(0); }
 
   function refresh(keepPicks) {
     elDrop.hidden = photos.length > 0;
     elWork.hidden = photos.length === 0;
-    if (!photos.length) { elList.innerHTML = ''; shown = 0; elMore.hidden = true; return; }
+    document.body.classList.toggle('gy-on', photos.length > 0);
+    if (!photos.length) { elStrip.innerHTML = ''; return; }
     renderThumbs();
     slots = assign(photos);
     if (!keepPicks || !picks.length) picks = pick(META.templates, META.templateGroups, summarize(photos));
@@ -268,25 +273,25 @@
   ['dragleave', 'drop'].forEach(function (t) { document.addEventListener(t, function () { elDrop.classList.remove('over'); }); });
   document.addEventListener('drop', function (e) { if (e.dataTransfer && e.dataTransfer.files.length) { e.preventDefault(); dirty = true; addFiles(e.dataTransfer.files); } });
   document.addEventListener('click', function (e) {
-    var rm = e.target.closest('[data-rm]'), u = e.target.closest('[data-use]');
+    var rm = e.target.closest('[data-rm]'), u = e.target.closest('#useBtn'), pk = e.target.closest('[data-pick]');
     if (rm) {
       var k = photos.findIndex(function (p) { return p.id === rm.dataset.rm; });
       if (k >= 0) { URL.revokeObjectURL(photos[k].url); photos.splice(k, 1); persist(); refresh(false); }
-    } else if (e.target.closest('#moreBtn')) {
-      var first = showMore(PAGE), card = elList.children[first];
-      // điện thoại: danh sách vuốt ngang → đưa thẻ mới đầu tiên vào giữa; máy tính: cuộn xuống tới thẻ mới
-      if (card) { if (elList.scrollWidth > elList.clientWidth + 8) elList.scrollTo({ left: card.offsetLeft - 20, behavior: 'smooth' }); else card.scrollIntoView({ behavior: 'smooth', block: 'nearest' }); }
+    } else if (pk) { if (+pk.dataset.pick !== cur) select(+pk.dataset.pick, true);
+    } else if (e.target.closest('#mPh')) { elWork.classList.toggle('ph'); elWork.classList.remove('wh'); setTimeout(fit, 0);
+    } else if (e.target.closest('#mWho')) { elWork.classList.toggle('wh'); elWork.classList.remove('ph'); setTimeout(fit, 0); if (elWork.classList.contains('wh')) $('#f-groom').focus();
     } else if (e.target.closest('#more') || e.target.closest('#pick')) elFile.click();
     else if (e.target.closest('#reset')) {
       photos.forEach(function (p) { URL.revokeObjectURL(p.url); });
       photos = []; picks = []; dirty = false; say('');
       idb.del('photos'); refresh(false);
-    } else if (u) use(+u.dataset.use, u);
+    } else if (u) use(cur, u);
   });
   var t = null;
   ['groom', 'bride', 'date'].forEach(function (k) {
     $('#f-' + k).addEventListener('input', function (e) {
       info[k] = e.target.value.trim().slice(0, 40);
+      renderWho();
       clearTimeout(t);
       t = setTimeout(function () { idb.set('info', info); if (photos.length) loadFrames(); }, 700);
     });
@@ -296,7 +301,7 @@
   document.addEventListener('meta', function (e) {
     META = e.detail;
     Promise.all([idb.get('photos'), idb.get('info'), idb.get('incoming'), idb.get('fresh')]).then(function (r) {
-      if (r[1]) { info = Object.assign(info, r[1]); ['groom', 'bride', 'date'].forEach(function (k) { $('#f-' + k).value = info[k] || ''; }); }
+      if (r[1]) { info = Object.assign(info, r[1]); ['groom', 'bride', 'date'].forEach(function (k) { $('#f-' + k).value = info[k] || ''; }); renderWho(); }
       // ảnh vừa chọn / thả ở trang chủ (public/js/hero.js): thay bộ ảnh cũ, gợi ý mẫu luôn
       if (Array.isArray(r[2]) && r[2].length) {
         idb.del('incoming');
