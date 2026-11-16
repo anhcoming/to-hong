@@ -1,1 +1,9 @@
-[]
+[
+  {"id": "canon", "name": "Canon in D — Pachelbel", "by": "Dàn dây Ban nhạc Không quân Hoa Kỳ", "mood": "Ấm áp, lãng mạn"},
+  {"id": "wedding-march", "name": "Hành khúc đám cưới — Mendelssohn", "by": "Dàn nhạc giao hưởng (European Archive)", "mood": "Trang trọng, rộn ràng"},
+  {"id": "air", "name": "Air on the G String — Bach", "by": "Dàn dây Ban nhạc Không quân Hoa Kỳ", "mood": "Êm đềm, sâu lắng"},
+  {"id": "gymnopedie", "name": "Gymnopédie số 1 — Satie", "by": "Robin Alciatore (piano)", "mood": "Nhẹ nhàng, mơ màng"},
+  {"id": "clair-de-lune", "name": "Clair de Lune — Debussy", "by": "Nhóm kèn đồng Ban nhạc Không quân Hoa Kỳ", "mood": "Dịu dàng, lãng mạn"},
+  {"id": "nocturne", "name": "Nocturne Op. 9 số 2 — Chopin", "by": "Peter Johnston (piano)", "mood": "Lãng mạn, du dương"},
+  {"id": "traumerei", "name": "Träumerei (Mơ mộng) — Schumann", "by": "Musopen (piano)", "mood": "Trong trẻo, bình yên"}
+]
