@@ -128,6 +128,10 @@
         im.src = src;
         if (win.__applyFocus && im.parentElement) win.__applyFocus(im.parentElement);
       });
+      // ảnh vẽ trong SVG (<image href>, vd. khung bìa Long Phụng)
+      Array.prototype.forEach.call(doc.querySelectorAll('image'), function (im) {
+        if (rx.test(im.getAttribute('href') || im.getAttribute('xlink:href') || '')) { im.removeAttribute('xlink:href'); im.setAttribute('href', src); }
+      });
       Array.prototype.forEach.call(doc.querySelectorAll('[style*="k="]'), function (el) {
         var st = el.getAttribute('style');
         if (!rx.test(st)) return;

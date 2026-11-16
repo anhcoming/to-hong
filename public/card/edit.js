@@ -53,7 +53,12 @@
     Array.prototype.forEach.call(document.querySelectorAll('[style*="k="]'), function (el) {
       var s = el.getAttribute('style'), k = keyOf(s); if (k) { el.dataset.cePhoto = k; el.dataset.ceEmpty = /\/card\/slot\.svg/.test(s) ? '1' : ''; }
     });
+    // ảnh vẽ trong SVG (<image href>, vd. khung bìa Long Phụng)
+    Array.prototype.forEach.call(document.querySelectorAll('image'), function (im) {
+      var h = svgHref(im), k = keyOf(h); if (k) { im.dataset.cePhoto = k; im.dataset.ceEmpty = /\/card\/slot\.svg/.test(h) ? '1' : ''; }
+    });
   }
+  function svgHref(im) { return im.getAttribute('href') || im.getAttribute('xlink:href') || ''; }
   // ảnh hay bị đè bởi lớp trang trí (bao thư, khung, hoa…) → tìm ảnh nằm dưới điểm bấm
   function photoAt(x, y) {
     var els = document.elementsFromPoint(x, y);
@@ -474,7 +479,9 @@
     var tagged = src + (src.indexOf('#') >= 0 ? '&' : '#') + 'k=' + key;
     var re = new RegExp('url\\(([\'"]?)[^\'")]*[#&]k=' + key.replace('.', '\\.') + '(?![\\w.])[^\'")]*\\1\\)', 'g');
     Array.prototype.forEach.call(document.querySelectorAll('[data-ce-photo="' + key + '"]'), function (el) {
-      if (el.tagName === 'IMG') {
+      if (el.tagName.toLowerCase() === 'image') {
+        el.removeAttribute('xlink:href'); el.setAttribute('href', tagged);
+      } else if (el.tagName === 'IMG') {
         el.removeAttribute('srcset');
         el.style.objectPosition = el.style.scale = el.style.clipPath = el.style.transformOrigin = ''; // bỏ phần căn của ảnh cũ
         el.src = tagged;
