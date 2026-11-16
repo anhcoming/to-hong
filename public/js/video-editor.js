@@ -273,7 +273,7 @@ function musicBox() {
   const playing = (f) => mPrev && !mPrev.paused && mPrev.dataset.f === f;
   const row = (f, name, sub, on) => `<div class="mrow${on ? ' on' : ''}"><button class="mplay" data-mplay="${esc(f)}">${playing(f) ? '❚❚' : '▶'}</button><div class="mt"><b>${esc(name)}</b><small>${esc(sub)}</small></div>${on ? '<span class="mnow">✓ Đang dùng</span>' : `<button class="btn sm plain" data-mpick="${esc(f)}">Chọn</button>`}</div>`;
   const own = cur && !M.tracks.some((t) => t.file === cur) ? row(cur, 'Nhạc bạn tải lên', 'MP3 của bạn', true) : '';
-  return `${mUp ? `<p class="muted" style="margin:0 0 10px">Đang tải lên "${esc(mUp)}"…</p>` : ''}<div class="mlist">${own}${M.tracks.map((t) => row(t.file, t.name, `${t.by} · ${t.mood}`, cur === t.file)).join('')}</div>
+  return `${mUp ? `<p class="muted" style="margin:0 0 10px">Đang tải lên "${esc(mUp)}"…</p>` : ''}<div class="mlist">${own}${M.tracks.map((t) => row(t.file, t.name, t.by, cur === t.file)).join('')}</div>
     <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px"><label class="btn sm soft">Tải lên MP3 của bạn<input type="file" accept="audio/mpeg" id="vMusicIn" hidden></label>${cur ? '<button class="btn sm plain" data-mpick="">Không dùng nhạc</button>' : ''}</div>`;
 }
 async function setMusic(url) {
@@ -350,14 +350,15 @@ function inlineEditor(o) {
   inp.addEventListener('keydown', (ev) => { if ((ev.key === 'Enter' && !ev.shiftKey) || ev.key === 'Escape') { ev.preventDefault(); done(); } });
   inp.addEventListener('blur', done);
 }
-function noteEditor(h, r, k) { // chữ viết tay dưới ảnh (Polaroid)
+function noteEditor(h, r, k) { // chữ dưới ảnh (Polaroid) / câu chữ trong khung ảnh (Tạp chí…)
+  const key = h.key || 'notes';
   inlineEditor({
-    text: h.text, x: r.left + h.x * k, y: r.top + h.y * k, w: h.w * k, scale: (h.sc || 1) * k, font: h.font, color: h.color, rot: h.rot, max: 40, hide: { j: h.j },
+    text: h.text, x: r.left + h.x * k, y: r.top + h.y * k, w: h.w * k, scale: (h.sc || 1) * k, font: h.font, color: h.color, rot: h.rot, max: 40, hide: { j: h.j, key },
     onSet: (v) => {
-      const all = (video.notes || []).slice(); while (all.length <= h.j) all.push('');
-      all[h.j] = v.trim() === h.text && !(video.notes || [])[h.j] ? '' : v.trim();
+      const all = (video[key] || []).slice(); while (all.length <= h.j) all.push('');
+      all[h.j] = v.trim() === h.text && !(video[key] || [])[h.j] ? '' : v.trim(); // không sửa gì: vẫn dùng câu có sẵn của mẫu
       while (all.length && !all[all.length - 1]) all.pop();
-      video.notes = all; engine.set(video, info()); engine.seek(engine.time());
+      video[key] = all; engine.set(video, info()); engine.seek(engine.time());
     },
   });
 }

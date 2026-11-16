@@ -786,10 +786,10 @@
       ctx.fillStyle = theme.main; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
       ctx.font = font('script', 54);
       var note = noteOf(j);
-      if (j !== hideJ) ctx.fillText(note, 0, ch / 2 - 56);
+      if (!(hideK === 'notes' && j === hideJ)) ctx.fillText(note, 0, ch / 2 - 56);
       // vị trí dòng chữ trên khung (điểm ảnh của canvas) — trang sửa bấm vào để sửa chữ tại chỗ
       var m = ctx.getTransform(), ty = ch / 2 - 56, sc = Math.hypot(m.a, m.b);
-      noteHits.push({ j: j, text: note, x: m.c * ty + m.e, y: m.d * ty + m.f, w: (ctx.measureText(note).width + 60) * sc, h: 90 * sc, rot: Math.atan2(m.b, m.a), sc: sc, font: ctx.font, color: ctx.fillStyle });
+      noteHits.push({ j: j, text: note, x: m.c * ty + m.e, y: m.d * ty + m.f, w: (ctx.measureText(note).width + 60) * sc, h: 90 * sc, key: 'notes', rot: Math.atan2(m.b, m.a), sc: sc, font: ctx.font, color: ctx.fillStyle });
       ctx.restore();
     }
     function drawPile(s, local) {
@@ -812,7 +812,12 @@
       ctx.fillStyle = theme.main;
       var mag = st.single === 'mag';
       ctx.font = mag ? font('serif', 84) : font('script', 96);
-      ctx.fillText(QUOTES[s.n % QUOTES.length], cx, H / 2 - 30 + (1 - a) * 20);
+      var qt = (video.quotes && video.quotes[s.n]) || QUOTES[s.n % QUOTES.length], qy = H / 2 - 30 + (1 - a) * 20;
+      if (!(hideK === 'quotes' && hideJ === s.n)) ctx.fillText(qt, cx, qy);
+      if (!exporting && a > 0.3) { // trang sửa: bấm câu này để sửa tại chỗ
+        var qm = ctx.getTransform(), qs = Math.hypot(qm.a, qm.b);
+        noteHits.push({ j: s.n, key: 'quotes', text: qt, x: qm.a * cx + qm.c * qy + qm.e, y: qm.b * cx + qm.d * qy + qm.f, w: (ctx.measureText(qt).width + 60) * qs, h: (mag ? 84 : 96) * 1.3 * qs, rot: 0, sc: qs, font: ctx.font, color: ctx.fillStyle });
+      }
       ctx.strokeStyle = rgba(theme.accent, 0.8); ctx.lineWidth = 2;
       ctx.beginPath(); ctx.moveTo(cx - 90, H / 2 + 50); ctx.lineTo(cx + 90, H / 2 + 50); ctx.stroke();
       var d = (vals.ngay || '').replace(/^[^,]*,\s*/, '');
@@ -1062,7 +1067,7 @@
       return out;
     }
 
-    var noteHits = [], photoHits = [], textHits = [], hideL = null, hideJ = -1; // dòng chữ / ảnh trên khung hình vừa vẽ (trang sửa bấm vào để sửa)
+    var noteHits = [], photoHits = [], textHits = [], hideL = null, hideJ = -1, hideK = 'notes'; // dòng chữ / ảnh trên khung hình vừa vẽ (trang sửa bấm vào để sửa)
     function renderAt(t) {
       if (!video) return;
       noteHits = []; photoHits = []; textHits = [];
@@ -1071,12 +1076,35 @@
       ctx.globalAlpha = 1;
       if (st) renderAlbum(t);
       else { bg(t); decor(t); particles(t); text(t); }
-      if (opts.trial) {
-        ctx.font = FONT.sans(28);
-        ctx.textAlign = 'right';
-        ctx.fillStyle = rgba(theme.main, 0.55);
-        ctx.fillText('Bản dùng thử · ' + (opts.brand || ''), W - 80, H - 76);
-      }
+      if (opts.trial) trialBadge();
+    }
+    // nhãn bản dùng thử: viên kính mờ góc dưới phải — tim hồng + "Cưới Nha" chữ viết tay + "BẢN DÙNG THỬ"; đọc rõ trên nền sáng lẫn tối
+    function trialBadge() {
+      var brand = opts.brand || 'Cưới Nha', label = 'BẢN DÙNG THỬ', hasLS = 'letterSpacing' in ctx;
+      ctx.save();
+      ctx.textBaseline = 'middle'; ctx.textAlign = 'left';
+      ctx.font = font('script', 40); var wb = ctx.measureText(brand).width;
+      ctx.font = FONT.sans(17); if (hasLS) ctx.letterSpacing = '3px'; var wl = ctx.measureText(label).width; if (hasLS) ctx.letterSpacing = '0px';
+      var hp = 26, gap = 14, hs = 22, h = 62, w = hp + hs + gap + wb + gap + 1 + gap + wl + hp, x = W - 56 - w, y = H - 56 - h, cy = y + h / 2;
+      // nền kính mờ + viền sáng mảnh
+      ctx.shadowColor = 'rgba(0,0,0,0.28)'; ctx.shadowBlur = 24; ctx.shadowOffsetY = 6;
+      roundRect(x, y, w, h, h / 2); ctx.fillStyle = 'rgba(24,14,16,0.5)'; ctx.fill();
+      ctx.shadowColor = 'transparent';
+      ctx.lineWidth = 1.5; ctx.strokeStyle = 'rgba(255,255,255,0.22)'; ctx.stroke();
+      // tim hồng
+      var hx = x + hp + hs / 2, hy = cy + 1, s = hs / 2;
+      var g = ctx.createLinearGradient(hx - s, hy - s, hx + s, hy + s); g.addColorStop(0, '#ef7d8d'); g.addColorStop(1, '#d6455d');
+      ctx.fillStyle = g; ctx.beginPath();
+      ctx.moveTo(hx, hy + s * 0.9);
+      ctx.bezierCurveTo(hx - s * 1.5, hy - s * 0.2, hx - s * 0.6, hy - s * 1.35, hx, hy - s * 0.45);
+      ctx.bezierCurveTo(hx + s * 0.6, hy - s * 1.35, hx + s * 1.5, hy - s * 0.2, hx, hy + s * 0.9);
+      ctx.fill();
+      // "Cưới Nha" + vạch ngăn + "BẢN DÙNG THỬ"
+      var tx = x + hp + hs + gap;
+      ctx.fillStyle = '#ffffff'; ctx.font = font('script', 40); ctx.fillText(brand, tx, cy + 2);
+      tx += wb + gap; ctx.fillStyle = 'rgba(255,255,255,0.35)'; ctx.fillRect(tx, cy - 14, 1, 28);
+      tx += 1 + gap; ctx.fillStyle = 'rgba(255,255,255,0.86)'; ctx.font = FONT.sans(17); if (hasLS) ctx.letterSpacing = '3px'; ctx.fillText(label, tx, cy + 1); if (hasLS) ctx.letterSpacing = '0px';
+      ctx.restore();
     }
 
     function loop(now) {
@@ -1317,7 +1345,7 @@
       // (x, y) theo điểm ảnh canvas → dòng chữ dưới ảnh nằm ở đó (tấm trên cùng trước) hoặc null
       noteOf: function (j) { return noteOf(j); },
       // ẩn một dòng chữ (đang sửa tại chỗ trên trang sửa): { l } dòng của cảnh chữ, { j } chữ dưới ảnh; null = hiện lại
-      hideText: function (o) { hideL = (o && o.l) || null; hideJ = o && o.j != null ? o.j : -1; if (pausedAt !== null) renderAt(pausedAt); },
+      hideText: function (o) { hideL = (o && o.l) || null; hideJ = o && o.j != null ? o.j : -1; hideK = (o && o.key) || 'notes'; if (pausedAt !== null) renderAt(pausedAt); },
       // (x, y) theo điểm ảnh canvas → dòng chữ của cảnh chữ nằm ở đó: { l: dòng (sửa l.text), text, box, sc: điểm ảnh / đơn vị } hoặc null
       textAt: function (x, y) {
         for (var k = textHits.length - 1; k >= 0; k--) {

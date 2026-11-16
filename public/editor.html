@@ -10,10 +10,18 @@
 <link rel="stylesheet" href="/css/app.css">
 <style>
 body{height:100vh;height:100dvh;display:flex;flex-direction:column;overflow:hidden}
-.ebar{flex:none;display:flex;align-items:center;gap:10px;padding:10px 16px;border-bottom:1px solid var(--line);background:var(--surface);z-index:6}
-.ebar .back{text-decoration:none;color:var(--muted);font-size:20px;padding:4px 8px}
-.ebar h1{margin:0;font-size:17px;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.saved{font-size:13px;color:var(--muted);white-space:nowrap}
+.ebar{flex:none;display:flex;align-items:center;gap:10px;height:58px;padding:0 14px;border-bottom:1px solid var(--line);background:var(--surface);z-index:6}
+.ebar .back{flex:none;display:grid;place-items:center;width:34px;height:34px;border-radius:10px;text-decoration:none;color:var(--ink);font-size:18px}
+.ebar .back:hover{background:var(--primary-soft)}
+.ebar .ttl{flex:1;min-width:0}
+.ebar h1{margin:0;font-size:15px;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ebar .sub{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--muted);white-space:nowrap;overflow:hidden}
+.ebar .sub .dot{flex:none;width:6px;height:6px;border-radius:50%;background:#e0a33a}
+.ebar .sub.ok .dot{background:#2f9e6a}
+.ebar .sub #tplN:empty{display:none}
+.saved{font-size:12px;color:var(--muted);white-space:nowrap}
+.ebar .btn.ghost{border-color:transparent;background:none;color:var(--primary)}.ebar .btn.ghost:hover{background:var(--primary-soft)}
+#pubArea{display:flex;align-items:center;gap:6px;flex:none;white-space:nowrap}
 .emain{flex:1;min-height:0;display:flex}
 /* 6 nút công cụ: cột dọc bên trái (máy tính), thanh dưới cùng (điện thoại) */
 .tools{flex:none;display:flex;flex-direction:column;gap:4px;width:88px;padding:12px 8px;background:var(--surface);border-right:1px solid var(--line);overflow-y:auto}
@@ -55,8 +63,8 @@ body{height:100vh;height:100dvh;display:flex;flex-direction:column;overflow:hidd
 .ev-h::before{content:'›';font-size:20px;line-height:1;color:var(--muted);transition:transform .2s;flex:none}
 .ev[open]>.ev-h::before{transform:rotate(90deg)}
 .ev-h.flat::before{display:none}
-.prof-chip{all:unset;cursor:pointer;display:inline-flex;align-items:center;gap:4px;padding:6px 12px;border-radius:999px;background:#e6f3ec;color:#2f7d5b;font-weight:600;font-size:12.5px;white-space:nowrap}.prof-chip small{color:var(--muted);font-weight:500}
-@media (max-width:760px){.prof-chip{display:none}}
+.prof-chip{all:unset;cursor:pointer;color:#2f7d5b;font-weight:600;white-space:nowrap}.prof-chip:hover{text-decoration:underline}
+@media (max-width:760px){#profL{display:none}}
 /* tab "Các mục của thiệp" */
 .sprog{display:flex;align-items:center;gap:10px;margin-bottom:12px}.sprog>div{flex:1;height:8px;border-radius:99px;background:color-mix(in srgb,var(--line) 70%,transparent);overflow:hidden}.sprog i{display:block;height:100%;background:#2f7d5b;border-radius:99px}.sprog b{font-size:12.5px;white-space:nowrap}
 .slist{display:grid;gap:6px}
@@ -177,9 +185,8 @@ body{height:100vh;height:100dvh;display:flex;flex-direction:column;overflow:hidd
 .outl button span{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 @media (max-width:1279px){.outl{display:none}}
 @media (max-width:760px){
-  .ebar{padding:8px 10px;gap:6px}
-  .saved{font-size:11px}
-  .ebar h1{font-size:16px}
+  .ebar{height:54px;padding:0 10px;gap:6px}
+  .ebar .sub #tplN,.ebar .sub #tplN+.dot{display:none}
   .emain{flex-direction:column-reverse}
   /* 6 ô không bao giờ tràn: nút rộng theo chữ (vừa màn 360px); máy để cỡ chữ lớn thì nhãn xuống tối đa 2 dòng */
   .tools{flex-direction:row;width:auto;justify-content:stretch;align-items:stretch;gap:0;padding:4px 4px calc(4px + env(safe-area-inset-bottom));border-right:0;border-top:1px solid var(--line);box-shadow:0 -4px 16px rgba(31,26,27,.04);overflow:hidden}
@@ -187,8 +194,7 @@ body{height:100vh;height:100dvh;display:flex;flex-direction:column;overflow:hidd
   .tools button span{white-space:normal;overflow-wrap:anywhere;text-wrap:balance}
   .tools button i{width:46px;max-width:100%;height:28px}
   .tools button svg{width:21px;height:21px}
-  .ebar .back{padding:4px 4px 4px 0;font-size:19px}
-  #pubArea{flex:none;display:flex;gap:6px}
+  .ebar .back{width:30px}
   #pubArea .btn{padding:7px 12px;font-size:12.5px}
   .stage{padding:0;display:block}
   .phone{width:100%;height:100%;border-radius:0;padding:0;background:none;box-shadow:none}
@@ -271,16 +277,14 @@ body.studio .pane{padding:0 0 60px}
 /* máy tính: thiệp khung điện thoại bên trái, các mục là thẻ bên phải — giữ nét riêng của Cưới Nha:
    nền hồng phấn, viền hồng nhạt, bóng ấm, nút bo tròn, tiêu đề nhóm chữ viết tay, điểm nhấn màu hồng đậm */
 .st-q{display:none}
-body.studio .st-q{display:flex;align-items:center;gap:8px;flex:0 1 440px;height:40px;padding:0 16px;border:1px solid var(--line);border-radius:999px;background:var(--surface);color:var(--muted);box-shadow:0 2px 10px rgba(120,40,50,.05)}
+body.studio .st-q{display:flex;align-items:center;gap:8px;flex:0 1 380px;height:36px;margin:0 auto;padding:0 16px;border:1px solid var(--line);border-radius:999px;background:var(--surface);color:var(--muted);box-shadow:0 2px 10px rgba(120,40,50,.05)}
 body.studio .st-q svg{width:15px;height:15px;flex:none;color:var(--primary)}
 body.studio .st-q input{all:unset;flex:1;min-width:0;font-size:13.5px;color:var(--ink)}
 body.studio .st-q input::placeholder{color:#b3a7a9}
 body.studio .st-q:focus-within{border-color:var(--primary);box-shadow:0 0 0 3px var(--primary-soft)}
 body.studio .ebar{background:rgba(255,250,250,.86);backdrop-filter:blur(14px) saturate(1.5);-webkit-backdrop-filter:blur(14px) saturate(1.5);padding-left:max(16px,calc(50% - 540px));padding-right:max(16px,calc(50% - 540px))}
 [data-theme="dark"] body.studio .ebar{background:rgba(26,20,22,.86)}
-body.studio .ebar h1{flex:0 1 auto;max-width:260px}
-body.studio #pubArea{margin-left:auto;display:flex;align-items:center;gap:8px;flex:none;white-space:nowrap}
-body.studio .ebar .saved{margin-left:auto}body.studio .ebar .saved+#pubArea{margin-left:0}
+body.studio .ebar .ttl{flex:0 1 300px}
 body.studio #pubBtn,body.studio #payBtn{background:var(--grad);border:0;box-shadow:0 8px 20px rgba(214,69,93,.28);border-radius:999px}
 @media (max-width:1100px){body.studio .st-q{display:none}}
 body.studio .emain{background:radial-gradient(900px 520px at 22% -10%,#ffe9ed 0,transparent 62%),radial-gradient(700px 500px at 100% 100%,#fff3e6 0,transparent 60%),var(--bg);justify-content:center;gap:32px;padding:0 16px}
@@ -318,9 +322,8 @@ body.st-find .st-g,body.st-find .st-add{display:none}
 <body>
 <header class="ebar">
   <a class="back" href="/thiep-cua-toi" title="Về danh sách">←</a>
-  <h1 id="ttl">Đang tải…</h1>
+  <div class="ttl"><h1 id="ttl">Đang tải…</h1><div class="sub" id="subl"><span id="tplN"></span><span class="dot"></span><span class="saved" id="saved"></span><span id="profL"></span></div></div>
   <label class="st-q"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="6.5"/><path d="M16 16l4 4"/></svg><input id="stQ" placeholder="Tìm nhanh mục: ngày cưới, nhạc, lời chúc…" autocomplete="off" aria-label="Tìm mục"></label>
-  <span class="saved" id="saved"></span>
   <span id="pubArea"></span>
 </header>
 <div class="emain">

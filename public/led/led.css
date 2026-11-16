@@ -56,7 +56,16 @@ body.active{cursor:default}
 .cd small:last-child{margin-right:0}
 .cd i{font-style:normal;color:var(--accent);margin:0 .08em}
 .cd-sub{font-size:44px;font-weight:300;opacity:.85}
-.wm{position:absolute;right:60px;bottom:52px;font-size:24px;color:var(--text);opacity:.45;letter-spacing:.05em}
+/* nhãn bản dùng thử: viên kính mờ — tim hồng · "Cưới Nha" chữ viết tay │ BẢN DÙNG THỬ */
+.wm{position:absolute;right:56px;bottom:52px;z-index:50;display:flex;align-items:center;gap:16px;height:62px;padding:0 26px 0 60px;border-radius:999px;background:rgba(24,14,16,.5) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0' stop-color='%23ef7d8d'/%3E%3Cstop offset='1' stop-color='%23d6455d'/%3E%3C/linearGradient%3E%3C/defs%3E%3Cpath fill='url(%23g)' d='M12 21s-7.5-4.6-9.6-9.2C.9 8.4 3.1 4.5 6.9 4.5c2.1 0 3.6 1.2 5.1 3 1.5-1.8 3-3 5.1-3 3.8 0 6 3.9 4.5 7.3C19.5 16.4 12 21 12 21z'/%3E%3C/svg%3E") 24px 50%/24px no-repeat;border:1.5px solid rgba(255,255,255,.22);box-shadow:0 6px 24px rgba(0,0,0,.28);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);color:rgba(255,255,255,.86);font:600 17px/1 'Hanken Grotesk',system-ui,sans-serif;letter-spacing:.18em;text-transform:uppercase;white-space:nowrap}
+.wm::before{content:attr(data-b);padding-right:16px;border-right:1px solid rgba(255,255,255,.35);font:700 38px/1 'Charm',cursive;letter-spacing:0;text-transform:none;color:#fff}
+/* trình sửa: chữ bấm được để sửa tại chỗ */
+body.can-edit [data-e]{cursor:text;border-radius:10px;outline:2px dashed transparent;outline-offset:8px;transition:outline-color .15s}
+body.can-edit [data-e]:hover{outline-color:rgba(255,255,255,.75)}
+body.can-edit [data-e][contenteditable=true],body.can-edit [data-e][contenteditable=plaintext-only]{outline:2px dashed #ef7d8d;caret-color:currentColor}
+body.can-edit [data-e]:empty::before{content:'Bấm để nhập';opacity:.45}
+body.can-edit [data-date]{cursor:pointer}
+body.can-edit [data-date]:hover .bigdate{outline:2px dashed rgba(255,255,255,.75);outline-offset:8px;border-radius:10px}
 
 .ctl{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);display:flex;gap:8px;padding:8px;border-radius:999px;background:rgba(0,0,0,.55);backdrop-filter:blur(6px);opacity:0;transition:opacity .3s;z-index:5}
 body.active .ctl{opacity:1}

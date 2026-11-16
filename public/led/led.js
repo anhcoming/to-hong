@@ -450,11 +450,11 @@
     var hy = L.hy ? '<p class="hy glow">囍</p>' : '';
     var out = [];
     if (L.slides.names) {
-      out.push('<div data-k="names" class="slide s-names">' + hy + (L.kicker ? '<p class="kicker">' + esc(L.kicker) + '</p>' : '') +
-        '<p class="names glow" data-fit><span>' + gn + '</span><span class="amp">&amp;</span><span>' + bn + '</span></p></div>');
+      out.push('<div data-k="names" class="slide s-names">' + hy + (L.kicker || C.preview ? '<p class="kicker" data-e="led.kicker">' + esc(L.kicker) + '</p>' : '') +
+        '<p class="names glow" data-fit><span data-e="groom.name">' + gn + '</span><span class="amp">&amp;</span><span data-e="bride.name">' + bn + '</span></p></div>');
     }
     if (L.slides.date && C.date) {
-      out.push('<div data-k="date" class="slide s-date"><p class="wd">' + esc(C.date.weekday) + '</p>' +
+      out.push('<div data-k="date" class="slide s-date" data-date="1"><p class="wd">' + esc(C.date.weekday) + '</p>' +
         '<p class="bigdate glow" data-fit>' + C.date.d + '<i>·</i>' + C.date.m + '<i>·</i>' + C.date.y + '</p>' +
         (C.time ? '<p class="time">Vào lúc ' + esc(C.time) + '</p>' : '') +
         (C.lunar ? '<p class="lunar">' + esc(C.lunar) + '</p>' : '') + '</div>');
@@ -465,12 +465,12 @@
       out.push('<div data-k="countdown" class="slide s-count"><p class="kicker">' + esc(L.kicker || 'Lễ Thành Hôn') + ' bắt đầu sau</p>' +
         '<p class="cd glow" data-fit></p><p class="cd-sub">' + (C.time ? 'Vào lúc ' + esc(C.time) : '') + (C.date ? ' · ' + C.date.d + '/' + C.date.m + '/' + C.date.y : '') + '</p></div>');
     }
-    var fam = function (p, lb) {
+    var fam = function (p, lb, w) {
       if (!p.father && !p.mother) return '';
-      return '<div class="fam"><p class="lb">' + lb + '</p>' + (p.father ? '<p class="pp">' + esc(p.father) + '</p>' : '') +
-        (p.mother ? '<p class="pp">' + esc(p.mother) + '</p>' : '') + (p.address ? '<p class="ad">' + esc(p.address) + '</p>' : '') + '</div>';
+      return '<div class="fam"><p class="lb">' + lb + '</p>' + (p.father ? '<p class="pp" data-e="' + w + '.father">' + esc(p.father) + '</p>' : '') +
+        (p.mother ? '<p class="pp" data-e="' + w + '.mother">' + esc(p.mother) + '</p>' : '') + (p.address ? '<p class="ad" data-e="' + w + '.address">' + esc(p.address) + '</p>' : '') + '</div>';
     };
-    var fams = fam(g, 'Nhà trai') + fam(b, 'Nhà gái');
+    var fams = fam(g, 'Nhà trai', 'groom') + fam(b, 'Nhà gái', 'bride');
     if (L.slides.parents && fams) {
       out.push('<div data-k="parents" class="slide s-parents"><p class="title glow">Hân hạnh đón tiếp</p><div class="fams" data-fit>' + fams + '</div></div>');
     }
@@ -480,7 +480,7 @@
         '<p class="photo-names glow" data-fit><span>' + gn + '</span> <span class="amp">&amp;</span> <span>' + bn + '</span></p></div></div>');
     }
     if (L.slides.message && L.message) {
-      out.push('<div data-k="msg" class="slide s-msg"><p class="msg">' + esc(L.message) + '</p><p class="sign glow" data-fit>' + gn + ' &amp; ' + bn + '</p></div>');
+      out.push('<div data-k="msg" class="slide s-msg"><p class="msg" data-e="led.message">' + esc(L.message) + '</p><p class="sign glow" data-fit>' + gn + ' &amp; ' + bn + '</p></div>');
     }
     if (!out.length) out.push('<div class="slide"><p class="names glow" data-fit>' + gn + ' <span class="amp">&amp;</span> ' + bn + '</p></div>');
     slidesEl.innerHTML = out.join('');
@@ -605,7 +605,7 @@
     tm.textContent = fmt(t) + ' / ' + fmt(D);
   }, 200);
   ['mousemove', 'pointerdown', 'touchstart'].forEach(function (ev) { document.addEventListener(ev, wake, { passive: true }); });
-  document.addEventListener('dblclick', fullscreen);
+  document.addEventListener('dblclick', function () { if (!C.preview) fullscreen(); }); // khung xem trước: nháy đúp để chọn chữ đang sửa
   document.addEventListener('keydown', function (e) {
     if (e.key === 'f' || e.key === 'F') fullscreen();
     else if (e.key === ' ') { e.preventDefault(); togglePause(); }
@@ -622,10 +622,36 @@
   }
   document.addEventListener('visibilitychange', keepAwake);
 
+  // ---------- trình sửa: bấm chữ trên màn để gõ sửa tại chỗ (chỉ khung xem trước) ----------
+  // gõ tới đâu báo trình sửa tới đó (led-text); bấm ngày cưới → trình sửa mở ô chọn ngày giờ (led-date)
+  var editing = null;
+  if (C.preview && window.parent !== window) {
+    document.body.classList.add('can-edit');
+    slidesEl.addEventListener('click', function (e) {
+      var t = e.target.closest('[data-e]');
+      if (!t) { if (e.target.closest('[data-date]')) { if (!paused) togglePause(); try { window.parent.postMessage({ type: 'led-date' }, location.origin); } catch (er) { /* bỏ qua */ } } return; }
+      if (editing === t) return;
+      if (!paused) togglePause(); // dừng cảnh trong lúc gõ
+      editing = t; try { t.contentEditable = 'plaintext-only'; } catch (er) { t.contentEditable = 'true'; } if (t.contentEditable !== 'plaintext-only') t.contentEditable = 'true';
+      t.focus();
+      var r = document.createRange(); r.selectNodeContents(t); var s = window.getSelection(); s.removeAllRanges(); s.addRange(r);
+    });
+    slidesEl.addEventListener('input', function (e) {
+      var t = e.target.closest('[data-e]'); if (!t) return;
+      try { window.parent.postMessage({ type: 'led-text', key: t.getAttribute('data-e'), value: t.textContent.replace(/\s+/g, ' ').trim() }, location.origin); } catch (er) { /* bỏ qua */ }
+    });
+    slidesEl.addEventListener('keydown', function (e) { if (editing && (e.key === 'Enter' || e.key === 'Escape')) { e.preventDefault(); editing.blur(); } });
+    slidesEl.addEventListener('focusout', function (e) {
+      var t = e.target.closest('[data-e]'); if (!t || t !== editing) return;
+      t.contentEditable = 'false'; editing = null; fitAll();
+      try { window.parent.postMessage({ type: 'led-text-done' }, location.origin); } catch (er) { /* bỏ qua */ }
+    });
+  }
   // trình sửa gửi cấu hình mới để xem trước tức thì
   window.addEventListener('message', function (e) {
     if (e.origin !== location.origin || !e.data) return;
     if (e.data.type === 'led-config') {
+      if (editing) return; // đang gõ trên màn: không dựng lại cảnh (mất con trỏ)
       if (e.data.card) { C.groom = e.data.card.groom; C.bride = e.data.card.bride; if (e.data.card.photo !== undefined) C.photo = e.data.card.photo; }
       apply(e.data.led);
     }
@@ -641,10 +667,10 @@
   requestAnimationFrame(frame);
   // Bản dùng thử: dòng "Bản dùng thử" phải luôn hiện — bị xoá / ẩn / đổi chữ (công cụ của trình duyệt) thì dựng lại ngay.
   if (C.trial && !C.demo) {
-    var WM = 'Bản dùng thử · ' + (C.brand || '');
+    var WM = 'Bản dùng thử';
     var keepWm = function () {
       var w = stage.querySelector(':scope > .wm');
-      if (!w) { w = document.createElement('div'); w.className = 'wm'; stage.appendChild(w); }
+      if (!w) { w = document.createElement('div'); w.className = 'wm'; w.setAttribute('data-b', C.brand || ''); stage.appendChild(w); }
       if (w.textContent !== WM) w.textContent = WM;
       // chỉ sửa khi thật sự bị ẩn (tránh tự kích hoạt lại bộ theo dõi thay đổi)
       var cs = getComputedStyle(w), r = w.getBoundingClientRect();

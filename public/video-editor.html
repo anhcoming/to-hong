@@ -45,7 +45,7 @@
 .tl .clip.slot.sample .th{opacity:.6;filter:saturate(.6)}.tl .clip.slot.sample:hover .th{opacity:1;filter:none}
 .tl .clip.slot.drag{opacity:.4}.tl .clip.slot.over{box-shadow:-4px 0 0 var(--primary)}
 .tl .clip.slot.up .th{opacity:.6}.tl .clip.slot .vspin{position:absolute;left:50%;top:36px;margin:-11px 0 0 -11px}
-.tl .clip.tcard{width:118px}
+.tl .clip.tcard{width:118px}.tl .clip.tcard .th{height:62px} /* cao bằng ô ảnh và nút thêm ảnh */
 .tl .clip.addbox{flex:none;display:flex;gap:6px;width:auto;padding:5px 0 0}
 .tl .addph{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;width:72px;height:62px;border:2px dashed color-mix(in srgb,var(--primary) 50%,transparent);border-radius:10px;color:var(--primary);cursor:pointer;box-sizing:border-box}
 .tl .addph.main{border-style:solid;border-color:transparent;background:var(--grad);color:#fff;box-shadow:0 6px 16px rgba(214,69,93,.3)}
@@ -57,7 +57,7 @@
 .pv-hov.ln{border:2px dashed rgba(255,255,255,.9);box-shadow:0 0 0 1px rgba(214,69,93,.75);border-radius:8px;cursor:text}
 .pv-hov[hidden]{display:none}
 .pv-act{position:absolute;left:50%;bottom:10px;transform:translateX(-50%);display:flex;gap:6px;white-space:nowrap}
-.pv-act button{height:34px;padding:0 14px;border:0;border-radius:999px;background:#fff;color:#1f1a1b;font:600 13px/1 inherit;cursor:pointer;box-shadow:0 4px 14px rgba(0,0,0,.3)}
+.pv-act button{height:34px;padding:0 14px;border:0;border-radius:999px;background:#fff;color:#1f1a1b;font-family:inherit;font-size:13px;line-height:1;font-weight:600;cursor:pointer;box-shadow:0 4px 14px rgba(0,0,0,.3)}
 .pv-act button:hover{background:#d6455d;color:#fff}
 .in-ed{position:fixed;z-index:50;margin:0;padding:2px 10px;border:0;border-radius:8px;background:transparent;text-align:center;resize:none;overflow:hidden;outline:2px dashed rgba(214,69,93,.9);outline-offset:4px}
 .in-ed::selection{background:rgba(214,69,93,.35)}
@@ -66,7 +66,7 @@
 .txpop .selrow b{display:none}
 .txpop .evbox{margin-top:12px;padding-top:10px;border-top:1px solid var(--line)}.txpop .evbox summary{color:var(--ink);font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .tl .th.on{outline:3px solid var(--primary);outline-offset:1px}
-.tl .tlspd{margin-top:6px;padding:4px 8px;border:1px solid var(--line);border-radius:999px;background:var(--surface);color:var(--ink);font:600 11.5px/1 inherit;cursor:pointer;white-space:nowrap}.tl .tlspd:hover,.tl .tlspd.on{border-color:var(--primary);color:var(--primary)}
+.tl .tlspd{margin-top:6px;padding:4px 8px;border:1px solid var(--line);border-radius:999px;background:var(--surface);color:var(--ink);font-family:inherit;font-size:11.5px;line-height:1;font-weight:600;cursor:pointer;white-space:nowrap}.tl .tlspd:hover,.tl .tlspd.on{border-color:var(--primary);color:var(--primary)}
 .txpop .scene-acts{gap:12px!important;white-space:nowrap}.txpop .scene-acts .lnk{font-size:12.5px}
 .tl .tx.on{border-color:var(--primary);background:var(--primary-soft);color:var(--primary)}
 .tl .clip.addtx{width:96px;display:flex;align-items:flex-end;padding-bottom:5px}.tl .clip.addtx .tx{border-style:dashed;color:var(--primary);text-align:center;font-weight:600}
@@ -100,7 +100,7 @@
 .vslot[draggable=true]{cursor:grab}
 @media (hover:none){.vslot .vre{opacity:1}}
 /* chữ: mỗi cảnh một ô gõ, kiểu chữ từng dòng giấu sau "Aa Kiểu chữ" */
-.stext{display:block;width:100%;min-height:64px;padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:var(--surface);color:var(--ink);font:15px/1.7 inherit;font-family:inherit;resize:none;overflow:hidden}
+.stext{display:block;width:100%;min-height:64px;padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:var(--surface);color:var(--ink);font-family:inherit;font-size:15px;line-height:1.7;resize:none;overflow:hidden}
 .stext:focus{outline:none;border-color:var(--primary);box-shadow:0 0 0 3px var(--primary-soft)}
 .scene-acts{display:flex;gap:4px}
 .lnk{border:0;background:none;color:var(--muted);font-size:12px;font-weight:600;padding:4px 8px;border-radius:999px;cursor:pointer}
@@ -155,7 +155,7 @@ body{height:100vh;display:flex;flex-direction:column;overflow:hidden;background:
 .sbar .sub{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--muted);white-space:nowrap}
 .sbar .sub .dot{width:6px;height:6px;border-radius:50%;background:#e0a33a}
 .sbar .sub.ok .dot{background:#2f9e6a}
-.sbar .ur{display:flex;gap:2px;margin-left:6px}
+.sbar .ur{display:flex;gap:2px;margin-left:6px}.sbar .ur[hidden]{display:none}
 .sbar .ur button{width:32px;height:32px;border:0;border-radius:8px;background:none;color:var(--ink);cursor:pointer;font-size:16px}
 .sbar .ur button:disabled{opacity:.3;cursor:default}
 .sbar .ur button:not(:disabled):hover{background:var(--primary-soft)}
@@ -166,7 +166,7 @@ body{height:100vh;display:flex;flex-direction:column;overflow:hidden;background:
 .shr{position:relative}
 .shr-m{position:absolute;right:0;top:calc(100% + 8px);z-index:60;width:260px;padding:6px;border-radius:14px;background:var(--surface);border:1px solid var(--line);box-shadow:0 14px 40px rgba(0,0,0,.16)}
 .shr-m[hidden]{display:none}
-.shr-m button{display:flex;gap:10px;width:100%;padding:9px 10px;border:0;border-radius:10px;background:none;color:var(--ink);font:600 13px/1.35 inherit;font-family:inherit;text-align:left;cursor:pointer}
+.shr-m button{display:flex;gap:10px;width:100%;padding:9px 10px;border:0;border-radius:10px;background:none;color:var(--ink);font-family:inherit;font-size:13px;line-height:1.35;font-weight:600;text-align:left;cursor:pointer}
 .shr-m button:hover{background:var(--primary-soft)}
 .shr-m button>i{flex:none;width:20px;font-style:normal;text-align:center}
 .shr-m small{display:block;font-weight:400;font-size:11.5px;color:var(--muted)}
@@ -201,13 +201,13 @@ body{height:100vh;display:flex;flex-direction:column;overflow:hidden;background:
 .tl .clip{position:relative;flex:none;width:118px;padding:5px;border:2px solid transparent;border-radius:12px;background:none;cursor:pointer;text-align:left;font-family:inherit;color:var(--ink)}
 .tl .clip:hover{background:rgba(127,127,127,.07)}
 .tl .clip.on{border-color:var(--primary);background:var(--primary-soft)}
-.tl .clip.play::after{content:'';position:absolute;left:5px;right:5px;top:3px;height:3px;border-radius:2px;background:var(--primary)}
+/* bỏ vạch hồng trên ô đang chiếu */
 .tl .th{display:flex;gap:2px;height:58px;border-radius:8px;overflow:hidden;background:#2a2326}
 .tl .th i{flex:1;background:center/cover #2a2326}
 .tl .th.txt{align-items:center;justify-content:center;padding:6px;background:linear-gradient(135deg,#3a2326,#120b0c);color:#f3dfc4;font:italic 600 11px/1.3 Georgia,serif;text-align:center;overflow:hidden}
 .tl .n{position:absolute;top:9px;left:9px;min-width:18px;padding:0 5px;border-radius:999px;background:rgba(0,0,0,.6);color:#fff;font-size:10.5px;line-height:18px;text-align:center}
 /* hàng chữ song song dưới hàng ảnh */
-.tl .tx{display:block;box-sizing:border-box;width:100%;height:26px;margin-top:5px;padding:0 8px;border:1px solid var(--line);border-radius:8px;background:var(--surface);color:var(--ink);font:500 11.5px/24px inherit;text-align:left;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;cursor:pointer}
+.tl .tx{display:block;box-sizing:border-box;width:100%;height:26px;margin-top:5px;padding:0 8px;border:1px solid var(--line);border-radius:8px;background:var(--surface);color:var(--ink);font-family:inherit;font-size:11.5px;line-height:24px;font-weight:500;text-align:left;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;cursor:pointer}
 .tl input.tx{cursor:text}.tl input.tx::placeholder{color:#b3a7a9}
 .tl .tx:hover,.tl input.tx:focus{border-color:var(--primary);outline:none}
 .tl input.tx:focus{box-shadow:0 0 0 3px var(--primary-soft)}
@@ -228,7 +228,9 @@ body{height:100vh;display:flex;flex-direction:column;overflow:hidden;background:
 .chk li.ok{background:#e9f6ef;color:#1f6b46}
 [data-theme="dark"] .chk li{background:#3a3020;color:#f3d39a}[data-theme="dark"] .chk li.ok{background:#1f3328;color:#9fe0bd}
 .chk li button{margin-left:auto;flex:none;border:0;background:none;color:inherit;font-weight:700;text-decoration:underline;cursor:pointer;font-size:12.5px}
-.mlist{display:grid;gap:6px}
+.mlist{display:grid;grid-template-columns:minmax(0,1fr);gap:6px;min-width:0}
+.mrow{min-width:0}
+.mrow .mt small{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .mrow{display:flex;align-items:center;gap:10px;padding:8px;border:1px solid var(--line);border-radius:12px}
 .mrow.on{border-color:var(--primary);background:var(--primary-soft)}
 .mrow .mplay{flex:none;width:34px;height:34px;border:0;border-radius:50%;background:var(--primary);color:#fff;cursor:pointer}
@@ -262,7 +264,7 @@ body{height:100vh;display:flex;flex-direction:column;overflow:hidden;background:
 <header class="sbar">
   <a class="back" id="back" href="/thiep-cua-toi" title="Quay lại">←</a>
   <div class="ttl"><h1 id="ttl">Video cưới</h1><div class="sub" id="subl"><span id="tplName"></span><span>· 16:9 ·</span><span class="dot"></span><span id="saved"></span><span id="chip"></span></div></div>
-  <div class="ur"><button type="button" id="undo" title="Hoàn tác (⌘/Ctrl+Z)" disabled>↶</button><button type="button" id="redo" title="Làm lại (⌘/Ctrl+Shift+Z)" disabled>↷</button></div>
+  <div class="ur" hidden><!-- ẩn nút hoàn tác / làm lại; ⌘/Ctrl+Z vẫn dùng được --><button type="button" id="undo" title="Hoàn tác (⌘/Ctrl+Z)" disabled>↶</button><button type="button" id="redo" title="Làm lại (⌘/Ctrl+Shift+Z)" disabled>↷</button></div>
   <span class="sp"></span>
   <span id="acts"></span>
 </header>

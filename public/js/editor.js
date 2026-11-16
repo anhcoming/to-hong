@@ -450,7 +450,7 @@ function askLogin(why = 'save') {
 }
 
 // ---------- lưu ----------
-function status(t) { const el = $('#saved'); el.textContent = card && card.guest && t === 'Đã lưu ✓' ? 'Bản nháp tạm' : t; el.classList.toggle('ok', el.textContent === 'Đã lưu ✓'); el.title = el.textContent; }
+function status(t) { const el = $('#saved'); el.textContent = card && card.guest && t === 'Đã lưu ✓' ? 'Bản nháp tạm' : t; el.classList.toggle('ok', el.textContent === 'Đã lưu ✓'); el.title = el.textContent; const sb = $('#subl'); if (sb) sb.classList.toggle('ok', el.classList.contains('ok')); }
 // Lưu xong có phải vẽ lại thiệp không: chỉ bỏ qua khi MỌI thay đổi từ lần lưu trước đã được đổi sẵn ngay trên khung
 // (vd. ảnh vừa tải lên đã thay vào đúng ô) — khỏi tải lại cả thiệp, album không nhảy về ảnh đầu, hiệu ứng không chạy lại.
 // null = chưa có thay đổi; true = toàn thay đổi đã hiện sẵn; false = có thay đổi cần vẽ lại.
@@ -627,6 +627,8 @@ function livePatch(key, value) {
 // ---------- tiêu đề + phát hành ----------
 function renderHeader() {
   $('#ttl').textContent = [card.data.groom.name, card.data.bride.name].filter(Boolean).join(' & ') || card.title;
+  const tn = $('#tplN'), tp = META.templates.find((t) => t.id === card.template); if (tn) tn.textContent = tp ? tp.name : '';
+  const pl = $('#profL'); if (pl) pl.innerHTML = '';
   const pa = $('#pubArea');
   if (card.guest) {
     // chưa đăng nhập: không có nút Lưu riêng (lưu chỉ có nghĩa khi thiệp vào tài khoản) — "Đăng nhập để lưu" tự lưu phần đã sửa rồi mới rời trang
@@ -635,12 +637,15 @@ function renderHeader() {
     return;
   }
   // hồ sơ cưới (sổ tay): tên, danh xưng, các lễ, tài khoản mừng cưới dùng chung cho thiệp mới, màn LED, video
-  const prof = `<button class="prof-chip" id="profBtn" type="button" title="Tên, danh xưng, các lễ, số tài khoản dùng chung cho thiệp mới, màn LED, video và sổ tay cưới">✓ Hồ sơ cưới <small>· dùng chung</small></button>`;
-  const sv = dirty ? '<button class="btn sm" id="saveBtn" title="Lưu (⌘/Ctrl+S)">Lưu</button> ' : ''; // đã lưu: chỉ còn chữ "Đã lưu ✓" bên cạnh, không thêm nút mờ trùng lặp
+  // dòng nhỏ dưới tên (giống trình sửa video): mẫu · trạng thái lưu · hồ sơ cưới dùng chung
+  pl.innerHTML = `· <button class="prof-chip" id="profBtn" type="button" title="Tên, danh xưng, các lễ, số tài khoản dùng chung cho thiệp mới, màn LED, video và sổ tay cưới">✓ hồ sơ cưới dùng chung</button>`;
+  // nút: Xem trước (nhẹ) · Lưu (viền, chỉ khi có thay đổi) · một nút đỏ duy nhất: Phát hành / Kích hoạt (đã phát hành thì Chia sẻ thành nút chính khi đã kích hoạt)
+  const pv = `<a class="btn sm ghost" href="/t/${esc(card.slug)}?preview=1" target="_blank" rel="noopener" title="Xem thiệp như khách mời">▷<span class="xl">&nbsp;Xem trước</span></a>`;
+  const sv = dirty ? '<button class="btn sm soft" id="saveBtn" title="Lưu (⌘/Ctrl+S)">Lưu</button>' : ''; // đã lưu: chỉ còn chữ "Đã lưu ✓" ở dòng dưới tên
   if (card.status !== 'published') {
-    pa.innerHTML = prof + sv + '<button class="btn sm" id="pubBtn">Phát hành<span class="xl">&nbsp;thiệp</span></button>';
+    pa.innerHTML = pv + sv + '<button class="btn sm" id="pubBtn">Phát hành<span class="xl">&nbsp;thiệp</span></button>';
   } else {
-    pa.innerHTML = prof + sv + `<button class="btn sm soft" id="shareBtn">Chia sẻ</button>${card.paid ? '' : ' <button class="btn sm" id="payBtn">Kích hoạt</button>'}`;
+    pa.innerHTML = pv + sv + (card.paid ? '<button class="btn sm" id="shareBtn">Chia sẻ</button>' : '<button class="btn sm soft" id="shareBtn">Chia sẻ</button><button class="btn sm" id="payBtn">Kích hoạt</button>');
   }
   const svb = $('#saveBtn'); if (svb) svb.onclick = () => commit();
   $('#profBtn').onclick = () => quickStart('info');
@@ -1482,10 +1487,11 @@ function cropModal(key, ratio = 1, opt = {}) {
   if (!u) return;
   let done = false;
   let [x, y, z] = focusOf(u);
-  const W = Math.min(300, window.innerWidth - 80), H = Math.round(Math.min(380, Math.max(170, W / (ratio || 1))));
-  const FW = Math.round(H * (ratio || 1) > W ? W : H * (ratio || 1));
+  // khung căn to: vừa tối đa bề ngang hộp (tới ~700px) và chiều cao màn hình, giữ đúng tỉ lệ ô ảnh của mẫu
+  const r = ratio || 1, maxW = Math.min(700, window.innerWidth - 64), maxH = Math.max(220, Math.min(640, window.innerHeight - 300));
+  const FW = Math.round(Math.min(maxW, maxH * r)), H = Math.round(FW / r);
   openModal(`<h2 style="margin-top:0">Căn chỉnh ảnh</h2>
-    <p class="muted" style="margin:-4px 0 12px">Kéo để chọn phần hiện ra, phóng to bằng thanh trượt${matchMedia('(pointer:coarse)').matches ? ' hoặc chụm hai ngón' : ' hoặc lăn chuột'}.</p>
+    <p class="muted" style="margin:-4px 0 12px">Kéo để chọn phần hiện ra. Phóng to / thu nhỏ bằng thanh trượt hoặc chụm, mở hai ngón${matchMedia('(pointer:coarse)').matches ? '' : ' trên bàn di chuột (lăn chuột cũng được)'}.</p>
     <div id="cropF" style="position:relative;margin:0 auto;width:${FW}px;height:${H}px;border-radius:12px;overflow:hidden;touch-action:none;cursor:grab;background:#eee url('${esc(baseUrl(u))}') ${x}% ${y}%/cover no-repeat;box-shadow:inset 0 0 0 2px var(--primary)"></div>
     <label style="display:flex;align-items:center;gap:10px;margin:16px auto 0;max-width:${Math.max(FW, 240)}px">
       <span aria-hidden="true" style="font-size:13px">−</span>
@@ -1495,6 +1501,7 @@ function cropModal(key, ratio = 1, opt = {}) {
     </label>
     <div style="display:flex;gap:8px;margin-top:16px"><button class="btn plain" data-c="reset" style="flex:1">Đặt lại</button><button class="btn" data-c="ok" style="flex:2">${fresh && !opt.more ? 'Xong, dùng ảnh này' : 'Xong'}</button></div>
     ${opt.more ? '<div style="display:flex;justify-content:center;gap:18px;margin-top:12px;font-size:13.5px"><a href="#" data-c="replace">Đổi ảnh khác</a><a href="#" data-c="del" style="color:#c0392b">Xoá ảnh</a></div>' : ''}`, (box, close) => {
+    box.style.width = `min(${FW + 48}px, 100%)`; // hộp nở theo khung căn to
     const fr = $('#cropF', box), zr = $('#cropZ', box), zv = $('#cropZv', box);
     const img = new Image();
     let iw = 0, ih = 0;
@@ -1509,7 +1516,22 @@ function cropModal(key, ratio = 1, opt = {}) {
     const extra = () => { const s = Math.max(FW / iw, H / ih) * z; return [iw * s - FW, ih * s - H]; }; // phần ảnh thừa ra ngoài khung
     const setZ = (nz) => { z = Math.min(4, Math.max(1, nz)); paint(); };
     zr.addEventListener('input', () => setZ(+zr.value));
-    fr.addEventListener('wheel', (e) => { e.preventDefault(); setZ(z * (e.deltaY < 0 ? 1.08 : 1 / 1.08)); }, { passive: false });
+    fr.addEventListener('wheel', (e) => {
+      e.preventDefault();
+      if (e.ctrlKey) return setZ(z * Math.exp(-e.deltaY * 0.012)); // chụm / mở hai ngón trên bàn di chuột
+      const mouse = e.deltaMode === 1 || (Math.abs(e.deltaY) >= 50 && !e.deltaX); // con lăn chuột: phóng to từng nấc
+      if (mouse) return setZ(z * (e.deltaY < 0 ? 1.08 : 1 / 1.08));
+      if (!iw) return; // lăn hai ngón: dời ảnh như kéo
+      const [ex, ey] = extra();
+      if (ex > 1) x = Math.min(100, Math.max(0, x + (e.deltaX / ex) * 100));
+      if (ey > 1) y = Math.min(100, Math.max(0, y + (e.deltaY / ey) * 100));
+      paint();
+    }, { passive: false });
+    // Safari trên Mac: cử chỉ chụm hai ngón
+    let gz = null;
+    fr.addEventListener('gesturestart', (e) => { e.preventDefault(); gz = z; });
+    fr.addEventListener('gesturechange', (e) => { e.preventDefault(); if (gz) setZ(gz * e.scale); });
+    fr.addEventListener('gestureend', (e) => { e.preventDefault(); gz = null; });
     // kéo một ngón / chuột để dời; chụm hai ngón để phóng to
     const pts = new Map();
     let drag = null, pinch = null;
