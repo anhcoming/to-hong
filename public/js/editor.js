@@ -1087,8 +1087,8 @@ async function adoptSuggested() {
   });
   const fw = $('#frame').contentWindow;
   items.forEach((it) => showLocalPhoto(fw, it.key)); // thiệp vẽ xong sau thì báo 'ready' → hiện lại (xem bên dưới)
-  if (card.guest) {
-    setTimeout(() => { if (!document.querySelector('.modal')) askLogin('pending'); }, 1600);
+  if (card.guest) { // chưa đăng nhập: chỉ hiện tạm, không tự bật hộp đăng nhập (khách tự bấm "Đăng nhập để lưu" khi muốn)
+    status('Ảnh đang hiện tạm trên máy');
     return;
   }
   status(`Đang tải ${items.length} ảnh lên…`);

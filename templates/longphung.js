@@ -185,8 +185,13 @@ module.exports = {
       function end(){if(x0===null)return;row.style.transition='transform .3s';row.style.transform='';if(Math.abs(dx)>40){go(k+(dx<0?1:-1));auto();swiped=Date.now();}x0=null;dx=0;}
       st.addEventListener('pointerup',end);st.addEventListener('pointercancel',end);st.addEventListener('pointerleave',end);
       st.addEventListener('click',function(e){if(Date.now()-swiped<400){e.preventDefault();e.stopImmediatePropagation();}},true);
-      st.addEventListener('wheel',function(e){if(Math.abs(e.deltaX)<=Math.abs(e.deltaY))return;e.preventDefault();if(Date.now()<lock)return;wh+=e.deltaX;
-        if(Math.abs(wh)>50){go(k+(wh>0?1:-1));auto();wh=0;lock=Date.now()+700;}},{passive:false});
+      // lăn 2 ngón trên bàn di chuột: ảnh trượt theo ngón tay như khi kéo; dừng tay quá 50px thì chuyển ảnh, chưa đủ thì bật về.
+      // Sau khi chuyển, bỏ qua phần quán tính còn lại của cú lăn để không nhảy liền mấy ảnh.
+      var wt;st.addEventListener('wheel',function(e){if(Math.abs(e.deltaX)<=Math.abs(e.deltaY))return;e.preventDefault();if(Date.now()<lock)return;
+        wh+=e.deltaX;row.style.transition='none';row.style.transform='translateX('+Math.max(-140,Math.min(140,-wh*.35))+'px)';
+        if(Math.abs(wh)>140){clearTimeout(wt);wend();return;}
+        clearTimeout(wt);wt=setTimeout(wend,90);},{passive:false});
+      function wend(){row.style.transition='transform .35s cubic-bezier(.2,.8,.2,1)';row.style.transform='';if(Math.abs(wh)>50){go(k+(wh>0?1:-1));auto();lock=Date.now()+550;}wh=0;}
       // chạm ảnh bên cạnh thì chuyển tới ảnh đó, chỉ ảnh giữa mới mở xem lớn
       st.addEventListener('click',function(e){var c=e.target.closest('.ph');if(c&&c.dataset.o!=='0'){e.stopPropagation();go(cs.indexOf(c));auto();}},true);
       s.querySelector('.prev').onclick=function(){go(k-1);auto()};s.querySelector('.next').onclick=function(){go(k+1);auto()};
@@ -425,7 +430,7 @@ module.exports = {
 .tpl-longphung .lp-cf{width:100%;max-width:320px}
 .tpl-longphung .lp-cf-stage{position:relative;height:340px;touch-action:pan-y}
 .tpl-longphung .lp-cf-row{position:relative;display:flex;align-items:center;justify-content:center;width:100%;height:100%;perspective:1000px}
-.tpl-longphung .lp-cf .ph{position:absolute;height:92%;aspect-ratio:2/3;padding:0;border:0;border-radius:16px;overflow:hidden;background:rgba(0,0,0,.2);box-shadow:0 20px 25px -5px rgba(0,0,0,.1),0 8px 10px -6px rgba(0,0,0,.1);transition:all 1.1s ease-in-out;cursor:pointer}
+.tpl-longphung .lp-cf .ph{position:absolute;height:92%;aspect-ratio:2/3;padding:0;border:0;border-radius:16px;overflow:hidden;background:rgba(0,0,0,.2);box-shadow:0 20px 25px -5px rgba(0,0,0,.1),0 8px 10px -6px rgba(0,0,0,.1);transition:transform .6s cubic-bezier(.2,.8,.2,1),opacity .6s;cursor:pointer}
 .tpl-longphung .lp-cf .ph[data-o="0"]{box-shadow:0 0 0 2px rgba(255,255,255,.3),0 20px 25px -5px rgba(0,0,0,.1),0 8px 10px -6px rgba(0,0,0,.1)}
 .tpl-longphung .lp-cf .ph img{width:100%;height:100%;object-fit:cover}
 .tpl-longphung .lp-cf-nav{display:none}
