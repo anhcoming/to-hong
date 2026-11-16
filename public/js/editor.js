@@ -100,12 +100,17 @@ const panes = {
 
   media: () => {
     const d = card.data;
+    // ảnh khách chưa đăng nhập chọn: chỉ nằm trên máy (localPhotos), chưa có trong thiệp
+    const tam = (i) => !d.photos[i] && !pendingSlots.has('photos.' + i) && localPhotos['photos.' + i];
+    const nTam = Array.from({ length: 24 }, (_, i) => tam(i)).filter(Boolean).length;
+    const len = Math.max(d.photos.length, ...[...pendingSlots, ...Object.keys(localPhotos)].filter((k) => k !== 'cover').map((k) => +k.split('.')[1] + 1));
     return `
-    <section class="group panel"><h3>Album ảnh <small>${d.photos.filter(Boolean).length + [...pendingSlots].filter((k) => k !== 'cover').length}/24 ảnh</small></h3>
-      <p class="muted" style="margin:-6px 0 12px;font-size:14px">Bấm thẳng vào ảnh trên thiệp để đổi, căn khung. Ở đây chọn nhiều ảnh một lúc và sắp xếp thứ tự.</p>
+    <section class="group panel"><h3>Album ảnh <small>${d.photos.filter(Boolean).length + [...pendingSlots].filter((k) => k !== 'cover').length + nTam}/24 ảnh</small></h3>
+      <p class="muted" style="margin:-6px 0 12px;font-size:14px">Bấm thẳng vào ảnh trên thiệp để đổi, căn khung. Ở đây chọn nhiều ảnh một lúc và sắp xếp thứ tự.${nTam ? ` <b style="color:var(--primary)">${nTam} ảnh đang hiện tạm trên máy này — đăng nhập để lưu vào thiệp.</b>` : ''}</p>
       <div class="photos">
-        ${Array.from({ length: Math.max(d.photos.length, ...[...pendingSlots].filter((k) => k !== 'cover').map((k) => +k.split('.')[1] + 1)) }, (_, i) => {
+        ${Array.from({ length: len }, (_, i) => {
           const u = d.photos[i];
+          if (tam(i)) return `<div class="photo" style="background-image:url('${tam(i).split('#')[0]}');opacity:.75" title="Ảnh tạm trên máy — đăng nhập để lưu"></div>`;
           if (pendingSlots.has('photos.' + i)) { const l = localPhotos['photos.' + i]; return `<div class="photo up"${l ? ` style="background-image:url('${l}')"` : ''}><i></i></div>`; }
           return !u ? '' : `<div class="photo" style="background-image:url('${esc(u.split('#')[0])}')">${i ? `<button class="mv" data-ph-up="${i}" title="Lên trước">←</button>` : ''}<button data-ph-del="${i}" title="Xoá">×</button></div>`;
         }).join('')}
@@ -567,7 +572,7 @@ function musicPreview(f) {
 const pendingSlots = new Set(); // các vị trí (cover, photos.3…) đang có ảnh chờ tải
 function freeSlots(n) {
   const ps = card.data.photos, out = [];
-  for (let i = 0; out.length < n && i < 24; i++) if (!ps[i] && !pendingSlots.has('photos.' + i)) out.push('photos.' + i);
+  for (let i = 0; out.length < n && i < 24; i++) if (!ps[i] && !pendingSlots.has('photos.' + i) && !localPhotos['photos.' + i]) out.push('photos.' + i);
   return out;
 }
 let upQueue = [], upRunning = 0;
@@ -627,7 +632,7 @@ function bind() {
   }, true);
   // khách chưa đăng nhập: chặn trước khi mở hộp chọn tệp
   panesEl.addEventListener('click', (e) => {
-    if (!card.guest || !e.target.closest('input[type=file]')) return;
+    if (!card.guest || !e.target.closest('input[type=file]') || e.target.id === 'photosIn') return;
     e.preventDefault(); askLogin('photo');
   }, true);
   panesEl.addEventListener('change', async (e) => {
@@ -652,7 +657,13 @@ function bind() {
       return;
     }
     if (t.id === 'titleIn') { card.title = t.value; scheduleSave(50); }
-    if (t.id === 'photosIn' && t.files.length) {
+    if (t.id === 'photosIn' && t.files.length && card.guest) {
+      const files = Array.from(t.files), keys = freeSlots(files.length); t.value = '';
+      if (keys.length < files.length) toast(`Album tối đa 24 ảnh — chỉ thêm ${keys.length} ảnh đầu`, true);
+      const items = [];
+      await withLoading('Đang mở ảnh…', async () => { for (let i = 0; i < keys.length; i++) { try { items.push({ key: keys[i], blob: await resizeImage(files[i]), x: 50, y: 40, z: 1 }); } catch (er) { /* bỏ ảnh lỗi */ } } });
+      if (items.length) guestPhotos(items);
+    } else if (t.id === 'photosIn' && t.files.length) {
       const keys = freeSlots(t.files.length); // lấp ô trống trước, giữ đúng thứ tự đã chọn
       if (keys.length < t.files.length) toast(`Album tối đa 24 ảnh — chỉ thêm ${keys.length} ảnh đầu`, true);
       queueUploads(Array.from(t.files).slice(0, keys.length), keys);
@@ -786,13 +797,16 @@ function showLocalPhoto(win, key) {
 // → bấm Xong thì hiện tạm lên thiệp đúng phần đã căn, chờ tải xong (nếu chưa) rồi lưu vào thiệp.
 // Đóng bảng căn chỉnh = bỏ ảnh vừa chọn (ảnh đã tải lên thì xoá khỏi kho).
 async function livePhotoUpload(key, ratio) {
-  if (card.guest) return askLogin('photo');
   const f = await pickFile();
   if (!f) return;
-  warmUpload();
   let small;
   try { small = await withLoading('Đang mở ảnh…', () => resizeImage(f)); } catch (e) { return toast(e.message, true); }
   const local = URL.createObjectURL(small);
+  if (card.guest) { // chưa đăng nhập: không tải lên được → căn ảnh, hiện tạm trên máy, giữ trong trình duyệt tới lúc đăng nhập
+    cropModal(key, ratio, { src: local, onCancel: () => URL.revokeObjectURL(local), onOk: (x, y, z) => guestPhotos([{ key, blob: small, x, y, z }]) });
+    return;
+  }
+  warmUpload();
   const up = uploadFile(small, { quiet: true, resized: true });
   up.catch(() => {}); // lỗi xử lý khi bấm Xong
   cropModal(key, ratio, {
@@ -1040,6 +1054,26 @@ function goiYStore(mode, fn) {
     };
   });
 }
+// Khách chưa đăng nhập chọn ảnh trong trình sửa: hiện ngay trên thiệp (chỉ trên máy này), cất vào kho trình duyệt
+// cùng chỗ với ảnh từ trang gợi ý → đăng nhập xong mở lại trình sửa là ảnh tự tải lên và vào thiệp (adoptSuggested)
+async function guestPhotos(items) {
+  const fw = $('#frame').contentWindow;
+  items.forEach((it) => { localPhotos[it.key] = withFocus(URL.createObjectURL(it.blob), it.x, it.y, it.z || 1); showLocalPhoto(fw, it.key); });
+  try {
+    await goiYStore('readwrite', (st) => {
+      const rq = st.get('pending');
+      rq.onsuccess = () => {
+        const old = rq.result && rq.result.cardId === CARD_ID && Array.isArray(rq.result.items) ? rq.result.items : [];
+        const keys = items.map((it) => it.key);
+        st.put({ cardId: CARD_ID, at: Date.now(), items: old.filter((it) => keys.indexOf(it.key) < 0).concat(items) }, 'pending');
+      };
+      return rq;
+    });
+  } catch (e) { /* kho trình duyệt hỏng: ảnh vẫn hiện tạm trong phiên này */ }
+  if (curTab === 'media') rerender();
+  status('Ảnh đang hiện tạm trên máy');
+  toast(`Đã thêm ${items.length} ảnh — đăng nhập để lưu ảnh vào thiệp`);
+}
 async function adoptSuggested() {
   let p;
   try { p = await goiYStore('readonly', (s) => s.get('pending')); } catch (e) { return; }
@@ -1048,7 +1082,7 @@ async function adoptSuggested() {
   if (!items.length) return;
   const locals = items.map((it) => {
     const u = URL.createObjectURL(it.blob);
-    localPhotos[it.key] = withFocus(u, it.x, it.y, 1);
+    localPhotos[it.key] = withFocus(u, it.x, it.y, it.z || 1);
     return u;
   });
   const fw = $('#frame').contentWindow;
@@ -1062,7 +1096,7 @@ async function adoptSuggested() {
   const worker = async () => {
     while (next < items.length) {
       const it = items[next++];
-      try { photoSet(it.key, withFocus(await uploadFile(it.blob, { quiet: true, resized: true }), it.x, it.y, 1)); } catch (e) { failed++; }
+      try { photoSet(it.key, withFocus(await uploadFile(it.blob, { quiet: true, resized: true }), it.x, it.y, it.z || 1)); } catch (e) { failed++; }
     }
   };
   await Promise.all([worker(), worker(), worker()]);
