@@ -175,11 +175,21 @@ module.exports = {
         c.style.opacity=OP[Math.min(a,3)];c.style.zIndex=100-a;c.dataset.o=o;});out.textContent=k+1;}
       function auto(){clearInterval(tm);if(!document.body.classList.contains('is-edit'))tm=setInterval(function(){go(k+1)},4000);}
       var st=s.querySelector('.lp-cf-stage');
+      // vuốt (điện thoại) / kéo chuột (máy tính) sang hai bên: ảnh đi theo tay, thả quá 40px thì chuyển ảnh;
+      // lăn ngang bàn di chuột cũng chuyển. Vừa vuốt xong thì không tính là bấm ảnh (không mở ảnh lớn / tải ảnh)
+      var row=s.querySelector('.lp-cf-row'),x0=null,dx=0,swiped=0,wh=0,lock=0;
+      cs.forEach(function(c){var im=c.querySelector('img');if(im)im.draggable=false;});
+      st.addEventListener('dragstart',function(e){e.preventDefault()});
+      st.addEventListener('pointerdown',function(e){if(e.button>0||e.target.closest('.lp-cf-nav'))return;x0=e.clientX;dx=0;});
+      st.addEventListener('pointermove',function(e){if(x0===null)return;dx=e.clientX-x0;if(Math.abs(dx)>6){row.style.transition='none';row.style.transform='translateX('+(dx*.35)+'px)';}});
+      function end(){if(x0===null)return;row.style.transition='transform .3s';row.style.transform='';if(Math.abs(dx)>40){go(k+(dx<0?1:-1));auto();swiped=Date.now();}x0=null;dx=0;}
+      st.addEventListener('pointerup',end);st.addEventListener('pointercancel',end);st.addEventListener('pointerleave',end);
+      st.addEventListener('click',function(e){if(Date.now()-swiped<400){e.preventDefault();e.stopImmediatePropagation();}},true);
+      st.addEventListener('wheel',function(e){if(Math.abs(e.deltaX)<=Math.abs(e.deltaY))return;e.preventDefault();if(Date.now()<lock)return;wh+=e.deltaX;
+        if(Math.abs(wh)>50){go(k+(wh>0?1:-1));auto();wh=0;lock=Date.now()+700;}},{passive:false});
       // chạm ảnh bên cạnh thì chuyển tới ảnh đó, chỉ ảnh giữa mới mở xem lớn
       st.addEventListener('click',function(e){var c=e.target.closest('.ph');if(c&&c.dataset.o!=='0'){e.stopPropagation();go(cs.indexOf(c));auto();}},true);
       s.querySelector('.prev').onclick=function(){go(k-1);auto()};s.querySelector('.next').onclick=function(){go(k+1);auto()};
-      var x0=null;st.addEventListener('pointerdown',function(e){x0=e.clientX});
-      st.addEventListener('pointerup',function(e){if(x0!==null&&Math.abs(e.clientX-x0)>40){go(k+(e.clientX<x0?1:-1));auto();}x0=null});
       go(0);auto();
     })()</script>
   </section>`;

@@ -367,8 +367,8 @@ function renderHeader() {
   $('#ttl').textContent = [card.data.groom.name, card.data.bride.name].filter(Boolean).join(' & ') || card.title;
   const pa = $('#pubArea');
   if (card.guest) {
-    pa.innerHTML = `<button class="btn sm${dirty ? '' : ' soft'}" id="saveBtn"${dirty ? '' : ' disabled'}>${dirty ? 'Lưu' : 'Đã lưu'}</button> <button class="btn sm" id="loginBtn">Đăng nhập<span class="xl">&nbsp;để lưu</span></button>`;
-    $('#saveBtn').onclick = () => commit();
+    // chưa đăng nhập: không có nút Lưu riêng (lưu chỉ có nghĩa khi thiệp vào tài khoản) — "Đăng nhập để lưu" tự lưu phần đã sửa rồi mới rời trang
+    pa.innerHTML = `<button class="btn sm" id="loginBtn">Đăng nhập<span class="xl">&nbsp;để lưu</span></button>`;
     $('#loginBtn').onclick = () => askLogin('save');
     return;
   }
@@ -708,7 +708,7 @@ function bind() {
   $('#scrim').onclick = () => showTab(null);
   document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && curTab && !document.querySelector('.modal')) showTab(null); });
   window.addEventListener('beforeunload', (e) => { if (dirty || saving) { e.preventDefault(); e.returnValue = ''; } });
-  document.addEventListener('keydown', (e) => { if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 's') { e.preventDefault(); if (dirty) commit(); } });
+  document.addEventListener('keydown', (e) => { if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 's') { e.preventDefault(); if (card && card.guest) { if (!document.querySelector('.modal')) askLogin('save'); } else if (dirty) commit(); } });
 }
 
 // ---------- sửa trực tiếp trên thiệp (kiểu Canva) ----------
