@@ -61,12 +61,12 @@ module.exports = {
     events: [
       { name: 'Lễ Thành Hôn', date: '2026-06-01', time: '09:00', place: 'Tư gia', address: '', mapUrl: '' },
       { name: 'Đón khách', date: '2026-06-14', time: '17:30', place: '', address: '', mapUrl: '' },
-      { name: 'Khai tiệc', date: '2026-06-14', time: '18:30', place: 'Sun Palace', address: '170 Kinh Dương Vương, Phường 13, Quận 6, Hồ Chí Minh', mapUrl: '' },
+      { name: 'Khai tiệc', date: '2026-06-14', time: '18:30', place: 'Ánh Dương Palace', address: '170 Đường Số 7, Quận 6, TP. Hồ Chí Minh', mapUrl: '' },
       { name: 'Rót rượu, cắt bánh', date: '2026-06-14', time: '18:45', place: '', address: '', mapUrl: '' },
       { name: 'Phục vụ món chính', date: '2026-06-14', time: '19:00', place: '', address: '', mapUrl: '' },
       { name: 'Kết thúc tiệc', date: '2026-06-14', time: '21:00', place: '', address: '', mapUrl: '' },
     ],
-    gifts: { groom: { bin: '970436', acc: '0000000000', holder: 'THIEP CUOI DEMO' }, bride: { bin: '970418', acc: '0000000000', holder: 'THIEP CUOI DEMO' } },
+    gifts: { groom: require('../lib/carddata').demoBank(), bride: require('../lib/carddata').demoBank() },
   },
   // xác nhận tham dự mở trong hộp thoại từ khung tiệc cưới (như bản gốc), nên không có trong luồng trang
   layout: ['invite', 'gallery', 'calendar', 'events', 'story', 'wishes', 'gift', 'thanks'],

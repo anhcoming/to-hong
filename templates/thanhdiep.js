@@ -84,7 +84,7 @@ module.exports = {
     events: [
       { name: 'Lễ Thành Hôn', date: '2026-05-11', time: '09:00', place: 'Tư gia', address: '', mapUrl: '' },
       { name: 'Đón khách', date: '2026-05-11', time: '17:30', place: '', address: '', mapUrl: '' },
-      { name: 'Khai tiệc', date: '2026-05-11', time: '18:30', place: 'Metropole Wedding Center', address: '216 Lý Chính Thắng, Phường 9, Quận 3, Thành phố Hồ Chí Minh', mapUrl: '' },
+      { name: 'Khai tiệc', date: '2026-05-11', time: '18:30', place: 'Hoàng Mai Wedding Center', address: '216 Đường Số 12, Quận 3, TP. Hồ Chí Minh', mapUrl: '' },
       { name: 'Rót rượu, cắt bánh', date: '2026-05-11', time: '18:45', place: '', address: '', mapUrl: '' },
       { name: 'Phục vụ món chính', date: '2026-05-11', time: '19:00', place: '', address: '', mapUrl: '' },
       { name: 'Kết thúc tiệc', date: '2026-05-11', time: '21:00', place: '', address: '', mapUrl: '' },

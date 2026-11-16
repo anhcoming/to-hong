@@ -45,7 +45,7 @@ function renderSide() {
       <label class="field"><span>Lời cảm ơn</span><textarea data-l="message" maxlength="200" rows="3">${esc(led.message)}</textarea></label>
     </section>
     <section class="group panel" id="info"><h3>Thông tin <small>dùng chung với thiệp</small></h3>
-      <div class="grid2">${fd('groom.name', 'Chú rể', 'text', 'Đức Minh')}${fd('bride.name', 'Cô dâu', 'text', 'Thu Hà')}${fd('date', 'Ngày cưới', 'date')}${fd('time', 'Giờ', 'time')}
+      <div class="grid2">${fd('groom.name', 'Chú rể', 'text', 'Gia Huy')}${fd('bride.name', 'Cô dâu', 'text', 'Bảo Ngọc')}${fd('date', 'Ngày cưới', 'date')}${fd('time', 'Giờ', 'time')}
       ${fd('groom.father', 'Bố chú rể')}${fd('groom.mother', 'Mẹ chú rể')}${fd('bride.father', 'Bố cô dâu')}${fd('bride.mother', 'Mẹ cô dâu')}</div>
       <div style="display:flex;align-items:center;gap:12px">
         ${localCover ? `<div style="position:relative;width:56px;height:70px;border-radius:8px;background:center/cover url('${localCover}');display:grid;place-items:center"><i class="upspin"></i></div>`

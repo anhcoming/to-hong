@@ -39,7 +39,7 @@ async function call(who, method, url, body) {
   assert.equal((await call('x', 'GET', '/')).status, 200);
   r = await call('x', 'GET', '/demo/dodam');
   assert.equal(r.status, 200);
-  assert.match(r.text, /Đức Minh/);
+  assert.match(r.text, /Gia Huy/);
   assert.match(r.text, /Bính Ngọ/, 'phải có âm lịch');
   assert.match(r.text, /class="cal-grid"/, 'phải có lịch tháng');
   assert.match(r.text, /class="dd-tl"/, 'lịch trình dạng dòng thời gian');
@@ -53,7 +53,7 @@ async function call(who, method, url, body) {
       assert.equal(r.status, 200, `mẫu ${t.id}/${p.id}`);
       assert.match(r.text, /id="openBtn"/, `mẫu ${t.id}: thiếu nút mở thiệp`);
       // mẫu có thể xem thử bằng tên riêng (demo.groom) cho giống trang gốc
-      const demoName = (require(`../templates/${t.id}`).demo?.groom || {}).name || 'Đức Minh';
+      const demoName = (require(`../templates/${t.id}`).demo?.groom || {}).name || 'Gia Huy';
       assert.ok(r.text.includes(demoName), `mẫu ${t.id}: thiếu tên`);
     }
   }

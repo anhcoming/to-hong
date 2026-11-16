@@ -69,14 +69,14 @@ module.exports = {
     events: [
       { name: 'Lễ thành hôn', date: '2026-12-19', time: '09:30', place: 'Tư gia', address: '', mapUrl: '' },
       { name: 'Đón khách', date: '2026-12-19', time: '17:30', place: '', address: '', mapUrl: '' },
-      { name: 'Khai tiệc', date: '2026-12-19', time: '18:30', place: 'Nhà hàng Tiệc cưới Thảo Nguyên Xanh', address: '27 Trần Phú, phường 3, TP. Đà Lạt, Lâm Đồng', mapUrl: '' },
+      { name: 'Khai tiệc', date: '2026-12-19', time: '18:30', place: 'Nhà hàng Tiệc cưới Đồng Xanh', address: '27 Đường Số 3, Quận 2, TP. Hồ Chí Minh', mapUrl: '' },
       { name: 'Rót rượu, cắt bánh', date: '2026-12-19', time: '18:45', place: '', address: '', mapUrl: '' },
       { name: 'Phục vụ món chính', date: '2026-12-19', time: '19:00', place: '', address: '', mapUrl: '' },
       { name: 'Kết thúc tiệc', date: '2026-12-19', time: '21:00', place: '', address: '', mapUrl: '' },
     ],
     gifts: {
-      groom: { bin: '970407', acc: '0000000000', holder: 'THIEP CUOI DEMO' },
-      bride: { bin: '970416', acc: '0000000000', holder: 'THIEP CUOI DEMO' },
+      groom: require('../lib/carddata').demoBank(),
+      bride: require('../lib/carddata').demoBank(),
     },
   },
   // xác nhận tham dự mở trong hộp thoại từ khung tiệc cưới (như bản gốc), nên không có trong luồng trang

@@ -40,8 +40,8 @@ module.exports = {
   ],
   // dữ liệu xem thử theo bản gốc: ảnh của mẫu, tên & ngày như trang demo, lễ buổi sáng, tiệc tối có đón khách / khai tiệc
   demo: {
-    groom: { name: 'Hoàng Nam', fullName: 'Nguyễn Hoàng Nam', father: 'Trần Quốc Hưng', mother: 'Nguyễn Thị Hồng', address: 'Quận 1, TP. Hồ Chí Minh' },
-    bride: { name: 'Thảo Vy', fullName: 'Trần Thảo Vy', father: 'Lê Văn Thành', mother: 'Phạm Thị Lan', address: 'Quận 3, TP. Hồ Chí Minh' },
+    groom: { name: 'Gia Huy', fullName: 'Trần Gia Huy', father: 'Trần Quang Hải', mother: 'Nguyễn Thị Lan', address: 'Quận 1, TP. Hồ Chí Minh' },
+    bride: { name: 'Bảo Ngọc', fullName: 'Lê Bảo Ngọc', father: 'Lê Minh Tuấn', mother: 'Phạm Thị Hoa', address: 'Quận 3, TP. Hồ Chí Minh' },
     date: '2026-01-03',
     time: '18:00',
     cover: '/demo/nau-1.jpg',
@@ -51,7 +51,7 @@ module.exports = {
     events: [
       { name: 'Lễ Thành Hôn', date: '2026-01-03', time: '09:00', place: 'Tư gia', address: '', mapUrl: '' },
       { name: 'Đón khách', date: '2026-01-03', time: '17:30', place: '', address: '', mapUrl: '' },
-      { name: 'Khai tiệc', date: '2026-01-03', time: '18:00', place: 'Trung Tâm Hội Nghị White Palace', address: '194 Hoàng Văn Thụ, Phường 9, Quận Phú Nhuận, TP. Hồ Chí Minh', mapUrl: '' },
+      { name: 'Khai tiệc', date: '2026-01-03', time: '18:00', place: 'Trung Tâm Tiệc Cưới Ngọc Lan', address: '12 Đường Số 5, Quận 7, TP. Hồ Chí Minh', mapUrl: '' },
       { name: 'Nghi thức cưới', date: '2026-01-03', time: '18:30', place: '', address: '', mapUrl: '' },
       { name: 'Cắt bánh & nâng ly', date: '2026-01-03', time: '19:00', place: '', address: '', mapUrl: '' },
       { name: 'Kết thúc tiệc', date: '2026-01-03', time: '20:30', place: '', address: '', mapUrl: '' },

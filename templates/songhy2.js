@@ -70,9 +70,9 @@ module.exports = {
     events: [
       { name: 'Lễ gia tiên tại nhà gái', date: '2027-01-04', time: '13:30', place: '', address: '', mapUrl: '' },
       { name: 'Đón khách', date: '2027-01-04', time: '17:30', place: '', address: '', mapUrl: '' },
-      { name: 'Nghi thức thành hôn', date: '2027-01-04', time: '18:00', place: 'Sen Vang Palace', address: '', mapUrl: '' },
+      { name: 'Nghi thức thành hôn', date: '2027-01-04', time: '18:00', place: 'Sen Hồng Palace', address: '', mapUrl: '' },
       { name: 'Rót rượu giao bôi và cắt bánh', date: '2027-01-04', time: '18:30', place: '', address: '', mapUrl: '' },
-      { name: 'Khai tiệc', date: '2027-01-04', time: '19:00', place: 'Sen Vang Palace', address: 'Phú Thọ', mapUrl: '' },
+      { name: 'Khai tiệc', date: '2027-01-04', time: '19:00', place: 'Sen Hồng Palace', address: 'Quận 7, TP. Hồ Chí Minh', mapUrl: '' },
       { name: 'Kết thúc tiệc', date: '2027-01-04', time: '21:30', place: '', address: '', mapUrl: '' },
     ],
   },

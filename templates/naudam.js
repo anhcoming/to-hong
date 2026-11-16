@@ -44,8 +44,8 @@ module.exports = {
   ],
   // dữ liệu xem thử theo bản gốc: tên, ngày, ảnh như trang demo; lịch trình lấy 6 mốc từ đón khách (thiệp giữ tối đa 6 sự kiện)
   demo: {
-    groom: { name: 'Xuân Trường', fullName: 'Bùi Xuân Trường', father: 'Bùi Bảo Lâm', mother: 'Bùi Bích Thảo', address: '' },
-    bride: { name: 'Diệu Linh', fullName: 'Trịnh Diệu Linh', father: 'Trịnh Vân An', mother: 'Trịnh Mỹ Linh', address: '' },
+    groom: { name: 'Gia Huy', fullName: 'Trần Gia Huy', father: 'Trần Quang Hải', mother: 'Nguyễn Thị Lan', address: '' },
+    bride: { name: 'Bảo Ngọc', fullName: 'Lê Bảo Ngọc', father: 'Lê Minh Tuấn', mother: 'Phạm Thị Hoa', address: '' },
     date: '2027-11-17',
     time: '18:30',
     cover: '/demo/naudam-1.jpg',
@@ -54,9 +54,9 @@ module.exports = {
     message: 'Sự hiện diện của quý khách là niềm vinh hạnh của gia đình chúng tôi!',
     events: [
       { name: 'Đón khách', date: '2027-11-17', time: '18:30', place: '', address: '', mapUrl: '' },
-      { name: 'Lễ thành hôn', date: '2027-11-17', time: '19:00', place: 'Uri Palace', address: '', mapUrl: '' },
+      { name: 'Lễ thành hôn', date: '2027-11-17', time: '19:00', place: 'Hoa Mai Palace', address: '', mapUrl: '' },
       { name: 'Rót rượu giao bôi và cắt bánh', date: '2027-11-17', time: '19:30', place: '', address: '', mapUrl: '' },
-      { name: 'Khai tiệc', date: '2027-11-17', time: '20:00', place: 'Uri Palace', address: 'Bắc Ninh', mapUrl: '' },
+      { name: 'Khai tiệc', date: '2027-11-17', time: '20:00', place: 'Hoa Mai Palace', address: 'Quận 5, TP. Hồ Chí Minh', mapUrl: '' },
       { name: 'Cô dâu chú rể chúc mừng từng bàn', date: '2027-11-17', time: '21:00', place: '', address: '', mapUrl: '' },
       { name: 'Kết thúc tiệc', date: '2027-11-17', time: '22:30', place: '', address: '', mapUrl: '' },
     ],

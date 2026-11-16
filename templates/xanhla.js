@@ -42,8 +42,8 @@ module.exports = {
   ],
   // dữ liệu xem thử theo bản gốc: tên, bố mẹ, ngày, lễ buổi trưa, tiệc tối, ảnh như trang demo
   demo: {
-    groom: { name: 'Đăng Khoa', fullName: 'Trần Đăng Khoa', father: 'Trần Văn Hùng', mother: 'Lê Thị Hoa', address: 'Tổ dân phố 3A, thị trấn Eakar, huyện Eakar, tỉnh Đắk Lắk' },
-    bride: { name: 'Mỹ Duyên', fullName: 'Nguyễn Mỹ Duyên', father: 'Nguyễn Văn Nam', mother: 'Phạm Thị Lan', address: 'Khối 2, thị xã Buôn Hồ, tỉnh Đắk Lắk' },
+    groom: { name: 'Gia Huy', fullName: 'Trần Gia Huy', father: 'Trần Quang Hải', mother: 'Nguyễn Thị Lan', address: 'Đường Lê Văn Sỹ, Phú Nhuận, TP. Hồ Chí Minh' },
+    bride: { name: 'Bảo Ngọc', fullName: 'Lê Bảo Ngọc', father: 'Lê Minh Tuấn', mother: 'Phạm Thị Hoa', address: 'Đường Hoàng Hoa Thám, Bình Thạnh, TP. Hồ Chí Minh' },
     date: '2026-12-19',
     time: '18:00',
     cover: '/demo/xanhla-1.jpg',
@@ -54,7 +54,7 @@ module.exports = {
       { name: 'Lễ Thành Hôn', date: '2026-12-19', time: '11:00', place: 'Tư gia', address: '', mapUrl: '' },
       { name: 'Đón khách', date: '2026-12-19', time: '16:00', place: '', address: '', mapUrl: '' },
       { name: 'Nghi lễ thành hôn', date: '2026-12-19', time: '17:00', place: '', address: '', mapUrl: '' },
-      { name: 'Khai tiệc', date: '2026-12-19', time: '18:00', place: 'Riverside Palace', address: '360 Bến Vân Đồn, Quận 4, TP. HCM', mapUrl: '' },
+      { name: 'Khai tiệc', date: '2026-12-19', time: '18:00', place: 'Bến Xuân Palace', address: '88 Đường Số 9, Quận 7, TP. Hồ Chí Minh', mapUrl: '' },
       { name: 'Cắt bánh & rót rượu', date: '2026-12-19', time: '19:30', place: '', address: '', mapUrl: '' },
       { name: 'Kết thúc tiệc', date: '2026-12-19', time: '21:00', place: '', address: '', mapUrl: '' },
     ],

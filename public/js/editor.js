@@ -18,10 +18,10 @@ function f(k, label, o = {}) {
 function person(who, label) {
   return `<section class="group panel"><h3>${label}</h3>
     <div class="grid2">
-      ${f(`${who}.name`, 'Tên gọi trên thiệp', { ph: who === 'groom' ? 'Đức Minh' : 'Thu Hà', max: 40 })}
-      ${f(`${who}.fullName`, 'Họ và tên đầy đủ', { ph: who === 'groom' ? 'Nguyễn Đức Minh' : 'Lê Thu Hà', max: 80 })}
-      ${f(`${who}.father`, 'Bố', { ph: 'Ông Nguyễn Văn An', max: 80 })}
-      ${f(`${who}.mother`, 'Mẹ', { ph: 'Bà Trần Thị Bình', max: 80 })}
+      ${f(`${who}.name`, 'Tên gọi trên thiệp', { ph: who === 'groom' ? 'Gia Huy' : 'Bảo Ngọc', max: 40 })}
+      ${f(`${who}.fullName`, 'Họ và tên đầy đủ', { ph: who === 'groom' ? 'Trần Gia Huy' : 'Lê Bảo Ngọc', max: 80 })}
+      ${f(`${who}.father`, 'Bố', { ph: 'Ông Trần Quang Hải', max: 80 })}
+      ${f(`${who}.mother`, 'Mẹ', { ph: 'Bà Nguyễn Thị Lan', max: 80 })}
     </div>
     ${f(`${who}.address`, 'Địa chỉ nhà ' + (who === 'groom' ? 'trai' : 'gái'), { ph: 'Phường…, Tỉnh/Thành phố…', max: 160 })}
   </section>`;
@@ -66,7 +66,7 @@ const panes = {
 
   date: () => `
     <section class="group panel"><h3>Cô dâu chú rể</h3>
-      <div class="grid2">${f('groom.name', 'Tên chú rể', { ph: 'Đức Minh', max: 40 })}${f('bride.name', 'Tên cô dâu', { ph: 'Thu Hà', max: 40 })}</div>
+      <div class="grid2">${f('groom.name', 'Tên chú rể', { ph: 'Gia Huy', max: 40 })}${f('bride.name', 'Tên cô dâu', { ph: 'Bảo Ngọc', max: 40 })}</div>
       <button class="btn soft block" id="famOpen" type="button">+ Họ tên đầy đủ, bố mẹ, địa chỉ hai nhà</button>
       <div id="fam" hidden>${person('groom', 'Nhà trai')}${person('bride', 'Nhà gái')}</div>
     </section>
@@ -82,7 +82,7 @@ const panes = {
             <button class="btn sm danger" data-ev-del="${i}">Xoá</button></span></div>
           ${f(`events.${i}.name`, 'Tên lễ', { ph: 'Lễ Vu Quy / Lễ Thành Hôn / Tiệc Cưới', max: 60 })}
           <div class="grid2">${f(`events.${i}.date`, 'Ngày', { type: 'date' })}${f(`events.${i}.time`, 'Giờ', { type: 'time' })}</div>
-          ${f(`events.${i}.place`, 'Nơi tổ chức', { ph: 'Nhà hàng Hoa Sen — Sảnh A', max: 120 })}
+          ${f(`events.${i}.place`, 'Nơi tổ chức', { ph: 'Nhà hàng Ngọc Lan — Sảnh A', max: 120 })}
           ${f(`events.${i}.address`, 'Địa chỉ (hiện bản đồ)', { ph: 'Số nhà, đường, phường, tỉnh/thành', max: 200 })}
           ${f(`events.${i}.mapUrl`, '📍 Link Google Maps', { ph: 'Dán link vào đây', hint: 'Google Maps → tìm nhà hàng → Chia sẻ → Sao chép đường liên kết. Bản đồ trên thiệp sẽ ghim đúng chỗ.' })}
         </div>`).join('') || '<p class="muted">Chưa có lễ nào.</p>'}</div>
@@ -353,9 +353,9 @@ function quickStart(forPublish) {
   openModal(`<h2 style="margin-top:0">${forPublish ? 'Còn thiếu vài thông tin' : 'Bắt đầu nhanh'}</h2>
     <p class="muted" style="margin:-6px 0 14px;font-size:14px">${forPublish ? 'Điền đủ tên cô dâu, chú rể và ngày cưới để phát hành thiệp.' : 'Điền mấy dòng này là thiệp có đủ nội dung chính. Mọi thứ khác bấm thẳng lên thiệp để sửa.'}</p>
     <form id="qsF">
-      <div class="grid2">${inp('qsG', 'Tên chú rể', d.groom.name, { ph: 'Đức Minh', max: 40, req: 1 })}${inp('qsB', 'Tên cô dâu', d.bride.name, { ph: 'Thu Hà', max: 40, req: 1 })}</div>
+      <div class="grid2">${inp('qsG', 'Tên chú rể', d.groom.name, { ph: 'Gia Huy', max: 40, req: 1 })}${inp('qsB', 'Tên cô dâu', d.bride.name, { ph: 'Bảo Ngọc', max: 40, req: 1 })}</div>
       <div class="grid2">${inp('qsD', 'Ngày cưới', d.date, { type: 'date', req: 1 })}${inp('qsT', 'Giờ tiệc', (party && party.time) || d.time, { type: 'time' })}</div>
-      ${party ? inp('qsP', 'Nơi tổ chức tiệc (không bắt buộc)', party.place, { ph: 'Nhà hàng Hoa Sen — Sảnh A', max: 120 }) : ''}
+      ${party ? inp('qsP', 'Nơi tổ chức tiệc (không bắt buộc)', party.place, { ph: 'Nhà hàng Ngọc Lan — Sảnh A', max: 120 }) : ''}
       <button class="btn block" style="margin-top:6px">${forPublish ? 'Lưu & phát hành' : 'Xong, xem thiệp'}</button>
       ${forPublish ? '' : '<button type="button" class="btn block plain" id="qsSkip" style="margin-top:8px">Để sau</button>'}
     </form>`, (box, close) => {
@@ -873,7 +873,7 @@ function eventModal(i, focus) {
   openModal(`<h2 style="margin-top:0">${isNew ? 'Thêm lễ' : esc(e.name || `Lễ ${i + 1}`)}</h2>
     ${inp('evName', 'Tên lễ', e.name, { ph: 'Lễ Vu Quy / Lễ Thành Hôn / Tiệc Cưới', max: 60 })}
     <div class="grid2">${inp('evDate', 'Ngày', e.date, { type: 'date' })}${inp('evTime', 'Giờ', e.time, { type: 'time' })}</div>
-    ${inp('evPlace', 'Nơi tổ chức', e.place, { ph: 'Nhà hàng Hoa Sen — Sảnh A', max: 120 })}
+    ${inp('evPlace', 'Nơi tổ chức', e.place, { ph: 'Nhà hàng Ngọc Lan — Sảnh A', max: 120 })}
     ${inp('evMap', '📍 Link Google Maps (để bản đồ chỉ đúng chỗ)', e.mapUrl, { ph: 'Dán link hoặc toạ độ vào đây', attr: 'autocomplete="off"' })}
     <p class="muted" id="evMapSt" style="font-size:13px;margin:-6px 0 12px">Mở Google Maps → tìm nhà hàng → <b>Chia sẻ</b> → <b>Sao chép đường liên kết</b> → dán vào ô trên. Hoặc giữ ngón tay lên đúng điểm trên bản đồ, chép dãy toạ độ (vd. <i>21.0285, 105.8542</i>) rồi dán vào.</p>
     ${inp('evAddr', 'Địa chỉ (không bắt buộc)', e.address, { ph: 'Số nhà, đường, phường, tỉnh/thành', max: 200 })}

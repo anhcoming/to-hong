@@ -40,7 +40,7 @@ module.exports = {
     events: [
       { name: 'Lễ Thành Hôn', date: '2026-12-20', time: '09:00', place: 'Tư gia', address: '', mapUrl: '' },
       { name: 'Đón khách', date: '2026-12-20', time: '17:30', place: '', address: '', mapUrl: '' },
-      { name: 'Khai tiệc', date: '2026-12-20', time: '18:00', place: 'Trung Tâm Hội Nghị White Palace', address: '194 Hoàng Văn Thụ, Phường 9, Quận Phú Nhuận, TP. Hồ Chí Minh', mapUrl: '' },
+      { name: 'Khai tiệc', date: '2026-12-20', time: '18:00', place: 'Trung Tâm Tiệc Cưới Ngọc Lan', address: '12 Đường Số 5, Quận 7, TP. Hồ Chí Minh', mapUrl: '' },
       { name: 'Nghi thức cưới', date: '2026-12-20', time: '18:30', place: '', address: '', mapUrl: '' },
       { name: 'Cắt bánh & nâng ly', date: '2026-12-20', time: '19:00', place: '', address: '', mapUrl: '' },
       { name: 'Kết thúc tiệc', date: '2026-12-20', time: '20:30', place: '', address: '', mapUrl: '' },

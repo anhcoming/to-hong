@@ -509,7 +509,7 @@ async function settingsModal() {
   const p = (k, f, label, ph = '') => `<label class="field"><span>${label}</span><input name="${k}.${f}" value="${esc(w.couple[k][f])}" placeholder="${ph}" maxlength="${f === 'address' ? 160 : 80}"></label>`;
   openModal(`<h2>Thông tin đám cưới</h2>
     <form id="sf" style="margin-top:14px">
-      <div class="grid2">${p('groom', 'name', 'Tên gọi chú rể', 'Đức Minh')}${p('bride', 'name', 'Tên gọi cô dâu', 'Thu Hà')}
+      <div class="grid2">${p('groom', 'name', 'Tên gọi chú rể', 'Gia Huy')}${p('bride', 'name', 'Tên gọi cô dâu', 'Bảo Ngọc')}
       ${p('groom', 'fullName', 'Họ tên chú rể')}${p('bride', 'fullName', 'Họ tên cô dâu')}
       ${p('groom', 'father', 'Bố chú rể', 'Ông …')}${p('bride', 'father', 'Bố cô dâu', 'Ông …')}
       ${p('groom', 'mother', 'Mẹ chú rể', 'Bà …')}${p('bride', 'mother', 'Mẹ cô dâu', 'Bà …')}

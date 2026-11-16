@@ -54,7 +54,7 @@ module.exports = {
     { id: 'do-tham', name: 'Đỏ thẫm', swatch: ['#7a0014', PEACH], vars: { ...base, '--page': '#ffffff', '--bg': '#7a0014', '--paper': '#5a000e', '--ink': PEACH, '--muted': 'rgba(255,190,137,.7)', '--accent': PEACH, '--accent-ink': '#7a0014', '--gold': '#d4af37', '--line': 'rgba(255,190,137,.4)', '--lp-o1': '#710001', '--lp-o2': '#5a0001', '--lp-o3': '#450001', '--lp-dlg': '#5a000e' } },
     { id: 'do-son', name: 'Đỏ son', swatch: ['#9e1b1b', PEACH], vars: { ...base, '--page': '#ffffff', '--bg': '#9e1b1b', '--paper': '#7d1010', '--ink': PEACH, '--muted': 'rgba(255,190,137,.7)', '--accent': PEACH, '--accent-ink': '#9e1b1b', '--gold': '#d4af37', '--line': 'rgba(255,190,137,.4)', '--lp-o1': '#951313', '--lp-o2': '#7d0d0d', '--lp-o3': '#5f0808', '--lp-dlg': '#7d1010' } },
   ],
-  // dữ liệu xem thử theo bản gốc (tên và bố mẹ giữ của dữ liệu mẫu chung): 12/7/2026, lễ thành hôn tư gia 9h, tiệc VinPalace Cổ Loa
+  // dữ liệu xem thử theo bản gốc (tên và bố mẹ giữ của dữ liệu mẫu chung): 12/7/2026, lễ thành hôn tư gia 9h, tiệc Ngọc Lan Palace
   demo: {
     date: '2026-07-12',
     time: '18:00',
@@ -65,14 +65,14 @@ module.exports = {
     events: [
       { name: 'Lễ Thành Hôn', date: '2026-07-12', time: '09:00', place: 'Tư gia', address: '', mapUrl: '' },
       { name: 'Đón khách', date: '2026-07-12', time: '17:30', place: '', address: '', mapUrl: '' },
-      { name: 'Khai tiệc', date: '2026-07-12', time: '18:30', place: 'VinPalace Cổ Loa', address: 'Đông Hội, Đông Anh, Hà Nội', mapUrl: '' },
+      { name: 'Khai tiệc', date: '2026-07-12', time: '18:30', place: 'Ngọc Lan Palace', address: 'Phường Bình Thạnh, TP. Hồ Chí Minh', mapUrl: '' },
       { name: 'Rót rượu, cắt bánh', date: '2026-07-12', time: '18:45', place: '', address: '', mapUrl: '' },
       { name: 'Phục vụ món chính', date: '2026-07-12', time: '19:00', place: '', address: '', mapUrl: '' },
       { name: 'Kết thúc tiệc', date: '2026-07-12', time: '21:00', place: '', address: '', mapUrl: '' },
     ],
     gifts: {
-      groom: { bin: '970418', acc: '0000000000', holder: 'THIEP CUOI DEMO' },
-      bride: { bin: '970436', acc: '0000000000', holder: 'THIEP CUOI DEMO' },
+      groom: require('../lib/carddata').demoBank(),
+      bride: require('../lib/carddata').demoBank(),
     },
   },
   // xác nhận tham dự mở trong hộp thoại từ khung tiệc cưới (như bản gốc), nên không có trong luồng trang

@@ -130,9 +130,9 @@ module.exports = {
     cover: '/demo/longphung-2.jpg',
     photos: [6, 3, 4, 8, 9, 2, 7, 10].map((n) => `/demo/longphung-${n}.jpg`),
     events: [
-      { name: 'Lễ Vu Quy', date: '2026-12-20', time: '08:00', place: 'Tư gia nhà gái', address: 'Phố Hàng Bông, Hoàn Kiếm, Hà Nội', mapUrl: '' },
-      { name: 'Lễ Thành Hôn', date: '2026-12-20', time: '10:00', place: 'Tư gia nhà trai', address: 'Phố Láng Hạ, Đống Đa, Hà Nội', mapUrl: '' },
-      { name: 'Tiệc Cưới', date: '2026-12-20', time: '18:00', place: 'Sảnh Hoàng Cung — Nhà hàng tiệc cưới', address: 'Hồ Tây, Tây Hồ, Hà Nội', mapUrl: '' },
+      { name: 'Lễ Vu Quy', date: '2026-12-20', time: '08:00', place: 'Tư gia nhà gái', address: 'Đường Hoàng Hoa Thám, Bình Thạnh, TP. Hồ Chí Minh', mapUrl: '' },
+      { name: 'Lễ Thành Hôn', date: '2026-12-20', time: '10:00', place: 'Tư gia nhà trai', address: 'Đường Lê Văn Sỹ, Phú Nhuận, TP. Hồ Chí Minh', mapUrl: '' },
+      { name: 'Tiệc Cưới', date: '2026-12-20', time: '18:00', place: 'Sảnh Hoàng Cung — Nhà hàng tiệc cưới', address: 'Đường Phạm Văn Đồng, TP. Thủ Đức, TP. Hồ Chí Minh', mapUrl: '' },
     ],
   },
   layout: ['invite', 'calendar', 'events', 'story', 'gallery', 'rsvp', 'gift', 'wishes', 'thanks'],

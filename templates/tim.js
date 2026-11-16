@@ -38,8 +38,8 @@ module.exports = {
   ],
   // dữ liệu xem thử theo bản gốc: tên, bố mẹ, ngày, lễ buổi sáng, tiệc tối, ảnh như trang demo
   demo: {
-    groom: { name: 'Quốc Bảo', fullName: 'Lý Quốc Bảo', father: 'Lý Văn Hoà', mother: 'Trịnh Thị Bích Vân', address: 'Phường Tân Định, Quận 1, TP. Hồ Chí Minh' },
-    bride: { name: 'Diệu Linh', fullName: 'Đinh Diệu Linh', father: 'Đinh Hữu Nam', mother: 'Phan Thị Kim Yến', address: 'Phường Thảo Điền, TP. Thủ Đức, TP. Hồ Chí Minh' },
+    groom: { name: 'Gia Huy', fullName: 'Trần Gia Huy', father: 'Trần Quang Hải', mother: 'Nguyễn Thị Lan', address: 'Đường Lê Văn Sỹ, Phú Nhuận, TP. Hồ Chí Minh' },
+    bride: { name: 'Bảo Ngọc', fullName: 'Lê Bảo Ngọc', father: 'Lê Minh Tuấn', mother: 'Phạm Thị Hoa', address: 'Đường Hoàng Hoa Thám, Bình Thạnh, TP. Hồ Chí Minh' },
     date: '2026-12-19',
     time: '18:30',
     cover: '/demo/tim-6.jpg',
@@ -49,7 +49,7 @@ module.exports = {
     events: [
       { name: 'Lễ Thành Hôn', date: '2026-12-19', time: '10:00', place: 'Tư gia', address: '', mapUrl: '' },
       { name: 'Đón khách', date: '2026-12-19', time: '17:30', place: '', address: '', mapUrl: '' },
-      { name: 'Khai tiệc', date: '2026-12-19', time: '18:30', place: 'Nhà Hàng Tiệc Cưới Riverside Palace', address: '360D Bến Vân Đồn, Phường 1, Quận 4, TP. Hồ Chí Minh', mapUrl: '' },
+      { name: 'Khai tiệc', date: '2026-12-19', time: '18:30', place: 'Nhà Hàng Tiệc Cưới Bến Xuân Palace', address: '88 Đường Số 9, Quận 7, TP. Hồ Chí Minh', mapUrl: '' },
       { name: 'Rót rượu, cắt bánh', date: '2026-12-19', time: '18:45', place: '', address: '', mapUrl: '' },
       { name: 'Phục vụ món chính', date: '2026-12-19', time: '19:00', place: '', address: '', mapUrl: '' },
       { name: 'Kết thúc tiệc', date: '2026-12-19', time: '21:00', place: '', address: '', mapUrl: '' },

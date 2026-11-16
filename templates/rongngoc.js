@@ -58,9 +58,9 @@ module.exports = {
     cover: '/demo/tim-6.jpg',
     photos: [2, 1, 5, 3, 8, 4, 7].map((n) => `/demo/tim-${n}.jpg`),
     events: [
-      { name: 'Lễ Vu Quy', date: '2026-12-20', time: '08:00', place: 'Tư gia nhà gái', address: 'Phố Hàng Bông, Hoàn Kiếm, Hà Nội', mapUrl: '' },
-      { name: 'Lễ Thành Hôn', date: '2026-12-20', time: '10:00', place: 'Tư gia nhà trai', address: 'Phố Láng Hạ, Đống Đa, Hà Nội', mapUrl: '' },
-      { name: 'Tiệc Cưới', date: '2026-12-20', time: '18:00', place: 'Sảnh Ngọc Bích — Nhà hàng tiệc cưới', address: 'Hồ Tây, Tây Hồ, Hà Nội', mapUrl: '' },
+      { name: 'Lễ Vu Quy', date: '2026-12-20', time: '08:00', place: 'Tư gia nhà gái', address: 'Đường Hoàng Hoa Thám, Bình Thạnh, TP. Hồ Chí Minh', mapUrl: '' },
+      { name: 'Lễ Thành Hôn', date: '2026-12-20', time: '10:00', place: 'Tư gia nhà trai', address: 'Đường Lê Văn Sỹ, Phú Nhuận, TP. Hồ Chí Minh', mapUrl: '' },
+      { name: 'Tiệc Cưới', date: '2026-12-20', time: '18:00', place: 'Sảnh Ngọc Bích — Nhà hàng tiệc cưới', address: 'Đường Phạm Văn Đồng, TP. Thủ Đức, TP. Hồ Chí Minh', mapUrl: '' },
     ],
   },
   layout: ['invite', 'gallery', 'calendar', 'events', 'story', 'rsvp', 'gift', 'wishes', 'thanks'],

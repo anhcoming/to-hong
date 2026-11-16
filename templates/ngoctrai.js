@@ -64,8 +64,8 @@ module.exports = {
     photos: [6, 5, 9, 4, 10, 3, 8].map((n) => `/demo/naudam-${n}.jpg`),
     story: 'Tình yêu của chúng mình là một hành trình dịu dàng: đi qua những tháng ngày thương nhớ, sẻ chia và vượt qua thử thách để nắm tay nhau tới hôm nay.\nĐám cưới không chỉ là dấu mốc hạnh phúc, mà là khởi đầu cho một chặng đường mới — nơi hai đứa cùng vun đắp tổ ấm và viết tiếp câu chuyện mang tên gia đình.',
     events: [
-      { name: 'Lễ Thành Hôn', date: '2026-12-20', time: '09:30', place: 'Tư gia nhà trai', address: 'Phố Láng Hạ, Đống Đa, Hà Nội', mapUrl: '' },
-      { name: 'Tiệc Cưới', date: '2026-12-20', time: '18:00', place: 'Khách sạn Ngọc Trai — Sảnh Ballroom', address: 'Hồ Tây, Tây Hồ, Hà Nội', mapUrl: '' },
+      { name: 'Lễ Thành Hôn', date: '2026-12-20', time: '09:30', place: 'Tư gia nhà trai', address: 'Đường Lê Văn Sỹ, Phú Nhuận, TP. Hồ Chí Minh', mapUrl: '' },
+      { name: 'Tiệc Cưới', date: '2026-12-20', time: '18:00', place: 'Khách sạn Ngọc Trai — Sảnh Ballroom', address: 'Đường Phạm Văn Đồng, TP. Thủ Đức, TP. Hồ Chí Minh', mapUrl: '' },
     ],
   },
   layout: ['savedate', 'calendar', 'invite', 'events', 'story', 'gallery', 'rsvp', 'gift', 'wishes', 'countdown', 'thanks'],
