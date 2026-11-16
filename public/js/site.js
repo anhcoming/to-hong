@@ -1,6 +1,20 @@
 // Phần chung của các trang giới thiệu: thanh trên, chân trang, giá từ cấu hình, hiệu ứng hiện dần.
 (function () {
   'use strict';
+  // thanh chạy mảnh trên cùng khi rời trang / chờ đăng xuất (trang ứng dụng đã có bản đầy đủ trong common.js)
+  if (!window.progress) {
+    var bar = null, n = 0, tm = null;
+    var st = document.createElement('style');
+    st.textContent = '#gbar{position:fixed;left:0;right:0;top:0;height:3px;z-index:10000;overflow:hidden;pointer-events:none;opacity:0;transition:opacity .2s}#gbar.on{opacity:1}#gbar i{position:absolute;top:0;bottom:0;left:-40%;width:40%;border-radius:3px;background:linear-gradient(90deg,transparent,#d6455d,#ef7d8d,transparent);animation:gbar 1.1s ease-in-out infinite}@keyframes gbar{to{left:100%}}';
+    document.head.appendChild(st);
+    window.progress = {
+      start: function () { n++; if (n === 1 && !tm) tm = setTimeout(function () { tm = null; if (!n) return; bar = bar || Object.assign(document.createElement('div'), { id: 'gbar', innerHTML: '<i></i>' }); document.body.appendChild(bar); requestAnimationFrame(function () { bar.classList.add('on'); }); }, 300); },
+      done: function () { n = Math.max(0, n - 1); if (n) return; clearTimeout(tm); tm = null; if (bar && bar.parentNode) bar.remove(); },
+      reset: function () { n = 1; this.done(); },
+    };
+    window.addEventListener('beforeunload', function () { progress.start(); setTimeout(function () { progress.reset(); }, 8000); });
+    window.addEventListener('pageshow', function (e) { if (e.persisted) progress.reset(); });
+  }
   // logo giống trang chủ: chữ viết tay tô gradient, tim nhỏ cuối chữ (CSS .logo .lw / .lh)
   var LOGO = '<span class="lw" data-brand>Cưới Nha</span><svg class="lh" viewBox="0 0 32 30" aria-hidden="true"><path d="M16 28C6.5 21 3 16 3 11.5 3 7.9 5.8 5 9.4 5c2.6 0 4.6 1.4 6.6 3.9C18 6.4 20 5 22.6 5 26.2 5 29 7.9 29 11.5 29 16 25.5 21 16 28z"/></svg>';
   var MENU = [['/mau-thiep', 'Thiệp cưới', 'tpl'], ['/man-hinh-led-dam-cuoi', 'Màn hình LED', 'led'], ['/video-cuoi', 'Video cưới', 'video'], ['/so-tay-cuoi', 'Sổ tay cưới', 'planner']]; // các chức năng chính
@@ -36,7 +50,8 @@
     if (!t) return;
     e.preventDefault();
     if (t.hasAttribute('data-theme-toggle')) { if (window.toggleTheme) toggleTheme(); return; }
-    fetch('/api/auth/logout', { method: 'POST' }).then(function () { location.reload(); });
+    progress.start();
+    fetch('/api/auth/logout', { method: 'POST' }).then(function () { location.reload(); }, function () { progress.done(); });
   });
 
   var nav = document.getElementById('nav');

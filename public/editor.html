@@ -95,6 +95,10 @@ body{height:100vh;height:100dvh;display:flex;flex-direction:column;overflow:hidd
 .sum b{display:block;font-size:24px;font-family:var(--serif)}
 .sum span{font-size:12px;color:var(--muted)}
 .btn[hidden]{display:none}
+/* khung thiệp đang dựng (mở trình sửa, đổi mẫu): vòng xoay giữa khung, thiệp cũ mờ đi */
+.pv-wait{position:absolute;inset:0;z-index:2;display:none;place-items:center;align-content:center;gap:12px;color:var(--muted);font-size:14px;font-weight:600;pointer-events:none;background:color-mix(in srgb,var(--bg) 55%,transparent)}
+.phone.wait .pv-wait{display:grid}
+.pv-wait i{width:34px;height:34px;border-radius:50%;border:3px solid rgba(214,69,93,.2);border-top-color:#d6455d;animation:upspin .8s linear infinite}
 /* bấm chữ trên thiệp → ô tương ứng ở bảng trái sáng lên */
 .field input.flash,.field textarea.flash{animation:fflash 1.1s ease}
 @keyframes fflash{0%{background:#ffe1e7;box-shadow:0 0 0 4px rgba(214,69,93,.25)}100%{box-shadow:0 0 0 0 rgba(214,69,93,0)}}
@@ -178,7 +182,7 @@ body{height:100vh;height:100dvh;display:flex;flex-direction:column;overflow:hidd
   </aside>
   <div class="scrim" id="scrim"></div>
   <main class="stage" id="prev">
-    <div class="phone"><iframe id="frame" title="Thiệp — bấm ảnh hoặc chữ để sửa"></iframe></div>
+    <div class="phone wait" id="phone"><iframe id="frame" title="Thiệp — bấm ảnh hoặc chữ để sửa"></iframe><div class="pv-wait" aria-hidden="true"><i></i><span>Đang dựng thiệp…</span></div></div>
   </main>
   <aside class="outl" id="outl" hidden aria-label="Các phần của thiệp"></aside>
 </div>

@@ -55,13 +55,77 @@ window.withLoading = async function (text, fn) {
   try { return await fn(); } finally { loading.hide(); }
 };
 
+// ---------- thanh chạy mảnh trên cùng: chờ đọc dữ liệu (GET), chờ trang kế tiếp mở ----------
+// Không che màn hình (khác màn chờ ở trên): chỉ báo "đang làm" để màn không đứng im. Hiện sau 300ms, đếm số việc.
+window.progress = (() => {
+  let n = 0, timer = null, el = null;
+  function mount() {
+    if (el) return el;
+    el = document.createElement('div'); el.id = 'gbar'; el.setAttribute('aria-hidden', 'true'); el.innerHTML = '<i></i>';
+    return el;
+  }
+  return {
+    start() {
+      n++;
+      if (n === 1 && !timer) timer = setTimeout(() => { timer = null; if (n) { document.body.appendChild(mount()); requestAnimationFrame(() => el && el.classList.add('on')); } }, 300);
+    },
+    done() {
+      n = Math.max(0, n - 1);
+      if (n) return;
+      clearTimeout(timer); timer = null;
+      if (el && el.parentNode) { el.classList.remove('on'); setTimeout(() => { if (!n && el) el.remove(); }, 200); }
+    },
+    reset() { n = 1; this.done(); },
+  };
+})();
+// kiểu dùng chung: thanh chạy + nút đang chạy (vòng xoay nhỏ trước chữ)
+(() => {
+  const st = document.createElement('style');
+  st.textContent = `#gbar{position:fixed;left:0;right:0;top:0;height:3px;z-index:10000;overflow:hidden;pointer-events:none;opacity:0;transition:opacity .2s}
+#gbar.on{opacity:1}
+#gbar i{position:absolute;top:0;bottom:0;left:-40%;width:40%;border-radius:3px;background:linear-gradient(90deg,transparent,#d6455d,#ef7d8d,transparent);animation:gbar 1.1s ease-in-out infinite}
+@keyframes gbar{to{left:100%}}
+.pageload{display:grid;place-items:center;align-content:center;gap:14px;min-height:55vh;color:var(--muted,#8f7f82);font-size:15px;font-weight:600;text-align:center}
+.pageload i{width:34px;height:34px;border-radius:50%;border:3px solid rgba(214,69,93,.2);border-top-color:#d6455d;animation:gspin .8s linear infinite}
+.pageload.bad i{display:none}
+.is-busy{cursor:progress!important;opacity:.85}
+.is-busy::before{content:"";display:inline-block;flex:none;width:.95em;height:.95em;margin-right:.5em;vertical-align:-.12em;border:2px solid currentColor;border-right-color:transparent;border-radius:50%;animation:gspin .7s linear infinite}
+@keyframes gspin{to{transform:rotate(360deg)}}`;
+  document.head.appendChild(st);
+})();
+// Nút vừa bấm (hoặc nút gửi form) → khi việc gửi dữ liệu chạy ngay sau đó thì khoá nút + vòng xoay tới lúc xong,
+// tránh bấm hai lần gửi trùng trong lúc chờ. Không cần sửa từng nút.
+let lastPress = null;
+document.addEventListener('click', (e) => { const b = e.target.closest && e.target.closest('button,.btn,[role=button]'); if (b) lastPress = { el: b, t: Date.now() }; }, true);
+document.addEventListener('submit', (e) => { const b = e.submitter || (e.target.querySelector && e.target.querySelector('[type=submit],button:not([type=button])')); if (b) lastPress = { el: b, t: Date.now() }; }, true);
+window.busyBtn = function (btn) {
+  if (!btn || btn.classList.contains('is-busy')) return () => {};
+  const was = btn.disabled;
+  btn.classList.add('is-busy'); btn.setAttribute('aria-busy', 'true');
+  if ('disabled' in btn) btn.disabled = true;
+  return () => { btn.classList.remove('is-busy'); btn.removeAttribute('aria-busy'); if ('disabled' in btn) btn.disabled = was; };
+};
+function pressedBtn() {
+  const p = lastPress;
+  if (!p || Date.now() - p.t > 1500 || !p.el.isConnected) return null;
+  lastPress = null;
+  return p.el;
+}
+// rời trang (bấm link, chuyển trang sau khi tạo thiệp, đăng xuất…) → thanh chạy tới lúc trang mới hiện
+window.addEventListener('beforeunload', () => { progress.start(); setTimeout(() => progress.reset(), 8000); });
+window.addEventListener('pageshow', (e) => { if (e.persisted) progress.reset(); });
+
 // opts.quiet: không hiện màn chờ (tự lưu, chỉnh nhanh tại chỗ, việc chạy nền); opts.loadingText: chữ trên màn chờ.
-// Chỉ request ghi dữ liệu (POST/PUT/DELETE) mới hiện màn chờ; đọc dữ liệu (GET) thì không.
+// Đọc dữ liệu (GET) không im lặng: thanh chạy mảnh trên cùng (không che màn hình).
+// Ghi dữ liệu: màn chờ + khoá nút vừa bấm.
 window.api = async function (url, opts = {}) {
   const method = opts.method || 'GET';
   const busy = method !== 'GET' && !opts.quiet;
+  const bar = method === 'GET' && !opts.quiet;
+  const unbusy = busy ? busyBtn(pressedBtn()) : null;
   if (busy) loading.show(opts.loadingText);
-  try { return await apiCall(url, opts); } finally { if (busy) loading.hide(); }
+  if (bar) progress.start();
+  try { return await apiCall(url, opts); } finally { if (busy) { loading.hide(); unbusy(); } if (bar) progress.done(); }
 };
 async function apiCall(url, opts) {
   const init = { method: opts.method || 'GET', headers: {} };

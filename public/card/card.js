@@ -187,6 +187,11 @@
   }
 
   // nút gửi: khoá sau khi gửi xong (khỏi bấm lặp thành nhiều bản), đổi chữ "Đã gửi ✓"; khách sửa ô nào thì mở lại
+  // đang gửi: nút đổi chữ "Đang gửi…" (khách thấy đã bấm được, không bấm lại); lỗi thì trả chữ cũ
+  function sending(btn, on) {
+    if (on) { if (!btn.hasAttribute('data-label')) btn.setAttribute('data-label', btn.innerHTML); btn.disabled = true; btn.textContent = 'Đang gửi…'; btn.setAttribute('aria-busy', 'true'); }
+    else { btn.removeAttribute('aria-busy'); btn.disabled = false; if (btn.hasAttribute('data-label')) btn.innerHTML = btn.getAttribute('data-label'); }
+  }
   function sendBtn(f) { return $('button[type=submit]', f) || $('button:not([type=button])', f) || $('button', f); }
   function markSent(f, btn) {
     if (!btn.hasAttribute('data-label')) btn.setAttribute('data-label', btn.innerHTML);
@@ -214,7 +219,7 @@
     if (blocked(msg)) return;
     var btn = sendBtn(rf);
     if (rf.hasAttribute('data-sent')) return;
-    btn.disabled = true;
+    sending(btn, true);
     var ok = false;
     var d = formData(rf);
     d.g = C.guest;
@@ -228,7 +233,7 @@
       var dlg = rf.closest('dialog');
       if (dlg && dlg.open) setTimeout(function () { if (dlg.open) dlg.close(); }, 1800);
     }).catch(function (err) { msg.textContent = err.message; })
-      .then(function () { if (!ok) btn.disabled = false; });
+      .then(function () { btn.removeAttribute('aria-busy'); if (!ok) sending(btn, false); });
   });
 
   var wf = $('#wishForm');
@@ -239,7 +244,7 @@
     if (blocked(msg)) return;
     var btn = sendBtn(wf);
     if (wf.hasAttribute('data-sent')) return;
-    btn.disabled = true;
+    sending(btn, true);
     var ok = false;
     var d = formData(wf);
     post('/api/public/' + C.slug + '/wish', d).then(function () {
@@ -255,7 +260,7 @@
       markSent(wf, btn);
       setTimeout(function () { unmarkSent(wf, btn); }, 3000); // lời chúc gửi thêm được, chỉ chặn bấm lặp ngay sau khi gửi
     }).catch(function (err) { msg.textContent = err.message; })
-      .then(function () { if (!ok) btn.disabled = false; });
+      .then(function () { btn.removeAttribute('aria-busy'); if (!ok) sending(btn, false); });
   });
 
   // ----- căn ảnh trong khung: link ảnh có "#p=x,y[,z]" → điểm lấy nét x%,y% và phóng to z lần -----

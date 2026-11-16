@@ -107,7 +107,7 @@ main.wrap{padding-top:104px} /* không có phần giới thiệu: nội dung n�
     <div class="flist" id="fStyle"></div>
   </div>
   <div class="meta"><span id="shown"></span><div class="crumbs" id="crumbs"><span id="crumbList"></span><button class="clear" id="clear" hidden>Xoá bộ lọc</button></div></div>
-  <div class="grid" id="grid"></div>
+  <div class="grid" id="grid" aria-busy="true"><div class="skeleton" style="aspect-ratio:3/4.6"></div><div class="skeleton" style="aspect-ratio:3/4.6"></div><div class="skeleton" style="aspect-ratio:3/4.6"></div><div class="skeleton" style="aspect-ratio:3/4.6"></div><div class="skeleton" style="aspect-ratio:3/4.6"></div><div class="skeleton" style="aspect-ratio:3/4.6"></div><div class="skeleton" style="aspect-ratio:3/4.6"></div><div class="skeleton" style="aspect-ratio:3/4.6"></div></div>
 </main>
 
 <footer id="foot"></footer>
@@ -163,6 +163,7 @@ main.wrap{padding-top:104px} /* không có phần giới thiệu: nội dung n�
     $('#crumbList').innerHTML = (F.q ? `<button type="button" data-x="q">“${esc(F.q)}”</button>` : '')
       + (g ? `<button type="button" data-x="style">${esc(g.name)}</button>` : '');
 
+    $('#grid').removeAttribute('aria-busy');
     $('#grid').innerHTML = list.length ? list.map((t) => {
       const p = t.palettes[0];
       return `<div class="tc" data-tpl="${t.id}" data-pal="${p.id}">${badge(t)}

@@ -681,7 +681,8 @@ function loginForm(msg) {
 }
 
 (async () => {
-  const meta = await fetch('/api/meta').then((r) => r.json());
+  let meta;
+  try { meta = await fetch('/api/meta').then((r) => r.json()); } catch (e) { $('#gate').innerHTML = '<div class="pageload bad">Mạng chập chờn, chưa mở được trang quản trị. <a class="btn" href="/admin">Tải lại</a></div>'; return; }
   A.meta = window.META = meta;
   document.title = 'Quản trị — ' + meta.brand;
   const s = await fetch('/api/admin/session').then((r) => r.json());

@@ -197,12 +197,14 @@
   function renderList() { cur = 0; $('#ptitle').textContent = picks.length + ' mẫu hợp với ảnh của bạn'; renderStrip(); select(0); }
 
   function refresh(keepPicks) {
+    $('#restoring').hidden = true;
     elDrop.hidden = photos.length > 0;
     elWork.hidden = photos.length === 0;
     document.body.classList.toggle('gy-on', photos.length > 0);
     if (!photos.length) { elStrip.innerHTML = ''; return; }
     renderThumbs();
     slots = assign(photos);
+    if (!META) { say('Đang tải danh sách mẫu…'); document.addEventListener('meta', function () { say(''); refresh(keepPicks); }, { once: true }); return; }
     if (!keepPicks || !picks.length) picks = pick(META.templates, META.templateGroups, summarize(photos));
     renderList();
   }
@@ -298,6 +300,8 @@
   });
 
   // ---------- khởi động: lấy danh sách mẫu, khôi phục ảnh đang làm dở ----------
+  // mạng lỗi, danh sách mẫu không về: sau 8 giây vẫn hiện ô chọn ảnh (không treo ở "Đang mở…")
+  setTimeout(function () { if (!META && !$('#restoring').hidden) { $('#restoring').hidden = true; elDrop.hidden = false; } }, 8000);
   document.addEventListener('meta', function (e) {
     META = e.detail;
     Promise.all([idb.get('photos'), idb.get('info'), idb.get('incoming'), idb.get('fresh')]).then(function (r) {
@@ -311,10 +315,11 @@
         addFiles(r[2]);
         return;
       }
-      if (photos.length || !Array.isArray(r[0]) || !r[0].length) return;
+      if (photos.length || busy) return;
+      if (!Array.isArray(r[0]) || !r[0].length) { refresh(false); return; }
       photos = r[0].filter(function (p) { return p && p.blob && p.feat; }).map(function (p) { return Object.assign({}, p, { url: URL.createObjectURL(p.blob) }); });
       if (r[3]) idb.del('fresh'); // vừa chọn ở trang chủ (đã đọc xong ảnh ở đó): vào là có gợi ý, không cần nhắc "tiếp tục"
-      if (photos.length) refresh(false); // ảnh đã chọn lúc trước (hoặc vừa chọn ở trang chủ) hiện ngay, không cần nhắc
+      refresh(false); // ảnh đã chọn lúc trước (hoặc vừa chọn ở trang chủ) hiện ngay, không cần nhắc
     });
   });
 })();

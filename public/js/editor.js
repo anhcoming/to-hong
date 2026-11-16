@@ -190,8 +190,9 @@ function askLogin(why = 'save') {
       const a = e.target.closest('[data-go]'); if (!a) return;
       e.preventDefault();
       clearTimeout(saveTimer); saveTimer = null;
+      busyBtn(a); loading.show('Đang lưu thiệp…');
       await save(); // chữ đang gõ dở phải nằm trên máy chủ trước khi rời trang
-      location.href = a.href;
+      location.href = a.href; // màn chờ giữ tới lúc trang đăng nhập mở
     });
   });
 }
@@ -290,10 +291,13 @@ async function makeShareImage() {
 const liveEdit = true;
 // Vẽ lại thiệp sau mỗi lần lưu mà không "F5" trước mặt người dùng: tải bản mới vào một khung ẩn
 // đè lên khung cũ, cuộn tới đúng chỗ đang xem rồi mới đổi — không nháy trắng, không nhảy về đầu.
+let pvTimer = null;
+function pvWait(on) { clearTimeout(pvTimer); if (on) pvTimer = setTimeout(() => $('#phone').classList.add('wait'), 500); else $('#phone').classList.remove('wait'); }
 function refreshPreview() {
   const fr = $('#frame');
   const src = `/t/${card.slug}?preview=1${liveEdit ? '&edit=1' : ''}`;
-  if (!fr.getAttribute('src')) { fr.src = src; return; }
+  if (!fr.getAttribute('src')) { fr.onload = () => pvWait(false); fr.src = src; return; }
+  pvWait(true);
   const old = $('#frameNext'); if (old) old.remove(); // lần lưu trước chưa tải xong → bỏ, tải bản mới nhất
   const nf = document.createElement('iframe');
   nf.id = 'frameNext'; nf.title = fr.title; nf.className = 'buf';
@@ -303,7 +307,7 @@ function refreshPreview() {
     done = true;
     const cur = $('#frame');
     try { nf.contentWindow.scrollTo({ top: cur.contentWindow.scrollY || 0, behavior: 'instant' }); } catch (e) { /* bỏ qua */ }
-    requestAnimationFrame(() => { cur.remove(); nf.id = 'frame'; nf.className = ''; });
+    requestAnimationFrame(() => { cur.remove(); nf.id = 'frame'; nf.className = ''; pvWait(false); });
   };
   // chế độ sửa: khung mới báo "ready" ngay khi dựng xong trang (không chờ tải hết ảnh — ảnh đa phần đã có sẵn trong bộ nhớ đệm)
   nf.onload = swap;
@@ -575,7 +579,8 @@ function bind() {
       const co = /^(-?\d{1,2}\.\d{3,})\s*,\s*(-?\d{1,3}\.\d{3,})$/.exec(url);
       if (co) { ev.mapPin = `${+co[1]},${+co[2]}`; ev.mapUrl = `https://www.google.com/maps?q=${ev.mapPin}`; rerender(); toast('Đã ghim vị trí theo toạ độ'); return scheduleSave(50); }
       try {
-        const r = await api(`/api/maplink?url=${encodeURIComponent(url)}`, { quiet: true });
+        status('Đang đọc link bản đồ…');
+        const r = await api(`/api/maplink?url=${encodeURIComponent(url)}`);
         if (ev.mapUrl !== url) return;
         ev.mapPin = r.pin || '';
         if (r.name && !ev.place) ev.place = r.name;
@@ -1041,7 +1046,8 @@ window.addEventListener('message', (e) => {
     card = r.card;
     document.title = 'Sửa thiệp — ' + meta.brand;
   } catch (e) {
-    if (e.status === 404) $('#ttl').textContent = 'Không tìm thấy thiệp';
+    $('#ttl').textContent = e.status === 404 ? 'Không tìm thấy thiệp' : 'Chưa tải được thiệp — tải lại trang nhé';
+    pvWait(false); $('#phone').innerHTML = `<div class="pageload bad">${e.status === 404 ? 'Không tìm thấy thiệp này.' : 'Mạng chập chờn, chưa tải được.'} <a class="btn" href="${e.status === 404 ? '/thiep-cua-toi' : location.href}">${e.status === 404 ? 'Về thiệp của tôi' : 'Tải lại trang'}</a></div>`;
     return;
   }
   bind();

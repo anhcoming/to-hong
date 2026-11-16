@@ -73,6 +73,10 @@ main.wrap{padding-top:112px;padding-bottom:64px;max-width:1120px}
 .pcta .btn{width:100%}
 .pcta{order:2}.strip{order:3} /* máy tính: nút ngay dưới tên mẫu, dải mẫu dài bên dưới */
 .mrow,.mwho{display:none}
+.pageload{display:grid;place-items:center;align-content:center;gap:14px;color:var(--muted);font-weight:600}
+.pageload i{width:34px;height:34px;border-radius:50%;border:3px solid rgba(214,69,93,.2);border-top-color:#d6455d;animation:gspin .8s linear infinite}
+@keyframes gspin{to{transform:rotate(360deg)}}
+.pageload[hidden]{display:none}
 .after{margin:18px 0 0;color:var(--muted);font-size:13px;text-align:center}
 .gtop,.sh,.ptitle{display:none}
 /* máy tính, đã có ảnh: bố cục "studio" 3 cột vừa một màn — trái: ảnh + tên + ngày; giữa: thiệp lớn; phải: lưới mẫu tự cuộn + nút dùng */
@@ -164,7 +168,8 @@ main.wrap{padding-top:112px;padding-bottom:64px;max-width:1120px}
     <h1>Thả ảnh cưới vào, <em>xem ngay thiệp của bạn</em></h1>
   </div>
 
-  <section id="drop" class="drop">
+  <div class="pageload" id="restoring" role="status" style="min-height:40vh"><i></i>Đang mở ảnh của bạn…</div>
+  <section id="drop" class="drop" hidden>
     <svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="3"/><circle cx="8.5" cy="10" r="1.6"/><path d="M21 15l-4.5-4.5L8 19"/></svg>
     <b>Chọn 3–12 ảnh cưới của bạn</b>
     <button type="button" class="btn btn-main btn-lg" id="pick">Chọn ảnh</button>

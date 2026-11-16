@@ -441,7 +441,9 @@ function start() {
     card = r.card;
     document.title = 'Video cưới — ' + meta.brand;
   } catch (e) {
-    $('#ttl').textContent = 'Không tìm thấy thiệp';
+    const nf = e.status === 404;
+    $('#ttl').textContent = nf ? 'Không tìm thấy thiệp' : 'Chưa tải được';
+    $('#introBox').innerHTML = `<div class="pageload bad">${nf ? 'Không tìm thấy thiệp này.' : 'Mạng chập chờn, chưa tải được.'} <a class="btn" href="${nf ? '/thiep-cua-toi' : location.href}">${nf ? 'Về thiệp của tôi' : 'Tải lại trang'}</a></div>`;
     return;
   }
   const mau = new URLSearchParams(location.search).get('mau');

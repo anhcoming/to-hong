@@ -68,7 +68,7 @@
 </section>
 
 
-<main class="rows" id="mau"></main>
+<main class="rows" id="mau"><div class="wrap" style="padding-top:28px" aria-label="Đang tải mẫu thiệp"><div class="skeleton" style="width:220px;height:26px;border-radius:8px;margin-bottom:16px"></div><div style="display:flex;gap:16px;overflow:hidden"><div class="skeleton" style="flex:none;width:clamp(150px,18vw,210px);aspect-ratio:3/4.4"></div><div class="skeleton" style="flex:none;width:clamp(150px,18vw,210px);aspect-ratio:3/4.4"></div><div class="skeleton" style="flex:none;width:clamp(150px,18vw,210px);aspect-ratio:3/4.4"></div><div class="skeleton" style="flex:none;width:clamp(150px,18vw,210px);aspect-ratio:3/4.4"></div><div class="skeleton" style="flex:none;width:clamp(150px,18vw,210px);aspect-ratio:3/4.4"></div><div class="skeleton" style="flex:none;width:clamp(150px,18vw,210px);aspect-ratio:3/4.4"></div></div></div></main>
 
 <!-- khu video cưới -->
 <section class="vshow" id="video"><div class="wrap">
@@ -209,7 +209,7 @@
         <div class="mmenu"><div class="who"><b>${esc(name)}</b>${esc(user.email)}</div><a href="/thiep-cua-toi">Thiệp &amp; sản phẩm của tôi</a><a href="/so-tay">Sổ tay cưới của tôi</a><a href="#" id="logout">Đăng xuất</a></div></div>`;
     const me = document.getElementById('me'), caret = me.querySelector('.caret');
     caret.addEventListener('click', () => toggle(me, caret, !me.classList.contains('open')));
-    document.getElementById('logout').addEventListener('click', async (e) => { e.preventDefault(); await fetch('/api/auth/logout', { method: 'POST' }); location.reload(); });
+    document.getElementById('logout').addEventListener('click', async (e) => { e.preventDefault(); progress.start(); await fetch('/api/auth/logout', { method: 'POST' }).catch(() => {}); location.reload(); });
   }).catch(() => {});
 
   // hiện dần từng khối khi cuộn tới, các thẻ cùng hàng lệch nhau một chút
