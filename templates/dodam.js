@@ -421,8 +421,10 @@ module.exports = {
 .tpl-dodam .dd-wform input,.tpl-dodam .dd-wform textarea{width:100%;padding:12px 16px;border:1px solid var(--ink);border-radius:8px;background:transparent;color:var(--ink);font:400 14px/20px 'Times New Roman',serif;outline:none;resize:none}
 .tpl-dodam .dd-wform textarea{height:56px}
 .tpl-dodam .dd-wform ::placeholder{color:color-mix(in srgb,var(--ink) 55%,transparent)}
-.tpl-dodam .dd-wrow{display:flex;align-items:center;justify-content:space-between;gap:8px}
-.tpl-dodam .dd-wrow .form-msg{flex:1;font-size:12px;text-align:left}
+.tpl-dodam .dd-wrow{display:flex;flex-wrap:wrap;align-items:center;justify-content:flex-end;gap:8px}
+/* báo lỗi / cảm ơn: dòng riêng dưới nút, dồn sang phải — góc trái dưới tờ giấy có hoa che chữ */
+.tpl-dodam .dd-wrow .form-msg{order:2;flex:0 0 100%;max-width:220px;margin:0 0 0 auto;font-size:12px;line-height:1.4;text-align:right}
+.tpl-dodam .dd-wrow .form-msg:empty{display:none}
 .tpl-dodam .dd-wrow button{padding:8px 24px;border:0;border-radius:999px;background:var(--ink);color:#ded9d7;font:700 14px/20px 'Times New Roman',serif;text-transform:uppercase}
 .tpl-dodam .wish-list{width:100%;max-width:600px;max-height:500px;margin:max(60px,calc(109.3cqw - 333px)) auto 0;padding-right:8px;overflow-y:auto;text-align:left}
 .tpl-dodam .wish{margin:0 0 12px;padding:16px;border:1px solid color-mix(in srgb,var(--ink) 33%,transparent);border-radius:8px;background:rgba(255,255,255,.55);font-family:'Times New Roman',serif;font-size:14px;color:var(--ink)}

@@ -28,6 +28,8 @@
     '.ce-ev.sm b{left:auto;right:-8px;top:-11px;translate:none;max-width:none;padding:2px 7px;font-size:12px;font-size:0}',
     '.ce-ev.sm b::before{content:"✎";font-size:13px}',
     '.ce-mapph{display:flex;align-items:center;justify-content:center;min-height:180px;height:100%;width:100%;background:repeating-linear-gradient(45deg,rgba(0,0,0,.035) 0 12px,rgba(0,0,0,.06) 12px 24px);border-radius:12px;color:#8a6a70;font:600 14px/1.4 system-ui,sans-serif;text-align:center;padding:16px;box-sizing:border-box}',
+    '.ce-map.wide{inset:14px 8px 8px}', // khu rộng hết màn hình: khung lùi vào trong, nhãn nằm trên viền không đè khối bên trên
+    '.ce-venue .ce-go{position:relative;z-index:7;cursor:pointer}',
     '.ce-map b{position:absolute;left:50%;top:-13px;translate:-50% 0;padding:6px 12px;border-radius:999px;background:#d6455d;color:#fff;font:600 13px/1.3 system-ui,sans-serif;white-space:nowrap;box-shadow:0 4px 12px rgba(0,0,0,.2)}',
     '.ce-lock{position:absolute;inset:0;z-index:5;cursor:default}',
     '[data-ce-up]{animation:ceUp 1.3s ease-in-out infinite}',
@@ -156,6 +158,7 @@
   }
 
   // ---------- khu địa điểm (nơi tổ chức, địa chỉ, bản đồ, chỉ đường) = một khối: bấm đâu cũng mở bảng sửa địa điểm ----------
+  var MAPS = /\/\/(www\.)?google\.[^/]+\/maps|\/\/maps\.google\.|\/\/maps\.app\.goo\.gl|\/\/goo\.gl\/maps/i;
   function evOf(el) { var m = /^events\.(\d+)\./.exec(el.dataset.ceKey || ''); return m ? +m[1] : -1; }
   function markMaps() {
     var root = document.querySelector('main.card') || document.body;
@@ -176,6 +179,10 @@
       o.innerHTML = '<b>📍 Sửa địa điểm</b>';
       box.appendChild(o);
       box.classList.add('ce-venue');
+      // khu địa điểm rộng gần hết màn hình: khung lùi vào trong để thấy đủ viền bo góc (không tràn ra mép)
+      if (box.getBoundingClientRect().width >= document.documentElement.clientWidth - 24) o.classList.add('wide');
+      // nút "Chỉ đường" vẫn mở Google Maps ngay trong trình sửa (nằm trên lớp phủ)
+      Array.prototype.forEach.call(box.querySelectorAll('a[href]'), function (a) { if (MAPS.test(a.href)) a.classList.add('ce-go'); });
       // mẫu canvas (mh): các ô xếp chồng theo z-index → đưa khu địa điểm lên trên để nhãn không bị chữ bên trên đè
       if (box.closest('.mh-canvas')) box.style.zIndex = 30;
     });
@@ -290,7 +297,8 @@
     hl.style.left = r.left + 'px'; hl.style.top = r.top + 'px'; hl.style.width = r.width + 'px'; hl.style.height = r.height + 'px';
     hl.firstChild.textContent = el.dataset.ceEmpty ? '+ Tải ảnh lên' : '✎ Đổi / căn ảnh';
   }
-  document.addEventListener('mousemove', function (e) {
+  document.addEventListener('pointermove', function (e) {
+    if (e.pointerType !== 'mouse') { hl.style.display = 'none'; return; }
     showHl(e.target.closest && e.target.closest('[data-ce-key]') ? null : photoAt(e.clientX, e.clientY));
   }, { passive: true });
   document.addEventListener('scroll', function () { hl.style.display = 'none'; }, { passive: true });
@@ -299,6 +307,8 @@
   // ---------- bấm: báo cho trang sửa ----------
   function tell(msg) { try { window.parent.postMessage(Object.assign({ ce: 1 }, msg), location.origin); } catch (e) { /* không ở trong khung */ } }
   document.addEventListener('click', function (e) {
+    var go = e.target.closest && e.target.closest('a.ce-go');
+    if (go) return; // Chỉ đường → mở Google Maps
     var t = e.target.closest && e.target.closest('[data-ce-key]');
     // bấm vào bất kỳ đâu trong khối thông tin lễ (kể cả ngày tháng, đếm ngược, lịch) = bấm khung "Sửa lễ"
     var eb = e.target.closest && e.target.closest('.ce-evbox');
@@ -312,6 +322,10 @@
       return;
     }
     var ph = photoAt(e.clientX, e.clientY);
+    // album trượt (ảnh giữa to, hai bên hẹp): chạm ảnh bên cạnh thì để mẫu chuyển ảnh đó vào giữa trước,
+    // chạm lần nữa mới tải / căn ảnh — tránh căn ảnh theo khung hẹp của ảnh bên cạnh
+    var side = ph && ph.closest('[data-o]');
+    if (side && side.dataset.o !== '0') return;
     if (ph) {
       e.preventDefault(); e.stopPropagation();
       var r = ph.getBoundingClientRect();

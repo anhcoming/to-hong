@@ -847,6 +847,7 @@ adminLib.routes({ route, needAdmin, PRODUCTS, orderView, cardSummary, BASE_URL }
 const BLOCKED_HTML = () => renderNotice('Thiệp tạm thời không khả dụng', 'Thiệp này đang được đội ngũ hỗ trợ kiểm tra. Bạn vui lòng liên hệ cô dâu chú rể nhé.');
 
 // ---------------- API công khai trên trang thiệp ----------------
+const isOwner = (ctx, card) => !!(ctx.admin || canManage(ctx.user, card));
 function publicCard(slug) {
   const card = cardBySlug(slug);
   if (!card || card.blocked || card.status !== 'published' || cardState(card).expired) throw httpError(404, 'Thiệp không còn nhận phản hồi');
@@ -854,7 +855,8 @@ function publicCard(slug) {
 }
 route('POST', '/api/public/:slug/rsvp', async (req, res, ctx) => {
   const card = publicCard(ctx.params.slug);
-  rateLimit(`rsvp:${ctx.ip}:${card.id}`, 8, 6e5);
+  // chủ thiệp thử nhiều lần không bị chặn; khách: nhiều người dự tiệc hay chung một IP (4G / wifi nhà hàng) nên nới rộng
+  if (!isOwner(ctx, card)) rateLimit(`rsvp:${ctx.ip}:${card.id}`, 30, 6e5);
   const b = await readJson(req, 4096);
   const name = str(b.name, 80);
   if (!name) throw httpError(400, 'Bạn nhập tên giúp mình nhé');
@@ -870,7 +872,7 @@ route('POST', '/api/public/:slug/rsvp', async (req, res, ctx) => {
 });
 route('POST', '/api/public/:slug/wish', async (req, res, ctx) => {
   const card = publicCard(ctx.params.slug);
-  rateLimit(`wish:${ctx.ip}:${card.id}`, 6, 6e5);
+  if (!isOwner(ctx, card)) rateLimit(`wish:${ctx.ip}:${card.id}`, 20, 6e5);
   const b = await readJson(req, 4096);
   const name = str(b.name, 60);
   const message = str(b.message, 500);
