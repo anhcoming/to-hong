@@ -333,40 +333,8 @@ html.js .rv.in{opacity:1;transform:none}
 [data-theme="dark"] .ncard:hover .pic{box-shadow:0 18px 40px rgba(0,0,0,.55)}
 [data-theme="dark"] .top .num{-webkit-text-stroke-color:#5c5254}
 
-/* ba chức năng chính (thiệp / video / sổ tay) + khu giới thiệu video cưới */
-.trio3{padding:10px 0 40px;margin-top:-8vh;position:relative;z-index:3}
+/* hàng mẫu ngay dưới đầu trang (không kéo lên đè đầu trang) */
 .rows{margin-top:0!important}
-.trio3 .wrap{max-width:1240px}
-.t3h{margin:0 0 22px;font:800 clamp(24px,3vw,36px)/1.2 var(--sans);letter-spacing:-.02em;text-align:center}
-.t3h em{font:700 1.15em var(--script);font-style:normal;color:var(--acc)}
-.t3{display:grid;grid-template-columns:repeat(3,1fr);gap:20px}
-.t3c{display:flex;flex-direction:column;border-radius:22px;overflow:hidden;background:var(--card);border:1px solid var(--line);box-shadow:0 18px 40px rgba(120,40,50,.08);transition:transform .25s,box-shadow .25s}
-.t3c:hover{transform:translateY(-6px);box-shadow:0 26px 50px rgba(120,40,50,.16)}
-.t3c .vis{position:relative;height:230px;overflow:hidden;background:var(--soft)}
-.t3c .body{padding:18px 20px 22px}
-.t3c h3{margin:0 0 6px;font:800 21px var(--sans)}
-.t3c p{margin:0 0 12px;color:var(--muted);font-size:14.5px;line-height:1.55}
-.t3c .go{font-weight:700;color:var(--acc);font-size:14px}
-.t3c .badge{position:absolute;top:14px;left:14px;z-index:3;padding:4px 11px;border-radius:999px;background:var(--acc);color:#fff;font-size:12px;font-weight:700}
-/* hình minh hoạ từng chức năng */
-.v-cards img{position:absolute;bottom:-30px;width:120px;aspect-ratio:9/16;object-fit:cover;object-position:top;border-radius:12px;box-shadow:0 14px 30px rgba(0,0,0,.25);transition:transform .4s}
-.v-cards img:nth-child(1){left:calc(50% - 160px);transform:rotate(-10deg)}
-.v-cards img:nth-child(2){left:calc(50% - 60px);bottom:-14px;z-index:2}
-.v-cards img:nth-child(3){left:calc(50% + 40px);transform:rotate(10deg)}
-.t3c:hover .v-cards img:nth-child(1){transform:rotate(-14deg) translateX(-14px)}
-.t3c:hover .v-cards img:nth-child(3){transform:rotate(14deg) translateX(14px)}
-.v-video iframe{position:absolute;left:0;top:0;width:1280px;height:720px;border:0;pointer-events:none;transform-origin:0 0}
-.v-video .play{position:absolute;left:50%;top:50%;z-index:2;width:58px;height:58px;margin:-29px 0 0 -29px;border-radius:50%;background:rgba(255,255,255,.9);display:grid;place-items:center;color:#c2415d;font-size:20px;box-shadow:0 10px 26px rgba(0,0,0,.3);transition:opacity .3s}
-.t3c:hover .v-video .play{opacity:0}
-.v-plan{display:grid;place-items:center;background:linear-gradient(160deg,var(--soft),var(--card))}
-.v-plan ul{list-style:none;margin:0;padding:16px 18px;width:78%;border-radius:16px;background:var(--card);box-shadow:0 14px 30px rgba(120,40,50,.12);font-size:13.5px}
-.v-plan li{display:flex;align-items:center;gap:10px;padding:7px 0;border-bottom:1px dashed var(--line)}
-.v-plan li:last-child{border:0}
-.v-plan li i{flex:none;width:18px;height:18px;border-radius:6px;border:1.5px solid var(--acc);display:grid;place-items:center;font-style:normal;font-size:11px;color:#fff}
-.v-plan li.d i{background:var(--acc)}
-.v-plan li.d span{text-decoration:line-through;color:var(--muted)}
-.v-plan li em{margin-left:auto;font-style:normal;color:var(--muted);font-size:12px}
-@media (max-width:900px){.t3{grid-template-columns:minmax(0,1fr)}.t3c .vis{height:200px}}
 
 /* khu video cưới: TV lớn chạy thử, bấm mẫu để đổi */
 .vshow{position:relative;padding:80px 0;margin-top:30px;background:radial-gradient(1200px 500px at 70% 30%,rgba(214,69,93,.10),transparent),var(--soft)}
@@ -462,9 +430,6 @@ body.drag .drophint{opacity:1}
 .hcta .go{display:inline-flex;align-items:center;gap:10px;padding:15px 34px;border:0;border-radius:999px;font:700 17px var(--sans);color:#fff;background:linear-gradient(135deg,#d6455d,#ef7d8d);box-shadow:0 14px 34px rgba(214,69,93,.35);cursor:pointer;transition:transform .2s}
 .hcta .go:hover{transform:translateY(-2px)}
 .hcta .go[disabled]{cursor:progress;opacity:.9;transform:none}
-.hcta .hsub{font:600 14px var(--sans);color:var(--muted);background:none;border:0;padding:0;cursor:pointer}
-.hcta .hsub:hover{color:var(--ink)}
-.hcta .lock{margin:2px 0 0;font-size:12px;color:var(--muted)}
 @media (max-width:700px){
   .hb{padding:104px 16px 70px}
   .hb h1{font-size:32px}
