@@ -581,7 +581,21 @@ async function settings() {
         <div class="srow"><div><b>Zalo hỗ trợ</b></div><span class="v">${esc(s.support.zalo || '—')}</span></div>
         <div class="srow"><div><b>Email hỗ trợ</b></div><span class="v">${esc(s.support.email || '—')}</span></div></div>
       <div class="box"><div class="bh"><h3>Mã giảm giá</h3><button class="btn sm plain" data-go="discounts">Mở →</button></div></div>
+      <div class="box"><div class="bh"><h3>Dữ liệu</h3></div>
+        <div class="srow"><div><b>Bản sao lưu</b><small>Toàn bộ thiệp, đơn hàng, tài khoản, sổ tay và số liệu truy cập, dạng .json</small></div><a class="btn sm plain" href="/api/admin/export" download>Tải về</a></div>
+        <div class="srow"><div><b>Đặt lại toàn bộ dữ liệu</b><small>Web như mới, chưa ai vào. Giữ cài đặt, mã giảm giá, nhật ký</small></div><button class="btn sm plain" id="sreset" style="color:var(--danger)">Đặt lại…</button></div></div>
     </div>`;
+  $('#sreset').onclick = async () => {
+    const r = await api('/api/admin/reset').catch(err); if (!r) return;
+    const list = r.counts.filter((c) => c.n).map((c) => `${num(c.n)} ${c.name}`).join(', ') || 'chưa có dữ liệu nào';
+    ask({
+      title: 'Đặt lại toàn bộ dữ liệu?', danger: true, ok: 'Xoá tất cả dữ liệu', word: 'XOÁ',
+      text: `Xoá vĩnh viễn: <b>${esc(list)}</b>, cùng số liệu truy cập. Mọi người bị đăng xuất, kể cả anh. <b>Không hoàn tác được.</b>`
+        + (r.paid ? `<br><br>⚠ Trong đó có <b>${r.paid} đơn đã thanh toán</b>: doanh thu trên Tổng quan về 0.` : '')
+        + '<br><br>Nên bấm <a href="/api/admin/export" download>Tải bản sao lưu</a> trước. Giữ lại: cài đặt, mã giảm giá, nhật ký quản trị.',
+      run: async () => { await api('/api/admin/reset', { method: 'POST', body: { confirm: 'XOÁ' } }); toast('Đã đặt lại toàn bộ dữ liệu'); setTimeout(() => location.reload(), 1200); },
+    });
+  };
   const inp = (name, label, value, extra = '') => `<label class="fl">${label}<input name="${name}" value="${esc(value ?? '')}" ${extra}></label>`;
   const FORMS = {
     price: ['Sửa giá bán', `<div class="r2">${inp('price', 'Thiệp — đang bán', s.price, 'inputmode="numeric"')}${inp('listPrice', 'Giá gốc (gạch ngang)', s.listPrice || '', 'inputmode="numeric" placeholder="Trống = không giảm"')}</div>
