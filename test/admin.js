@@ -84,7 +84,7 @@ async function call(who, method, url, body, raw) {
   r = await call('g2', 'GET', '/auth/google?next=//evil.com');
   fakeGoogle = { sub: 'g-999', email: 'moi@gmail.com', name: 'Người Mới' };
   r = await call('g2', 'GET', `/auth/google/callback?state=${new URL(r.location).searchParams.get('state')}&code=ma-dung`);
-  assert.equal(r.location, '/so-tay', 'next lạ bị thay bằng /so-tay');
+  assert.equal(r.location, '/thiep-cua-toi', 'next lạ bị thay bằng /thiep-cua-toi');
   assert.equal((await call('g2', 'GET', '/api/me')).json.user.isAdmin, undefined, 'đăng nhập Google là khách');
   assert.equal((await call('g2', 'GET', '/api/admin/stats')).status, 403);
   r = await call('z', 'POST', '/api/auth/login', { email: 'moi@gmail.com', password: 'gi-cung-duoc' });

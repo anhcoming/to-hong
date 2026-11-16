@@ -52,7 +52,7 @@
 <script src="/js/site.js"></script>
 <script>
 let mode = new URLSearchParams(location.search).get('dang-ky') ? 'register' : 'login';
-const next = new URLSearchParams(location.search).get('next') || '/so-tay';
+const next = new URLSearchParams(location.search).get('next') || '/thiep-cua-toi'; // không có trang đang dở → về Thiệp của tôi
 const loi = new URLSearchParams(location.search).get('loi');
 // đến từ trình sửa khi chưa đăng nhập: thiệp nháp sẽ được chuyển vào tài khoản
 if (/^\/sua\//.test(next)) $('#sub2').textContent = 'Đăng nhập để lưu thiệp bạn vừa làm — nội dung đã sửa được giữ nguyên.';
@@ -95,7 +95,7 @@ $('#f').onsubmit = async (e) => {
   $('#sub').disabled = true;
   try {
     await api('/api/auth/' + mode, { method: 'POST', body: fd, allow401: true });
-    location.href = next.startsWith('/') && !next.startsWith('//') ? next : '/so-tay';
+    location.href = next.startsWith('/') && !next.startsWith('//') ? next : '/thiep-cua-toi';
   } catch (err) {
     $('#err').textContent = err.message;
   } finally {

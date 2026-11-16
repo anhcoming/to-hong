@@ -292,7 +292,7 @@ route('GET', '/api/me', async (req, res, ctx) => {
 // ---------------- đăng nhập Google / Facebook ----------------
 const GOOGLE_CB = BASE_URL + '/auth/google/callback';
 const FACEBOOK_CB = BASE_URL + '/auth/facebook/callback';
-const safeNext = (n) => (typeof n === 'string' && n.startsWith('/') && !n.startsWith('//') ? n : '/so-tay');
+const safeNext = (n) => (typeof n === 'string' && n.startsWith('/') && !n.startsWith('//') ? n : '/thiep-cua-toi'); // không có trang đang dở → Thiệp của tôi
 function redirect(res, to, cookiesToSet = []) {
   res.writeHead(302, { Location: to, 'Set-Cookie': cookiesToSet, 'Cache-Control': 'no-store' });
   res.end();
