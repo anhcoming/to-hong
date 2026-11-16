@@ -194,7 +194,7 @@
     fit();
   }
   function loadFrames() { if (picks.length) loadBig(); } // tên / ngày đổi → dựng lại thiệp đang xem
-  function renderList() { cur = 0; renderStrip(); select(0); }
+  function renderList() { cur = 0; $('#ptitle').textContent = picks.length + ' mẫu hợp với ảnh của bạn'; renderStrip(); select(0); }
 
   function refresh(keepPicks) {
     elDrop.hidden = photos.length > 0;

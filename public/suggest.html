@@ -74,6 +74,50 @@ main.wrap{padding-top:112px;padding-bottom:64px;max-width:1120px}
 .pcta{order:2}.strip{order:3} /* máy tính: nút ngay dưới tên mẫu, dải mẫu dài bên dưới */
 .mrow,.mwho{display:none}
 .after{margin:18px 0 0;color:var(--muted);font-size:13px;text-align:center}
+.gtop,.sh,.ptitle{display:none}
+/* máy tính, đã có ảnh: bố cục "studio" 3 cột vừa một màn — trái: ảnh + tên + ngày; giữa: thiệp lớn; phải: lưới mẫu tự cuộn + nút dùng */
+@media (min-width:761px){
+  body.gy-on{overflow:hidden}
+  body.gy-on #nav,body.gy-on #foot,body.gy-on .gy-head,body.gy-on .after{display:none}
+  body.gy-on main.wrap{padding:0;max-width:none;margin:0}
+  body.gy-on #msg{position:fixed;left:50%;top:70px;translate:-50% 0;z-index:9;margin:0}
+  body.gy-on #work{display:grid;grid-template-columns:280px minmax(0,1fr) 340px;grid-template-rows:60px auto auto auto auto auto 1fr;height:100vh;
+    background:linear-gradient(to right,var(--card) 280px,transparent 280px,transparent calc(100% - 340px),var(--card) calc(100% - 340px))}
+  body.gy-on .gpick{display:contents}
+  .gtop{grid-column:1/-1;grid-row:1;display:flex;align-items:center;gap:18px;padding:0 24px;border-bottom:1px solid var(--line);background:var(--card);z-index:2}
+  .gtop .logo{font:700 26px/1 var(--script);color:var(--red);text-decoration:none}
+  .steps{display:flex;align-items:center;gap:8px;margin-left:20px;font-size:13px;color:var(--muted)}
+  .steps span{display:flex;align-items:center;gap:6px}
+  .steps span+span::before{content:"›";margin-right:2px;color:var(--line)}
+  .steps i{display:grid;place-items:center;width:20px;height:20px;border-radius:50%;background:var(--bg2);font:700 11px/1 var(--sans);font-style:normal}
+  .steps .on{color:var(--ink);font-weight:600}.steps .on i{background:var(--red);color:#fff}
+  .steps .ok i{background:#2e9d5b;color:#fff}
+  body.gy-on .sh{display:block;grid-column:1;margin:0;padding:20px 20px 8px;font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+  body.gy-on #shPh{grid-row:2}
+  body.gy-on .thumbs{grid-column:1;grid-row:3;flex-wrap:wrap;gap:8px;padding:2px 20px 0;overflow:visible}
+  body.gy-on .th{width:52px;height:66px;border-radius:10px}
+  body.gy-on .th button{width:20px;height:20px;top:-6px;right:-6px;font-size:12px}
+  body.gy-on #shWho{grid-row:4;padding-top:22px}
+  body.gy-on .who{grid-column:1;grid-row:5;grid-template-columns:1fr;gap:10px;margin:0;padding:0 20px}
+  body.gy-on .who label{font-size:12px;color:var(--muted)}
+  body.gy-on .who input{height:40px;font-size:14px;border-radius:10px}
+  body.gy-on .bar{grid-column:1;grid-row:6;margin:0;padding:16px 20px 0}
+  body.gy-on .bar b{display:none}
+  body.gy-on .bar button{margin-left:0}
+  body.gy-on .sg-view.big{grid-column:2;grid-row:2/-1;align-self:center;justify-self:center;height:calc(100vh - 100px);width:auto;max-width:calc(100% - 48px);aspect-ratio:375/720}
+  body.gy-on .pside{grid-column:3;grid-row:2/-1;position:static;min-height:0;display:flex;flex-direction:column;gap:0;border-left:1px solid var(--line)}
+  body.gy-on .ptitle{display:block;order:0;padding:18px 18px 10px}
+  .ptitle b{display:block;font-size:15px}
+  .ptitle small{color:var(--muted);font-size:12.5px}
+  body.gy-on .strip{order:1;flex:1;min-height:0;overflow-y:auto;align-content:start;grid-template-columns:repeat(3,1fr);gap:12px 10px;padding:4px 18px 16px}
+  body.gy-on .strip i{border-radius:10px}
+  body.gy-on .strip small{font-size:11.5px}
+  body.gy-on .pmeta{order:2;padding:12px 18px 0;border-top:1px solid var(--line);font-size:13px}
+  body.gy-on .pmeta b{font-size:16px}
+  body.gy-on .sg-why{order:3;padding:4px 18px 0;font-size:12.5px}
+  body.gy-on .pcta{order:4;padding:10px 18px 16px}
+  body.gy-on .pcta .btn{padding:13px;font-size:15px}
+}
 @media (max-width:760px){
   main.wrap{padding-top:96px}
   .who{grid-template-columns:1fr 1fr}
@@ -130,10 +174,13 @@ main.wrap{padding-top:112px;padding-bottom:64px;max-width:1120px}
   <p id="msg" role="status" hidden></p>
 
   <section id="work" hidden>
+    <div class="gtop"><a class="logo" href="/">Cưới Nha</a><div class="steps"><span class="ok"><i>✓</i>Chọn ảnh</span><span class="on"><i>2</i>Chọn mẫu</span><span><i>3</i>Sửa &amp; gửi</span></div></div>
     <div class="mrow"><a class="logo" href="/">Cưới Nha</a><button type="button" id="mPh"><i id="mPhI"></i><span id="mPhN"></span></button></div>
     <button type="button" class="mwho" id="mWho"></button>
     <div class="bar"><b id="count"></b><button type="button" id="reset">Chọn lại từ đầu</button></div>
+    <p class="sh" id="shPh">Ảnh của bạn</p>
     <div class="thumbs" id="thumbs"></div>
+    <p class="sh" id="shWho">Thông tin</p>
     <div class="who">
       <label>Tên chú rể<input id="f-groom" maxlength="40" placeholder="Gia Huy" autocomplete="off"></label>
       <label>Tên cô dâu<input id="f-bride" maxlength="40" placeholder="Bảo Ngọc" autocomplete="off"></label>
@@ -142,6 +189,7 @@ main.wrap{padding-top:112px;padding-bottom:64px;max-width:1120px}
     <div class="gpick">
       <div class="sg-view big" id="big"><iframe title="Xem thử thiệp với ảnh của bạn"></iframe><span class="sg-wait">Đang dựng thiệp…</span></div>
       <div class="pside">
+        <div class="ptitle"><b id="ptitle"></b><small>Bấm để xem với ảnh của bạn</small></div>
         <div class="pmeta" id="pmeta"></div>
         <p class="sg-why" id="pwhy"></p>
         <div class="strip" id="strip" role="listbox" aria-label="Các mẫu gợi ý"></div>
