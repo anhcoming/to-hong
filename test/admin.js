@@ -7,6 +7,7 @@ const assert = require('assert');
 process.env.DATA_DIR = fs.mkdtempSync(path.join(os.tmpdir(), 'thiep-admin-'));
 process.env.BASE_URL = 'http://localhost';
 process.env.ADMIN_PASSWORD = 'mat-khau-quan-tri';
+process.env.ALLOW_EMAIL_SIGNUP = '1'; // máy chủ có Google thì mặc định đóng đăng ký bằng email — bài này cần tạo tài khoản email
 // Giả lập Google: không gọi mạng thật
 const google = require('../lib/google');
 let fakeGoogle = null;
@@ -159,6 +160,43 @@ async function call(who, method, url, body, raw) {
   r = await call('admin', 'GET', '/api/admin/orders?status=cancelled');
   assert.equal(r.json.orders[0].note, 'đã gọi khách');
 
+  // ---------- tab Mã giảm giá ----------
+  assert.equal((await call('u2', 'POST', '/api/admin/discounts', { code: 'X', value: 1 })).status, 403, 'chỉ quản trị tạo mã');
+  r = await call('admin', 'POST', '/api/admin/discounts', { code: 'giam 20%', type: 'percent', value: '20', products: ['card'], note: 'nhóm FB' });
+  assert.equal(r.status, 200);
+  assert.equal((await call('admin', 'POST', '/api/admin/discounts', { code: 'GIAM20', type: 'percent', value: 20 })).status, 400, 'trùng mã');
+  assert.equal((await call('admin', 'POST', '/api/admin/discounts', { code: 'QUA', type: 'percent', value: 120 })).status, 400, 'quá 100%');
+  r = await call('u2', 'POST', `/api/cards/${card.id}/order`, { coupon: 'giam20' });
+  assert.equal(r.json.order.amount, 79000, '99.000 − 20% (làm tròn nghìn)');
+  assert.equal(r.json.order.coupon, 'GIAM20');
+  r = await call('u2', 'POST', `/api/cards/${card.id}/order`, {});
+  assert.equal(r.json.order.amount, 79000, 'mở lại cửa sổ thanh toán vẫn giữ mã');
+  await call('admin', 'PUT', '/api/admin/discounts/GIAM20', { active: false });
+  assert.equal((await call('u2', 'POST', `/api/cards/${card.id}/order`, { coupon: 'GIAM20' })).status, 400, 'mã đã tắt');
+  r = await call('u2', 'POST', `/api/cards/${card.id}/order`, {});
+  assert.deepEqual([r.json.order.amount, r.json.order.coupon], [99000, null], 'mã bị tắt → đơn đang chờ về giá thường');
+  await call('admin', 'PUT', '/api/admin/discounts/GIAM20', { active: true, expiresAt: '2020-01-01' });
+  r = await call('u2', 'POST', `/api/cards/${card.id}/order`, { coupon: 'GIAM20' });
+  assert.match(r.json.error, /hết hạn/);
+  assert.equal((await call('u2', 'POST', `/api/cards/${card.id}/order`, { product: 'led', coupon: 'giam10k' })).status, 400);
+  // mã 100%, 1 lượt: kích hoạt luôn, lượt sau báo hết
+  await call('admin', 'POST', '/api/admin/discounts', { code: 'TANG', type: 'percent', value: 100, limit: 1, products: ['card', 'combo', 'led', 'video'] });
+  const c2 = (await call('u2', 'POST', '/api/cards', { template: 'dodam' })).json.card;
+  r = await call('u2', 'POST', `/api/cards/${c2.id}/order`, { coupon: 'tang' });
+  assert.deepEqual([r.json.order.amount, r.json.order.status], [0, 'paid'], 'giảm 100% → kích hoạt không cần chuyển khoản');
+  assert.equal((await call('u2', 'GET', `/api/cards/${c2.id}`)).json.card.paid, true);
+  const c3 = (await call('u2', 'POST', '/api/cards', { template: 'dodam' })).json.card;
+  assert.match((await call('u2', 'POST', `/api/cards/${c3.id}/order`, { coupon: 'TANG' })).json.error, /hết lượt/);
+  r = await call('admin', 'GET', '/api/admin/discounts');
+  const tang = r.json.discounts.find((d) => d.code === 'TANG');
+  assert.deepEqual([tang.uses, tang.limit, tang.products], [1, 1, []], 'đủ 4 sản phẩm = mọi sản phẩm');
+  assert.ok(r.json.discounts.find((d) => d.code === 'GIAM10K').legacy, 'mã cũ trong Cài đặt vẫn hiện');
+  assert.equal(r.json.discounts.find((d) => d.code === 'GIAM20').expired, true);
+  assert.equal((await call('admin', 'DELETE', '/api/admin/discounts/GIAM10K')).status, 200, 'xoá mã cũ');
+  assert.deepEqual((await call('admin', 'GET', '/api/admin/settings')).json.settings.coupons, {});
+  assert.equal((await call('admin', 'DELETE', '/api/admin/discounts/GIAM20')).status, 200);
+  assert.equal((await call('admin', 'DELETE', '/api/admin/discounts/GIAM20')).status, 404);
+
   r = await call('admin', 'GET', '/api/admin/cards?q=an-binh');
   assert.equal(r.json.cards[0].ownerEmail, 'khach@test.vn');
   await call('admin', 'POST', `/api/admin/cards/${card.id}/product`, { product: 'card', paid: true, reason: 'tặng' });
@@ -205,6 +243,47 @@ async function call(who, method, url, body, raw) {
   r = await call('chu', 'GET', `/auth/google/callback?state=${new URL(r.location).searchParams.get('state')}&code=ma-dung`);
   assert.equal(r.location, '/admin');
   assert.equal((await call('chu', 'GET', '/api/admin/stats')).status, 200, 'chủ web vào được');
+  // chủ thật của email vừa vào bằng Google → phiên và mật khẩu của kẻ đăng ký trước mất hiệu lực
+  assert.equal((await call('gia', 'GET', '/api/me')).json.user, null, 'phiên của kẻ đăng ký hộ bị đăng xuất');
+  assert.equal((await call('gia2', 'POST', '/api/auth/login', { email: 'chu@gmail.com', password: '123456' })).status, 401, 'mật khẩu đặt trước bị bỏ');
+
+  // ---------- đóng tự tạo tài khoản bằng email khi đã có Google / Facebook ----------
+  delete process.env.ALLOW_EMAIL_SIGNUP;
+  r = await call('x', 'GET', '/api/meta');
+  assert.equal(r.json.emailSignup, false);
+  r = await call('moi2', 'POST', '/api/auth/register', { email: 'tu-tao@test.vn', password: '123456' });
+  assert.equal(r.status, 403, 'không còn tự tạo tài khoản bằng email');
+  assert.equal((await call('u2', 'POST', '/api/auth/login', { email: 'khach@test.vn', password: 'sai-mat-khau' })).status, 401, 'tài khoản email cũ vẫn có đường đăng nhập');
+
+  // ---------- đăng nhập Facebook (giả lập phía Facebook) ----------
+  const facebook = require('../lib/facebook');
+  let fakeFb = null;
+  facebook.enabled = () => true;
+  facebook.exchange = async () => fakeFb;
+  assert.equal((await call('x', 'GET', '/api/meta')).json.facebookLogin, true);
+  r = await call('f1', 'GET', '/auth/facebook?next=/thiep-cua-toi');
+  assert.match(r.location, /^https:\/\/www\.facebook\.com\/v[\d.]+\/dialog\/oauth\?/);
+  assert.equal((await call('f1', 'GET', '/auth/facebook/callback?state=sai&code=x')).location.startsWith('/dang-nhap?loi='), true, 'sai state bị từ chối');
+  r = await call('f1', 'GET', '/auth/facebook?next=/thiep-cua-toi');
+  fakeFb = { id: 'fb-1', email: '', name: 'Người Dùng Số Điện Thoại', picture: '' }; // tài khoản Facebook không có email
+  r = await call('f1', 'GET', `/auth/facebook/callback?state=${new URL(r.location).searchParams.get('state')}&code=x`);
+  assert.equal(r.location, '/thiep-cua-toi');
+  r = (await call('f1', 'GET', '/api/me')).json.user;
+  assert.equal(r.facebook, true);
+  assert.equal(r.email, '', 'không lộ email giả ra giao diện');
+  assert.equal(r.name, 'Người Dùng Số Điện Thoại');
+  // đăng nhập lại → vẫn là tài khoản đó; Facebook trùng email với tài khoản Google đã có → gộp chung
+  r = await call('f2', 'GET', '/auth/facebook');
+  await call('f2', 'GET', `/auth/facebook/callback?state=${new URL(r.location).searchParams.get('state')}&code=x`);
+  assert.equal((await call('f2', 'GET', '/api/me')).json.user.id, (await call('f1', 'GET', '/api/me')).json.user.id);
+  r = await call('f3', 'GET', '/auth/facebook');
+  fakeFb = { id: 'fb-2', email: 'moi@gmail.com', name: 'Người Mới', picture: '' };
+  await call('f3', 'GET', `/auth/facebook/callback?state=${new URL(r.location).searchParams.get('state')}&code=x`);
+  r = (await call('f3', 'GET', '/api/me')).json.user;
+  assert.equal(r.email, 'moi@gmail.com');
+  assert.equal(r.google && r.facebook, true, 'một tài khoản, vào được bằng cả Google lẫn Facebook');
+  assert.equal((await call('f3', 'GET', '/api/admin/stats')).status, 403, 'phiên Facebook không được quyền quản trị');
+  process.env.ALLOW_EMAIL_SIGNUP = '1';
   r = (await call('chu', 'GET', '/api/admin/session')).json;
   assert.deepEqual([r.admin, r.byEmail, r.email], [true, true, 'chu@gmail.com']);
   assert.equal((await call('gia', 'GET', '/api/admin/stats')).status, 403, 'phiên mật khẩu cũ của kẻ xấu vẫn bị chặn sau khi chủ web gắn Google');

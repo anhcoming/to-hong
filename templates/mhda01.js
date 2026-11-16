@@ -2,6 +2,7 @@
 // dựng bằng máy dựng chung lib/mh.js. Ảnh/font là của bản gốc: chỉ dùng công khai khi đã thay bằng tài sản của mình.
 module.exports = require('../lib/mh').template({
   id: 'mhda01',
-  name: "DA01",
+  name: 'Mộc Miên',
+  desc: 'Tối giản tông nâu: chữ Wedding Invitation lớn, ảnh trầm, timeline biểu tượng và dress code',
   json: require('./mh/mhda01.json'),
 });

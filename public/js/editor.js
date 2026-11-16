@@ -143,7 +143,7 @@ const panes = {
     </section>
     <section class="group panel" style="display:grid;gap:8px">
       <a class="btn block plain" href="/sua-video/${CARD_ID}">🎬 Video cưới</a>
-      ${card.led && card.led.created ? `<a class="btn block plain" href="/sua-led/${CARD_ID}">✨ Màn LED</a>` : ''}
+      ${card.led && card.led.created ? `<a class="btn block plain" href="/sua-led/${CARD_ID}">✨ Màn hình LED</a>` : ''}
     </section>
     ${card.status === 'published' ? `<section class="group panel"><h3>Tạm ẩn thiệp</h3><p class="muted" style="margin:-6px 0 12px;font-size:14px">Khách mời sẽ không mở được thiệp cho tới khi bạn phát hành lại.</p><button class="btn danger" id="unpub">Chuyển về bản nháp</button></section>` : ''}`;
   },
@@ -179,6 +179,7 @@ const LOGIN_WHY = {
   photo: 'Đăng nhập để tải ảnh cưới và nhạc của bạn lên thiệp.',
   guests: 'Đăng nhập để thêm khách mời và lấy link mang tên riêng từng người.',
   slug: 'Đăng nhập để đặt đường dẫn riêng cho thiệp.',
+  pending: 'Ảnh của bạn đang hiện tạm trên máy này. Đăng nhập để lưu ảnh vào thiệp và gửi cho khách.',
 };
 function askLogin(why = 'save') {
   const next = encodeURIComponent(location.pathname);
@@ -186,7 +187,8 @@ function askLogin(why = 'save') {
     <p class="muted" style="margin:0 0 16px">${LOGIN_WHY[why] || LOGIN_WHY.save} Những gì bạn vừa sửa được giữ nguyên.</p>
     <div style="display:grid;gap:8px">
       ${META.googleLogin ? `<a class="btn block" data-go href="/auth/google?next=${next}">Tiếp tục với Google</a>` : ''}
-      <a class="btn block ${META.googleLogin ? 'plain' : ''}" data-go href="/dang-nhap?dang-ky=1&next=${next}">Dùng email</a>
+      ${META.facebookLogin ? `<a class="btn block ${META.googleLogin ? 'plain' : ''}" data-go href="/auth/facebook?next=${next}">Tiếp tục với Facebook</a>` : ''}
+      ${META.emailSignup ? `<a class="btn block ${META.googleLogin || META.facebookLogin ? 'plain' : ''}" data-go href="/dang-nhap?dang-ky=1&next=${next}">Dùng email</a>` : `<a class="muted" style="font-size:13px;text-align:center" data-go href="/dang-nhap?next=${next}">Tôi có tài khoản email từ trước</a>`}
     </div>
     <p class="muted" style="font-size:13px;margin:14px 0 0">Miễn phí, không cần thẻ. Dùng thử ${META.trialDays} ngày, mời ${META.trialGuestLimit} khách.</p>`, (box) => {
     box.addEventListener('click', async (e) => {
@@ -390,7 +392,7 @@ function shareModal(first) {
     <p class="muted" style="margin:0 0 16px">Gửi link chung cho mọi người, hoặc vào tab <b>Khách mời</b> để tạo link có tên riêng từng khách.</p>
     <div style="display:flex;gap:8px;margin-bottom:12px"><input class="input" readonly value="${esc(url)}"><button class="btn" id="cpL">Chép link</button></div>
     <a class="btn block ghost" href="${esc(url)}" target="_blank">Mở thiệp như khách mời</a>
-    ${card.paid ? '' : `<p class="muted" style="font-size:13px;margin:16px 0 0">Bản dùng thử: mời tối đa ${META.trialGuestLimit} khách, hiệu lực ${META.trialDays} ngày. <a href="#" id="toPay">Kích hoạt để không giới hạn</a></p>`}`,
+    ${card.paid ? '' : `<p class="muted" style="font-size:13px;margin:16px 0 0">Bản dùng thử: mời tối đa ${META.trialGuestLimit} khách, hiệu lực ${META.trialDays} ngày. <a href="#" id="toPay">Kích hoạt để mời tới 3.000 khách</a></p>`}`,
   (box, close) => {
     $('#cpL', box).onclick = () => copyText(url, 'Đã chép link thiệp');
     const tp = $('#toPay', box); if (tp) tp.onclick = (e) => { e.preventDefault(); close(); openPayModal(CARD_ID, reloadCard); };
@@ -922,6 +924,57 @@ function eventModal(i, focus) {
     if (del) del.onclick = () => { if (!confirm(`Xoá "${e.name || 'lễ này'}" khỏi lịch trình?`)) return; d.events.splice(i, 1); close(); applyLive(); };
   });
 }
+// ---------- ảnh mang sang từ trang gợi ý (/goi-y) ----------
+// Trang /goi-y cất ảnh khách đã chọn (đã thu nhỏ) + vị trí trên thiệp + điểm lấy nét vào IndexedDB, chưa tải lên máy chủ.
+// Ở đây: hiện ngay ảnh trong máy lên thiệp; đã đăng nhập thì tải lên và lưu vào thiệp, chưa thì mời đăng nhập
+// (đăng nhập xong quay lại đúng trang này, ảnh vẫn còn trong kho tạm → tải lên).
+function goiYStore(mode, fn) {
+  return new Promise((ok, no) => {
+    const r = indexedDB.open('cuoinha-goiy', 1);
+    r.onupgradeneeded = () => r.result.createObjectStore('kv');
+    r.onerror = () => no(r.error);
+    r.onsuccess = () => {
+      const tx = r.result.transaction('kv', mode), rq = fn(tx.objectStore('kv'));
+      tx.oncomplete = () => ok(rq && rq.result);
+      tx.onerror = tx.onabort = () => no(tx.error);
+    };
+  });
+}
+async function adoptSuggested() {
+  let p;
+  try { p = await goiYStore('readonly', (s) => s.get('pending')); } catch (e) { return; }
+  if (!p || p.cardId !== CARD_ID || !Array.isArray(p.items)) return;
+  const items = p.items.filter((it) => it && it.blob && (it.key === 'cover' || /^photos\.\d{1,2}$/.test(it.key)));
+  if (!items.length) return;
+  const locals = items.map((it) => {
+    const u = URL.createObjectURL(it.blob);
+    localPhotos[it.key] = withFocus(u, it.x, it.y, 1);
+    return u;
+  });
+  const fw = $('#frame').contentWindow;
+  items.forEach((it) => showLocalPhoto(fw, it.key)); // thiệp vẽ xong sau thì báo 'ready' → hiện lại (xem bên dưới)
+  if (card.guest) {
+    setTimeout(() => { if (!document.querySelector('.modal')) askLogin('pending'); }, 1600);
+    return;
+  }
+  status(`Đang tải ${items.length} ảnh lên…`);
+  let failed = 0, next = 0;
+  const worker = async () => {
+    while (next < items.length) {
+      const it = items[next++];
+      try { photoSet(it.key, withFocus(await uploadFile(it.blob, { quiet: true, resized: true }), it.x, it.y, 1)); } catch (e) { failed++; }
+    }
+  };
+  await Promise.all([worker(), worker(), worker()]);
+  items.forEach((it) => { delete localPhotos[it.key]; });
+  trimPhotos();
+  if (!failed) { try { await goiYStore('readwrite', (s) => { s.delete('pending'); return s.delete('photos'); }); } catch (e) { /* bỏ qua */ } }
+  rerender(); renderHeader(); clearTimeout(saveTimer);
+  await save();
+  setTimeout(() => locals.forEach((u) => URL.revokeObjectURL(u)), 60000);
+  toast(failed ? `${failed} ảnh chưa tải lên được — tải lại trang để thử lại` : 'Đã lưu ảnh của bạn vào thiệp', !!failed);
+}
+
 window.addEventListener('message', (e) => {
   if (e.origin !== location.origin || !e.data || !e.data.ce) return;
   const m = e.data;
@@ -957,6 +1010,7 @@ window.addEventListener('message', (e) => {
   showTab(want in OLD ? OLD[want] : want);
   refreshPreview();
   status('Đã lưu ✓');
+  adoptSuggested(); // ảnh khách chọn ở trang gợi ý
   shareSoon(4000); // thiệp cũ chưa có ảnh xem trước khi gửi link → tạo ngầm
   // thiệp mới chưa có tên đôi: mở bảng điền nhanh (mỗi thiệp một lần trong phiên này)
   try {

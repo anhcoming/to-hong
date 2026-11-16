@@ -2,6 +2,7 @@
 // dựng bằng máy dựng chung lib/mh.js. Ảnh/font là của bản gốc: chỉ dùng công khai khi đã thay bằng tài sản của mình.
 module.exports = require('../lib/mh').template({
   id: 'mhna01',
-  name: "Thiệp Mời NA01",
+  name: 'Hoàng Lan',
+  desc: 'Lãng mạn: phong bì niêm sáp, lịch tháng đánh dấu trái tim và chữ thư pháp nâu',
   json: require('./mh/mhna01.json'),
 });

@@ -75,8 +75,8 @@ module.exports = {
       { name: 'Kết thúc tiệc', date: '2026-12-19', time: '21:00', place: '', address: '', mapUrl: '' },
     ],
     gifts: {
-      groom: { bin: '970407', acc: '19036628471015', holder: 'DANG HOAI NAM' },
-      bride: { bin: '970416', acc: '0947215803', holder: 'NGO THANH TRUC' },
+      groom: { bin: '970407', acc: '0000000000', holder: 'THIEP CUOI DEMO' },
+      bride: { bin: '970416', acc: '0000000000', holder: 'THIEP CUOI DEMO' },
     },
   },
   // xác nhận tham dự mở trong hộp thoại từ khung tiệc cưới (như bản gốc), nên không có trong luồng trang

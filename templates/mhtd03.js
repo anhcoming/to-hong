@@ -2,6 +2,7 @@
 // dựng bằng máy dựng chung lib/mh.js. Ảnh/font là của bản gốc: chỉ dùng công khai khi đã thay bằng tài sản của mình.
 module.exports = require('../lib/mh').template({
   id: 'mhtd03',
-  name: "TD03",
+  name: 'Lam Ngọc',
+  desc: 'Tối giản xanh rêu: thẻ chữ Hỷ treo, tên viết thư pháp, lịch và đếm ngược khối xanh đậm',
   json: require('./mh/mhtd03.json'),
 });

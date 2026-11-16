@@ -2,6 +2,7 @@
 // dựng bằng máy dựng chung lib/mh.js. Ảnh/font là của bản gốc: chỉ dùng công khai khi đã thay bằng tài sản của mình.
 module.exports = require('../lib/mh').template({
   id: 'mhflowers',
-  name: "Flowers",
+  name: 'Hoa Nắng',
+  desc: 'Hoa tươi nền hồng phấn: chữ thư pháp cam vàng, chân dung đôi và album ảnh cưới',
   json: require('./mh/mhflowers.json'),
 });

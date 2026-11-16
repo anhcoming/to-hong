@@ -10,6 +10,11 @@
 <link rel="icon" href="/favicon.ico" sizes="48x48"><link rel="icon" href="/favicon.svg" type="image/svg+xml"><link rel="apple-touch-icon" href="/icons/apple-touch-icon.png">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&amp;family=Dancing+Script:wght@600;700&amp;display=swap">
 <link rel="stylesheet" href="/css/site.css">
+<style>
+.gbtn[hidden],.seg[hidden],.or[hidden]{display:none}
+.note-inapp{margin:16px 0 0;padding:12px 14px;border-radius:14px;background:#fff6e0;border:1px solid #f0d9a0;color:#6b4e00;font-size:14px;line-height:1.5}
+:root[data-theme=dark] .note-inapp{background:#3a2f12;border-color:#5c4a1c;color:#f3deb0}
+</style>
 </head>
 <body data-solid>
 <header id="nav"></header>
@@ -18,14 +23,21 @@
     <span class="eyebrow" data-brand>Cưới Nha</span>
     <h1 id="title">Chào mừng bạn</h1>
     <p class="muted" id="sub2" style="margin:0">Sổ tay cưới miễn phí: việc cần làm, ngân sách, khách mời — và thiệp cưới online.</p>
-    <div class="seg"><button data-m="login" class="on">Đăng nhập</button><button data-m="register">Tạo tài khoản</button></div>
+    <div id="inapp" class="note-inapp" hidden>Bạn đang mở trong trình duyệt của <b id="inappName">ứng dụng</b> — Google không cho đăng nhập ở đây. Bấm <b>⋯</b> ở góc màn hình → <b>Mở bằng trình duyệt</b> (Safari / Chrome)<span id="inappFb" hidden>, hoặc dùng Facebook bên dưới</span>.</div>
     <div id="gbox" hidden>
-      <a class="gbtn" id="gbtn" href="/auth/google">
+      <a class="gbtn" id="gbtn" href="/auth/google" hidden>
         <svg viewBox="0 0 48 48" aria-hidden="true"><path fill="#FFC107" d="M43.6 20.5H42V20H24v8h11.3C33.7 32.7 29.2 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.8 1.2 7.9 3.1l5.7-5.7C34 6.1 29.3 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20 20-8.9 20-20c0-1.3-.1-2.4-.4-3.5z"/><path fill="#FF3D00" d="M6.3 14.7l6.6 4.8C14.7 15.1 19 12 24 12c3.1 0 5.8 1.2 7.9 3.1l5.7-5.7C34 6.1 29.3 4 24 4 16.3 4 9.7 8.3 6.3 14.7z"/><path fill="#4CAF50" d="M24 44c5.2 0 9.9-2 13.4-5.2l-6.2-5.2C29.2 35.1 26.7 36 24 36c-5.2 0-9.6-3.3-11.3-7.9l-6.5 5C9.5 39.6 16.2 44 24 44z"/><path fill="#1976D2" d="M43.6 20.5H42V20H24v8h11.3c-.8 2.2-2.2 4.2-4.1 5.6l6.2 5.2C37 39.2 44 34 44 24c0-1.3-.1-2.4-.4-3.5z"/></svg>
         Tiếp tục với Google
       </a>
-      <div class="or"><span>hoặc dùng email</span></div>
+      <a class="gbtn" id="fbtn" href="/auth/facebook" hidden style="margin-top:10px">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="#1877F2" d="M24 12a12 12 0 1 0-13.9 11.9v-8.4H7.1V12h3V9.4c0-3 1.8-4.7 4.5-4.7 1.3 0 2.7.2 2.7.2v3h-1.5c-1.5 0-2 .9-2 1.900V12h3.400l-.5 3.500h-2.900v8.400A12 12 0 0 0 24 12z"/></svg>
+        Tiếp tục với Facebook
+      </a>
+      <p class="muted" id="newNote" style="font-size:13px;margin:12px 0 0;text-align:center">Chưa có tài khoản? Bấm nút ở trên là xong — không cần đặt mật khẩu.</p>
+      <div class="or" id="orLine"><span>hoặc dùng email</span></div>
     </div>
+    <div class="seg" id="seg"><button data-m="login" class="on">Đăng nhập</button><button data-m="register">Tạo tài khoản</button></div>
+    <p id="oldToggle" hidden style="margin:14px 0 0;text-align:center"><a href="#" id="oldLink" class="muted" style="font-size:14px">Tôi có tài khoản email từ trước</a></p>
     <form id="f">
       <label class="field" id="nameF" hidden><span>Tên của bạn</span><input name="name" autocomplete="name" maxlength="80"></label>
       <label class="field"><span>Email</span><input name="email" type="email" required autocomplete="email"></label>
@@ -33,6 +45,7 @@
       <button class="btn btn-main btn-lg block-btn" id="sub">Đăng nhập</button>
       <p class="err" id="err"></p>
     </form>
+    <p class="muted" style="font-size:13px;text-align:center;margin:14px 0 0">Đăng nhập là bạn đồng ý với <a href="/dieu-khoan" target="_blank" rel="noopener" style="text-decoration:underline">Điều khoản</a> và <a href="/chinh-sach-bao-mat" target="_blank" rel="noopener" style="text-decoration:underline">Chính sách bảo mật</a>.</p>
   </div>
 </main>
 <script src="/js/common.js"></script>
@@ -43,11 +56,25 @@ const next = new URLSearchParams(location.search).get('next') || '/so-tay';
 const loi = new URLSearchParams(location.search).get('loi');
 // đến từ trình sửa khi chưa đăng nhập: thiệp nháp sẽ được chuyển vào tài khoản
 if (/^\/sua\//.test(next)) $('#sub2').textContent = 'Đăng nhập để lưu thiệp bạn vừa làm — nội dung đã sửa được giữ nguyên.';
-// Nút Google chỉ hiện khi máy chủ đã cấu hình Client ID
+// Nút Google / Facebook chỉ hiện khi máy chủ đã cấu hình. Đã có ít nhất một nút thì không còn tự tạo tài khoản bằng email:
+// ô email + mật khẩu thu gọn lại, chỉ dành cho tài khoản email đã có từ trước.
+const q = (n) => '?next=' + encodeURIComponent(n);
+// trình duyệt nhúng trong ứng dụng (Zalo, Facebook, Messenger…): Google chặn đăng nhập ở đây
+const inApp = (/Zalo/i.exec(navigator.userAgent) && 'Zalo') || (/FBAN|FBAV|FB_IAB|Messenger/i.exec(navigator.userAgent) && 'Facebook') || (/Instagram/i.test(navigator.userAgent) && 'Instagram') || (/TikTok|musical_ly|BytedanceWebview/i.test(navigator.userAgent) && 'TikTok') || (/\bLine\//i.test(navigator.userAgent) && 'Line') || '';
 document.addEventListener('meta', (e) => {
-  if (!e.detail.googleLogin) return;
+  const m = e.detail, social = m.googleLogin || m.facebookLogin;
+  if (!social) return; // máy chưa cấu hình (chạy thử): giữ form email như cũ
   $('#gbox').hidden = false;
-  $('#gbtn').href = '/auth/google?next=' + encodeURIComponent(next);
+  $('#gbtn').hidden = !m.googleLogin; $('#gbtn').href = '/auth/google' + q(next);
+  $('#fbtn').hidden = !m.facebookLogin; $('#fbtn').href = '/auth/facebook' + q(next);
+  if (inApp && m.googleLogin) { $('#inapp').hidden = false; $('#inappName').textContent = inApp; $('#inappFb').hidden = !m.facebookLogin; }
+  if (m.emailSignup) return;
+  // không còn đăng ký bằng email
+  $('#seg').hidden = true; $('#orLine').hidden = true;
+  if (mode === 'register') setMode('login');
+  $('#title').innerHTML = 'Chào mừng <span class="grad">bạn</span>';
+  if (!loi) { $('#f').hidden = true; $('#oldToggle').hidden = false; }
+  $('#oldLink').onclick = (ev) => { ev.preventDefault(); $('#f').hidden = false; $('#oldToggle').hidden = true; $('[name=email]').focus(); };
 });
 function setMode(m) {
   mode = m;

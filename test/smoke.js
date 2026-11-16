@@ -6,6 +6,7 @@ const assert = require('assert');
 
 process.env.DATA_DIR = fs.mkdtempSync(path.join(os.tmpdir(), 'thiep-test-'));
 process.env.BASE_URL = 'http://localhost';
+process.env.ALLOW_EMAIL_SIGNUP = '1'; // bài kiểm thử tạo tài khoản bằng email (ngoài thực tế đã đóng khi có Google / Facebook)
 process.env.ADMIN_PASSWORD = 'mat-khau-quan-tri';
 process.env.SEPAY_API_KEY = 'khoa-sepay-thu';
 const server = require('../server');
@@ -17,8 +18,13 @@ async function call(who, method, url, body) {
   if (jar[who]) headers.cookie = jar[who];
   if (body !== undefined) headers['content-type'] = 'application/json';
   const r = await fetch(base + url, { method, headers, body: body === undefined ? undefined : JSON.stringify(body) });
-  const sc = r.headers.get('set-cookie');
-  if (sc) jar[who] = sc.split(';')[0];
+  // gộp cookie theo tên (một phản hồi có thể đặt nhiều cookie, vd. phiên quản trị + cn_me)
+  const sc = r.headers.getSetCookie ? r.headers.getSetCookie() : [r.headers.get('set-cookie')].filter(Boolean);
+  if (sc.length) {
+    const m = new Map((jar[who] || '').split('; ').filter(Boolean).map((p) => [p.split('=')[0], p]));
+    sc.forEach((c) => { const p = c.split(';')[0], k = p.split('=')[0]; if (/max-age=0/i.test(c) || p === k + '=') m.delete(k); else m.set(k, p); });
+    jar[who] = [...m.values()].join('; ');
+  }
   const text = await r.text();
   let json; try { json = JSON.parse(text); } catch { json = null; }
   return { status: r.status, json, text };
@@ -232,6 +238,9 @@ async function call(who, method, url, body) {
   assert.equal(r.json.order.status, 'paid');
   assert.equal(r.json.order.paidVia, 'sepay');
   assert.equal((await sepay({ id: 6, transferType: 'in', transferAmount: 99000, content: vcode })).json.result, 'already-paid', 'trả hai lần');
+  r = await call('qt', 'GET', '/api/admin/orders?q=' + vcode);
+  assert.deepEqual(r.json.orders[0].sepay.map((t) => [t.result, t.amount]), [['already-paid', 99000], ['paid', 99000], ['underpaid', 20000]], 'cột SePay: giao dịch khớp đơn, mới nhất trước');
+  assert.equal(r.json.orders[0].site.slug, 'tuan-lan', 'đơn kèm đường dẫn thiệp web');
   r = await call('u', 'GET', `/api/cards/${id}`);
   assert.equal(r.json.card.video.paid, true);
   assert.equal(r.json.card.led.paid, true, 'kích hoạt video không ảnh hưởng màn LED');
@@ -402,6 +411,20 @@ async function call(who, method, url, body) {
   assert.equal(td.uses, 1, 'đếm lượt bấm Dùng mẫu');
   assert.equal(td.views, viewsBefore + 1, 'đếm lượt mở xem thử, bỏ ảnh xem trước');
   assert.ok(td.name);
+
+  // máy của chủ web (cookie cn_me, có từ lúc vào /admin) không được tính
+  assert.match(jar.qt, /cn_me=1/, 'vào trang quản trị → máy được đánh dấu');
+  const sess = await fetch(base + '/api/admin/session', { headers: { cookie: jar.qt.split('; ').filter((p) => !p.startsWith('cn_me=')).join('; ') } });
+  assert.match(String(sess.headers.get('set-cookie')), /cn_me=1/, 'vào trang quản trị → máy được đánh dấu');
+  const meBeacon = (o) => fetch(base + '/api/t', { method: 'POST', headers: { 'user-agent': 'Mozilla/5.0', cookie: 'cn_me=1' }, body: JSON.stringify(o) }).then((x) => x.status);
+  assert.equal(await meBeacon({ p: '/', v: 1, n: 1 }), 204);
+  assert.equal(await meBeacon({ u: 'thiep:dodam' }), 204);
+  await fetch(base + '/demo/dodam', { headers: { 'user-agent': 'Mozilla/5.0', cookie: 'cn_me=1' } });
+  r = await call('qt', 'GET', '/api/admin/traffic?days=7');
+  assert.deepEqual([r.json.today.visitors, r.json.today.pv], [1, 2], 'lượt vào từ máy chủ web không cộng');
+  const td2 = r.json.templates.find((x) => x.key === 'thiep:dodam');
+  assert.deepEqual([td2.views, td2.uses], [td.views, td.uses], 'xem thử / dùng mẫu từ máy chủ web không cộng');
+  assert.ok(r.json.exclude && r.json.exclude.accounts.includes('anhcoming'));
 
   // nút "Tạo màn LED" / "Dùng mẫu" video: chuyển thẳng tới trình sửa, không ghé "Thiệp của tôi"
   let rr = await fetch(base + '/tao-led?palette=dem&effect=sao', { redirect: 'manual' });

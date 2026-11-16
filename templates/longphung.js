@@ -71,8 +71,8 @@ module.exports = {
       { name: 'Kết thúc tiệc', date: '2026-07-12', time: '21:00', place: '', address: '', mapUrl: '' },
     ],
     gifts: {
-      groom: { bin: '970418', acc: '0399554682', holder: 'NGUYEN TUAN KIET' },
-      bride: { bin: '970436', acc: '099996586', holder: 'TRAN THANH HA' },
+      groom: { bin: '970418', acc: '0000000000', holder: 'THIEP CUOI DEMO' },
+      bride: { bin: '970436', acc: '0000000000', holder: 'THIEP CUOI DEMO' },
     },
   },
   // xác nhận tham dự mở trong hộp thoại từ khung tiệc cưới (như bản gốc), nên không có trong luồng trang
@@ -484,8 +484,10 @@ module.exports = {
 .tpl-longphung .lp-wform input,.tpl-longphung .lp-wform textarea{display:block;width:100%;padding:8px 16px;border:1px solid var(--ink);border-radius:6px;background:rgba(255,190,137,.1);color:var(--ink);font:300 16px/24px var(--font-body);outline:none;resize:none}
 .tpl-longphung .lp-wform input{margin-bottom:16px}
 .tpl-longphung .lp-wform ::placeholder{color:color-mix(in srgb,var(--ink) 55%,transparent)}
-.tpl-longphung .lp-wform .row{display:flex;align-items:center;justify-content:space-between;gap:8px;min-height:40px;margin-top:16px}
-.tpl-longphung .lp-wform .form-msg{flex:1;font-size:12px;text-align:left;color:var(--ink)}
+.tpl-longphung .lp-wform .row{display:flex;flex-wrap:wrap;align-items:center;justify-content:flex-end;gap:8px;min-height:40px;margin-top:16px}
+/* báo lỗi / cảm ơn: dòng riêng dưới nút, không chen cạnh nút */
+.tpl-longphung .lp-wform .form-msg{order:2;flex:0 0 100%;margin:0;font-size:12px;line-height:1.4;text-align:right;color:var(--ink)}
+.tpl-longphung .lp-wform .form-msg:empty{display:none}
 .tpl-longphung .lp-wform button{padding:6px 16px;border:0;border-radius:999px;background:var(--ink);color:var(--accent-ink);font:600 14px/20px var(--font-body);text-transform:uppercase;transition:transform .15s}
 .tpl-longphung .lp-wform button:hover{transform:scale(1.05)}
 .tpl-longphung .wish-list{display:block;width:100%;max-height:500px;margin:32px auto 0;padding-right:8px;overflow-y:auto;text-align:left}

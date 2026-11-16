@@ -2,6 +2,7 @@
 // dựng bằng máy dựng chung lib/mh.js. Ảnh/font là của bản gốc: chỉ dùng công khai khi đã thay bằng tài sản của mình.
 module.exports = require('../lib/mh').template({
   id: 'mhda05',
-  name: "DA05",
+  name: 'Trăng Non',
+  desc: 'Thanh lịch nền trắng hoa văn hồng nhạt: chữ nâu vàng, đếm ngược và dây ảnh kẹp polaroid',
   json: require('./mh/mhda05.json'),
 });

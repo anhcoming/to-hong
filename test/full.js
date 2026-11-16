@@ -7,6 +7,7 @@ const assert = require('assert');
 
 process.env.DATA_DIR = fs.mkdtempSync(path.join(os.tmpdir(), 'thiep-full-'));
 process.env.BASE_URL = 'http://localhost';
+process.env.ALLOW_EMAIL_SIGNUP = '1'; // bài kiểm thử tạo tài khoản bằng email (ngoài thực tế đã đóng khi có Google / Facebook)
 process.env.ADMIN_PASSWORD = 'mat-khau-quan-tri';
 const server = require('../server');
 const videoLib = require('../lib/video');

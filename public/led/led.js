@@ -622,4 +622,22 @@
   keepAwake();
   if (document.fonts && document.fonts.ready) document.fonts.ready.then(fitAll);
   requestAnimationFrame(frame);
+  // Bản dùng thử: dòng "Bản dùng thử" phải luôn hiện — bị xoá / ẩn / đổi chữ (công cụ của trình duyệt) thì dựng lại ngay.
+  if (C.trial && !C.demo) {
+    var WM = 'Bản dùng thử · ' + (C.brand || '');
+    var keepWm = function () {
+      var w = stage.querySelector(':scope > .wm');
+      if (!w) { w = document.createElement('div'); w.className = 'wm'; stage.appendChild(w); }
+      if (w.textContent !== WM) w.textContent = WM;
+      // chỉ sửa khi thật sự bị ẩn (tránh tự kích hoạt lại bộ theo dõi thay đổi)
+      var cs = getComputedStyle(w), r = w.getBoundingClientRect();
+      if (w.hidden || cs.display === 'none' || cs.visibility !== 'visible' || +cs.opacity < 0.4 || r.width < 20 || r.height < 5) {
+        w.hidden = false;
+        w.style.cssText = 'display:block!important;visibility:visible!important;opacity:.45!important;transform:none!important;z-index:50!important;clip-path:none!important;font-size:24px!important;right:60px!important;bottom:52px!important;left:auto!important;top:auto!important;position:absolute!important';
+      }
+    };
+    keepWm();
+    setInterval(keepWm, 1500);
+    if (window.MutationObserver) new MutationObserver(keepWm).observe(stage, { childList: true, subtree: true, attributes: true, attributeFilter: ['style', 'class', 'hidden'] });
+  }
 })();

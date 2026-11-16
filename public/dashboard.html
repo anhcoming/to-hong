@@ -5,7 +5,7 @@
 <script src="/js/theme.js"></script>
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="robots" content="noindex">
-<title>Thiệp của tôi</title>
+<title>Thiệp của tôi — Cưới Nha</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&amp;family=Dancing+Script:wght@600;700&amp;display=swap">
 <link rel="stylesheet" href="/css/app.css">
 <style>
@@ -36,6 +36,39 @@
 .trialbar.soon,.trialbar.over{background:#fde8e6;color:var(--danger)}
 .upbar{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:8px 12px;margin:10px 0 2px;padding:10px 12px;border-radius:12px;background:var(--primary-soft);font-size:14px}
 .upbar b{color:var(--primary)}
+/* thiệp chính: phần lớn người dùng chỉ chốt một thiệp → đặt nổi bật, kèm màn LED + video của đám cưới */
+.hero{display:grid;grid-template-columns:230px 1fr;overflow:visible}
+.hero>.thumb{min-height:0;aspect-ratio:3/4;background-size:cover;background-position:var(--pos);border-radius:inherit;border-top-right-radius:0;border-bottom-right-radius:0}
+.hero .info{padding:22px 24px;gap:12px}
+.hero h2{margin:0;font-family:var(--serif);font-size:26px;line-height:1.2}
+.sub{color:var(--muted);font-size:14px;display:flex;flex-wrap:wrap;gap:4px 10px;align-items:center;margin-top:4px}
+.dday{display:inline-flex;align-items:center;gap:6px;padding:2px 10px;border-radius:999px;background:var(--primary-soft);color:var(--primary);font-weight:600;font-size:13px}
+.kpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
+.kpi{padding:10px 12px;border-radius:12px;background:var(--bg);border:1px solid var(--line)}
+.kpi b{display:block;font-size:20px;line-height:1.2}.kpi span{font-size:12px;color:var(--muted)}
+.next{font-size:14px;color:var(--muted);margin:0}
+.prods{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:2px}
+.prod{display:flex;align-items:center;gap:12px;padding:12px 14px;border-radius:14px;border:1px solid var(--line);background:var(--bg);text-decoration:none;color:inherit;transition:border-color .15s}
+.prod:hover{border-color:var(--primary)}
+.prod .ic{flex:none;width:40px;height:40px;border-radius:12px;display:grid;place-items:center;font-size:20px;background:var(--surface)}
+.prod .tx{flex:1;min-width:0;font-size:13px;color:var(--muted)}.prod .tx b{display:block;font-size:15px;color:var(--ink)}
+.prod .go{flex:none;font-size:13px;font-weight:600;color:var(--primary);white-space:nowrap}
+.prod .gift{color:var(--primary);font-weight:600}
+.others{margin-top:26px}
+.others h3{font-size:15px;margin:0 0 4px}.others .hint{font-size:13px;color:var(--muted);margin:0 0 10px}
+.row{display:flex;align-items:center;gap:12px;padding:10px 12px}
+.row+.row{border-top:1px solid var(--line)}
+.row .mini{flex:none;width:42px;height:56px;border-radius:8px;background:#eee center top/cover}
+.row .tx{flex:1;min-width:0}.row .tx b{display:block;font-size:15px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.row .tx span{font-size:13px;color:var(--muted)}
+.row .ra{display:flex;gap:6px;align-items:center;flex:none}
+@media (max-width:760px){
+  .hero{grid-template-columns:1fr}
+  .hero>.thumb{aspect-ratio:auto;height:170px;background-position:center 45%;border-radius:inherit;border-bottom-left-radius:0;border-bottom-right-radius:0}
+  .hero .info{padding:16px}.hero h2{font-size:22px}
+  .kpis{grid-template-columns:repeat(2,minmax(0,1fr))}.prods{grid-template-columns:1fr}
+  .row .chip{display:none}
+}
 </style>
 </head>
 <body>
@@ -64,18 +97,9 @@ function stateChip(c) {
   return `<span class="chip warn">Dùng thử · còn ${days} ngày</span>`;
 }
 
-// Trọn bộ còn lượt: nhắc làm màn LED / video rồi bấm "Dùng lượt Trọn bộ" trên cái ưng ý
-function creditBar(c) {
-  const cr = c.credits || {}, parts = [];
-  if (cr.led > 0) parts.push(`<b>${cr.led}</b> lượt màn LED`);
-  if (cr.video > 0) parts.push(`<b>${cr.video}</b> lượt video`);
-  if (!parts.length) return '';
-  return `<div class="upbar"><span>🎁 Còn ${parts.join(' · ')} trong gói Trọn bộ — làm thử thoải mái, ưng cái nào thì bấm <b>Dùng lượt Trọn bộ</b> trên cái đó.</span><span style="display:flex;gap:6px">${cr.led > 0 ? `<a class="btn sm" href="/sua-led/${c.id}${c.led.created ? '' : '?tao=1'}">✨ Màn LED</a>` : ''}${cr.video > 0 ? `<a class="btn sm" href="/sua-video/${c.id}">🎬 Video</a>` : ''}</span></div>`;
-}
-
 // Thiệp đã kích hoạt lẻ, chưa có LED / video: gợi ý nâng lên Trọn bộ (chỉ trả phần chênh)
 function upgradeBar(c) {
-  if (isCombo(c)) return creditBar(c);
+  if (isCombo(c)) return ''; // Trọn bộ: lượt còn lại hiện trên ô Màn LED / Video
   if (!c.paid || c.led.paid || c.video.paid || !META.comboPrice) return '';
   const add = Math.max(0, META.comboPrice - META.price), retail = META.ledPrice + META.videoPrice;
   return `<div class="upbar"><span>✨ Thêm <b>màn LED tiệc cưới + video MP4</b> chỉ <b>${money(add)}</b> <span class="muted">(mua lẻ ${money(retail)})</span></span><button class="btn sm" data-a="combo">Nâng lên Trọn bộ</button></div>`;
@@ -104,12 +128,6 @@ setInterval(() => {
   if (ended) load(); // hết giờ → tải lại để hiện "Link đã bị khoá"
 }, 1000);
 
-function ledChip(c) {
-  const one = (s, n) => !s.created ? '' : s.paid ? `<span class="chip ok">${n} · đã kích hoạt</span>`
-    : s.expired ? `<span class="chip red">${n} · hết dùng thử</span>` : `<span class="chip warn">${n} · dùng thử</span>`;
-  return one(c.led, 'Màn LED');
-}
-
 async function load() {
   const { cards } = await api('/api/cards');
   const el = $('#list');
@@ -118,27 +136,68 @@ async function load() {
     el.innerHTML = `<div class="panel empty"><p style="font-size:40px;margin:0">💌</p><h3 style="color:var(--ink)">Bạn chưa có thiệp nào</h3><p>Tạo thiệp đầu tiên — miễn phí, xem trước ngay khi gõ.</p><button class="btn" onclick="newCard()">Tạo thiệp đầu tiên</button></div>`;
     return;
   }
-  el.innerHTML = cards.map(c => `
-    <article class="item panel" data-id="${c.id}">
-      <a class="thumb" href="/sua/${c.id}" style="background-image:url('${esc(c.cover ? c.cover.split('#')[0] : `/demo/cover-${c.template}-${c.palette}.jpg`)}');background-position:${c.cover ? 'center' : 'top'}"></a>
+  // thiệp chính: Trọn bộ / đã kích hoạt / đã phát hành trước, cùng mức thì thiệp sửa gần nhất (máy chủ đã xếp)
+  const rank = (c) => (isCombo(c) ? 3 : c.paid ? 2 : c.status === 'published' ? 1 : 0);
+  const main = cards.slice().sort((a, b) => rank(b) - rank(a))[0];
+  const rest = cards.filter((c) => c !== main);
+  el.innerHTML = heroCard(main) + (rest.length ? `
+    <section class="others">
+      <h3>Thiệp khác <span class="muted" style="font-weight:400">(${rest.length})</span></h3>
+      <p class="hint">Muốn thử mẫu khác? Đổi mẫu ngay trong trình sửa thiệp, chữ và ảnh giữ nguyên — không cần tạo thiệp mới.</p>
+      <div class="panel" style="padding:4px 0">${rest.map(rowCard).join('')}</div>
+    </section>` : '');
+  $$('[data-a]').forEach(b => b.onclick = () => act(b.dataset.a, b.closest('[data-id]').dataset.id, cards.find(c => c.id === b.closest('[data-id]').dataset.id)));
+}
+const thumbOf = (c) => esc(c.cover ? c.cover.split('#')[0] : `/demo/cover-${c.template}-${c.palette}.jpg`);
+const dateVN = (d) => (d ? d.split('-').reverse().join('/') : '');
+function daysTo(d) {
+  if (!d) return '';
+  const n = Math.round((new Date(d + 'T00:00:00') - new Date(new Date().toDateString())) / 864e5);
+  return n > 0 ? `Còn ${n} ngày` : n === 0 ? 'Hôm nay là ngày cưới 🎉' : '';
+}
+const moreMenu = () => `<details class="more"><summary class="btn sm plain" aria-label="Thêm">⋯</summary><div><button data-a="dup">Nhân bản thiệp</button><button data-a="del" class="danger">Xoá thiệp</button></div></details>`;
+// ô Màn LED / Video cưới của đám cưới này: trạng thái + một nút đi tiếp (thay cho thanh "Còn lượt Trọn bộ" và nút lẻ)
+function prodTile(c, kind) {
+  const s = kind === 'led' ? c.led : c.video, left = (c.credits || {})[kind] || 0;
+  const name = kind === 'led' ? 'Màn hình LED' : 'Video cưới', ic = kind === 'led' ? '✨' : '🎬';
+  const href = kind === 'led' ? `/sua-led/${c.id}${s.created ? '' : '?tao=1'}` : `/sua-video/${c.id}`;
+  const st = left > 0 ? `<span class="gift">🎁 Còn ${left} lượt Trọn bộ</span>`
+    : !s.created ? (kind === 'led' ? 'Chiếu tên đôi trên màn tiệc' : 'Ảnh cưới chiếu TV, tải MP4')
+    : s.paid ? '<span style="color:var(--ok)">● Đã kích hoạt</span>' : s.expired ? '<span style="color:var(--danger)">Hết dùng thử</span>' : 'Đang dùng thử';
+  return `<a class="prod" href="${href}"><span class="ic">${ic}</span><span class="tx"><b>${name}</b>${st}</span><span class="go">${s.created ? 'Mở →' : 'Tạo →'}</span></a>`;
+}
+function heroCard(c) {
+  const pub = c.status === 'published', dd = daysTo(c.date);
+  return `
+    <article class="hero panel" data-id="${c.id}">
+      <a class="thumb" href="/sua/${c.id}" style="background-image:url('${thumbOf(c)}');--pos:${c.cover ? 'center' : 'top'}"></a>
       <div class="info">
         <div class="top">
-          <div style="min-width:0"><h3>${esc(c.names || c.title)}</h3><div class="link">${esc(c.title)} · ${esc(tplName(c.template))}${c.date ? ' · ' + c.date.split('-').reverse().join('/') : ''}</div></div>
-          <a class="btn sm" href="/sua/${c.id}">Sửa thiệp</a>
+          <div style="min-width:0"><h2>${esc(c.names || c.title)}</h2>
+            <div class="sub">${c.date ? `<span>📅 ${dateVN(c.date)}</span>` : ''}${dd ? `<span class="dday">${dd}</span>` : ''}<span>${esc(tplName(c.template))}</span></div></div>
+          ${moreMenu()}
         </div>
-        <div class="meta">${stateChip(c)}${ledChip(c)}</div>
+        <div class="meta">${stateChip(c)}</div>
         ${trialBar(c)}${upgradeBar(c)}
-        <div class="stats"><span>👁 <b>${c.views}</b> lượt xem</span><span>✉ <b>${c.guests}</b> khách mời</span><span>✓ <b>${c.rsvpYes}</b> người sẽ đến</span><span>♥ <b>${c.wishes}</b> lời chúc</span></div>
+        ${pub ? `<div class="kpis"><div class="kpi"><b>${c.views}</b><span>lượt xem</span></div><div class="kpi"><b>${c.guests}</b><span>khách mời</span></div><div class="kpi"><b>${c.rsvpYes}</b><span>người sẽ đến</span></div><div class="kpi"><b>${c.wishes}</b><span>lời chúc</span></div></div>`
+          : '<p class="next">Thiệp đang là bản nháp — điền thông tin, chọn ảnh rồi bấm <b>Phát hành</b> để có link gửi khách.</p>'}
         <div class="acts">
-          ${c.status === 'published' ? `<button class="btn sm soft" data-a="share">Sao chép link</button><a class="btn sm plain" target="_blank" href="${esc(c.url)}">Mở thiệp</a>` : ''}
-          ${!c.paid ? `<button class="btn sm plain" data-a="pay">Kích hoạt · ${money(META.price)}</button>` : ''}
-          ${c.led.created ? `<a class="btn sm plain" href="/sua-led/${c.id}">✨ Màn LED</a>` : ''}
-          ${c.video.created ? `<a class="btn sm plain" href="/sua-video/${c.id}">🎬 Video</a>` : ''}
-          <details class="more"><summary class="btn sm plain" aria-label="Thêm">⋯</summary><div><button data-a="dup">Nhân bản thiệp</button><button data-a="del" class="danger">Xoá thiệp</button></div></details>
+          <a class="btn" href="/sua/${c.id}">${pub ? 'Sửa thiệp' : 'Tiếp tục sửa thiệp'}</a>
+          ${pub ? `<button class="btn soft" data-a="share">Sao chép link</button><a class="btn plain" target="_blank" href="${esc(c.url)}">Mở thiệp</a>` : ''}
+          ${!c.paid && !pub ? `<button class="btn plain" data-a="pay">Kích hoạt · ${money(META.price)}</button>` : ''}
         </div>
+        <div class="prods">${prodTile(c, 'led')}${prodTile(c, 'video')}</div>
       </div>
-    </article>`).join('');
-  $$('[data-a]').forEach(b => b.onclick = () => act(b.dataset.a, b.closest('.item').dataset.id, cards.find(c => c.id === b.closest('.item').dataset.id)));
+    </article>`;
+}
+function rowCard(c) {
+  return `
+    <div class="row" data-id="${c.id}">
+      <a class="mini" href="/sua/${c.id}" style="background-image:url('${thumbOf(c)}')"></a>
+      <div class="tx"><b>${esc(c.names || c.title)}</b><span>${esc(tplName(c.template))}${c.date ? ' · ' + dateVN(c.date) : ''}</span></div>
+      ${stateChip(c)}
+      <div class="ra"><a class="btn sm plain" href="/sua/${c.id}">Sửa</a>${moreMenu()}</div>
+    </div>`;
 }
 // menu ⋯: mở cái này thì đóng cái khác; sát mép trái màn hình (điện thoại) thì mở sang phải; bấm ra ngoài thì đóng
 document.addEventListener('toggle', (e) => {

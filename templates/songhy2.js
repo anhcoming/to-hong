@@ -555,8 +555,10 @@ module.exports = {
 .tpl-songhy2 .sh-wname{margin-bottom:16px}
 .tpl-songhy2 .sh-wform input,.tpl-songhy2 .sh-wform textarea{display:block;width:100%;padding:8px 10px;border:1px solid var(--gold);border-radius:6px;background:transparent;color:var(--gold);font:400 16px/24px 'Helvetica Neue',Helvetica,Arial,sans-serif;outline:none;resize:none}
 .tpl-songhy2 .sh-wform ::placeholder{color:color-mix(in srgb,var(--gold) 65%,transparent)}
-.tpl-songhy2 .sh-wrow{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:16px;font-size:12px}
-.tpl-songhy2 .sh-wrow .form-msg{flex:1;margin:0;font-size:12px}
+.tpl-songhy2 .sh-wrow{display:flex;flex-wrap:wrap;align-items:center;justify-content:flex-end;gap:8px;margin-top:16px;font-size:12px}
+/* báo lỗi / cảm ơn: dòng riêng dưới nút, không chen cạnh nút */
+.tpl-songhy2 .sh-wrow .form-msg{order:2;flex:0 0 100%;margin:0;font-size:12px;line-height:1.4;text-align:right;color:var(--gold)}
+.tpl-songhy2 .sh-wrow .form-msg:empty{display:none}
 .tpl-songhy2 .sh-wrow button{padding:6px 16px;border:0;border-radius:7px;background:var(--gold);color:var(--accent);font:400 13px/1.3333 'Times New Roman',Times,serif;text-transform:uppercase;transition:transform .15s}
 .tpl-songhy2 .sh-wrow button:hover{transform:scale(1.05)}
 .tpl-songhy2 .wish-list{display:flex;flex-direction:column;gap:12px;width:100%;max-height:500px;margin:32px auto 0;padding-right:8px;overflow-y:auto}

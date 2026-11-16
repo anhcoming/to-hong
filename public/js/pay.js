@@ -110,14 +110,14 @@ window.openPayModal = async function (cardId, onDone, product = 'card') {
     const note = p === 'video' ? 'Trả một lần · Tải MP4 Full HD · Bỏ dòng "Bản dùng thử"'
       : p === 'led' ? 'Trả một lần · Bỏ dòng "Bản dùng thử" · Trình chiếu không giới hạn thời gian'
       : p === 'combo' ? 'Trả một lần · Thiệp + màn LED + video MP4, dùng chung ảnh và tên'
-      : 'Trả một lần · Mời khách không giới hạn · Dùng vĩnh viễn';
+      : 'Trả một lần · Mời tới 3.000 khách · Dùng vĩnh viễn';
     const opt = (k, title, desc, pill) => {
       const x = orders[k];
       return `<button type="button" class="pay-opt ${sel === k ? 'on' : ''}" data-sel="${k}"><span class="rd"></span><span class="t"><b>${title}</b><span>${desc}</span>${pill ? `<br><span class="pay-pill">${pill}</span>` : ''}</span><span class="p">${x.wasPrice ? `<s>${money(x.wasPrice)}</s>` : ''}<b>${money(x.amount)}</b></span></button>`;
     };
     const head = picker ? `
       <div style="text-align:center"><h2>Kích hoạt thiệp</h2><p class="muted" style="margin:0 0 14px">${esc(o.card ? o.card.names || o.card.title : '')}</p></div>
-      ${opt('card', 'Chỉ thiệp cưới', 'Mời không giới hạn, dùng vĩnh viễn')}
+      ${opt('card', 'Chỉ thiệp cưới', 'Mời tới 3.000 khách, dùng vĩnh viễn')}
       ${opt('combo', 'Trọn bộ ngày cưới', 'Thiệp + màn LED + video MP4', `Chỉ thêm ${Math.round((orders.combo.amount - orders.card.amount) / 1000)}k`)}
       <div style="text-align:center;margin-top:4px">${o.wasPrice ? `<div class="muted" style="font-size:15px;text-decoration:line-through">${money(o.wasPrice)}</div>` : ''}<div style="font-family:var(--serif);font-size:34px;font-weight:600;color:var(--primary);line-height:1.2">${money(o.amount)}</div>${until}${o.coupon ? ` <span class="chip ok">Đã áp mã ${esc(o.coupon)}</span>` : ''}</div>`
       : `
@@ -141,19 +141,21 @@ window.openPayModal = async function (cardId, onDone, product = 'card') {
         </div>
       </div>
       <p class="muted" style="font-size:13px;margin:-6px 0 14px">Mở app ngân hàng, quét mã QR — số tiền và nội dung đã điền sẵn, giữ nguyên nội dung <b>${esc(o.code)}</b>. Chuyển xong bấm nút bên dưới.</p>
-      <form id="cp" style="display:${p === 'card' ? 'flex' : 'none'};gap:8px;margin-bottom:14px">
+      <form id="cp" style="display:flex;gap:8px;margin-bottom:14px">
         <input class="input" name="c" placeholder="Mã giảm giá (nếu có)" value="${esc(o.coupon || '')}" style="text-transform:uppercase">
         <button class="btn plain">Áp dụng</button>
       </form>
-      <button class="btn block lg" id="claim">Tôi đã chuyển khoản</button>`;
+      <button class="btn block lg" id="claim">Tôi đã chuyển khoản</button>
+      <p class="muted" style="font-size:12px;text-align:center;margin:10px 0 0">Thanh toán là bạn đồng ý với <a href="/dieu-khoan" target="_blank" rel="noopener" style="color:inherit;text-decoration:underline">Điều khoản</a> và <a href="/hoan-tien" target="_blank" rel="noopener" style="color:inherit;text-decoration:underline">Chính sách hoàn tiền</a>.</p>`;
     modalHead(box); // nút × đứng yên khi cuộn
     $$('[data-sel]', box).forEach((b) => (b.onclick = () => { sel = b.dataset.sel; render(); }));
     $('#cp', box).onsubmit = async (e) => {
       e.preventDefault();
       try {
-        orders.card = (await post('card', { coupon: e.target.c.value })).order;
+        const o = (await post(sel, { coupon: e.target.c.value })).order; // áp mã cho sản phẩm đang chọn
+        orders[sel] = o;
         render();
-        toast(orders.card.coupon ? 'Đã áp dụng mã giảm giá' : 'Đã bỏ mã giảm giá');
+        toast(o.status === 'paid' ? 'Mã giảm 100% — đã kích hoạt' : o.coupon ? 'Đã áp dụng mã giảm giá' : 'Đã bỏ mã giảm giá');
       } catch (err) { toast(err.message, true); }
     };
     $('#claim', box).onclick = async () => {

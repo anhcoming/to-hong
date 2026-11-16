@@ -8,10 +8,13 @@ const { db, save, UPLOAD_DIR } = store;
 const { rid, json, send, readJson, readBody, httpError, slugify, str, cookies } = require('./lib/util');
 const auth = require('./lib/auth');
 const google = require('./lib/google');
+const facebook = require('./lib/facebook');
 const maplink = require('./lib/maplink');
 const adminLib = require('./lib/admin');
 const adminAuth = require('./lib/adminauth');
-adminLib.applySettings(); // giá, mã giảm giá… sửa trên trang quản trị đè lên config.json
+// giá, mã giảm giá… sửa trên trang quản trị đè lên config.json. Áp lại mỗi lần nạp dữ liệu từ kho: trên Vercel
+// lúc khởi động dữ liệu chưa nạp, và cài đặt đổi ở bản chạy khác phải có hiệu lực ở mọi bản chạy.
+store.onLoad(adminLib.applySettings);
 const cd = require('./lib/carddata');
 const { renderCard, renderNotice, templates, templateList, groups: templateGroups, DEFAULT_TEMPLATE } = require('./lib/render');
 const banks = require('./lib/banks');
@@ -22,6 +25,7 @@ const { execFile } = require('child_process');
 const Wd = require('./lib/wedding');
 const Gs = require('./lib/guests');
 const stats = require('./lib/stats');
+const discounts = require('./lib/discounts');
 
 store.onLoad(() => Wd.migrate()); // dữ liệu từ trước khi có sổ tay cưới → gắn vào đám cưới
 
@@ -163,7 +167,8 @@ function uniqueSlug(wanted, exceptId) {
 const RESERVED = new Set(['api', 'admin', 'demo', 'uploads', 'card', 'css', 'js', 'led', 'video', 'so-tay', 'tham-gia']);
 
 function cardState(card) {
-  const trialEndsAt = card.paid ? null : (card.publishedAt || card.createdAt) + config.trialDays * DAY;
+  // trialFrom: bản sao của thiệp đã phát hành dùng tiếp đồng hồ dùng thử của bản gốc (nhân bản không được thêm hạn mới)
+  const trialEndsAt = card.paid ? null : (card.trialFrom || card.publishedAt || card.createdAt) + config.trialDays * DAY;
   return {
     paid: !!card.paid,
     trialEndsAt,
@@ -205,9 +210,9 @@ function qrPay(amount, code) {
 function wasPrice(o, product) {
   if (o.status !== 'pending') return {};
   const end = promoEnd();
-  if (product === 'card' && promoActive() && o.amount + (o.coupon ? config.coupons[o.coupon] || 0 : 0) === config.price) return { wasPrice: config.listPrice, promoEndsAt: end };
+  if (product === 'card' && promoActive() && o.amount + (o.discount || 0) === config.price) return { wasPrice: config.listPrice, promoEndsAt: end };
   if (product === 'combo' && o.upgrade) return { wasPrice: config.ledPrice + config.videoPrice, promoEndsAt: comboPromo() ? end : null };
-  if (product === 'combo' && comboPromo() && o.amount === config.comboPrice) return { wasPrice: config.comboListPrice, promoEndsAt: end };
+  if (product === 'combo' && comboPromo() && o.amount + (o.discount || 0) === config.comboPrice) return { wasPrice: config.comboListPrice, promoEndsAt: end };
   return {};
 }
 function orderView(o) {
@@ -224,12 +229,27 @@ function orderView(o) {
   };
 }
 
-// Giới hạn tần suất đơn giản theo IP (chống spam lời chúc/RSVP)
+// Giới hạn tần suất theo IP (chống dò mật khẩu, spam lời chúc/RSVP).
+// shared = true: bộ đếm nằm trong kho dữ liệu (db.limits) để mọi bản chạy trên Vercel đếm chung — bộ đếm trong bộ nhớ thì mỗi
+// bản chạy đếm riêng và mất khi khởi động lại, gần như vô dụng với đăng nhập / mật khẩu quản trị. Chỉ dùng cho route ghi dữ liệu
+// (POST…: đang giữ khoá kho nên đếm chính xác, và lần thử sai cũng được ghi lại khi trả lời). Chạy máy thường: đếm trong bộ nhớ.
 const hits = new Map();
-function rateLimit(key, max, windowMs) {
+function rateLimit(key, max, windowMs, shared) {
   const now = Date.now();
+  const tooMany = () => httpError(429, 'Bạn thao tác nhanh quá, thử lại sau ít phút nhé');
+  if (shared && store.remote) {
+    const L = db.limits || (db.limits = {});
+    const k = require('crypto').createHash('sha1').update(key).digest('hex').slice(0, 20); // không lưu IP dạng đọc được
+    const arr = (L[k] || []).filter((t) => now - t < windowMs);
+    if (arr.length >= max) { L[k] = arr; throw tooMany(); }
+    arr.push(now);
+    L[k] = arr;
+    const keys = Object.keys(L);
+    if (keys.length > 400) for (const x of keys) if (!L[x].some((t) => now - t < 36e5)) delete L[x]; // dọn bộ đếm đã nguội
+    return save();
+  }
   const arr = (hits.get(key) || []).filter((t) => now - t < windowMs);
-  if (arr.length >= max) throw httpError(429, 'Bạn thao tác nhanh quá, thử lại sau ít phút nhé');
+  if (arr.length >= max) throw tooMany();
   arr.push(now);
   hits.set(key, arr);
 }
@@ -239,8 +259,13 @@ setInterval(() => { const now = Date.now(); for (const [k, v] of hits) if (!v.so
 require('./lib/planner-routes')({ route, needUser, rateLimit, cardSummary, BASE_URL });
 
 // ---------------- API: tài khoản ----------------
+// Tự tạo tài khoản bằng email + mật khẩu đã đóng: không xác minh được email và không có cách lấy lại mật khẩu.
+// Tài khoản mới vào bằng Google / Facebook; tài khoản email cũ vẫn đăng nhập được (quản trị đặt lại mật khẩu giúp khi quên).
+// Vẫn mở khi máy chủ chưa cấu hình Google lẫn Facebook (chạy thử trên máy) hoặc đặt ALLOW_EMAIL_SIGNUP=1.
+const emailSignup = () => process.env.ALLOW_EMAIL_SIGNUP === '1' || !(google.enabled() || facebook.enabled());
 route('POST', '/api/auth/register', async (req, res, ctx) => {
-  rateLimit('reg:' + ctx.ip, 10, 36e5);
+  if (!emailSignup()) throw httpError(403, 'Tạo tài khoản bằng email đã đóng — bạn bấm "Tiếp tục với Google" hoặc Facebook nhé');
+  rateLimit('reg:' + ctx.ip, 10, 36e5, true);
   const b = await readJson(req);
   const user = auth.createUser(b);
   auth.startSession(res, user.id);
@@ -248,7 +273,7 @@ route('POST', '/api/auth/register', async (req, res, ctx) => {
   json(res, 200, { user: auth.publicUser(user) });
 });
 route('POST', '/api/auth/login', async (req, res, ctx) => {
-  rateLimit('login:' + ctx.ip, 20, 9e5);
+  rateLimit('login:' + ctx.ip, 20, 9e5, true);
   const b = await readJson(req);
   const user = auth.verifyLogin(b.email, b.password);
   auth.startSession(res, user.id);
@@ -260,11 +285,13 @@ route('POST', '/api/auth/logout', async (req, res) => {
   json(res, 200, { ok: true });
 });
 route('GET', '/api/me', async (req, res, ctx) => {
+  if (ctx.admin || stats.isOwnerAccount(ctx.user)) stats.markOwner(req, res, BASE_URL.startsWith('https')); // máy của chủ web: không tính vào thống kê
   json(res, 200, { user: auth.publicUser(ctx.user) });
 });
 
-// ---------------- đăng nhập Google ----------------
+// ---------------- đăng nhập Google / Facebook ----------------
 const GOOGLE_CB = BASE_URL + '/auth/google/callback';
+const FACEBOOK_CB = BASE_URL + '/auth/facebook/callback';
 const safeNext = (n) => (typeof n === 'string' && n.startsWith('/') && !n.startsWith('//') ? n : '/so-tay');
 function redirect(res, to, cookiesToSet = []) {
   res.writeHead(302, { Location: to, 'Set-Cookie': cookiesToSet, 'Cache-Control': 'no-store' });
@@ -295,24 +322,52 @@ route('GET', '/auth/google/callback', async (req, res, ctx) => {
   }
 });
 
+route('GET', '/auth/facebook', async (req, res, ctx) => {
+  if (!facebook.enabled()) return redirect(res, '/dang-nhap?loi=' + encodeURIComponent('Chưa bật đăng nhập Facebook'));
+  const state = facebook.newState();
+  const val = encodeURIComponent(state + '|' + safeNext(ctx.query.get('next')));
+  redirect(res, facebook.authUrl(state, FACEBOOK_CB), [`fst=${val}; HttpOnly; Path=/auth; SameSite=Lax; Max-Age=600` + (BASE_URL.startsWith('https') ? '; Secure' : '')]);
+});
+route('GET', '/auth/facebook/callback', async (req, res, ctx) => {
+  const clear = 'fst=; HttpOnly; Path=/auth; SameSite=Lax; Max-Age=0';
+  const fail = (msg) => redirect(res, '/dang-nhap?loi=' + encodeURIComponent(msg), [clear]);
+  const [state, next] = decodeURIComponent(cookies(req).fst || '').split('|');
+  if (ctx.query.get('error')) return fail('Bạn đã huỷ đăng nhập Facebook');
+  if (!state || state !== ctx.query.get('state')) return fail('Phiên đăng nhập Facebook không hợp lệ, thử lại nhé');
+  try {
+    rateLimit('facebook:' + ctx.ip, 30, 9e5);
+    const f = await facebook.exchange(String(ctx.query.get('code') || ''), FACEBOOK_CB);
+    const user = auth.facebookUser(f);
+    auth.startSession(res, user.id, 'facebook');
+    claimGuestCards(req, res, user);
+    redirect(res, safeNext(next), [].concat(res.getHeader('Set-Cookie'), clear));
+  } catch (e) {
+    if (e.status === 500 || !e.status) console.error('Facebook login lỗi:', e);
+    fail(e.status && e.status !== 500 ? e.message : 'Không đăng nhập được bằng Facebook, thử lại sau nhé');
+  }
+});
+
 route('GET', '/api/meta', async (req, res) => {
+  // giá, ngày dùng thử, liên hệ hỗ trợ… sửa trên trang quản trị nằm trong kho dữ liệu: bản chạy vừa khởi động (hoặc đã
+  // lâu chưa nạp) phải nạp trước, nếu không khách thấy giá / liên hệ mặc định trong config.json. Kho lỗi thì dùng tạm bản đang có.
+  await store.fresh(60000).catch((e) => console.error('meta:', e.message));
   json(res, 200, {
     brand: config.brand, tagline: config.tagline, price: cardPrice(), ...promoInfo(), trialDays: config.trialDays,
     trialGuestLimit: config.trialGuestLimit, banks, templates: templateList(), templateGroups, baseUrl: BASE_URL, support: config.support,
     ledPrice: config.ledPrice, led: ledLib.options(),
     videoPrice: config.videoPrice, video: videoLib.options(), music: musicLib.options(),
     comboPrice: comboPrice(), comboListPrice: comboPromo() ? config.comboListPrice : null, promoEndsAt: promoActive() || comboPromo() ? promoEnd() : null, blobUpload: !!process.env.BLOB_READ_WRITE_TOKEN,
-    googleLogin: google.enabled(),
+    googleLogin: google.enabled(), facebookLogin: facebook.enabled(), emailSignup: emailSignup(),
   });
 }, { noDb: true });
 
 // ---------------- thống kê truy cập ----------------
 // Trang giới thiệu gửi về (public/js/site.js): p = đường dẫn, v = lượt đầu trong ngày của trình duyệt này, n = lần đầu ghé,
 // r = nguồn tới, m = điện thoại; hoặc u = bấm "Dùng mẫu" (thiep:<mẫu> | video:<mẫu> | led:<màu>-<hiệu ứng>).
-const TRACK_PAGES = { '/': 'Trang chủ', '/mau-thiep': 'Mẫu thiệp', '/video-cuoi': 'Video cưới', '/man-hinh-led-dam-cuoi': 'Màn hình LED', '/so-tay-cuoi': 'Sổ tay cưới', '/dang-nhap': 'Đăng nhập' };
+const TRACK_PAGES = { '/': 'Trang chủ', '/mau-thiep': 'Mẫu thiệp', '/video-cuoi': 'Video cưới', '/man-hinh-led-dam-cuoi': 'Màn hình LED', '/so-tay-cuoi': 'Sổ tay cưới', '/dang-nhap': 'Đăng nhập', '/goi-y': 'Gợi ý thiệp từ ảnh' };
 route('POST', '/api/t', async (req, res, ctx) => {
   try {
-    if (stats.isBot(req)) throw 0;
+    if (stats.isBot(req) || stats.isOwner(req, ctx)) throw 0; // bot và máy của chủ web không tính
     rateLimit('t:' + ctx.ip, 240, 6e5);
     const b = JSON.parse((await readBody(req, 2000)).toString('utf8') || '{}');
     const items = [];
@@ -329,7 +384,7 @@ route('POST', '/api/t', async (req, res, ctx) => {
   res.writeHead(204); res.end();
 }, { noDb: true });
 // lượt mở trang xem thử một mẫu (không tính ảnh xem trước nhúng ở trang chủ, không tính bot)
-const demoView = (req, ctx, key) => (ctx.query.get('preview') === '1' || stats.isBot(req) ? null : stats.hit([['view', key]]));
+const demoView = (req, ctx, key) => (ctx.query.get('preview') === '1' || stats.isBot(req) || stats.isOwner(req, ctx) ? null : stats.hit([['view', key]]));
 
 route('GET', '/api/admin/traffic', async (req, res, ctx) => {
   needAdmin(ctx);
@@ -360,16 +415,20 @@ route('GET', '/api/admin/traffic', async (req, res, ctx) => {
     .sort((a, b) => b.views + b.uses * 3 - (a.views + a.uses * 3));
   const since = new Date(stats.today(t0) + 'T00:00:00+07:00').getTime();
   const sum = (k) => series.reduce((n, s) => n + s[k], 0);
-  const paid = db.orders.filter((o) => o.status === 'paid' && o.paidAt >= since);
+  // tài khoản của chủ web không tính vào phễu (thiệp, đăng ký, phát hành, thanh toán)
+  const mine = new Set(db.users.filter((u) => stats.isOwnerAccount(u)).map((u) => u.id));
+  const cards = db.cards.filter((c) => c.createdAt >= since && !mine.has(c.userId));
+  const paid = db.orders.filter((o) => o.status === 'paid' && o.paidAt >= since && !mine.has(o.userId));
   json(res, 200, {
-    days, series, today: series[series.length - 1], yesterday: series[series.length - 2],
+    days, series,
+    exclude: { device: stats.ownerDevice(req) || !!ctx.admin, accounts: stats.ownerList().filter((x) => !x.includes('@') || db.users.some((u) => String(u.email).toLowerCase() === x)), users: mine.size }, today: series[series.length - 1], yesterday: series[series.length - 2],
     totals: { visitors: sum('visitors'), fresh: sum('fresh'), pv: sum('pv') },
     pages: top(sums.pv), refs: top(sums.ref), devices: top(sums.device), templates: tpls,
     funnel: {
       visitors: sum('visitors'), views: Object.values(sums.view).reduce((a, b) => a + b, 0), uses: Object.values(sums.use).reduce((a, b) => a + b, 0),
-      cards: db.cards.filter((c) => c.createdAt >= since).length, drafts: db.cards.filter((c) => c.createdAt >= since && !c.userId).length,
-      signups: db.users.filter((u) => u.createdAt >= since).length,
-      published: db.cards.filter((c) => c.publishedAt && c.publishedAt >= since).length,
+      cards: cards.length, drafts: cards.filter((c) => !c.userId).length,
+      signups: db.users.filter((u) => u.createdAt >= since && !mine.has(u.id)).length,
+      published: db.cards.filter((c) => c.publishedAt && c.publishedAt >= since && !mine.has(c.userId)).length,
       paid: paid.length, revenue: paid.reduce((n, o) => n + o.amount, 0),
     },
   });
@@ -438,7 +497,7 @@ async function guestCard(req, res, ctx) {
   let card = gid && db.cards.find((c) => c.guestId === gid && !c.userId);
   if (card) Object.assign(card, { template: tpl, palette, updatedAt: now });
   else {
-    rateLimit('gcard:' + ctx.ip, 12, 36e5);
+    rateLimit('gcard:' + ctx.ip, 12, 36e5, true);
     // dọn thiệp nháp vô chủ đã quá hạn cookie
     const old = now - GUEST_DAYS * DAY;
     if (db.cards.some((c) => c.guestId && !c.userId && c.updatedAt < old)) db.cards = db.cards.filter((c) => !(c.guestId && !c.userId && c.updatedAt < old));
@@ -515,13 +574,16 @@ route('POST', '/api/cards/:id/publish', async (req, res, ctx) => {
 
 route('POST', '/api/cards/:id/duplicate', async (req, res, ctx) => {
   const src = ownedCard(ctx, ctx.params.id);
+  if (db.cards.filter((c) => c.userId === src.userId).length >= 30) throw httpError(400, 'Bạn đã có quá nhiều thiệp');
   const now = Date.now();
+  const trialFrom = src.trialFrom || src.publishedAt || undefined;
   const card = {
     ...JSON.parse(JSON.stringify(src)), id: rid(12), slug: uniqueSlug(src.slug + '-ban-sao'), title: (src.title + ' (bản sao)').slice(0, 60),
-    status: 'draft', paid: false, paidAt: undefined, combo: undefined, publishedAt: undefined, views: 0, createdAt: now, updatedAt: now,
+    status: 'draft', paid: false, paidAt: undefined, combo: undefined, publishedAt: undefined, views: 0, createdAt: now, updatedAt: now, trialFrom,
   };
-  if (card.led) card.led = { ...card.led, paid: false, paidAt: undefined, createdAt: now };
-  if (card.video) card.video = { ...card.video, paid: false, paidAt: undefined, mp4: null, createdAt: now };
+  // màn LED / video của bản sao: giữ ngày tạo của bản gốc → hạn dùng thử không được làm mới bằng cách nhân bản
+  if (card.led) card.led = { ...card.led, paid: false, paidAt: undefined };
+  if (card.video) card.video = { ...card.video, paid: false, paidAt: undefined, mp4: null };
   db.cards.push(card);
   save();
   json(res, 200, { card: cardSummary(card) });
@@ -559,7 +621,10 @@ route('POST', '/api/cards/:id/guests', async (req, res, ctx) => {
 route('DELETE', '/api/guests/:gid', async (req, res, ctx) => {
   const g = db.guests.find((x) => x.id === ctx.params.gid);
   if (!g) throw httpError(404, 'Không tìm thấy khách');
-  if (!Wd.isMember(Wd.get(g.weddingId), needUser(ctx))) throw httpError(404, 'Không tìm thấy khách');
+  const wd = Wd.get(g.weddingId);
+  if (!Wd.isMember(wd, needUser(ctx))) throw httpError(404, 'Không tìm thấy khách');
+  // khách đã mở link riêng rồi mới bị xoá: suất dùng thử đó coi như đã dùng (xoá 20 khách đầu để mời tiếp 20 khách khác thì không được)
+  if (g.opens > 0 && wd) wd.trialBurned = (wd.trialBurned || 0) + 1;
   db.guests.splice(db.guests.indexOf(g), 1);
   save();
   json(res, 200, { ok: true });
@@ -691,21 +756,21 @@ route('POST', '/api/cards/:id/order', async (req, res, ctx) => {
     order = { id: rid(12), code: P.prefix + rid(6).toUpperCase(), product, cardId: card.id, userId: card.userId, amount: P.price(card), status: 'pending', createdAt: Date.now() };
     db.orders.push(order);
   }
-  // combo: giá tuỳ thiệp đã kích hoạt chưa (nâng cấp) → tính lại mỗi lần mở
-  if (product === 'combo') { order.amount = P.price(card); order.upgrade = !!card.paid; }
-  if (b.coupon !== undefined) {
-    const code = str(b.coupon, 30).toUpperCase();
-    if (code) {
-      const off = config.coupons[code];
-      if (!off) throw httpError(400, 'Mã giảm giá không đúng hoặc đã hết hạn');
-      if (!P.coupons) throw httpError(400, 'Mã giảm giá chỉ áp dụng cho thiệp cưới');
-      order.coupon = code;
-      order.amount = Math.max(0, P.price(card) - off);
-    } else {
-      delete order.coupon;
-      order.amount = P.price(card);
-    }
+  // combo: giá tuỳ thiệp đã kích hoạt chưa (nâng cấp) → tính lại mỗi lần mở (giữ mã đã áp)
+  if (product === 'combo') order.upgrade = !!card.paid;
+  // mã giảm giá (lib/discounts.js): b.coupon = mã mới ('' = bỏ mã); không gửi thì giữ mã đã áp, mã hết hạn/hết lượt thì tự bỏ
+  const code = b.coupon !== undefined ? discounts.norm(b.coupon) : order.coupon || '';
+  let d = null;
+  if (code) {
+    try { d = discounts.check(code, product, order.id); } catch (e) { if (b.coupon !== undefined) throw e; }
   }
+  if (d || b.coupon !== undefined || product === 'combo' || order.coupon) {
+    const price = P.price(card), off = d ? discounts.offFor(d, price) : 0;
+    order.amount = price - off;
+    if (d) { order.coupon = d.code; order.discount = off; } else { delete order.coupon; delete order.discount; }
+  }
+  // mã giảm hết 100% → không cần chuyển khoản, kích hoạt luôn
+  if (order.amount <= 0 && d) markPaid(order, 'coupon');
   save();
   json(res, 200, { order: orderView(order) });
 });
@@ -731,7 +796,7 @@ route('GET', '/api/orders/:code', async (req, res, ctx) => {
 
 // Chủ thiệp báo "Tôi đã chuyển khoản"
 route('POST', '/api/orders/:code/claim', async (req, res, ctx) => {
-  rateLimit('claim:' + ctx.ip, 10, 36e5);
+  rateLimit('claim:' + ctx.ip, 10, 36e5, true);
   const o = db.orders.find((x) => x.code === ctx.params.code);
   if (!o) throw httpError(404, 'Không tìm thấy đơn');
   ownedCard(ctx, o.cardId, { guest: true });
@@ -786,14 +851,20 @@ route('POST', '/api/pay/sepay', async (req, res, ctx) => {
   else if (o.status === 'paid' || productPaid(o)) {
     result = 'already-paid';
     o.bankNote = `Nhận thêm ${money(amount)} khi đơn đã thanh toán — cần hoàn tiền`;
-  } else if (amount < o.amount) {
-    result = 'underpaid';
-    o.claimedAt = o.claimedAt || Date.now();
-    o.bankNote = `Nhận ${money(amount)}, thiếu ${money(o.amount - amount)}`;
   } else {
-    result = 'paid';
-    if (amount > o.amount) o.bankNote = `Nhận ${money(amount)}, thừa ${money(amount - o.amount)}`;
-    markPaid(o, 'sepay');
+    // khách chuyển thiếu rồi chuyển bù: cộng các lần chuyển trước của cùng đơn, đủ tiền thì kích hoạt
+    const before = db.bankTxns.filter((x) => x.order === o.code && x.result === 'underpaid').reduce((n, x) => n + x.amount, 0);
+    const total = before + amount;
+    if (total < o.amount) {
+      result = 'underpaid';
+      o.claimedAt = o.claimedAt || Date.now();
+      o.bankNote = `Nhận ${money(total)}${before ? ` (${money(before)} + ${money(amount)})` : ''}, thiếu ${money(o.amount - total)}`;
+    } else {
+      result = 'paid';
+      o.bankNote = total > o.amount ? `Nhận ${money(total)}, thừa ${money(total - o.amount)}` : before ? `Nhận đủ sau nhiều lần chuyển (${money(total)})` : o.bankNote;
+      if (!o.bankNote) delete o.bankNote;
+      markPaid(o, 'sepay');
+    }
   }
   db.bankTxns.push({ id: txnId, amount, content: str(t.content || '', 300), at: Date.now(), order: o ? o.code : null, result });
   if (db.bankTxns.length > 2000) db.bankTxns.splice(0, db.bankTxns.length - 2000);
@@ -803,12 +874,13 @@ route('POST', '/api/pay/sepay', async (req, res, ctx) => {
 
 // ---------------- API: quản trị ----------------
 route('GET', '/api/admin/session', async (req, res, ctx) => {
+  if (ctx.admin) stats.markOwner(req, res, BASE_URL.startsWith('https'));
   // byEmail: quản trị theo tài khoản Google được chỉ định (ADMIN_EMAILS) thay cho mật khẩu
   json(res, 200, { admin: ctx.admin, enabled: adminAuth.byEmail() || adminAuth.enabled(), byEmail: adminAuth.byEmail(), email: ctx.user ? ctx.user.email : '' });
 });
 route('POST', '/api/admin/login', async (req, res, ctx) => {
   if (adminAuth.byEmail()) throw httpError(403, 'Trang quản trị chỉ mở cho tài khoản Google của chủ web');
-  rateLimit('admin-login:' + ctx.ip, 8, 15 * 60e3);
+  rateLimit('admin-login:' + ctx.ip, 8, 15 * 60e3, true);
   if (!adminAuth.enabled()) throw httpError(503, 'Chưa đặt mật khẩu quản trị (biến môi trường ADMIN_PASSWORD)');
   const b = await readJson(req);
   if (!adminAuth.verify(String(b.password || ''))) throw httpError(401, 'Sai mật khẩu');
@@ -837,6 +909,8 @@ route('POST', '/api/admin/orders/:id/confirm', async (req, res, ctx) => {
   needAdmin(ctx);
   const o = db.orders.find((x) => x.id === ctx.params.id);
   if (!o) throw httpError(404, 'Không tìm thấy đơn');
+  // đơn đã thanh toán (SePay vừa báo, hoặc bấm hai lần) mà xác nhận nữa thì Trọn bộ bị cộng lượt LED + video lần hai
+  if (o.status === 'paid' || productPaid(o)) throw httpError(409, 'Đơn này đã được thanh toán rồi');
   markPaid(o, 'admin');
   adminLib.audit(ctx, 'Xác nhận đơn', o.code, `${o.amount}đ`);
   json(res, 200, { ok: true });
@@ -856,7 +930,7 @@ function publicCard(slug) {
 route('POST', '/api/public/:slug/rsvp', async (req, res, ctx) => {
   const card = publicCard(ctx.params.slug);
   // chủ thiệp thử nhiều lần không bị chặn; khách: nhiều người dự tiệc hay chung một IP (4G / wifi nhà hàng) nên nới rộng
-  if (!isOwner(ctx, card)) rateLimit(`rsvp:${ctx.ip}:${card.id}`, 30, 6e5);
+  if (!isOwner(ctx, card)) rateLimit(`rsvp:${ctx.ip}:${card.id}`, 30, 6e5, true);
   const b = await readJson(req, 4096);
   const name = str(b.name, 80);
   if (!name) throw httpError(400, 'Bạn nhập tên giúp mình nhé');
@@ -872,7 +946,7 @@ route('POST', '/api/public/:slug/rsvp', async (req, res, ctx) => {
 });
 route('POST', '/api/public/:slug/wish', async (req, res, ctx) => {
   const card = publicCard(ctx.params.slug);
-  if (!isOwner(ctx, card)) rateLimit(`wish:${ctx.ip}:${card.id}`, 20, 6e5);
+  if (!isOwner(ctx, card)) rateLimit(`wish:${ctx.ip}:${card.id}`, 20, 6e5, true);
   const b = await readJson(req, 4096);
   const name = str(b.name, 60);
   const message = str(b.message, 500);
@@ -881,6 +955,42 @@ route('POST', '/api/public/:slug/wish', async (req, res, ctx) => {
   save();
   json(res, 200, { ok: true });
 });
+
+// ---------------- lượt xem thiệp ----------------
+// Chạy máy thường: cộng thẳng vào dữ liệu. Kho từ xa (Vercel): mỗi lần ghi là giữ khoá chung + ghi lại toàn bộ dữ liệu, nên
+// lúc cô dâu chú rể vừa gửi link (hàng trăm lượt mở trong vài phút) từng lượt xem mà ghi ngay thì cả web phải xếp hàng.
+// → gom lượt xem trong bộ nhớ, ghi gộp mỗi 30 giây hoặc ghi kèm vào lần ghi dữ liệu kế tiếp của bản chạy này.
+const pendingViews = new Map(); // id thiệp → { n, guests: Map(id khách → { n, at }) }
+let pendingSince = 0;
+function flushViews() {
+  if (!pendingViews.size) return false;
+  for (const [id, p] of pendingViews) {
+    const card = db.cards.find((c) => c.id === id);
+    if (!card) continue;
+    card.views = (card.views || 0) + p.n;
+    for (const [gid, x] of p.guests) {
+      const g = db.guests.find((y) => y.id === gid);
+      if (g) { g.opens = (g.opens || 0) + x.n; g.openedAt = g.openedAt || x.at; }
+    }
+  }
+  pendingViews.clear();
+  pendingSince = 0;
+  save();
+  return true;
+}
+function countView(card, guest) {
+  if (!store.remote) {
+    card.views = (card.views || 0) + 1;
+    if (guest) { guest.opens = (guest.opens || 0) + 1; guest.openedAt = guest.openedAt || Date.now(); }
+    return save();
+  }
+  const p = pendingViews.get(card.id) || { n: 0, guests: new Map() };
+  p.n++;
+  if (guest) { const x = p.guests.get(guest.id) || { n: 0, at: Date.now() }; x.n++; p.guests.set(guest.id, x); }
+  pendingViews.set(card.id, p);
+  pendingSince = pendingSince || Date.now();
+  if (Date.now() - pendingSince > 30000) flushViews();
+}
 
 // ---------------- trang thiệp ----------------
 function html(res, status, body) {
@@ -906,11 +1016,7 @@ async function showCard(req, res, ctx) {
   const code = ctx.params.code || ctx.query.get('g');
   const found = code && card.weddingId ? db.guests.find((g) => g.weddingId === card.weddingId && g.code === code) : null;
   const guest = found && Gs.personalAllowed(card, found) ? found : null; // quá giới hạn dùng thử → lời mời chung
-  if (!preview && !isOwner) {
-    card.views = (card.views || 0) + 1;
-    if (guest) { guest.opens = (guest.opens || 0) + 1; guest.openedAt = guest.openedAt || Date.now(); }
-    save();
-  }
+  if (!preview && !isOwner) countView(card, guest);
   const wishes = db.wishes.filter((w) => w.cardId === card.id && !w.hidden).sort((a, b) => b.createdAt - a.createdAt).slice(0, 200);
   const edit = preview && ctx.query.get('edit') === '1'; // khung sửa trực tiếp trong trang sửa thiệp (chỉ chủ thiệp)
   html(res, 200, renderCard(card, { guest, wishes, preview, edit, trial: !st.paid, baseUrl: BASE_URL }));
@@ -934,6 +1040,29 @@ route('GET', '/demo/:tpl', async (req, res, ctx) => {
   await demoView(req, ctx, 'thiep:' + tpl.id);
   html(res, 200, renderCard(card, { guest, wishes, demo: true, preview, lite, trial: false, baseUrl: BASE_URL }));
 });
+
+// ---------------- gợi ý thiệp từ ảnh (trang /goi-y) ----------------
+// Khách thả ảnh cưới vào trang /goi-y: trình duyệt tự đọc màu ảnh, chọn vài mẫu hợp tông rồi mở từng mẫu ở đây trong khung
+// xem thử. Ảnh KHÔNG gửi lên máy chủ: thiệp vẽ ra với các ô ảnh giữ chỗ mang "#k=<vị trí>" (như chế độ sửa), trang /goi-y
+// thay ảnh trong máy khách vào đúng các ô đó. ?n= số ảnh album, ?groom= ?bride= ?date= chữ khách vừa gõ.
+route('GET', '/goi-y/xem/:tpl', async (req, res, ctx) => {
+  const tpl = templates[ctx.params.tpl];
+  if (!tpl) throw httpError(404, 'Không có mẫu này');
+  const q = ctx.query;
+  const d = cd.normalize(cd.sample());
+  const groom = str(q.get('groom'), 40), bride = str(q.get('bride'), 40);
+  Object.assign(d.groom, { name: groom || 'Chú Rể', fullName: groom || 'Chú Rể' });
+  Object.assign(d.bride, { name: bride || 'Cô Dâu', fullName: bride || 'Cô Dâu' });
+  const date = /^\d{4}-\d{2}-\d{2}$/.test(q.get('date') || '') ? q.get('date') : '';
+  if (date) { d.date = date; d.events.forEach((e) => { e.date = date; }); }
+  d.gifts = cd.defaults().gifts; // không hiện tài khoản mẫu
+  d.music = ''; d.musicOff = true;
+  const n = Math.max(0, Math.min(12, parseInt(q.get('n'), 10) || 0));
+  d.cover = '/card/slot.svg#k=cover';
+  d.photos = Array.from({ length: n }, (_, i) => `/card/slot.svg#k=photos.${i}`);
+  const card = { slug: 'demo', template: tpl.id, palette: q.get('palette') || '', data: d };
+  html(res, 200, renderCard(card, { guest: null, wishes: [], demo: true, preview: true, lite: q.get('lite') === '1', trial: false, baseUrl: BASE_URL }));
+}, { noDb: true });
 
 // ---------------- màn hình LED ----------------
 route('GET', '/led/:slug', async (req, res, ctx) => {
@@ -1110,7 +1239,7 @@ route('POST', '/api/cards/:id/video/saved', async (req, res, ctx) => {
 });
 route('POST', '/api/cards/:id/video/saved-file', async (req, res, ctx) => {
   const card = paidVideoCard(ctx, ctx.params.id);
-  if (process.env.VERCEL) throw httpError(501, 'Hãy cấu hình Vercel Blob để lưu bản sao video');
+  if (process.env.VERCEL) throw httpError(501, 'Tạm thời chưa lưu được video, bạn thử lại sau hoặc nhắn hỗ trợ nhé');
   const type = String(req.headers['content-type'] || '').split(';')[0].trim();
   if (type !== 'video/mp4') throw httpError(415, 'Chỉ nhận file MP4');
   rateLimit('mp4copy:' + card.userId, 20, 36e5);
@@ -1135,6 +1264,8 @@ const PAGES = {
   '/so-tay': 'planner.html',
   '/video-cua-toi': 'dashboard.html', // cùng trang với "Thiệp của tôi", hiện danh sách video
   '/so-tay-cuoi': 'planner-landing.html',
+  '/goi-y': 'suggest.html', // thả ảnh cưới → gợi ý thiệp
+  '/dieu-khoan': 'dieu-khoan.html', '/chinh-sach-bao-mat': 'chinh-sach-bao-mat.html', '/hoan-tien': 'hoan-tien.html', // trang pháp lý
 };
 const MIME = {
   '.html': 'text/html; charset=utf-8', '.css': 'text/css; charset=utf-8', '.js': 'text/javascript; charset=utf-8',
@@ -1221,7 +1352,15 @@ const server = http.createServer(async (req, res) => {
   // Chỉ làm khi có route xử lý — file tĩnh và trang HTML không đụng tới dữ liệu nên không phải chờ kho.
   if (store.remote && matched && !matched.noDb) {
     let finish;
-    try { finish = await store.begin(req.method, pathname); tm.mark('db'); } catch (e) {
+    // Đọc xong nội dung gửi lên rồi mới giữ khoá dữ liệu: máy khách mạng chậm không giữ khoá của cả web trong lúc gửi.
+    // Tệp lớn (tải ảnh, video) không đọc sẵn — các route đó tự đọc.
+    if (req.method !== 'GET' && req.method !== 'HEAD' && !/^\/api\/upload(\/|$)|\/video\//.test(pathname) && !(+req.headers['content-length'] > 1.5e6)) {
+      try { req._body = await readBody(req, 1.5e6); } catch (e) { return json(res, e.status || 400, { error: e.message }); }
+    }
+    try {
+      finish = await store.begin(req.method, pathname); tm.mark('db');
+      if (req.method !== 'GET' && req.method !== 'HEAD') flushViews(); // đang giữ khoá sẵn → ghi kèm lượt xem đang gom
+    } catch (e) {
       console.error(e);
       // gợi ý nguyên nhân (không lộ chuỗi kết nối) để chủ web tự sửa cấu hình
       const m = String(e && e.message || '');
@@ -1233,12 +1372,26 @@ const server = http.createServer(async (req, res) => {
         : 'lỗi khác, xem Logs trên Vercel';
       return json(res, 503, { error: 'Không kết nối được cơ sở dữ liệu, vui lòng thử lại', why });
     }
+    // Trả lời chỉ gửi đi sau khi ghi dữ liệu xong. Ghi thất bại → trả 503 thay cho câu trả lời "thành công" đã soạn
+    // (webhook thanh toán báo thành công mà chưa lưu là mất giao dịch). Muốn vậy dòng đầu (mã trạng thái + header)
+    // phải giữ lại tới lúc đó; route nào ghi dần nội dung (res.write) thì gửi dòng đầu ngay như cũ.
     const end = res.end.bind(res);
+    const writeHead = res.writeHead.bind(res);
+    const write = res.write.bind(res);
+    let head = null;
     let ending = false;
+    const flushHead = () => { if (head) { const h = head; head = null; writeHead(...h); } };
+    res.writeHead = (...a) => { head = a; return res; };
+    res.write = (...a) => { flushHead(); return write(...a); };
     res.end = (...a) => {
       if (ending) return res;
       ending = true;
-      finish().catch((e) => console.error('Lỗi ghi dữ liệu:', e)).finally(() => end(...a));
+      finish().then(() => { flushHead(); end(...a); }, (e) => {
+        console.error('Lỗi ghi dữ liệu:', e);
+        if (res.headersSent) return end(...a); // đã gửi dở nội dung → không đổi được nữa
+        writeHead(503, { 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'no-store' });
+        end(JSON.stringify({ error: 'Chưa lưu được, bạn thử lại sau ít giây nhé' }));
+      });
       return res;
     };
   }

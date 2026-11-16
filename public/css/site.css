@@ -346,3 +346,24 @@ a.c:hover{transform:translateY(-4px)}
 [data-theme="dark"] .totop{box-shadow:0 10px 26px rgba(0,0,0,.5)}
 /* màn cảm ứng: chữ trong ô nhập >= 16px, nếu không Safari trên iPhone tự phóng to cả trang mỗi lần chạm vào ô và không thu lại */
 @media (pointer:coarse){input:not([type=checkbox]):not([type=radio]):not([type=range]):not([type=color]),select,textarea{font-size:16px!important}}
+
+/* trang pháp lý (điều khoản, bảo mật, hoàn tiền): cột chữ hẹp dễ đọc */
+.legal{padding:120px 0 72px}
+.legal .lw{max-width:720px;margin:0 auto;padding:0 20px}
+.legal h1{font-family:var(--serif);font-weight:800;letter-spacing:-.02em;font-size:clamp(28px,5vw,40px);line-height:1.2;margin:12px 0 6px}
+.legal .upd{color:var(--muted);font-size:14px;margin:0 0 18px}
+.legal .intro{font-size:17px;color:var(--ink);margin:0 0 26px}
+.legal .ltabs{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 34px;padding:0;list-style:none}
+.legal .ltabs a{display:inline-block;text-decoration:none;border:1px solid var(--line);background:var(--card);border-radius:999px;padding:7px 14px;font-size:14px;color:var(--muted)}
+.legal .ltabs a:hover{color:var(--ink);border-color:rgba(214,69,93,.35)}
+.legal .ltabs a[aria-current]{color:var(--ink);font-weight:600;border-color:var(--red)}
+.legal h2{font-size:20px;line-height:1.35;margin:36px 0 10px;scroll-margin-top:96px}
+.legal h3{font-size:16px;margin:20px 0 6px}
+.legal p,.legal li{line-height:1.75}
+.legal p{margin:0 0 12px}
+.legal ul{margin:0 0 14px;padding-left:22px}
+.legal li{margin:0 0 6px}
+.legal a.u,.legal p a,.legal li a{color:var(--red);text-decoration:underline;text-underline-offset:2px}
+.legal .box{background:var(--bg2);border:1px solid var(--line);border-radius:16px;padding:16px 18px;margin:0 0 16px}
+.legal .box p:last-child{margin-bottom:0}
+@media (max-width:480px){.legal{padding-top:104px}.legal .intro{font-size:16px}.legal h2{font-size:18px}}

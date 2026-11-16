@@ -2,6 +2,7 @@
 // dựng bằng máy dựng chung lib/mh.js. Ảnh/font là của bản gốc: chỉ dùng công khai khi đã thay bằng tài sản của mình.
 module.exports = require('../lib/mh').template({
   id: 'mhhb02',
-  name: "HB02",
+  name: 'Hồng Hỷ',
+  desc: 'Ngọt ngào trên giấy kem: đếm ngược hồng, chân dung khung viền hồng và chữ thư pháp',
   json: require('./mh/mhhb02.json'),
 });

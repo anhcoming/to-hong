@@ -4,6 +4,7 @@ const assert = require('assert');
 const fs = require('fs'), os = require('os'), path = require('path');
 process.env.DATA_DIR = fs.mkdtempSync(path.join(os.tmpdir(), 'thiep-combo-'));
 process.env.BASE_URL = 'http://localhost';
+process.env.ALLOW_EMAIL_SIGNUP = '1'; // bài kiểm thử tạo tài khoản bằng email (ngoài thực tế đã đóng khi có Google / Facebook)
 process.env.SEPAY_API_KEY = 'k';
 const server = require('../server');
 const config = require('../config.json');

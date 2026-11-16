@@ -74,7 +74,7 @@ module.exports = {
     ],
     gifts: {
       groom: { bin: '970436', acc: '0000000000', holder: 'THIEP CUOI DEMO' },
-      bride: { bin: '970418', acc: '6665558888', holder: 'NGUYEN THU HA' },
+      bride: { bin: '970418', acc: '0000000000', holder: 'THIEP CUOI DEMO' },
     },
   },
   // xác nhận tham dự mở trong hộp thoại từ phần tiệc cưới (như bản gốc), nên không có trong luồng trang
@@ -479,8 +479,10 @@ ${FLOWERS.map((k) => `<span class="hm-fl hm-fl-${k}" aria-hidden="true"><img src
 .tpl-hoamoc .hm-wbox input{margin-bottom:16px}
 .tpl-hoamoc .hm-wbox textarea{display:inline-block;vertical-align:baseline} /* ô chữ nằm trên dòng như bản gốc: chừa ~7px khoảng chân chữ bên dưới */
 .tpl-hoamoc .hm-wbox ::placeholder{color:color-mix(in srgb,var(--ink) 55%,transparent)}
-.tpl-hoamoc .hm-wrow{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:16px}
-.tpl-hoamoc .hm-wrow .form-msg{flex:1;margin:0;font-size:12px;text-align:left}
+.tpl-hoamoc .hm-wrow{display:flex;flex-wrap:wrap;align-items:center;justify-content:flex-end;gap:8px;margin-top:16px}
+/* báo lỗi / cảm ơn: dòng riêng dưới nút, dồn phải — góc trái dưới có hoa che chữ */
+.tpl-hoamoc .hm-wrow .form-msg{order:2;flex:0 0 100%;max-width:230px;margin:0 0 0 auto;font-size:12px;line-height:1.4;text-align:right}
+.tpl-hoamoc .hm-wrow .form-msg:empty{display:none}
 .tpl-hoamoc .hm-wrow button{padding:8px 24px;border:0;border-radius:10px;background:var(--ink);color:#fff;font:600 14px/20px var(--font-body);text-transform:uppercase;transition:transform .2s}
 .tpl-hoamoc .wish-list{width:100%;max-height:500px;margin:32px auto 0;padding-right:8px;overflow-y:auto;text-align:left}
 .tpl-hoamoc .wish{margin:0 0 12px;padding:16px;border:1px solid color-mix(in srgb,var(--ink) 25%,transparent);border-radius:8px;background:color-mix(in srgb,var(--ink) 2%,transparent);box-shadow:0 1px 2px rgba(0,0,0,.05);font-size:14px;color:var(--ink)}

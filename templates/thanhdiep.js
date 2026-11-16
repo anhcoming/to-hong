@@ -503,8 +503,10 @@ module.exports = {
 .tpl-thanhdiep .td-wbox input,.tpl-thanhdiep .td-wbox textarea{display:block;width:100%;padding:12px 16px;border:1px solid var(--ink);border-radius:8px;background:color-mix(in srgb,var(--ink) 10%,transparent);color:var(--ink);font:400 14px/20px var(--font-body);outline:none;resize:none}
 .tpl-thanhdiep .td-wbox input{margin-bottom:16px}
 .tpl-thanhdiep .td-wbox ::placeholder{color:color-mix(in srgb,var(--ink) 50%,transparent)}
-.tpl-thanhdiep .td-wrow{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:16px}
-.tpl-thanhdiep .td-wrow .form-msg{flex:1;margin:0;font-size:12px;text-align:left}
+.tpl-thanhdiep .td-wrow{display:flex;flex-wrap:wrap;align-items:center;justify-content:flex-end;gap:8px;margin-top:16px}
+/* báo lỗi / cảm ơn: dòng riêng dưới nút, không chen cạnh nút */
+.tpl-thanhdiep .td-wrow .form-msg{order:2;flex:0 0 100%;margin:0;font-size:12px;line-height:1.4;text-align:right}
+.tpl-thanhdiep .td-wrow .form-msg:empty{display:none}
 .tpl-thanhdiep .td-wrow button{padding:8px 24px;border:0;border-radius:999px;background:var(--ink);color:#fff;font:600 14px/20px var(--font-body);cursor:pointer;transition:transform .2s}
 .tpl-thanhdiep .td-wrow button:hover{transform:scale(1.05)}
 .tpl-thanhdiep .wish-list{width:100%;max-height:500px;margin:32px auto 0;padding-right:8px;overflow-y:auto}

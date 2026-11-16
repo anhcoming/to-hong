@@ -2,6 +2,7 @@
 // dựng bằng máy dựng chung lib/mh.js. Ảnh/font là của bản gốc: chỉ dùng công khai khi đã thay bằng tài sản của mình.
 module.exports = require('../lib/mh').template({
   id: 'mhat01',
-  name: "AT01",
+  name: 'Nắng Mai',
+  desc: 'Hiện đại xanh navy: bìa ảnh ngoại cảnh, chữ thư pháp và thẻ tiệc nhà trai, nhà gái nền xanh nhạt',
   json: require('./mh/mhat01.json'),
 });

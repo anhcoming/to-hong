@@ -66,7 +66,7 @@ module.exports = {
       { name: 'Phục vụ món chính', date: '2026-06-14', time: '19:00', place: '', address: '', mapUrl: '' },
       { name: 'Kết thúc tiệc', date: '2026-06-14', time: '21:00', place: '', address: '', mapUrl: '' },
     ],
-    gifts: { groom: { bin: '970436', acc: '0000000000', holder: 'THIEP CUOI DEMO' }, bride: { bin: '970418', acc: '8084856145', holder: 'PHAM QUYNH ANH' } },
+    gifts: { groom: { bin: '970436', acc: '0000000000', holder: 'THIEP CUOI DEMO' }, bride: { bin: '970418', acc: '0000000000', holder: 'THIEP CUOI DEMO' } },
   },
   // xác nhận tham dự mở trong hộp thoại từ khung tiệc cưới (như bản gốc), nên không có trong luồng trang
   layout: ['invite', 'gallery', 'calendar', 'events', 'story', 'wishes', 'gift', 'thanks'],
@@ -451,8 +451,10 @@ module.exports = {
 .tpl-songhy .sh-wform textarea{display:inline-block;vertical-align:baseline}
 .tpl-songhy .sh-wform input:focus,.tpl-songhy .sh-wform textarea:focus{border-color:#f87171;box-shadow:0 0 0 2px #fecaca}
 .tpl-songhy .sh-wform ::placeholder{color:color-mix(in srgb,var(--muted) 50%,transparent)}
-.tpl-songhy .sh-wrow{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:16px}
-.tpl-songhy .sh-wrow .form-msg{flex:1;font-size:12px;text-align:left}
+.tpl-songhy .sh-wrow{display:flex;flex-wrap:wrap;align-items:center;justify-content:flex-end;gap:8px;margin-top:16px}
+/* báo lỗi / cảm ơn: dòng riêng dưới nút, không chen cạnh nút */
+.tpl-songhy .sh-wrow .form-msg{order:2;flex:0 0 100%;margin:0;font-size:12px;line-height:1.4;text-align:right}
+.tpl-songhy .sh-wrow .form-msg:empty{display:none}
 .tpl-songhy .sh-wrow button{padding:8px 16px;border:0;border-radius:999px;background:var(--accent);color:#fff;font:500 14px/20px Roboto,'Helvetica Neue',Arial,sans-serif;text-transform:uppercase;transition:transform .2s;cursor:pointer}
 .tpl-songhy .sh-wrow button:hover{transform:scale(1.05)}
 .tpl-songhy .wish-list{width:100%;max-height:500px;margin:32px auto 0;padding-right:8px;overflow-y:auto;text-align:left}

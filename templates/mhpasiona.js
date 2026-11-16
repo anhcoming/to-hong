@@ -2,6 +2,7 @@
 // dựng bằng máy dựng chung lib/mh.js. Ảnh/font là của bản gốc: chỉ dùng công khai khi đã thay bằng tài sản của mình.
 module.exports = require('../lib/mh').template({
   id: 'mhpasiona',
-  name: "Pasiona",
+  name: 'Nồng Nàn',
+  desc: 'Lãng mạn: bìa ảnh có đếm ngược, khung thiệp viền hồng, hoa hồng phác và timeline vàng',
   json: require('./mh/mhpasiona.json'),
 });

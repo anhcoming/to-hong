@@ -62,8 +62,8 @@
     foot.className = 'foot';
     foot.innerHTML = '<div class="wrap"><div class="cols">' +
       '<div><a class="logo" href="/" style="margin-bottom:10px">' + LOGO + '</a><p style="margin:0;max-width:340px">Thiệp cưới online, video cưới chiếu TV và sổ tay chuẩn bị đám cưới — báo tin vui bằng một đường link.</p></div>' +
-      '<div><h4>Sản phẩm</h4><a href="/mau-thiep">Thiệp cưới online</a><a href="/man-hinh-led-dam-cuoi">Màn hình LED đám cưới</a><a href="/video-cuoi">Video cưới chiếu TV</a><a href="/so-tay-cuoi">Sổ tay cưới miễn phí</a></div>' +
-      '<div><h4>Hỗ trợ</h4><a href="/#hoi-dap">Câu hỏi thường gặp</a><a href="/#gia">Bảng giá</a><span style="display:block;margin-bottom:8px">Zalo: <b data-zalo style="color:var(--ink)"></b></span><span data-email></span></div>' +
+      '<div><h4>Sản phẩm</h4><a href="/mau-thiep">Thiệp cưới online</a><a href="/man-hinh-led-dam-cuoi">Màn hình LED đám cưới</a><a href="/video-cuoi">Video cưới chiếu TV</a><a href="/so-tay-cuoi">Sổ tay cưới miễn phí</a><a href="/goi-y">Gợi ý thiệp từ ảnh cưới</a></div>' +
+      '<div><h4>Hỗ trợ</h4><a href="/#hoi-dap">Câu hỏi thường gặp</a><a href="/#gia">Bảng giá</a><a href="/dieu-khoan">Điều khoản sử dụng</a><a href="/chinh-sach-bao-mat">Chính sách bảo mật</a><a href="/hoan-tien">Thanh toán &amp; hoàn tiền</a><span data-contact hidden style="display:block;margin-bottom:8px">Zalo: <b data-zalo style="color:var(--ink)"></b></span><span data-contact hidden><span data-email></span></span></div>' +
       '</div><div class="copy"><span>© ' + new Date().getFullYear() + ' <span data-brand>Cưới Nha</span></span><span>Làm bằng ♥ tại Việt Nam</span></div></div>';
   }
 
@@ -101,8 +101,22 @@
     set('[data-video-price]', money(m.videoPrice));
     set('[data-trial-days]', m.trialDays);
     set('[data-guest-limit]', m.trialGuestLimit);
-    set('[data-zalo]', m.support.zalo);
-    set('[data-email]', m.support.email);
+    set('[data-tpl-count]', (m.templates || []).length || 49);
+    set('[data-video-count]', ((m.video || {}).templates || []).length || 16);
+    // liên hệ hỗ trợ: Zalo → zalo.me, email → mailto; còn số/email giả (0900000000, @example.com) thì giấu cả dòng
+    var sp = m.support || {}, zd = String(sp.zalo || '').replace(/\D/g, ''), em = String(sp.email || '');
+    var contact = function (sel, ok, href, text) {
+      document.querySelectorAll(sel).forEach(function (e) {
+        var box = e.closest('[data-contact]') || e;
+        if (!ok) { box.hidden = true; return; }
+        e.innerHTML = '';
+        var a = document.createElement('a'); a.href = href; a.textContent = text; a.style.color = 'inherit';
+        if (/^https:/.test(href)) { a.target = '_blank'; a.rel = 'noopener'; }
+        e.appendChild(a); box.hidden = false;
+      });
+    };
+    contact('[data-zalo]', zd.length >= 9 && zd !== '0900000000', 'https://zalo.me/' + zd, sp.zalo);
+    contact('[data-email]', /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(em) && !/@example\.(com|org|net)$/i.test(em), 'mailto:' + em, em);
     document.dispatchEvent(new CustomEvent('meta', { detail: m }));
   }).catch(function () {});
 

@@ -493,8 +493,10 @@ module.exports = {
 .tpl-naudam .mn-wform input,.tpl-naudam .mn-wform textarea{width:100%;padding:12px 16px;border:1px solid var(--ink);border-radius:8px;background:transparent;color:var(--ink);font:400 14px/20px 'Times New Roman',serif;outline:none;resize:none}
 .tpl-naudam .mn-wform textarea{height:70px}
 .tpl-naudam .mn-wform ::placeholder{color:color-mix(in srgb,var(--ink) 55%,transparent)}
-.tpl-naudam .mn-wrow{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:-16px}
-.tpl-naudam .mn-wrow .form-msg{flex:1;margin:0;font-size:12px;text-align:left}
+.tpl-naudam .mn-wrow{display:flex;flex-wrap:wrap;align-items:center;justify-content:flex-end;gap:8px;margin-top:-16px}
+/* báo lỗi / cảm ơn: dòng riêng dưới nút, không chen cạnh nút */
+.tpl-naudam .mn-wrow .form-msg{order:2;flex:0 0 100%;max-width:220px;margin:0 0 0 auto;font-size:12px;line-height:1.4;text-align:right}
+.tpl-naudam .mn-wrow .form-msg:empty{display:none}
 .tpl-naudam .mn-wrow button{padding:8px 24px;border:0;border-radius:999px;background:var(--ink);color:var(--accent-ink);font:600 14px/20px 'Times New Roman',serif;text-transform:uppercase}
 .tpl-naudam .wish-list{width:100%;max-width:600px;max-height:500px;margin:32px auto 0;padding-right:8px;overflow-y:auto;text-align:left}
 .tpl-naudam .wish{margin:0 0 12px;padding:16px;border:1px solid color-mix(in srgb,var(--ink) 20%,transparent);border-radius:8px;background:color-mix(in srgb,var(--ink) 3%,transparent);font-family:'Times New Roman',serif;font-size:14px;line-height:20px;color:var(--ink)}

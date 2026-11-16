@@ -74,7 +74,7 @@ function infoFirst() {
 }
 function renderHeader() {
   const s = card.led;
-  $('#ttl').textContent = 'Màn LED · ' + ([card.data.groom.name, card.data.bride.name].filter(Boolean).join(' & ') || card.title);
+  $('#ttl').textContent = 'Màn hình LED · ' + ([card.data.groom.name, card.data.bride.name].filter(Boolean).join(' & ') || card.title);
   backTo($('#back'), '/sua/' + CARD_ID);
   $('#chip').innerHTML = !s.created ? '' : s.paid ? '<span class="chip ok">● Đã kích hoạt</span>'
     : s.expired ? '<span class="chip red">Hết hạn dùng thử</span>'

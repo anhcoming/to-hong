@@ -186,30 +186,61 @@
     return false;
   }
 
+  // nút gửi: khoá sau khi gửi xong (khỏi bấm lặp thành nhiều bản), đổi chữ "Đã gửi ✓"; khách sửa ô nào thì mở lại
+  function sendBtn(f) { return $('button[type=submit]', f) || $('button:not([type=button])', f) || $('button', f); }
+  function markSent(f, btn) {
+    if (!btn.hasAttribute('data-label')) btn.setAttribute('data-label', btn.innerHTML);
+    btn.textContent = 'Đã gửi ✓';
+    btn.disabled = true;
+    f.setAttribute('data-sent', '1');
+  }
+  function unmarkSent(f, btn) {
+    if (!f.hasAttribute('data-sent')) return;
+    f.removeAttribute('data-sent');
+    if (btn.hasAttribute('data-label')) btn.innerHTML = btn.getAttribute('data-label');
+    btn.disabled = false;
+  }
+  function reopenOnEdit(f) {
+    var h = function () { unmarkSent(f, sendBtn(f)); };
+    f.addEventListener('input', h);
+    f.addEventListener('change', h);
+  }
+
   var rf = $('#rsvpForm');
+  if (rf) reopenOnEdit(rf);
   if (rf) rf.addEventListener('submit', function (e) {
     e.preventDefault();
     var msg = $('.form-msg', rf);
     if (blocked(msg)) return;
-    var btn = $('button', rf);
+    var btn = sendBtn(rf);
+    if (rf.hasAttribute('data-sent')) return;
     btn.disabled = true;
+    var ok = false;
     var d = formData(rf);
     d.g = C.guest;
     post('/api/public/' + C.slug + '/rsvp', d).then(function () {
       msg.textContent = d.attending === 'yes' ? 'Cảm ơn bạn! Hẹn gặp bạn trong ngày vui nhé ♥' : 'Cảm ơn bạn đã báo cho chúng mình biết ♥';
       rf.reset();
       if ($('input[name=name]', rf) && d.name) $('input[name=name]', rf).value = d.name;
+      ok = true;
+      markSent(rf, btn);
+      // nằm trong hộp thoại đang mở → để lời cảm ơn hiện ~1,8 giây rồi tự đóng; biểu mẫu nằm sẵn trên trang thì giữ nguyên
+      var dlg = rf.closest('dialog');
+      if (dlg && dlg.open) setTimeout(function () { if (dlg.open) dlg.close(); }, 1800);
     }).catch(function (err) { msg.textContent = err.message; })
-      .then(function () { btn.disabled = false; });
+      .then(function () { if (!ok) btn.disabled = false; });
   });
 
   var wf = $('#wishForm');
+  if (wf) reopenOnEdit(wf);
   if (wf) wf.addEventListener('submit', function (e) {
     e.preventDefault();
     var msg = $('.form-msg', wf);
     if (blocked(msg)) return;
-    var btn = $('button', wf);
+    var btn = sendBtn(wf);
+    if (wf.hasAttribute('data-sent')) return;
     btn.disabled = true;
+    var ok = false;
     var d = formData(wf);
     post('/api/public/' + C.slug + '/wish', d).then(function () {
       var el = document.createElement('div');
@@ -220,8 +251,11 @@
       $('#wishList').prepend(el);
       $('textarea', wf).value = '';
       msg.textContent = 'Cảm ơn lời chúc của bạn ♥';
+      ok = true;
+      markSent(wf, btn);
+      setTimeout(function () { unmarkSent(wf, btn); }, 3000); // lời chúc gửi thêm được, chỉ chặn bấm lặp ngay sau khi gửi
     }).catch(function (err) { msg.textContent = err.message; })
-      .then(function () { btn.disabled = false; });
+      .then(function () { if (!ok) btn.disabled = false; });
   });
 
   // ----- căn ảnh trong khung: link ảnh có "#p=x,y[,z]" → điểm lấy nét x%,y% và phóng to z lần -----
