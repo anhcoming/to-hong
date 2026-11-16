@@ -8,7 +8,7 @@
   if (!hb || !window.PhotoPrep) return;
   var P = window.PhotoPrep, idb = P.idb;
   var stage = document.getElementById('stage'), fan = document.getElementById('fan'), file = document.getElementById('heroFile');
-  var go = document.getElementById('heroGo'), goText = go.textContent, msg = document.getElementById('heroMsg');
+  var go = document.getElementById('heroGo'), lbl = document.getElementById('heroLbl'), goText = lbl.textContent, msg = document.getElementById('heroMsg');
   var MAX = 12, urls = [], busy = false;
   var say = function (t) { msg.textContent = t || ''; msg.hidden = !t; };
   var wait = function (ms) { return new Promise(function (ok) { setTimeout(ok, ms); }); };
@@ -21,7 +21,7 @@
     var one = function () {
       if (i >= list.length) return Promise.resolve(out);
       var f = list[i++];
-      go.textContent = 'Đang đọc ảnh ' + i + '/' + list.length + '…';
+      lbl.textContent = 'Đang đọc ảnh ' + i + '/' + list.length + '…';
       return P.shrink(f).then(function (s) {
         var url = URL.createObjectURL(s.blob);
         return P.analyze(url).then(function (feat) {
@@ -37,7 +37,7 @@
     return Promise.race([Promise.all([get('/goi-y'), get('/js/photoprep.js'), get('/js/suggest.js'), get('/css/site.css'), get('/api/meta')]), wait(5000)]);
   }
   function reset(text) {
-    busy = false; hb.classList.remove('busy'); go.disabled = false; go.textContent = goText; say(text);
+    busy = false; hb.classList.remove('busy'); go.disabled = false; lbl.textContent = goText; say(text);
   }
 
   function take(files) {
@@ -57,7 +57,7 @@
     var t0 = Date.now(), reduce = matchMedia('(prefers-reduced-motion:reduce)').matches;
     prep(list).then(function (photos) {
       if (!photos.length) return reset('Không đọc được ảnh nào — bạn thử ảnh JPG, PNG hoặc chụp màn hình ảnh đó nhé.');
-      go.textContent = 'Đang tìm mẫu hợp ảnh của bạn…';
+      lbl.textContent = 'Đang tìm mẫu hợp ảnh của bạn…';
       return idb.set('photos', photos).then(function () { return idb.set('fresh', 1); }).then(function () { return idb.del('incoming'); })
         .then(function () { return idb.get('photos'); }).then(function (saved) {
           // kho tạm bị chặn (vd. duyệt ẩn danh): ảnh không giữ được → sang /goi-y để chọn lại, không bỏ kẹt ở đây
