@@ -89,34 +89,16 @@ img{display:block;max-width:100%}
   .hacts{gap:8px}
 }
 
-/* billboard kiểu Netflix: tường ảnh bìa trôi phủ cả bề ngang, chữ bên trái trên lớp phủ mờ dần */
-.bb{position:relative;height:88vh;min-height:560px;overflow:hidden;background:var(--bg)}
-/* Mờ dần hai mép trên dưới làm bằng lớp phủ màu nền (.bb::after) chứ không dùng mask: mask trên khối cha của các cột đang trôi
+/* Mờ dần hai mép trên dưới làm bằng lớp phủ màu nền (.hb::after) chứ không dùng mask: mask trên khối cha của các cột đang trôi
    bắt trình duyệt vẽ lại cả bức tường vào một lớp riêng mỗi khung hình → giật. */
-.bb .wall{position:absolute;inset:-4% -2%;display:grid;grid-template-columns:repeat(6,1fr);gap:14px;padding:0 14px;transform:rotate(-4deg)}
 /* Mỗi cột = 2 lượt cùng bộ ảnh, trôi đúng nửa chiều cao rồi lặp. Khe giữa ảnh đặt bằng margin trên từng ảnh (không dùng gap) để nửa cột
    = trọn số ảnh + khe, không lệch nửa khe (7px) khi nối vòng. */
 .col{display:flex;flex-direction:column;will-change:transform;animation:up 50s linear infinite}
 .col:nth-child(even){animation-name:down;animation-duration:60s}
-.bb.off .col{animation-play-state:paused} /* cuộn qua khỏi billboard thì dừng trôi, nhường máy cho phần dưới */
 .col img{width:100%;aspect-ratio:9/16;margin-bottom:14px;object-fit:cover;object-position:top;border-radius:12px;box-shadow:0 12px 30px rgba(120,40,50,.14)}
 @keyframes up{to{transform:translateY(-50%)}}
 @keyframes down{from{transform:translateY(-50%)}to{transform:translateY(0)}}
-.bb::after{content:"";position:absolute;inset:0;pointer-events:none;background:linear-gradient(90deg,rgba(255,255,255,.97) 0%,rgba(255,255,255,.9) 30%,rgba(255,255,255,.45) 58%,rgba(255,255,255,.1) 80%),linear-gradient(180deg,var(--bg) 0%,transparent 12%),linear-gradient(0deg,var(--bg) 0%,transparent 26%)}
-.bb-in{position:absolute;z-index:2;left:calc(var(--edge) + 24px);top:52%;transform:translateY(-50%);max-width:620px}
-.bb-in>*{animation:rise .8s cubic-bezier(.2,.8,.2,1) both}
-.bb-in>:nth-child(2){animation-delay:.1s}.bb-in>:nth-child(3){animation-delay:.2s}.bb-in>:nth-child(4){animation-delay:.3s}
 @keyframes rise{from{opacity:0;transform:translateY(24px)}}
-.bb .kick{display:flex;align-items:center;gap:8px;font-size:13px;font-weight:800;letter-spacing:.25em;color:var(--acc)}
-.bb .kick b{display:grid;place-items:center;width:26px;height:26px;border-radius:6px;background:var(--acc);color:#fff;font-size:11px;letter-spacing:0}
-.bb h1{margin:10px 0 2px;font:900 clamp(36px,4.2vw,58px)/1.05 var(--sans);letter-spacing:-.03em;color:var(--ink)}
-.bb h1 em{display:block;font:700 1.08em/1.1 var(--script);font-style:normal;color:var(--acc);letter-spacing:0}
-.bb .lead{margin:6px 0 24px;font-size:16px;max-width:460px;color:var(--muted)}
-.bb .acts{display:flex;gap:12px;flex-wrap:wrap}
-.bb .b{display:inline-flex;align-items:center;gap:10px;padding:12px 26px;border-radius:999px;font:700 16px var(--sans);transition:opacity .2s,transform .2s}
-.bb .b:hover{transform:translateY(-2px)}
-.bb .b-play{background:var(--ink);color:var(--bg)}
-.bb .b-more{background:rgba(120,110,112,.18);color:var(--ink);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px)}
 
 /* các hàng mẫu cuộn ngang */
 .rows{position:relative;z-index:3;margin-top:-6vh;padding-bottom:40px}
@@ -187,11 +169,6 @@ img{display:block;max-width:100%}
   .fgrid .ncard:not(:first-child) .lbl small{display:none}
 }
 @media (max-width:700px){
-  .bb{height:78vh}
-  .bb .wall{grid-template-columns:repeat(3,1fr);opacity:.6}
-  .bb .wall .col:nth-child(n+4){display:none}
-  .bb-in{left:16px;right:16px;top:auto;bottom:9vh;transform:none}
-  .bb::after{background:linear-gradient(180deg,var(--bg) 0%,transparent 12%),linear-gradient(0deg,var(--bg) 18%,rgba(255,255,255,.75) 50%,rgba(255,255,255,.2))}
   .rows{margin-top:0}
   .arrow{display:none}
 }
@@ -331,7 +308,7 @@ html.js .rv{opacity:0;transform:translateY(26px);transition:opacity .7s ease,tra
 html.js .rv.in{opacity:1;transform:none}
 
 @media (prefers-reduced-motion:reduce){
-  .col,.bb-in>*{animation:none}
+  .col{animation:none}
   html.js .rv{opacity:1;transform:none}
 }
 
@@ -351,14 +328,10 @@ html.js .rv.in{opacity:1;transform:none}
 [data-theme="dark"] .tag-free{background:#1f3328;color:#7fd3a3}
 [data-theme="dark"] .plan-card li i{border-color:#5a3540}
 [data-theme="dark"] .plan-card .bar{background:#2a2023}
-[data-theme="dark"] .bb::after{background:linear-gradient(90deg,rgba(20,16,18,.97) 0%,rgba(20,16,18,.9) 30%,rgba(20,16,18,.45) 58%,rgba(20,16,18,.15) 80%),linear-gradient(180deg,var(--bg) 0%,transparent 12%),linear-gradient(0deg,var(--bg) 0%,transparent 26%)}
-[data-theme="dark"] .col img{box-shadow:none;opacity:.9}
-[data-theme="dark"] .bb .b-more{background:rgba(255,255,255,.14)}
 [data-theme="dark"] .arrow{background:#241d1f;border-color:rgba(255,255,255,.14);color:#fff}
 [data-theme="dark"] .ncard .pic{box-shadow:none}
 [data-theme="dark"] .ncard:hover .pic{box-shadow:0 18px 40px rgba(0,0,0,.55)}
 [data-theme="dark"] .top .num{-webkit-text-stroke-color:#5c5254}
-@media (max-width:700px){[data-theme="dark"] .bb::after{background:linear-gradient(180deg,var(--bg) 0%,transparent 12%),linear-gradient(0deg,var(--bg) 18%,rgba(20,16,18,.75) 50%,rgba(20,16,18,.2))}}
 
 /* ba chức năng chính (thiệp / video / sổ tay) + khu giới thiệu video cưới */
 .trio3{padding:10px 0 40px;margin-top:-8vh;position:relative;z-index:3}
@@ -427,34 +400,89 @@ html.js .rv.in{opacity:1;transform:none}
 .totop:hover{transform:translateY(-2px);box-shadow:0 14px 30px rgba(214,69,93,.45)}
 [data-theme="dark"] .totop{box-shadow:0 10px 26px rgba(0,0,0,.5)}
 
-/* ---- đầu trang: "Thả ảnh cưới vào, xem ngay thiệp của bạn" — chồng ảnh → thiệp, nút chính dẫn tới /goi-y ---- */
-.bb-in>:nth-child(5){animation-delay:.4s}.bb-in>:nth-child(6){animation-delay:.5s}
-.bb .lead{margin-bottom:16px}
-.bb{min-height:700px} /* nội dung đầu trang cao hơn bản cũ: màn hình thấp không để chữ chui dưới thanh menu */
-.bb .ba{display:flex;align-items:center;gap:14px;width:max-content;max-width:100%;margin:0 0 22px;color:var(--muted)}
-.ba small{position:absolute;left:0;right:0;top:calc(100% + 8px);font:600 12px/1.3 var(--sans);text-align:center;white-space:nowrap}
-.ba-stack{position:relative;flex:none;width:122px;height:150px}
-.ba-stack img{position:absolute;width:86px;height:112px;object-fit:cover;border:4px solid #fff;border-radius:8px;box-shadow:0 8px 20px rgba(60,20,30,.22);transition:transform .3s}
-.ba-stack img:nth-child(1){left:0;top:24px;transform:rotate(-9deg)}
-.ba-stack img:nth-child(2){left:32px;top:4px;transform:rotate(6deg)}
-.ba-stack img:nth-child(3){left:16px;top:32px;transform:rotate(-1deg)}
-.ba:hover .ba-stack img:nth-child(1){transform:rotate(-13deg) translateX(-4px)}
-.ba:hover .ba-stack img:nth-child(2){transform:rotate(10deg) translateX(4px)}
-.ba-arrow{flex:none;font-size:26px;color:var(--acc)}
-.ba-card{position:relative;flex:none;width:150px}
-.ba-card img{display:block;width:100%;height:190px;object-fit:cover;object-position:50% 12%;border-radius:14px;box-shadow:0 14px 34px rgba(60,20,30,.28)}
-.bb .ba{padding-bottom:26px} /* chỗ cho hai dòng chú thích dưới ảnh */
-.bb .b-photo{background:var(--grad,linear-gradient(135deg,#d6455d,#ef7d8d));color:#fff;box-shadow:0 10px 26px rgba(214,69,93,.3)}
-.bb .ba-lock{margin:14px 0 0;font-size:13px;color:var(--muted)}
+/* ---- đầu trang: "Thả ảnh cưới vào, xem ngay thiệp của bạn" ----
+   Xếp giữa trên tường thiệp trôi (làm mờ, chìm). Khối giữa là hoạt hình lặp 7 giây: vài ảnh bay vào một khung thiệp rỗng
+   → khung loé sáng → tung ra 3 mẫu thiệp xoè như quân bài. Bấm nút / bấm hoạt hình / thả ảnh vào trang để chọn ảnh thật
+   (public/js/hero.js): ảnh của khách thay vào hoạt hình rồi sang /goi-y gợi ý mẫu, không phải chọn lại. */
+.hb{position:relative;overflow:hidden;padding:104px 16px 92px;text-align:center;background:var(--bg)}
+.hb>:not(.wall){position:relative;z-index:1}
+/* tường thiệp phía sau: trôi chậm, nhoè và chìm để không tranh với nội dung */
+.hb .wall{position:absolute;inset:-4% -2%;z-index:0;display:grid;grid-template-columns:repeat(6,1fr);gap:14px;padding:0 14px;transform:rotate(-4deg);pointer-events:none;filter:blur(6px) saturate(.6);opacity:.4}
+.hb .wall .col{animation-duration:90s}.hb .wall .col:nth-child(even){animation-duration:110s}
+.hb.off .col,.hb.off .fan *{animation-play-state:paused} /* cuộn qua khỏi đầu trang thì dừng hết chuyển động */
+.hb::after{content:"";position:absolute;inset:0;z-index:0;pointer-events:none;background:radial-gradient(ellipse 55% 60% at 50% 50%,rgba(255,255,255,.75),rgba(255,255,255,.25)),linear-gradient(180deg,var(--bg) 0%,transparent 14%),linear-gradient(0deg,var(--bg) 0%,transparent 22%)}
+[data-theme="dark"] .hb::after{background:radial-gradient(ellipse 55% 60% at 50% 50%,rgba(18,14,15,.8),rgba(18,14,15,.35)),linear-gradient(180deg,var(--bg) 0%,transparent 14%),linear-gradient(0deg,var(--bg) 0%,transparent 22%)}
+[data-theme="dark"] .col img{box-shadow:none;opacity:.9}
+.hb .kick{display:inline-flex;align-items:center;gap:8px;font-size:12px;font-weight:800;letter-spacing:.25em;color:var(--acc)}
+.hb .kick b{display:grid;place-items:center;width:24px;height:24px;border-radius:6px;background:var(--acc);color:#fff;font-size:11px;letter-spacing:0}
+.hb h1{margin:10px auto 4px;max-width:900px;font:900 clamp(34px,4vw,54px)/1.05 var(--sans);letter-spacing:-.03em;color:var(--ink)}
+.hb h1 em{display:block;font:700 1.08em/1.15 var(--script);font-style:normal;color:var(--acc);letter-spacing:0}
+.hb .lead{margin:6px auto 0;max-width:600px;font-size:16px;color:var(--muted)}
+.hb>.kick,.hb>h1,.hb>.lead,.hb>.stage,.hb>.hcta{animation:rise .8s cubic-bezier(.2,.8,.2,1) both}
+.hb>h1{animation-delay:.08s}.hb>.lead{animation-delay:.16s}.hb>.stage{animation-delay:.24s}.hb>.hcta{animation-delay:.32s}
+/* khối hoạt hình: cũng là chỗ bấm / thả ảnh */
+.stage{position:relative;display:flex;justify-content:center;width:max-content;max-width:100%;margin:18px auto 0;padding:10px 20px 100px;border-radius:30px;border:2px dashed transparent;cursor:pointer;transition:border-color .2s,background .2s}
+.stage:focus-visible{outline:2px solid var(--acc);outline-offset:4px}
+body.drag .stage{border-color:var(--acc);background:rgba(214,69,93,.08)}
+.drophint{position:absolute;left:50%;top:-14px;z-index:9;transform:translateX(-50%);padding:4px 14px;border-radius:999px;background:var(--acc);color:#fff;font:700 13px var(--sans);white-space:nowrap;opacity:0;transition:opacity .2s}
+body.drag .drophint{opacity:1}
+.fan{position:relative;width:560px;height:330px;text-align:center}
+.fan *{animation-duration:7s;animation-iteration-count:infinite}
+.fan.restart *{animation:none!important}
+/* ảnh: 3 tấm xếp chồng bên trái, lần lượt bay vào khung */
+.fan .fp{position:absolute;z-index:6;width:118px;height:154px;object-fit:cover;object-position:50% 20%;border:5px solid #fff;border-radius:9px;box-shadow:0 14px 32px rgba(0,0,0,.38);animation-timing-function:cubic-bezier(.55,.05,.3,1)}
+.fan .fp0{animation-name:fp0}.fan .fp1{animation-name:fp1}.fan .fp2{animation-name:fp2}
+@keyframes fp0{0%,12%{left:0;top:80px;transform:rotate(-11deg);opacity:1}36%{left:221px;top:88px;transform:rotate(0) scale(.62);opacity:1}42%,94%{left:221px;top:88px;transform:scale(.4);opacity:0}100%{left:0;top:80px;transform:rotate(-11deg);opacity:1}}
+@keyframes fp1{0%,15%{left:40px;top:56px;transform:rotate(7deg);opacity:1}39%{left:221px;top:88px;transform:rotate(0) scale(.62);opacity:1}45%,94%{left:221px;top:88px;transform:scale(.4);opacity:0}100%{left:40px;top:56px;transform:rotate(7deg);opacity:1}}
+@keyframes fp2{0%,18%{left:20px;top:96px;transform:rotate(-2deg);opacity:1}42%{left:221px;top:88px;transform:rotate(0) scale(.62);opacity:1}48%,94%{left:221px;top:88px;transform:scale(.4);opacity:0}100%{left:20px;top:96px;transform:rotate(-2deg);opacity:1}}
+.fan .hand{position:absolute;z-index:8;width:34px;height:34px;color:#fff;filter:drop-shadow(0 3px 6px rgba(0,0,0,.5));animation-name:fhand;animation-timing-function:cubic-bezier(.55,.05,.3,1)}
+@keyframes fhand{0%{left:150px;top:260px;opacity:0}7%,12%{left:96px;top:196px;opacity:1}40%{left:300px;top:200px;opacity:1}48%,100%{left:330px;top:240px;opacity:0}}
+/* khung thiệp rỗng */
+.fan .slot{position:absolute;z-index:2;left:194px;top:14px;width:172px;height:306px;border:2px dashed rgba(214,69,93,.45);border-radius:18px;background:rgba(214,69,93,.04);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;color:#b5485a;font:600 12px var(--sans);animation-name:fslot}
+.fan .slot i{width:42px;height:42px;border-radius:50%;display:grid;place-items:center;border:2px dashed currentColor;font-style:normal;font-size:22px;opacity:.8}
+.fan .slot b{display:none;font-weight:700}.hb.busy .fan .slot b{display:block}.hb.busy .fan .slot span{display:none}
+[data-theme="dark"] .fan .slot{color:#f3d79a;border-color:rgba(243,215,154,.55);background:rgba(255,255,255,.04)}
+@keyframes fslot{0%,30%{opacity:1;transform:none;box-shadow:none}44%{opacity:1;transform:scale(1.05);box-shadow:0 0 0 6px rgba(243,215,154,.25),0 0 60px 10px rgba(239,125,141,.55)}50%,92%{opacity:0;transform:scale(1.1)}100%{opacity:1;transform:none}}
+.fan .flash{position:absolute;z-index:7;left:230px;top:110px;width:100px;height:100px;border-radius:50%;background:radial-gradient(circle,rgba(255,240,210,.95),rgba(255,200,170,.4) 40%,transparent 70%);opacity:0;pointer-events:none;animation-name:fflash}
+@keyframes fflash{0%,44%{opacity:0;transform:scale(.3)}49%{opacity:1;transform:scale(2.2)}58%,100%{opacity:0;transform:scale(3)}}
+/* 5 mẫu thiệp thật bung ra: ảnh bìa (9:16) của các mẫu đang bán, cùng khung với ô "Thiệp của bạn" */
+.fan .tpl{position:absolute;left:194px;top:14px;width:172px;height:306px;border-radius:14px;overflow:hidden;box-shadow:0 24px 54px rgba(0,0,0,.42);opacity:0;animation-timing-function:cubic-bezier(.2,1.4,.4,1);background:#eee}
+.fan .tpl img{display:block;width:100%;height:100%;object-fit:cover;object-position:top}
+.fan .tA{z-index:5;animation-name:tA}.fan .tB{z-index:4;animation-name:tB}.fan .tC{z-index:4;animation-name:tC}.fan .tD{z-index:3;animation-name:tD}.fan .tE{z-index:3;animation-name:tE}
+@keyframes tA{0%,46%{opacity:0;transform:scale(.55)}58%,90%{opacity:1;transform:translateY(-4px)}97%,100%{opacity:0;transform:translateY(-4px)}}
+@keyframes tB{0%,48%{opacity:0;transform:scale(.55)}62%,90%{opacity:1;transform:translate(-124px,16px) rotate(-12deg)}97%,100%{opacity:0;transform:translate(-124px,16px) rotate(-12deg)}}
+@keyframes tC{0%,50%{opacity:0;transform:scale(.55)}64%,90%{opacity:1;transform:translate(124px,16px) rotate(12deg)}97%,100%{opacity:0;transform:translate(124px,16px) rotate(12deg)}}
+@keyframes tD{0%,50%{opacity:0;transform:scale(.5)}66%,90%{opacity:1;transform:translate(-206px,42px) rotate(-24deg) scale(.86)}97%,100%{opacity:0;transform:translate(-206px,42px) rotate(-24deg) scale(.86)}}
+@keyframes tE{0%,52%{opacity:0;transform:scale(.5)}68%,90%{opacity:1;transform:translate(206px,42px) rotate(24deg) scale(.86)}97%,100%{opacity:0;transform:translate(206px,42px) rotate(24deg) scale(.86)}}
+.fan .sp{position:absolute;z-index:9;color:#f3d79a;opacity:0;animation-name:fspk;text-shadow:0 0 8px rgba(214,69,93,.5)}
+.fan .sp.a{left:420px;top:4px;font-size:26px;animation-delay:.3s}.fan .sp.b{left:120px;top:14px;font-size:20px;animation-delay:.45s}.fan .sp.c{left:520px;top:200px;font-size:18px;animation-delay:.6s}
+@keyframes fspk{0%,58%{opacity:0;transform:scale(.3) rotate(0)}66%{opacity:1;transform:scale(1.2) rotate(30deg)}80%,100%{opacity:0;transform:scale(.6) rotate(70deg)}}
+.fan .step{position:absolute;bottom:-88px;font:600 13px var(--sans);color:var(--muted);white-space:nowrap}
+.fan .step i{display:inline-grid;place-items:center;width:20px;height:20px;margin-right:6px;border-radius:50%;background:var(--acc);color:#fff;font:700 11px var(--sans);font-style:normal}
+.fan .s1{left:0;animation-name:fst1}.fan .s2{right:0;animation-name:fst2}
+@keyframes fst1{0%,40%{color:var(--ink)}48%,100%{color:var(--muted)}}
+@keyframes fst2{0%,54%{color:var(--muted)}62%,92%{color:var(--ink)}100%{color:var(--muted)}}
+/* nút */
+.hcta{display:flex;flex-direction:column;align-items:center;gap:8px;margin-top:20px}
+.hcta .go{display:inline-flex;align-items:center;gap:10px;padding:15px 34px;border:0;border-radius:999px;font:700 17px var(--sans);color:#fff;background:linear-gradient(135deg,#d6455d,#ef7d8d);box-shadow:0 14px 34px rgba(214,69,93,.35);cursor:pointer;transition:transform .2s}
+.hcta .go:hover{transform:translateY(-2px)}
+.hcta .go[disabled]{cursor:progress;opacity:.9;transform:none}
+.hcta .hsub{font:600 14px var(--sans);color:var(--muted);background:none;border:0;padding:0;cursor:pointer}
+.hcta .hsub:hover{color:var(--ink)}
+.hcta .lock{margin:2px 0 0;font-size:12px;color:var(--muted)}
 @media (max-width:700px){
-  /* nội dung cao hơn bản cũ → khối đầu trang cao theo nội dung thay vì cố định 78vh */
-  .bb{height:auto;min-height:78vh}
-  .bb-in{position:relative;left:auto;right:auto;bottom:auto;padding:104px 16px 84px} /* đáy chừa chỗ: khối bên dưới kéo lên đè mép dưới đầu trang */
-  .bb h1{font-size:33px}
-  .bb .lead{display:none}
-  .bb .ba{width:100%;margin-top:14px;gap:10px}
-  .ba-stack{width:112px}
-  .ba-card{flex:1;width:auto;min-width:0;max-width:190px}
-  .bb .acts{flex-direction:column}
-  .bb .acts .b{justify-content:center}
+  .hb{padding:104px 16px 70px}
+  .hb h1{font-size:32px}.hb .lead{font-size:15px}
+  .hb .wall{grid-template-columns:repeat(3,1fr);filter:none;opacity:.22} /* điện thoại: không làm nhoè (nặng máy), chỉ cho chìm */
+  .hb .wall .col:nth-child(n+4){display:none}
+  .stage{width:auto;padding:10px 0 74px}
+  .fan{transform:scale(.6);transform-origin:top left;margin:0 -224px -112px 0}
+  .fan .step{font-size:20px;bottom:-96px}
+  .hcta .go{width:100%;max-width:360px;justify-content:center}
+}
+@media (prefers-reduced-motion:reduce){
+  .hb>*{animation:none!important}.fan *{animation:none!important}
+  .fan .fp,.fan .slot,.fan .hand,.fan .sp{display:none}.fan .tpl{opacity:1}
+  .fan .tB{transform:translate(-124px,16px) rotate(-12deg)}.fan .tC{transform:translate(124px,16px) rotate(12deg)}
+  .fan .tD{transform:translate(-206px,42px) rotate(-24deg) scale(.86)}.fan .tE{transform:translate(206px,42px) rotate(24deg) scale(.86)}
 }

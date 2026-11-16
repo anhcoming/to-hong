@@ -354,8 +354,17 @@
   // ---------- khởi động: lấy danh sách mẫu, khôi phục ảnh đang làm dở ----------
   document.addEventListener('meta', function (e) {
     META = e.detail;
-    Promise.all([idb.get('photos'), idb.get('info')]).then(function (r) {
+    Promise.all([idb.get('photos'), idb.get('info'), idb.get('incoming')]).then(function (r) {
       if (r[1]) { info = Object.assign(info, r[1]); ['groom', 'bride', 'date'].forEach(function (k) { $('#f-' + k).value = info[k] || ''; }); }
+      // ảnh vừa chọn / thả ở trang chủ (public/js/hero.js): thay bộ ảnh cũ, gợi ý mẫu luôn
+      if (Array.isArray(r[2]) && r[2].length) {
+        idb.del('incoming');
+        photos.forEach(function (p) { URL.revokeObjectURL(p.url); });
+        photos = []; picks = [];
+        dirty = true;
+        addFiles(r[2]);
+        return;
+      }
       if (photos.length || !Array.isArray(r[0]) || !r[0].length) return;
       photos = r[0].filter(function (p) { return p && p.blob && p.feat; }).map(function (p) { return Object.assign({}, p, { url: URL.createObjectURL(p.blob) }); });
       if (photos.length) { say('Tiếp tục với ' + photos.length + ' ảnh bạn chọn lúc trước.'); refresh(false); }
