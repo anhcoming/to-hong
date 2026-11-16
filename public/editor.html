@@ -46,8 +46,16 @@ body{height:100vh;height:100dvh;display:flex;flex-direction:column;overflow:hidd
 .phone{position:relative}
 .phone iframe{display:block;width:100%;height:100%;border:0;background:var(--surface)}
 .phone iframe.buf{position:absolute;left:0;top:0;width:100%;height:100%;visibility:hidden;pointer-events:none}
-.ev{border:1px solid var(--line);border-radius:12px;padding:14px;margin-bottom:12px;background:var(--surface)}
-.ev-h{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
+.ev{border:1px solid var(--line);border-radius:12px;margin-bottom:10px;background:var(--surface)}
+.ev-h{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:12px 14px;cursor:pointer;list-style:none}
+.ev-h::-webkit-details-marker{display:none}
+.ev-h::before{content:'›';font-size:20px;line-height:1;color:var(--muted);transition:transform .2s;flex:none}
+.ev[open]>.ev-h::before{transform:rotate(90deg)}
+.ev-s{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
+.ev-s b{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ev-s small{color:var(--muted);font-size:13px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ev-act{display:flex;gap:6px;flex:none}
+.ev-b{padding:0 14px 14px}
 .photos{display:grid;grid-template-columns:repeat(auto-fill,minmax(96px,1fr));gap:8px}
 .photo{position:relative;aspect-ratio:3/4;border-radius:10px;background:#eee center/cover;border:1px solid var(--line)}
 .photo button{position:absolute;top:4px;right:4px;width:26px;height:26px;border-radius:50%;border:0;background:rgba(0,0,0,.6);color:#fff;cursor:pointer}

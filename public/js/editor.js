@@ -30,6 +30,13 @@ function person(who, label) {
 // ---------- các tab ----------
 // Chọn mẫu: lọc theo nhóm (chip) + lưới ảnh bìa nhỏ; ảnh của mẫu đang dùng hiện theo bảng màu đang chọn
 let tplGroup = null;
+// bảng "Các lễ": lễ nào đang mở (giữ nguyên khi vẽ lại bảng), dòng tóm tắt khi gập
+const evOpen = new Set();
+const evSum = (e, i) => {
+  const dm = e.date ? `${e.date.slice(8, 10)}/${e.date.slice(5, 7)}` : '';
+  const sub = [e.time, dm, e.place].filter(Boolean).join(' · ') || 'Chưa có ngày giờ';
+  return `<span class="ev-s"><b>${esc(e.name || `Lễ ${i + 1}`)}</b><small>${esc(sub)}</small></span>`;
+};
 const tplCover = (t) => `/demo/cover-${t.id}-${(t.id === card.template && card.palette) || (t.palettes[0] && t.palettes[0].id)}.jpg`;
 function tplPicker(cur) {
   const groups = (META.templateGroups || []).filter((g) => META.templates.some((t) => t.group === g.id));
@@ -74,18 +81,20 @@ const panes = {
       <div class="grid2">${f('date', 'Ngày (dương lịch)', { type: 'date', hint: 'Ngày âm lịch tự tính và hiện trên thiệp' })}${f('time', 'Giờ', { type: 'time' })}</div>
     </section>
     <section class="group panel"><h3>Các lễ trong ngày cưới</h3>
-      <p class="muted" style="margin:-6px 0 14px;font-size:14px">Tên lễ, nơi tổ chức và địa chỉ sửa được ngay trên thiệp. Ở đây chọn ngày giờ, thêm hoặc bớt lễ.</p>
+      <p class="muted" style="margin:-6px 0 14px;font-size:14px">Bấm vào một lễ để sửa ngày giờ, nơi tổ chức, bản đồ. Tên lễ, nơi tổ chức sửa được ngay trên thiệp.</p>
       <div id="evs">${card.data.events.map((e, i) => `
-        <div class="ev">
-          <div class="ev-h"><b>${esc(e.name || `Lễ ${i + 1}`)}</b>
-            <span>${i ? `<button class="btn sm plain" data-ev-up="${i}" title="Lên trên">↑</button>` : ''}
-            <button class="btn sm danger" data-ev-del="${i}">Xoá</button></span></div>
+        <details class="ev" data-ev="${i}"${evOpen.has(i) ? ' open' : ''}>
+          <summary class="ev-h">${evSum(e, i)}
+            <span class="ev-act">${i ? `<button class="btn sm plain" data-ev-up="${i}" title="Lên trên" type="button">↑</button>` : ''}
+            <button class="btn sm danger" data-ev-del="${i}" type="button">Xoá</button></span></summary>
+          <div class="ev-b">
           ${f(`events.${i}.name`, 'Tên lễ', { ph: 'Lễ Vu Quy / Lễ Thành Hôn / Tiệc Cưới', max: 60 })}
           <div class="grid2">${f(`events.${i}.date`, 'Ngày', { type: 'date' })}${f(`events.${i}.time`, 'Giờ', { type: 'time' })}</div>
           ${f(`events.${i}.place`, 'Nơi tổ chức', { ph: 'Nhà hàng Ngọc Lan — Sảnh A', max: 120 })}
           ${f(`events.${i}.address`, 'Địa chỉ (hiện bản đồ)', { ph: 'Số nhà, đường, phường, tỉnh/thành', max: 200 })}
           ${f(`events.${i}.mapUrl`, '📍 Link Google Maps', { ph: 'Dán link vào đây', hint: 'Google Maps → tìm nhà hàng → Chia sẻ → Sao chép đường liên kết. Bản đồ trên thiệp sẽ ghim đúng chỗ.' })}
-        </div>`).join('') || '<p class="muted">Chưa có lễ nào.</p>'}</div>
+          </div>
+        </details>`).join('') || '<p class="muted">Chưa có lễ nào.</p>'}</div>
       ${card.data.events.length < 6 ? '<button class="btn soft block" id="evAdd">+ Thêm lễ</button>' : ''}
     </section>`,
 
@@ -609,7 +618,13 @@ function bind() {
     if (typeof e.target.value === 'string' && e.target.type !== 'checkbox') livePatch(k, e.target.value.trim());
     scheduleSave(e.target.type === 'checkbox' || e.target.tagName === 'SELECT' ? 50 : 700);
     if (k.endsWith('.name') && (k.startsWith('groom') || k.startsWith('bride'))) renderHeader();
+    const em = /^events\.(\d+)\./.exec(k);
+    if (em) { const s = $(`#evs details[data-ev="${em[1]}"] .ev-s`); if (s) s.outerHTML = evSum(card.data.events[+em[1]], +em[1]); }
   });
+  panesEl.addEventListener('toggle', (e) => { // nhớ lễ nào đang mở
+    const dt = e.target.closest && e.target.closest('details[data-ev]'); if (!dt) return;
+    if (dt.open) evOpen.add(+dt.dataset.ev); else evOpen.delete(+dt.dataset.ev);
+  }, true);
   // khách chưa đăng nhập: chặn trước khi mở hộp chọn tệp
   panesEl.addEventListener('click', (e) => {
     if (!card.guest || !e.target.closest('input[type=file]')) return;
@@ -658,9 +673,16 @@ function bind() {
     const ds = b.dataset;
     let changed = true;
     if (b.id === 'famOpen') { b.hidden = true; $('#fam').hidden = false; return; }
-    if (b.id === 'evAdd') d.events.push({ name: '', date: d.date, time: '', place: '', address: '', mapUrl: '' });
-    else if (ds.evDel !== undefined) { if (!confirm('Xoá sự kiện này?')) return; d.events.splice(+ds.evDel, 1); }
-    else if (ds.evUp !== undefined) { const i = +ds.evUp; [d.events[i - 1], d.events[i]] = [d.events[i], d.events[i - 1]]; }
+    if (ds.evDel !== undefined || ds.evUp !== undefined) e.preventDefault(); // nút trong dòng tóm tắt: không gập / mở lễ
+    if (b.id === 'evAdd') { d.events.push({ name: '', date: d.date, time: '', place: '', address: '', mapUrl: '' }); evOpen.add(d.events.length - 1); }
+    else if (ds.evDel !== undefined) {
+      if (!confirm('Xoá sự kiện này?')) return; const i = +ds.evDel; d.events.splice(i, 1);
+      const o = [...evOpen]; evOpen.clear(); o.forEach((j) => { if (j < i) evOpen.add(j); else if (j > i) evOpen.add(j - 1); });
+    }
+    else if (ds.evUp !== undefined) {
+      const i = +ds.evUp; [d.events[i - 1], d.events[i]] = [d.events[i], d.events[i - 1]];
+      const a = evOpen.has(i - 1), c = evOpen.has(i); evOpen.delete(i - 1); evOpen.delete(i); if (a) evOpen.add(i); if (c) evOpen.add(i - 1);
+    }
     else if (ds.phDel !== undefined) { d.photos[+ds.phDel] = ''; trimPhotos(); }
     else if (ds.phUp !== undefined) { const i = +ds.phUp; let j = i - 1; while (j > 0 && !d.photos[j]) j--; [d.photos[j], d.photos[i]] = [d.photos[i], d.photos[j]]; }
     else if (ds.coverDel !== undefined) d.cover = '';
@@ -909,6 +931,7 @@ function focusField(tab, key) {
   if (!inp) return false;
   const hid = inp.closest('[hidden]');
   if (hid) { hid.hidden = false; const fo = $('#famOpen'); if (fo) fo.hidden = true; }
+  const dt = inp.closest('details'); if (dt && !dt.open) dt.open = true;
   inp.scrollIntoView({ block: 'center', behavior: 'smooth' });
   inp.focus({ preventScroll: true });
   if (inp.select && inp.type !== 'date' && inp.type !== 'time') inp.select();
