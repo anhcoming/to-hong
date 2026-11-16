@@ -79,6 +79,13 @@
   </div>
   <div class="list" id="list"><div class="skeleton" style="height:150px"></div></div>
 </main>
+<!-- "Dùng mẫu" (?tao=<mẫu>) chỉ ghé qua đây để tạo thiệp rồi sang trình sửa → không hiện trang Thiệp của tôi, chỉ báo đang mở mẫu -->
+<div id="creating" hidden style="min-height:70vh;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;color:var(--muted,#6f6668);font-weight:600">
+  <span style="width:42px;height:42px;border-radius:50%;border:4px solid rgba(214,69,93,.18);border-top-color:#d6455d;animation:crSpin .8s linear infinite"></span>
+  <span>Đang mở mẫu thiệp…</span>
+</div>
+<style>#creating[hidden]{display:none!important}@keyframes crSpin{to{transform:rotate(360deg)}}</style>
+<script>if (/[?&]tao=/.test(location.search)) { document.querySelector('main.wrap').hidden = true; document.getElementById('creating').hidden = false; }</script>
 <script src="/js/common.js"></script>
 <script src="/js/pay.js"></script>
 <script>
@@ -258,7 +265,8 @@ async function act(a, id, c) {
 
 async function create(template, palette) {
   const { card } = await api('/api/cards', { method: 'POST', body: { template, palette } });
-  location.href = '/sua/' + card.id;
+  // replace: bấm Quay lại từ trình sửa không quay về link ?tao= (sẽ tạo thêm một thiệp trùng)
+  location.replace('/sua/' + card.id);
 }
 
 // Chọn mẫu ở trang bộ sưu tập (ảnh bìa, bộ lọc, đổi màu); "Dùng mẫu →" quay lại đây với ?tao=<mẫu>&mau=<màu>
@@ -281,7 +289,10 @@ window.newCard = function () {
     $('#newBtn').onclick = () => (location.href = '/video-cuoi');
   } else $('#newBtn').onclick = newCard;
   const q = new URLSearchParams(location.search);
-  if (q.get('tao')) return create(q.get('tao'), q.get('mau'));
+  if (q.get('tao')) return create(q.get('tao'), q.get('mau')).catch((e) => { // không tạo được → về lại trang Thiệp của tôi, báo lỗi
+    history.replaceState(null, '', location.pathname); $('#creating').hidden = true; document.querySelector('main.wrap').hidden = false;
+    toast(e.message, true); load().catch((er) => toast(er.message, true));
+  });
   const want = q.get('tao-led') ? 'sua-led' : q.get('tao-video') ? 'sua-video' : null;
   if (want) {
     // từ trang giới thiệu sản phẩm: dùng thiệp gần nhất, chưa có thì tạo thiệp mới
