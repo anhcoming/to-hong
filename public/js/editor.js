@@ -191,7 +191,7 @@ function askLogin(why = 'save') {
       e.preventDefault();
       clearTimeout(saveTimer); saveTimer = null;
       busyBtn(a); loading.show('Đang lưu thiệp…');
-      await save(); // chữ đang gõ dở phải nằm trên máy chủ trước khi rời trang
+      if (dirty) await commit(); // chỉnh sửa chưa lưu phải nằm trên máy chủ trước khi rời trang
       location.href = a.href; // màn chờ giữ tới lúc trang đăng nhập mở
     });
   });
@@ -204,33 +204,71 @@ function status(t) { const el = $('#saved'); el.textContent = card && card.guest
 // null = chưa có thay đổi; true = toàn thay đổi đã hiện sẵn; false = có thay đổi cần vẽ lại.
 let liveOnly = null;
 function markChange(live) { liveOnly = live && liveOnly !== false; }
+// Trình sửa KHÔNG tự lưu: mọi thay đổi chỉ là bản nháp trên máy (+ bản nháp ở máy chủ để dựng khung xem trước, không ghi
+// vào thiệp). Thiệp thật — khách đang xem — chỉ đổi khi bấm "Lưu" (hoặc ⌘/Ctrl+S, hoặc Phát hành).
+let dirty = false, draftTimer = null, draftBusy = null, savedData = null, hasDraft = false; // hasDraft: phiên này đã gửi bản nháp (bản nháp cũ của lần mở trước thì bỏ)
+function setDirty(on) {
+  dirty = on;
+  const b = $('#saveBtn');
+  if (b) { b.disabled = !on; b.textContent = on ? 'Lưu' : 'Đã lưu'; b.classList.toggle('soft', !on); }
+  upStatus();
+}
 function scheduleSave(delay = 700, { live = false } = {}) {
   markChange(live);
-  status('Đang chỉnh sửa…');
-  clearTimeout(saveTimer);
-  saveTimer = setTimeout(() => save({ marked: true }), delay);
+  setDirty(true);
+  clearTimeout(draftTimer);
+  draftTimer = setTimeout(pushDraft, delay);
 }
-async function save({ live = false, marked = false } = {}) {
-  if (!marked) markChange(live);
-  if (saving) { pending = true; return; }
-  saving = true;
-  status('Đang lưu…');
+// thay đổi tức thì (bấm mẫu, màu, xoá ảnh…): đẩy bản nháp ngay; trả về promise để chờ (vd. bảng màu mặc định của mẫu mới)
+function save({ live = false } = {}) {
+  markChange(live);
+  setDirty(true);
+  clearTimeout(draftTimer);
+  return pushDraft();
+}
+async function pushDraft() {
+  draftTimer = null;
   const redraw = liveOnly !== true;
   liveOnly = null;
+  if (!redraw) return; // mọi thay đổi đã hiện sẵn trên khung (chữ gõ, ảnh vừa thay) → khỏi dựng lại
+  const my = (draftBusy = (async () => {
+    try {
+      const r = await api(`/api/cards/${CARD_ID}/draft`, { method: 'POST', body: { data: card.data, title: card.title, template: card.template, palette: card.palette }, quiet: true });
+      if (draftBusy !== my) return;
+      card.template = r.card.template; card.palette = r.card.palette;
+      hasDraft = true;
+      refreshPreview();
+    } catch (e) { liveOnly = false; toast(e.message, true); }
+  })());
+  return my;
+}
+// lưu thật
+async function commit() {
+  if (saving) { pending = true; return; }
+  // ảnh còn đang tải lên → chờ xong rồi lưu (để ảnh nằm trong thiệp)
+  if (pendingSlots.size) { status(`Đang chờ ${pendingSlots.size} ảnh tải xong…`); while (pendingSlots.size) await new Promise((r) => setTimeout(r, 300)); }
+  saving = true;
+  const hadDraft = draftTimer !== null && liveOnly !== true;
+  clearTimeout(draftTimer); draftTimer = null;
+  status('Đang lưu…');
+  const b = $('#saveBtn'); const unbusy = busyBtn(b);
   try {
     const r = await api(`/api/cards/${CARD_ID}`, { method: 'PUT', body: { data: card.data, title: card.title, template: card.template, palette: card.palette }, quiet: true });
-    Object.assign(card, { ...r.card, data: card.data }); // giữ nguyên dữ liệu đang gõ
-    upStatus(); // còn ảnh đang tải thì báo số ảnh, hết thì "Đã lưu ✓"
-    if (redraw) refreshPreview();
+    Object.assign(card, { ...r.card, data: card.data });
+    savedData = JSON.stringify(card.data);
+    liveOnly = null; hasDraft = false;
+    unbusy(); setDirty(false);
+    if (hadDraft) refreshPreview();
     renderHeader();
     shareSoon();
+    toast('Đã lưu thiệp');
   } catch (e) {
-    if (redraw) liveOnly = false; // lần lưu sau vẫn phải vẽ lại
+    unbusy(); setDirty(true);
     status('Lưu thất bại');
     toast(e.message, true);
   } finally {
     saving = false;
-    if (pending) { pending = false; save({ marked: true }); }
+    if (pending) { pending = false; commit(); }
   }
 }
 // ---------- ảnh xem trước khi gửi link (Zalo, Messenger, Facebook…) ----------
@@ -240,7 +278,7 @@ let shareTimer = null, shareBusy = false;
 function shareSoon(ms = 2500) { clearTimeout(shareTimer); shareTimer = setTimeout(makeShareImage, ms); }
 const WEEKDAY = ['Chủ Nhật', 'Thứ Hai', 'Thứ Ba', 'Thứ Tư', 'Thứ Năm', 'Thứ Sáu', 'Thứ Bảy'];
 async function makeShareImage() {
-  const d = card && card.data;
+  const d = savedData ? JSON.parse(savedData) : card && card.data; // ảnh chia sẻ theo bản đã lưu
   if (!d || card.guest || shareBusy) return;
   const src = [d.cover, ...(d.photos || [])].find((u) => u && !/^blob:/.test(u)) || '';
   if (!src) return;
@@ -279,9 +317,11 @@ async function makeShareImage() {
     const blob = await new Promise((ok, no) => c.toBlob((b) => (b ? ok(b) : no(new Error('toBlob'))), 'image/jpeg', 0.86));
     const url = await uploadFile(new File([blob], 'share.jpg', { type: 'image/jpeg' }), { quiet: true, resized: true });
     const old = d.shareImg;
-    d.shareImg = url; d.shareKey = key;
-    const r = await api(`/api/cards/${CARD_ID}`, { method: 'PUT', body: { data: card.data }, quiet: true });
-    Object.assign(card, { ...r.card, data: card.data });
+    card.data.shareImg = url; card.data.shareKey = key;
+    const base = savedData ? JSON.parse(savedData) : JSON.parse(JSON.stringify(card.data));
+    base.shareImg = url; base.shareKey = key;
+    await api(`/api/cards/${CARD_ID}`, { method: 'PUT', body: { data: base }, quiet: true });
+    savedData = JSON.stringify(base);
     if (old && old !== url) discardUpload(old);
   } catch (e) {
     console.info('[ảnh chia sẻ] bỏ qua:', e && e.message); // ảnh không cho đọc (CORS) / mạng lỗi: dùng ảnh mặc định
@@ -295,7 +335,7 @@ let pvTimer = null;
 function pvWait(on) { clearTimeout(pvTimer); if (on) pvTimer = setTimeout(() => $('#phone').classList.add('wait'), 500); else $('#phone').classList.remove('wait'); }
 function refreshPreview() {
   const fr = $('#frame');
-  const src = `/t/${card.slug}?preview=1${liveEdit ? '&edit=1' : ''}`;
+  const src = `/t/${card.slug}?preview=1${hasDraft ? '&draft=1' : ''}${liveEdit ? '&edit=1' : ''}`;
   if (!fr.getAttribute('src')) { fr.onload = () => pvWait(false); fr.src = src; return; }
   pvWait(true);
   const old = $('#frameNext'); if (old) old.remove(); // lần lưu trước chưa tải xong → bỏ, tải bản mới nhất
@@ -307,7 +347,9 @@ function refreshPreview() {
     done = true;
     const cur = $('#frame');
     try { nf.contentWindow.scrollTo({ top: cur.contentWindow.scrollY || 0, behavior: 'instant' }); } catch (e) { /* bỏ qua */ }
-    requestAnimationFrame(() => { cur.remove(); nf.id = 'frame'; nf.className = ''; pvWait(false); });
+    let moved = false;
+    const go = () => { if (moved) return; moved = true; cur.remove(); nf.id = 'frame'; nf.className = ''; pvWait(false); };
+    requestAnimationFrame(go); setTimeout(go, 120); // tab nền: khung hình không chạy → vẫn đổi
   };
   // chế độ sửa: khung mới báo "ready" ngay khi dựng xong trang (không chờ tải hết ảnh — ảnh đa phần đã có sẵn trong bộ nhớ đệm)
   nf.onload = swap;
@@ -325,15 +367,18 @@ function renderHeader() {
   $('#ttl').textContent = [card.data.groom.name, card.data.bride.name].filter(Boolean).join(' & ') || card.title;
   const pa = $('#pubArea');
   if (card.guest) {
-    pa.innerHTML = '<button class="btn sm" id="loginBtn">Đăng nhập<span class="xl">&nbsp;để lưu</span></button>';
+    pa.innerHTML = `<button class="btn sm${dirty ? '' : ' soft'}" id="saveBtn"${dirty ? '' : ' disabled'}>${dirty ? 'Lưu' : 'Đã lưu'}</button> <button class="btn sm" id="loginBtn">Đăng nhập<span class="xl">&nbsp;để lưu</span></button>`;
+    $('#saveBtn').onclick = () => commit();
     $('#loginBtn').onclick = () => askLogin('save');
     return;
   }
+  const sv = `<button class="btn sm${dirty ? '' : ' soft'}" id="saveBtn"${dirty ? '' : ' disabled'} title="Lưu (⌘/Ctrl+S)">${dirty ? 'Lưu' : 'Đã lưu'}</button> `;
   if (card.status !== 'published') {
-    pa.innerHTML = '<button class="btn sm" id="pubBtn">Phát hành<span class="xl">&nbsp;thiệp</span></button>';
+    pa.innerHTML = sv + '<button class="btn sm" id="pubBtn">Phát hành<span class="xl">&nbsp;thiệp</span></button>';
   } else {
-    pa.innerHTML = `<button class="btn sm soft" id="shareBtn">Chia sẻ</button>${card.paid ? '' : ' <button class="btn sm" id="payBtn">Kích hoạt</button>'}`;
+    pa.innerHTML = sv + `<button class="btn sm soft" id="shareBtn">Chia sẻ</button>${card.paid ? '' : ' <button class="btn sm" id="payBtn">Kích hoạt</button>'}`;
   }
+  $('#saveBtn').onclick = () => commit();
   const pb = $('#pubBtn'); if (pb) pb.onclick = publish;
   const sb = $('#shareBtn'); if (sb) sb.onclick = shareModal;
   const yb = $('#payBtn'); if (yb) yb.onclick = () => openPayModal(CARD_ID, reloadCard);
@@ -373,7 +418,8 @@ async function publish() {
   clearTimeout(saveTimer);
   if (!card.data.groom.name || !card.data.bride.name || !card.data.date) return quickStart(true);
   while (saving) await new Promise((r) => setTimeout(r, 100)); // đợi lần lưu đang chạy xong rồi lưu bản mới nhất
-  await save();
+  if (dirty) await commit();
+  if (dirty) return; // lưu lỗi → không phát hành
   try {
     await api(`/api/cards/${CARD_ID}/publish`, { method: 'POST', body: {} });
     await reloadCard();
@@ -522,7 +568,7 @@ function queueUploads(files, keys) {
   upStatus();
   for (let i = 0; i < 3; i++) pumpUploads();
 }
-function upStatus() { status(pendingSlots.size ? `Đang tải ${pendingSlots.size} ảnh lên…` : 'Đã lưu ✓'); }
+function upStatus() { status(pendingSlots.size ? `Đang tải ${pendingSlots.size} ảnh lên…` : dirty ? 'Chưa lưu' : 'Đã lưu ✓'); }
 async function pumpUploads() {
   if (upRunning >= 3 || !upQueue.length) return;
   upRunning++;
@@ -661,7 +707,8 @@ function bind() {
   $('#sheetX').onclick = () => showTab(null);
   $('#scrim').onclick = () => showTab(null);
   document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && curTab && !document.querySelector('.modal')) showTab(null); });
-  window.addEventListener('beforeunload', (e) => { if (saveTimer && $('#saved').textContent.startsWith('Đang')) { e.preventDefault(); e.returnValue = ''; } });
+  window.addEventListener('beforeunload', (e) => { if (dirty || saving) { e.preventDefault(); e.returnValue = ''; } });
+  document.addEventListener('keydown', (e) => { if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 's') { e.preventDefault(); if (dirty) commit(); } });
 }
 
 // ---------- sửa trực tiếp trên thiệp (kiểu Canva) ----------
@@ -689,7 +736,7 @@ function photoSet(key, url) {
   d.photos[i] = url || '';
   trimPhotos();
 }
-function applyLive() { rerender(); renderHeader(); clearTimeout(saveTimer); save(); }
+function applyLive() { rerender(); renderHeader(); save(); }
 // Ảnh vừa tải lên xong: thay ảnh thật vào đúng ô đang hiện ảnh tạm trên thiệp. Trả về false (→ phải vẽ lại thiệp) khi
 // thiệp chưa có ô đó (vd. ô album thứ 10 mà mẫu chưa vẽ) hoặc đang có bản vẽ lại dở dang (bản đó có thể thiếu ảnh này).
 function photoLive(key, url) {
@@ -999,10 +1046,10 @@ async function adoptSuggested() {
   items.forEach((it) => { delete localPhotos[it.key]; });
   trimPhotos();
   if (!failed) { try { await goiYStore('readwrite', (s) => { s.delete('pending'); return s.delete('photos'); }); } catch (e) { /* bỏ qua */ } }
-  rerender(); renderHeader(); clearTimeout(saveTimer);
+  rerender(); renderHeader();
   await save();
   setTimeout(() => locals.forEach((u) => URL.revokeObjectURL(u)), 60000);
-  toast(failed ? `${failed} ảnh chưa tải lên được — tải lại trang để thử lại` : 'Đã lưu ảnh của bạn vào thiệp', !!failed);
+  toast(failed ? `${failed} ảnh chưa tải lên được — tải lại trang để thử lại` : 'Đã thêm ảnh của bạn vào thiệp — bấm Lưu để giữ lại', !!failed);
 }
 
 // cột "Các phần của thiệp" (màn rộng): bấm để thiệp cuộn tới phần đó
@@ -1050,6 +1097,7 @@ window.addEventListener('message', (e) => {
     pvWait(false); $('#phone').innerHTML = `<div class="pageload bad">${e.status === 404 ? 'Không tìm thấy thiệp này.' : 'Mạng chập chờn, chưa tải được.'} <a class="btn" href="${e.status === 404 ? '/thiep-cua-toi' : location.href}">${e.status === 404 ? 'Về thiệp của tôi' : 'Tải lại trang'}</a></div>`;
     return;
   }
+  savedData = JSON.stringify(card.data);
   bind();
   if (card.guest) $('.ebar .back').href = '/mau-thiep'; // chưa có "Thiệp của tôi" để quay về
   renderHeader();
@@ -1072,6 +1120,5 @@ window.addEventListener('message', (e) => {
     const rs = await Promise.all(todo.map((e) => api(`/api/maplink?url=${encodeURIComponent(e.mapUrl)}`, { quiet: true }).catch(() => null)));
     let changed = false;
     todo.forEach((e, k) => { if (rs[k] && rs[k].pin) { e.mapPin = rs[k].pin; changed = true; } });
-    if (changed) save();
   }
 })();

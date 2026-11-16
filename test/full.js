@@ -198,6 +198,23 @@ const eq = (a, b, msg) => { assert.deepEqual(a, b, msg); n++; };
     await call('a', 'PUT', `/api/cards/${id}`, { data: c.data });
   }
 
+  // ---------- bản nháp xem trước (trình sửa chỉ lưu khi bấm Lưu) ----------
+  {
+    const c = (await call('a', 'GET', `/api/cards/${id}`)).json.card;
+    const other = Object.keys(require('../lib/render').templates).find((t) => t !== c.template && !/^mh/.test(t));
+    r = await call('a', 'POST', `/api/cards/${id}/draft`, { data: { ...c.data, groom: { ...c.data.groom, name: 'Nháp Chưa Lưu' } }, template: other, palette: '' });
+    eq(r.status, 200, 'gửi được bản nháp');
+    eq(r.json.card.template, other, 'bản nháp trả về mẫu mới');
+    ok(r.json.card.palette, 'bản nháp chọn sẵn bảng màu của mẫu mới');
+    const now = (await call('a', 'GET', `/api/cards/${id}`)).json.card;
+    ok(now.template === c.template && now.data.groom.name === c.data.groom.name, 'bản nháp KHÔNG đổi thiệp đã lưu');
+    ok((await call('a', 'GET', `/t/${c.slug}?preview=1&draft=1`)).text.includes('Nháp Chưa Lưu'), 'khung xem trước của chủ thiệp vẽ theo bản nháp');
+    ok(!(await call('a', 'GET', `/t/${c.slug}?preview=1`)).text.includes('Nháp Chưa Lưu'), 'xem trước không có draft=1 vẫn là bản đã lưu');
+    ok([403, 404].includes((await call('b', 'POST', `/api/cards/${id}/draft`, { data: c.data })).status), 'người khác không gửi bản nháp vào thiệp của A');
+    await call('a', 'PUT', `/api/cards/${id}`, { data: c.data });
+    ok(!(await call('a', 'GET', `/t/${c.slug}?preview=1&draft=1`)).text.includes('Nháp Chưa Lưu'), 'bấm Lưu xong thì bỏ bản nháp cũ');
+  }
+
   // ---------- quản trị ----------
   eq((await call('a', 'GET', '/api/admin/overview')).status, 403, 'tài khoản thường không vào được quản trị');
   eq((await call('qt', 'POST', '/api/admin/login', { password: 'sai' })).status, 401, 'sai mật khẩu quản trị');

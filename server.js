@@ -563,8 +563,26 @@ route('PUT', '/api/cards/:id', async (req, res, ctx) => {
   if (b.led) card.led = ledLib.normalize(b.led, card.led); // lần lưu đầu tiên bắt đầu dùng thử màn LED
   if (b.video) card.video = videoLib.normalize(b.video, card.video);
   card.updatedAt = Date.now();
+  if (b.data || b.template || b.palette) DRAFTS.delete(card.id);
   save();
   json(res, 200, { card: cardFull(card) });
+});
+
+// Bản nháp để xem trước (trình sửa thiệp chỉ lưu khi bấm "Lưu"): giữ trong bộ nhớ, KHÔNG ghi vào thiệp.
+// Khung xem trước của chủ thiệp (/t/:slug?preview=1&draft=1) vẽ theo bản nháp; bấm Lưu (PUT dữ liệu) thì bỏ bản nháp.
+const DRAFTS = new Map(); // card.id → { data, template, palette, title, at }
+route('POST', '/api/cards/:id/draft', async (req, res, ctx) => {
+  const card = ownedCard(ctx, ctx.params.id, { guest: true });
+  rateLimit('draft:' + ctx.ip, 3000, 36e5);
+  const b = await readJson(req);
+  let template = templates[b.template] ? b.template : card.template;
+  if (!templates[template]) template = DEFAULT_TEMPLATE;
+  let palette = template !== card.template ? templates[template].palettes[0].id : card.palette;
+  if (b.palette && templates[template].palettes.some((p) => p.id === b.palette)) palette = b.palette;
+  const d = { data: b.data ? cd.normalize(b.data) : card.data, template, palette, title: b.title !== undefined ? str(b.title, 60) || card.title : card.title, at: Date.now() };
+  DRAFTS.set(card.id, d);
+  if (DRAFTS.size > 500) { const old = Date.now() - 6 * 36e5; for (const [k, v] of DRAFTS) if (v.at < old) DRAFTS.delete(k); }
+  json(res, 200, { card: { ...cardFull(card), template: d.template, palette: d.palette, title: d.title } });
 });
 
 route('POST', '/api/cards/:id/publish', async (req, res, ctx) => {
@@ -1028,7 +1046,9 @@ async function showCard(req, res, ctx) {
   if (!preview && !isOwner) countView(card, guest);
   const wishes = db.wishes.filter((w) => w.cardId === card.id && !w.hidden).sort((a, b) => b.createdAt - a.createdAt).slice(0, 200);
   const edit = preview && ctx.query.get('edit') === '1'; // khung sửa trực tiếp trong trang sửa thiệp (chỉ chủ thiệp)
-  html(res, 200, renderCard(card, { guest, wishes, preview, edit, trial: !st.paid, baseUrl: BASE_URL }));
+  const dr = preview && ctx.query.get('draft') === '1' && DRAFTS.get(card.id);
+  const view = dr ? { ...card, data: dr.data, template: dr.template, palette: dr.palette, title: dr.title } : card;
+  html(res, 200, renderCard(view, { guest, wishes, preview, edit, trial: !st.paid, baseUrl: BASE_URL }));
 }
 route('GET', '/t/:slug', showCard);
 route('GET', '/t/:slug/:code', showCard);
