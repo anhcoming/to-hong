@@ -38,13 +38,16 @@ function modal({ title, body, foot = '', size = '', onMount }) {
   return close;
 }
 // hỏi lại trước khi làm: { title, text, ok, danger, reason: 'nhãn ô lý do', run(reason) }
-function ask({ title, text, ok, danger, reason, run }) {
+// word: bắt gõ đúng chữ này mới bấm được nút (thao tác không hoàn tác như xoá tất cả)
+function ask({ title, text, ok, danger, reason, word, run }) {
   modal({
     title, size: 'sm',
-    body: `<p>${text}</p>${reason ? `<label class="fl">${esc(reason)}<input id="askR" placeholder="Ghi vào nhật ký"></label>` : ''}`,
-    foot: `<button class="btn plain" data-close>Thôi</button><button class="btn" id="askOk" ${danger ? 'style="background:var(--danger)"' : ''}>${esc(ok)}</button>`,
+    body: `<p>${text}</p>${reason ? `<label class="fl">${esc(reason)}<input id="askR" placeholder="Ghi vào nhật ký"></label>` : ''}${word ? `<label class="fl"><span>Gõ <b>${esc(word)}</b> để xác nhận</span><input id="askW" autocomplete="off" placeholder="${esc(word)}"></label>` : ''}`,
+    foot: `<button class="btn plain" data-close>Thôi</button><button class="btn" id="askOk" ${danger ? 'style="background:var(--danger)"' : ''} ${word ? 'disabled' : ''}>${esc(ok)}</button>`,
     onMount: (box, close) => {
+      if (word) $('#askW', box).oninput = (e) => { $('#askOk', box).disabled = e.target.value.trim().toUpperCase() !== word; };
       $('#askOk', box).onclick = async () => {
+        if ($('#askOk', box).disabled) return;
         try { await run(reason ? $('#askR', box).value : undefined); close(); } catch (err) { toast(err.message, true); }
       };
     },
@@ -113,7 +116,7 @@ function bindRows(el, rows, onRow, onBtn) {
     const item = rows[tr.dataset.k];
     const b = e.target.closest('[data-a]');
     if (b) { e.stopPropagation(); return onBtn(b.dataset.a, item, b); }
-    if (e.target.closest('a')) return;
+    if (e.target.closest('a,.ck')) return; // link, ô tích chọn: không mở bảng chi tiết
     onRow(item);
   };
 }
@@ -413,25 +416,62 @@ const prodLine = (c) => [
 ].filter(Boolean).map(([n, cls, s]) => `<span style="white-space:nowrap;margin-right:10px;color:var(--${cls === 'ok' ? 'ok' : cls === 'red' ? 'primary' : cls === 'warn' ? 'warn' : 'muted'})">${n} ${s}</span>`).join('');
 async function cards() {
   const f = A.f.cards = A.f.cards || { q: '', seg: '' };
-  $('#view').innerHTML = `${page('Thiệp & sản phẩm', 'Bấm một thiệp để mở link, kích hoạt tay thiệp / LED / video, hoặc gỡ thiệp vi phạm.')}
+  const sel = new Set(); // id thiệp đang tích chọn (trong danh sách đang hiện)
+  $('#view').innerHTML = `${page('Thiệp & sản phẩm', 'Bấm một thiệp để mở link, kích hoạt tay thiệp / LED / video, hoặc gỡ thiệp vi phạm. Tích chọn để xoá nhiều thiệp.',
+    '<button class="btn sm" id="cdelSel" style="background:var(--danger)" hidden>Xoá đã chọn</button><button class="btn sm plain" id="cdelAll" style="color:var(--danger)">Xoá tất cả thiệp</button>')}
     ${filterBar('cards', { ph: 'Tìm tên đôi, đường dẫn, email…', segs: [['', 'Tất cả'], ['published', 'Đã phát hành'], ['paid', 'Có trả phí'], ['trial', 'Dùng thử'], ['blocked', 'Đã gỡ']] })}
-    <div class="box"><table class="tb"><thead><tr><th>Thiệp</th><th class="hm">Chủ thiệp</th><th>Sản phẩm</th><th class="num hm">Lượt xem</th><th class="num hm">Khách mời</th><th></th></tr></thead><tbody id="list"></tbody></table></div>`;
+    <div class="box"><table class="tb"><thead><tr><th class="ck"><input type="checkbox" id="ckAll" aria-label="Chọn tất cả thiệp đang hiện"></th><th>Thiệp</th><th class="hm">Chủ thiệp</th><th>Sản phẩm</th><th class="num hm">Lượt xem</th><th class="num hm">Khách mời</th><th></th></tr></thead><tbody id="list"></tbody></table></div>`;
   const load = async () => {
     const d = await api('/api/admin/cards?' + new URLSearchParams({ q: f.q, filter: f.seg }));
     $('#fcnt').textContent = `${d.cards.length}/${d.total} thiệp`;
     const rows = Object.fromEntries(d.cards.map((c) => [c.id, c]));
+    sel.clear(); $('#ckAll').checked = false;
     $('#list').innerHTML = d.cards.length ? d.cards.map((c) => `<tr data-k="${c.id}" class="${c.blocked ? 'off' : ''}">
+      <td class="ck"><input type="checkbox" data-ck="${c.id}" aria-label="Chọn thiệp ${esc(c.names || c.title)}"></td>
       <td><b>${esc(c.names || c.title)}</b> ${c.blocked ? pill('red', 'Đã gỡ') : ''}<span class="s">/t/${esc(c.slug)} · ${c.status === 'published' ? 'đã phát hành' : 'nháp'} · sửa ${ago(c.updatedAt)}</span></td>
       <td class="hm">${c.guest ? '<span class="s" style="display:inline">khách chưa đăng nhập</span>' : esc(c.ownerEmail)}</td>
       <td><span class="s" style="display:inline">${prodLine(c)}</span></td>
       <td class="num hm">${num(c.views)}</td>
       <td class="num hm">${num(c.guests)}</td>
-      <td class="act"><button class="dots" data-a="menu" aria-label="Thêm">⋯</button></td></tr>`).join('') : '<tr><td colspan="6" class="empty">Không có thiệp khớp.</td></tr>';
-    bindRows($('#list'), rows, cardDrawer, (a, c, b) => menu(b, [['Xem chi tiết', () => cardDrawer(c)], ['Mở thiệp ↗', () => open(`/t/${c.slug}?preview=1`, '_blank')], '-', [c.blocked ? 'Khôi phục thiệp' : 'Gỡ thiệp', () => blockCard(c), c.blocked ? '' : 'd']]));
+      <td class="act"><button class="dots" data-a="menu" aria-label="Thêm">⋯</button></td></tr>`).join('') : '<tr><td colspan="7" class="empty">Không có thiệp khớp.</td></tr>';
+    A.cardRows = rows; syncSel();
+    bindRows($('#list'), rows, cardDrawer, (a, c, b) => menu(b, [['Xem chi tiết', () => cardDrawer(c)], ['Mở thiệp ↗', () => open(`/t/${c.slug}?preview=1`, '_blank')], '-', [c.blocked ? 'Khôi phục thiệp' : 'Gỡ thiệp', () => blockCard(c), c.blocked ? '' : 'd'], ['Xoá thiệp', () => deleteCards([c]), 'd']]));
   };
+  // tích chọn / bỏ chọn
+  const syncSel = () => {
+    const b = $('#cdelSel'); b.hidden = !sel.size; b.textContent = `Xoá ${sel.size} thiệp đã chọn`;
+    const boxes = $$('#list [data-ck]'); $('#ckAll').checked = boxes.length > 0 && sel.size === boxes.length;
+    $('#ckAll').indeterminate = sel.size > 0 && sel.size < boxes.length;
+  };
+  $('#list').addEventListener('change', (e) => { const x = e.target.closest('[data-ck]'); if (!x) return; if (x.checked) sel.add(x.dataset.ck); else sel.delete(x.dataset.ck); syncSel(); });
+  $('#ckAll').onchange = (e) => { $$('#list [data-ck]').forEach((x) => { x.checked = e.target.checked; if (x.checked) sel.add(x.dataset.ck); else sel.delete(x.dataset.ck); }); syncSel(); };
+  $('#cdelSel').onclick = () => deleteCards([...sel].map((id) => A.cardRows[id]).filter(Boolean));
+  $('#cdelAll').onclick = () => deleteCards(null);
   A.reload = load;
   bindBar('cards', () => load().catch(err));
   await load();
+}
+// xoá các thiệp đã chọn (list) hoặc tất cả thiệp trên web (list = null)
+async function deleteCards(list) {
+  const isPaid = (c) => c.paid || (c.led && c.led.paid) || (c.video && c.video.paid);
+  let n, paid;
+  if (list) { n = list.length; paid = list.filter(isPaid).length; } else {
+    const d = await api('/api/admin/cards').catch(err); if (!d) return;
+    n = d.total; paid = d.cards.filter(isPaid).length;
+    if (!n) return toast('Chưa có thiệp nào để xoá');
+  }
+  const what = list ? (n === 1 ? `thiệp <b>${esc(list[0].names || list[0].title)}</b>` : `<b>${n} thiệp</b> đã chọn`) : `<b>TẤT CẢ ${n} thiệp</b> trên web, kể cả thiệp nháp và thiệp không hiện trong bộ lọc`;
+  ask({
+    title: list ? `Xoá ${n} thiệp?` : 'Xoá tất cả thiệp?', danger: true, ok: list ? 'Xoá vĩnh viễn' : 'Xoá tất cả', word: list ? '' : 'XOÁ',
+    text: `Xoá vĩnh viễn ${what}, cùng xác nhận tham dự, lời chúc và đơn chưa thanh toán của chúng. Link thiệp sẽ không mở được nữa. <b>Không hoàn tác được.</b>`
+      + (paid ? `<br><br>⚠ Trong đó có <b>${paid} thiệp đã trả phí</b>. Đơn đã thanh toán vẫn được giữ trong Đơn hàng để đối chiếu tiền.` : '')
+      + '<br><br>Khách mời trong sổ tay cưới được giữ lại.',
+    run: async () => {
+      const r = await api('/api/admin/cards/delete', { method: 'POST', body: list ? { ids: list.map((c) => c.id) } : { all: true, confirm: 'XOÁ' } });
+      toast(`Đã xoá ${r.deleted} thiệp` + (r.orders ? ` và ${r.orders} đơn chưa thanh toán` : ''));
+      closeDrawer(); refresh();
+    },
+  });
 }
 function blockCard(c) {
   ask(c.blocked

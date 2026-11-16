@@ -15,6 +15,8 @@
 body{background:var(--bg)}
 .ad{display:grid;grid-template-columns:232px minmax(0,1fr);min-height:100vh}
 .ad[hidden]{display:none} /* chưa vào được (màn đăng nhập / không có quyền) thì ẩn hẳn khung quản trị */
+.tb .ck{width:44px;padding-right:0}
+.tb .ck input{width:18px;height:18px;margin:0;vertical-align:middle;accent-color:var(--primary);cursor:pointer} /* ô tích chọn thiệp để xoá nhiều */
 .ad>div{min-width:0}
 /* ---- thanh bên ---- */
 .side{position:sticky;top:0;height:100vh;display:flex;flex-direction:column;gap:2px;padding:18px 12px;border-right:1px solid var(--line);background:var(--surface);overflow-y:auto}
