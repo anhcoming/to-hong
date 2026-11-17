@@ -354,32 +354,54 @@ window.renderTopbar = async function (active) {
   const meta = await fetch('/api/meta').then((r) => r.json());
   const me = await fetch('/api/me').then((r) => r.json());
   window.META = meta;
+  // Kiểu "đồ của tôi": máy tính = logo · 3 tab Thiệp / Video / Sổ tay · Xem mẫu · ＋ Tạo mới · ảnh đại diện (menu tài khoản);
+  // điện thoại = thanh trên chỉ logo + ảnh đại diện, thanh tab dưới cùng: Thiệp · Video · ＋ · Sổ tay · Tôi
+  const u = me.user;
+  const ini = u ? (String(u.name || u.email || '?').trim().split(/\s+/).map((w) => w[0]).slice(-2).join('') || '?').toUpperCase() : '';
+  const TABS = [['/thiep-cua-toi', 'Thiệp', 'cards', '<rect x="3" y="5" width="18" height="14" rx="2.5"/><path d="M3.5 6.5 12 13l8.5-6.5"/>'],
+    ['/video-cua-toi', 'Video', 'videos', '<rect x="3" y="6" width="13" height="12" rx="2.5"/><path d="m16 10.5 5-3v9l-5-3"/>'],
+    ['/so-tay', 'Sổ tay', 'planner', '<path d="M5 4.5A1.5 1.5 0 0 1 6.5 3H19v15H6.5A1.5 1.5 0 0 0 5 19.5z"/><path d="M5 19.5A1.5 1.5 0 0 0 6.5 21H19v-3"/><path d="M9 8h6M9 11.5h4"/>']];
+  const ic = (d) => `<svg viewBox="0 0 24 24" aria-hidden="true">${d}</svg>`;
+  const NEW = `<a href="/mau-thiep"><b>Thiệp cưới</b><small>Chọn mẫu, điền tên là xong</small></a><a href="/slide-cuoi"><b>Slide / video cưới</b><small>Ảnh cưới chiếu TV, tải MP4</small></a><a href="/man-hinh-led-dam-cuoi"><b>Màn hình LED</b><small>Trình chiếu tên đôi tại tiệc</small></a>`;
+  const ACCT = u ? `<div class="who"><b>${esc(u.name || '')}</b>${esc(u.email)}</div><a href="/">Trang chủ</a><a href="/mau-thiep">Xem mẫu thiệp</a><a href="#" data-tb-theme>Đổi nền sáng / tối</a><a href="#" id="logoutBtn">Đăng xuất</a>` : '';
   const bar = document.createElement('header');
-  bar.className = 'topbar';
+  bar.className = 'topbar tb';
   bar.innerHTML = `<div class="wrap">
     <a class="logo" href="/"><span class="lw">${esc(meta.brand)}</span><svg class="lh" viewBox="0 0 32 30" aria-hidden="true"><path d="M16 28C6.5 21 3 16 3 11.5 3 7.9 5.8 5 9.4 5c2.6 0 4.6 1.4 6.6 3.9C18 6.4 20 5 22.6 5 26.2 5 29 7.9 29 11.5 29 16 25.5 21 16 28z"/></svg></a>
-    <nav class="nav">
-      ${me.user ? `
-        <a href="/thiep-cua-toi" class="${active === 'cards' ? 'on' : ''}">Thiệp<span class="hide-xs"> cưới</span></a>
-        <a href="/video-cua-toi" class="${active === 'videos' ? 'on' : ''}">Video<span class="hide-xs"> cưới</span></a>
-        <a href="/so-tay" class="${active === 'planner' ? 'on' : ''}">Sổ tay<span class="hide-xs"> cưới</span></a>
-        ${window.themeBtn ? themeBtn() : ''}
-        <div class="acct" id="acct"><a href="/thiep-cua-toi"><span class="hide-xs">Thiệp của tôi</span><span class="show-xs">Của tôi</span></a><button type="button" aria-label="Tài khoản" aria-expanded="false"></button>
-          <div class="acct-menu"><div class="who"><b>${esc(me.user.name || '')}</b>${esc(me.user.email)}</div><a href="/">Trang chủ</a><a href="#" class="theme-item" onclick="toggleTheme();return false">Đổi nền sáng / tối</a><a href="#" id="logoutBtn">Đăng xuất</a></div></div>` : `${window.themeBtn ? themeBtn() : ''}<a href="/dang-nhap" class="btn sm">Đăng nhập</a>`}
-    </nav></div>`;
+    ${u ? `<nav class="tb-tabs" aria-label="Của tôi">${TABS.map(([h, n, k]) => `<a href="${h}"${k === active ? ' class="on" aria-current="page"' : ''}>${n}</a>`).join('')}</nav>` : ''}
+    <span class="tb-sp"></span>
+    ${window.themeBtn ? themeBtn() : ''}
+    ${u ? `<a class="tb-link" href="/mau-thiep">Xem mẫu</a>
+      <div class="tb-dd tb-new"><button type="button" class="tb-newbtn" aria-expanded="false">＋ Tạo mới</button><div class="tb-menu">${NEW}</div></div>
+      <div class="tb-dd tb-me"><button type="button" class="tb-av" aria-label="Tài khoản" aria-expanded="false">${esc(ini)}</button><div class="tb-menu">${ACCT}</div></div>`
+      : '<a href="/dang-nhap" class="btn sm">Đăng nhập</a>'}
+  </div>`;
   document.body.prepend(bar);
-  const lo = $('#logoutBtn');
-  if (lo) lo.onclick = async (e) => { e.preventDefault(); await api('/api/auth/logout', { method: 'POST' }); location.href = '/'; };
-  const acct = $('#acct');
-  if (acct) {
-    const btn = $('button', acct);
-    const set = (on) => { acct.classList.toggle('open', on); btn.setAttribute('aria-expanded', on); };
-    btn.onclick = () => set(!acct.classList.contains('open'));
-    document.addEventListener('click', (e) => { if (!e.target.closest('#acct')) set(false); });
-    document.addEventListener('keydown', (e) => { if (e.key === 'Escape') set(false); });
+  if (u) { // thanh tab dưới cùng (điện thoại) — mọi trang sau đăng nhập, kể cả sổ tay
+    const bt = document.createElement('nav');
+    bt.className = 'tb-bottom'; bt.setAttribute('aria-label', 'Của tôi');
+    bt.innerHTML = TABS.slice(0, 2).map(([h, n, k, d]) => `<a href="${h}"${k === active ? ' class="on"' : ''}><i>${ic(d)}</i>${n}</a>`).join('')
+      + `<div class="tb-dd tb-plus"><button type="button" aria-label="Tạo mới" aria-expanded="false"><i>＋</i>Tạo mới</button><div class="tb-menu up">${NEW}</div></div>`
+      + TABS.slice(2).map(([h, n, k, d]) => `<a href="${h}"${k === active ? ' class="on"' : ''}><i>${ic(d)}</i>${n}</a>`).join('')
+      + `<div class="tb-dd tb-me2"><button type="button" aria-label="Tài khoản" aria-expanded="false"><i class="av">${esc(ini)}</i>Tôi</button><div class="tb-menu up right">${ACCT.replace('id="logoutBtn"', 'data-tb-out')}</div></div>`;
+    document.body.appendChild(bt);
+    document.body.classList.add('has-tb-bottom');
   }
-  return { meta, user: me.user };
+  // menu thả xuống (Tạo mới, tài khoản): bấm mở / bấm ra ngoài hoặc Esc thì đóng
+  const dds = $$('.tb-dd');
+  const closeAll = (except) => dds.forEach((d) => { if (d !== except) { d.classList.remove('open'); const b = $('button', d); if (b) b.setAttribute('aria-expanded', 'false'); } });
+  dds.forEach((d) => { const b = $('button', d); b.onclick = (e) => { e.stopPropagation(); const on = !d.classList.contains('open'); closeAll(d); d.classList.toggle('open', on); b.setAttribute('aria-expanded', on); }; });
+  document.addEventListener('click', (e) => { if (!e.target.closest('.tb-dd')) closeAll(); });
+  document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeAll(); });
+  document.addEventListener('click', async (e) => {
+    const t = e.target.closest('[data-tb-theme],#logoutBtn,[data-tb-out]'); if (!t) return;
+    e.preventDefault();
+    if (t.hasAttribute('data-tb-theme')) { closeAll(); if (window.toggleTheme) toggleTheme(); return; }
+    await api('/api/auth/logout', { method: 'POST' }); location.href = '/';
+  });
+  return { meta, user: u };
 };
+
 
 // bộ chọn ngày / giờ theo giao diện Cưới Nha (máy có chuột) cho mọi ô ngày, giờ trên các trang dùng common.js
 (function () { const s = document.createElement('script'); s.src = '/js/pickers.js'; s.defer = true; document.head.appendChild(s); })();

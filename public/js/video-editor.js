@@ -510,12 +510,20 @@ function renderStyleRows(si) {
     </div>`).join('');
 }
 
+function exportModal() {
+  openModal(`<h2 style="margin-top:0">Tải video MP4 Full HD</h2><div id="exportBox"></div>`, (box, close) => {
+    renderExport();
+    box.addEventListener('click', (e) => {
+      if (!e.target.closest('#exportBtn')) return;
+      const n = +$('#loops', box).value || 1;
+      close(); exportMp4(n);
+    });
+  });
+}
 function renderExport() {
   const s = card.video;
   const total = Math.round(engine ? engine.duration() : video.scenes.length * video.seconds);
-  $('#exportBox').innerHTML = `<h3>Tải video MP4 Full HD</h3>
-    <p class="muted" style="font-size:14px;margin:0 0 12px">Chép vào USB cắm TV, hoặc gửi qua Zalo. ${card.data.music ? 'Có kèm nhạc nền của thiệp.' : 'Chưa có nhạc nền — chọn ở bảng Nhạc.'}</p>
-    <label class="field"><span>Độ dài</span><select id="loops" class="input">
+  $('#exportBox').innerHTML = `<label class="field"><span>Độ dài</span><select id="loops" class="input">
       ${[[1, `1 vòng (${total} giây)`], [Math.max(2, Math.round(180 / total)), 'Lặp ~3 phút'], [Math.max(2, Math.min(30, Math.round(600 / total))), 'Lặp ~10 phút']]
         .map(([n, label], i) => `<option value="${n}" ${i === 1 ? 'selected' : ''}>${label} · ~${Math.max(1, Math.round(n * total * 0.36))} MB</option>`).join('')}
     </select></label>
@@ -551,7 +559,7 @@ function renderHeader() {
   sb.onclick = (e) => { e.stopPropagation(); m.hidden = !m.hidden; sb.setAttribute('aria-expanded', String(!m.hidden)); };
   if (!renderHeader.bound) { renderHeader.bound = true; document.addEventListener('click', (e) => { const mm = $('#shrM'); if (mm && !mm.hidden && !e.target.closest('.shr')) { mm.hidden = true; $('#shrBtn').setAttribute('aria-expanded', 'false'); } }); document.addEventListener('keydown', (e) => { if (e.key === 'Escape') { const mm = $('#shrM'); if (mm) mm.hidden = true; } }); }
   $('#cpLink').onclick = () => { close(); copyText(s.url, 'Đã chép link — mở trên Smart TV hoặc máy tính nối TV'); };
-  const goX = () => { close(); curPanel = 'xuat'; renderSide(); };
+  const goX = () => { close(); exportModal(); };
   $('#goExportM').onclick = goX;
   const ge = $('#goExport'); if (ge) ge.onclick = goX;
   const pb = $('#payBtn'); if (pb) pb.onclick = () => openPayModal(CARD_ID, reload, 'video');
@@ -621,11 +629,11 @@ async function saveCopy(blob) {
   return (await api(`/api/cards/${CARD_ID}/video/saved-file`, { method: 'POST', body: blob, quiet: true })).url;
 }
 
-async function exportMp4() {
+async function exportMp4(loopsArg) {
   if (!card.video.paid) return openPayModal(CARD_ID, reload, 'video');
   clearTimeout(saveTimer);
   await save();
-  const loops = +$('#loops').value || 1;
+  const loops = loopsArg || +($('#loops') || {}).value || 1;
   let closeModal;
   openModal(`<h2>Đang dựng video…</h2><p class="muted" style="margin:0">Video dựng ngay trên máy bạn, thường dưới một phút. Giữ trang này mở nhé.</p><div class="bar"><i id="pg"></i></div><p class="muted" id="pgText" style="font-size:13px;margin:0">Chuẩn bị…</p>`, (box, close) => { closeModal = close; });
   try {

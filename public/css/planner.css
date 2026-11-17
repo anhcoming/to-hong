@@ -18,6 +18,20 @@ body{padding-bottom:calc(76px + env(safe-area-inset-bottom))}
 .ptabs i{font-style:normal;font-size:20px;line-height:1.2}
 .ptabs-in{display:contents} /* điện thoại: các nút nằm thẳng trong thanh dưới */
 .ptabs button.on{color:var(--primary)}
+/* điện thoại: thanh dưới cùng là thanh chung của các trang (Thiệp · Video · ＋ · Sổ tay · Tôi) → các mục sổ tay
+   thành dải viên thuốc trượt ngang, dính ở đầu trang */
+@media (max-width:859px){
+  body{padding-bottom:calc(76px + env(safe-area-inset-bottom))}
+  /* tab chữ: một hàng, mục đang xem chữ hồng + gạch chân; vuốt ngang khi không đủ chỗ */
+  .ptabs{position:sticky;top:0;bottom:auto;z-index:29;display:block;padding:0;border:0;border-bottom:1px solid var(--line);background:var(--surface);box-shadow:none}
+  .ptabs-in{display:flex;gap:2px;overflow-x:auto;padding:0 8px;scrollbar-width:none}
+  .ptabs-in::-webkit-scrollbar{display:none}
+  .ptabs button{position:relative;flex:none;padding:14px 10px 12px;border:0;border-radius:0;background:none;color:var(--muted);font-size:14px;font-weight:600;white-space:nowrap}
+  .ptabs button i{display:none}
+  .ptabs button.on{color:var(--primary)}
+  .ptabs button.on::after{content:'';position:absolute;left:10px;right:10px;bottom:0;height:3px;border-radius:3px 3px 0 0;background:var(--primary)}
+}
+}
 @media (min-width:860px){
   body{padding-bottom:40px}
   /* máy tính: các mục sổ tay là một thanh viên thuốc trong khung 1240px, dính ngay dưới thanh trên (không còn dải ngang tràn màn) */

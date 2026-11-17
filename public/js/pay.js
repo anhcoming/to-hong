@@ -1,5 +1,5 @@
 // Hộp thoại kích hoạt thiệp (dùng ở trang quản lý và trình sửa)
-// Luồng: mã QR (hiệu lực 1 phút, có vạch quét chạy; hết hạn thì bấm tạo mã mới) → khách chuyển khoản → SePay báo tiền về → "Đã kích hoạt" tự hiện.
+// Luồng: mã QR (hiệu lực 5 phút, có vạch quét chạy; hết hạn thì bấm tạo mã mới) → khách chuyển khoản → SePay báo tiền về → "Đã kích hoạt" tự hiện.
 // Cửa sổ hỏi lại trạng thái đơn vài giây một lần; tiền về sớm (chưa bấm nút) thì nhảy thẳng sang "Đã kích hoạt".
 const PAY_CSS = `<style>
 @keyframes paySpin{to{transform:rotate(360deg)}}
@@ -70,7 +70,7 @@ window.openPayModal = async function (cardId, onDone, product = 'card') {
   const picker = !!(orders.card && orders.combo);
 
   let timer = null, tick = null, ov = null, box = null, closeModal = null;
-  const QR_LIFE = 60e3; // mã QR hiệu lực 1 phút — hết thì bấm tạo mã mới
+  const QR_LIFE = 5 * 60e3; // mã QR hiệu lực 5 phút (đủ để mở app ngân hàng, đăng nhập, xác thực) — hết thì bấm tạo mã mới
   let qrUntil = Date.now() + QR_LIFE, qrTick = null;
   let waitStart = Object.values(orders).some((o) => o.claimedAt) ? Date.now() : 0; // đã báo chuyển từ trước → mở lại là vào màn chờ luôn
   const SLOW = 120e3;
@@ -153,13 +153,12 @@ window.openPayModal = async function (cardId, onDone, product = 'card') {
         <div style="font-family:var(--serif);font-size:36px;font-weight:600;color:var(--primary)">${money(o.amount)}</div>
         ${until}${p === 'combo' && o.upgrade ? ` <span class="chip ok">Rẻ hơn mua lẻ ${money(o.wasPrice - o.amount)}</span>` : ''}
         ${o.coupon ? `<span class="chip ok">Đã áp mã ${esc(o.coupon)}</span>` : ''}
-        <p class="muted" style="margin:6px 0 0;font-size:13px">${note}</p>
       </div>`;
     box.innerHTML = `${PAY_CSS}<button class="modal-x" aria-label="Đóng">×</button>${head}
       <div class="qrcard">
         <div class="qrbox${Date.now() >= qrUntil ? ' exp' : ''}" id="qrBox"><img src="${esc(o.qr)}" alt="Mã QR chuyển khoản"><span class="scan" aria-hidden="true"></span>
           <div class="qx" id="qrX"><b>Mã QR đã hết hạn</b><button type="button" class="btn sm" id="qrNew">↻ Tạo mã mới</button></div></div>
-        <div class="qrt" id="qrT"><i aria-hidden="true"></i><span>Đang chờ thanh toán · còn <b id="qrS">1:00</b></span></div>
+        <div class="qrt" id="qrT"><i aria-hidden="true"></i><span>Đang chờ thanh toán · còn <b id="qrS">5:00</b></span></div>
         <div class="qrinfo">
           <div><span>Ngân hàng</span><b>${esc(o.bank.name)}</b></div>
           <div><span>Số tài khoản</span><b>${esc(o.bank.accountNo)}</b></div>
@@ -185,11 +184,12 @@ window.openPayModal = async function (cardId, onDone, product = 'card') {
     };
     // đồng hồ hiệu lực mã QR: hết 1 phút → làm mờ mã, hiện "Mã QR đã hết hạn" + nút tạo mã mới
     const qrRun = () => {
-      const qb = $('#qrBox', box), qs = $('#qrS', box), qt = $('#qrT', box); if (!qb) return clearInterval(qrTick);
+      const qb = $('#qrBox', box), qs = $('#qrS', box), qt = $('#qrT', box); if (!qb || !qs || !qt) return clearInterval(qrTick);
       const left = Math.max(0, Math.ceil((qrUntil - Date.now()) / 1000));
       qs.textContent = `${Math.floor(left / 60)}:${String(left % 60).padStart(2, '0')}`;
-      qt.classList.toggle('low', left <= 10);
-      if (!left && !qb.classList.contains('exp') && !qb.classList.contains('ld')) { qb.classList.add('exp'); qt.innerHTML = '<span>Mã QR đã hết hạn — bấm <b>Tạo mã mới</b></span>'; }
+      qt.classList.toggle('low', left <= 30);
+      if (!left && !qb.classList.contains('exp') && !qb.classList.contains('ld')) qb.classList.add('exp');
+      if (!left) qt.style.display = 'none'; // hết hạn: chỉ còn chữ + nút trên mã QR
     };
     clearInterval(qrTick); qrRun(); qrTick = setInterval(qrRun, 250);
     $('#qrNew', box).onclick = async () => {
