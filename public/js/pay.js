@@ -1,5 +1,5 @@
 // Hộp thoại kích hoạt thiệp (dùng ở trang quản lý và trình sửa)
-// Luồng: mã QR → khách bấm "Tôi đã chuyển khoản" → màn chờ toàn màn hình (vòng quay lớn) → SePay báo tiền về → "Đã kích hoạt".
+// Luồng: mã QR (hiệu lực 1 phút, có vạch quét chạy; hết hạn thì bấm tạo mã mới) → khách chuyển khoản → SePay báo tiền về → "Đã kích hoạt" tự hiện.
 // Cửa sổ hỏi lại trạng thái đơn vài giây một lần; tiền về sớm (chưa bấm nút) thì nhảy thẳng sang "Đã kích hoạt".
 const PAY_CSS = `<style>
 @keyframes paySpin{to{transform:rotate(360deg)}}
@@ -18,6 +18,29 @@ const PAY_CSS = `<style>
 .pay-opt.on .rd{border:6px solid var(--primary)}
 .pay-opt .t{flex:1;min-width:0}.pay-opt .t b{display:block;font-size:15px}.pay-opt .t span{font-size:13px;color:var(--muted)}
 .pay-opt .p{text-align:right;white-space:nowrap}.pay-opt .p s{display:block;font-size:12px;color:var(--muted)}.pay-opt .p b{font-size:17px;color:var(--primary)}
+.qrcard{display:flex;flex-direction:column;align-items:center;margin:18px 0;padding:18px 16px 14px;border:1px solid var(--line);border-radius:18px;background:var(--surface,#fff)}
+.qrbox{position:relative;width:212px;height:212px;padding:10px;border-radius:16px;background:#fff;box-sizing:border-box;overflow:hidden;box-shadow:0 0 0 1px var(--line),0 10px 26px rgba(120,40,50,.12)}
+.qrbox img{display:block;width:192px;height:192px;transition:filter .3s,opacity .3s}
+.qrbox .scan{position:absolute;left:10px;right:10px;top:10px;height:36px;pointer-events:none;background:linear-gradient(180deg,rgba(214,69,93,0),rgba(214,69,93,.22));border-bottom:2px solid rgba(214,69,93,.85);border-radius:2px;animation:qrScan 2.2s ease-in-out infinite alternate}
+@keyframes qrScan{from{transform:translateY(-34px)}to{transform:translateY(156px)}}
+.qrinfo{width:100%;max-width:340px;margin-top:14px;padding-top:12px;border-top:1px dashed var(--line);display:grid;gap:8px;font-size:14px}
+.qrinfo>div{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.qrinfo span{color:var(--muted)}
+.qrinfo b{display:inline-flex;align-items:center;gap:8px;text-align:right}
+.qrinfo b.code{color:var(--primary,#d6455d);letter-spacing:.04em}
+.qcp{border:0;border-radius:999px;padding:3px 9px;background:var(--primary-soft,#fff0f2);color:var(--primary,#d6455d);font:600 11.5px/1.4 inherit;cursor:pointer}
+.qcp:hover{background:var(--primary,#d6455d);color:#fff}
+.qrbox .qx{position:absolute;inset:0;display:none;flex-direction:column;align-items:center;justify-content:center;gap:10px;background:rgba(255,250,250,.82);backdrop-filter:blur(2px);text-align:center;padding:12px}
+.qrbox.exp img{filter:blur(4px) grayscale(1);opacity:.5}.qrbox.exp .scan{display:none}.qrbox.exp .qx{display:flex}
+.qrbox.ld img{opacity:.25}.qrbox.ld .scan{display:none}.qrbox.ld .qx{display:flex}
+.qrbox .qx b{font-size:15px;color:var(--ink,#1f1a1b)}
+.qrbox .qx .ring{width:38px;height:38px;border-radius:50%;border:4px solid var(--primary-soft,#fff0f2);border-top-color:var(--primary,#d6455d);animation:paySpin .9s linear infinite}
+.qrt{display:flex;align-items:center;justify-content:center;gap:8px;margin-top:12px;font-size:13px;color:var(--muted)}
+.qrt i{width:8px;height:8px;border-radius:50%;background:#2f7d5b;box-shadow:0 0 0 0 rgba(47,125,91,.5);animation:qrPulse 1.6s infinite}
+.qrt b{color:var(--ink,#1f1a1b);font-variant-numeric:tabular-nums}
+.qrt.low b{color:var(--primary,#d6455d)}
+@keyframes qrPulse{to{box-shadow:0 0 0 8px rgba(47,125,91,0)}}
+.pay-cp{font-size:14px;text-transform:uppercase}.pay-cp::placeholder{text-transform:none;font-size:14px}
 .pay-pill{display:inline-block;margin-top:4px;background:var(--ok-soft,#e6f3ec);color:var(--ok,#2f7d5b);font-size:11px;font-weight:700;padding:2px 8px;border-radius:999px}
 </style>`;
 
@@ -47,11 +70,13 @@ window.openPayModal = async function (cardId, onDone, product = 'card') {
   const picker = !!(orders.card && orders.combo);
 
   let timer = null, tick = null, ov = null, box = null, closeModal = null;
+  const QR_LIFE = 60e3; // mã QR hiệu lực 1 phút — hết thì bấm tạo mã mới
+  let qrUntil = Date.now() + QR_LIFE, qrTick = null;
   let waitStart = Object.values(orders).some((o) => o.claimedAt) ? Date.now() : 0; // đã báo chuyển từ trước → mở lại là vào màn chờ luôn
   const SLOW = 120e3;
 
   const closeAll = () => {
-    clearInterval(timer); clearInterval(tick);
+    clearInterval(timer); clearInterval(tick); clearInterval(qrTick);
     if (ov) ov.remove();
     ov = null;
     if (closeModal) closeModal();
@@ -131,21 +156,21 @@ window.openPayModal = async function (cardId, onDone, product = 'card') {
         <p class="muted" style="margin:6px 0 0;font-size:13px">${note}</p>
       </div>`;
     box.innerHTML = `${PAY_CSS}<button class="modal-x" aria-label="Đóng">×</button>${head}
-      <div style="display:flex;flex-wrap:wrap;justify-content:center;gap:12px 20px;align-items:center;margin:20px 0;padding:16px;border:1px solid var(--line);border-radius:14px">
-        <img src="${esc(o.qr)}" alt="Mã QR chuyển khoản" style="width:210px;height:210px;border-radius:8px;background:#fff">
-        <div style="flex:1 1 170px;font-size:14px;display:grid;gap:6px">
-          <div><span class="muted">Ngân hàng:</span> <b>${esc(o.bank.name)}</b></div>
-          <div><span class="muted">Số TK:</span> <b>${esc(o.bank.accountNo)}</b></div>
-          <div><span class="muted">Chủ TK:</span> ${esc(o.bank.accountName)}</div>
-          <div><span class="muted">Nội dung:</span> <b style="color:var(--primary)">${esc(o.code)}</b></div>
+      <div class="qrcard">
+        <div class="qrbox${Date.now() >= qrUntil ? ' exp' : ''}" id="qrBox"><img src="${esc(o.qr)}" alt="Mã QR chuyển khoản"><span class="scan" aria-hidden="true"></span>
+          <div class="qx" id="qrX"><b>Mã QR đã hết hạn</b><button type="button" class="btn sm" id="qrNew">↻ Tạo mã mới</button></div></div>
+        <div class="qrt" id="qrT"><i aria-hidden="true"></i><span>Đang chờ thanh toán · còn <b id="qrS">1:00</b></span></div>
+        <div class="qrinfo">
+          <div><span>Ngân hàng</span><b>${esc(o.bank.name)}</b></div>
+          <div><span>Số tài khoản</span><b>${esc(o.bank.accountNo)}</b></div>
+          <div><span>Chủ tài khoản</span><b>${esc(o.bank.accountName)}</b></div>
+          <div><span>Nội dung</span><b class="code">${esc(o.code)}</b></div>
         </div>
       </div>
-      <p class="muted" style="font-size:13px;margin:-6px 0 14px">Mở app ngân hàng, quét mã QR — số tiền và nội dung đã điền sẵn, giữ nguyên nội dung <b>${esc(o.code)}</b>. Chuyển xong bấm nút bên dưới.</p>
       <form id="cp" style="display:flex;gap:8px;margin-bottom:14px">
-        <input class="input" name="c" placeholder="Mã giảm giá (nếu có)" value="${esc(o.coupon || '')}" style="text-transform:uppercase">
+        <input class="input pay-cp" name="c" placeholder="Mã giảm giá (nếu có)" value="${esc(o.coupon || '')}">
         <button class="btn plain">Áp dụng</button>
       </form>
-      <button class="btn block lg" id="claim">Tôi đã chuyển khoản</button>
       <p class="muted" style="font-size:12px;text-align:center;margin:10px 0 0">Thanh toán là bạn đồng ý với <a href="/dieu-khoan" target="_blank" rel="noopener" style="color:inherit;text-decoration:underline">Điều khoản</a> và <a href="/hoan-tien" target="_blank" rel="noopener" style="color:inherit;text-decoration:underline">Chính sách hoàn tiền</a>.</p>`;
     modalHead(box); // nút × đứng yên khi cuộn
     $$('[data-sel]', box).forEach((b) => (b.onclick = () => { sel = b.dataset.sel; render(); }));
@@ -158,14 +183,24 @@ window.openPayModal = async function (cardId, onDone, product = 'card') {
         toast(o.status === 'paid' ? 'Mã giảm 100% — đã kích hoạt' : o.coupon ? 'Đã áp dụng mã giảm giá' : 'Đã bỏ mã giảm giá');
       } catch (err) { toast(err.message, true); }
     };
-    $('#claim', box).onclick = async () => {
-      if (!waitStart) waitStart = Date.now();
-      waiting();
+    // đồng hồ hiệu lực mã QR: hết 1 phút → làm mờ mã, hiện "Mã QR đã hết hạn" + nút tạo mã mới
+    const qrRun = () => {
+      const qb = $('#qrBox', box), qs = $('#qrS', box), qt = $('#qrT', box); if (!qb) return clearInterval(qrTick);
+      const left = Math.max(0, Math.ceil((qrUntil - Date.now()) / 1000));
+      qs.textContent = `${Math.floor(left / 60)}:${String(left % 60).padStart(2, '0')}`;
+      qt.classList.toggle('low', left <= 10);
+      if (!left && !qb.classList.contains('exp') && !qb.classList.contains('ld')) { qb.classList.add('exp'); qt.innerHTML = '<span>Mã QR đã hết hạn — bấm <b>Tạo mã mới</b></span>'; }
+    };
+    clearInterval(qrTick); qrRun(); qrTick = setInterval(qrRun, 250);
+    $('#qrNew', box).onclick = async () => {
+      const qb = $('#qrBox', box); qb.classList.remove('exp'); qb.classList.add('ld');
+      $('#qrX', box).innerHTML = '<span class="ring" aria-hidden="true"></span><b>Đang tạo mã mới…</b>';
       try {
-        const r = await api(`/api/orders/${data.order.code}/claim`, { method: 'POST' });
-        data.order = r.order;
-        if (data.order.status === 'paid') paid();
-      } catch {}
+        const [o] = await Promise.all([post(sel, data.order.coupon ? { coupon: data.order.coupon } : {}), new Promise((r) => setTimeout(r, 900))]);
+        orders[sel] = o.order;
+      } catch (err) { toast(err.message, true); }
+      qrUntil = Date.now() + QR_LIFE;
+      render();
     };
   };
 

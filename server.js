@@ -207,7 +207,7 @@ function cardFull(card) {
 
 function qrPay(amount, code) {
   const p = config.payment;
-  return `https://img.vietqr.io/image/${p.bankBin}-${p.accountNo}-compact2.png?amount=${amount}&addInfo=${encodeURIComponent(code)}&accountName=${encodeURIComponent(p.accountName)}`;
+  return `https://img.vietqr.io/image/${p.bankBin}-${p.accountNo}-qr_only.png?amount=${amount}&addInfo=${encodeURIComponent(code)}&accountName=${encodeURIComponent(p.accountName)}`;
 }
 // Giá gạch ngang trong cửa sổ thanh toán: thiệp / combo đang theo giá mở bán; nâng cấp combo so với mua lẻ LED + video
 function wasPrice(o, product) {

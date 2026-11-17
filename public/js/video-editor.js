@@ -147,7 +147,7 @@ function renderSide() {
   if (!isAlbum() && video.photoBg) video.photoBg = false;
   let h = '';
   if (curPanel === 'mau') {
-    h = head(isAlbum() ? 'Mẫu slide' : 'Mẫu video dạm ngõ', isAlbum() ? 'Đổi mẫu bất cứ lúc nào — ảnh và chữ của bạn giữ nguyên.' : 'Chọn một mẫu có sẵn — chữ sửa ở bảng Nội dung.') + `
+    h = head(isAlbum() ? 'Mẫu slide' : 'Mẫu video dạm ngõ', isAlbum() ? 'Đổi mẫu bất cứ lúc nào — ảnh và chữ của bạn giữ nguyên.' : 'Chọn một mẫu có sẵn — bấm chữ trên video để sửa.') + '<p class="mobhint">Chạm vào chữ hoặc ảnh trên video để sửa ngay.</p>' + `
       <div class="opts">${META.video.templates.filter((t) => !!t.photos === isAlbum()).map((t) => `<button class="opt ${video.template === t.id ? 'on' : ''}" data-tpl="${t.id}"><i style="background:${SWATCH[t.id] || '#333'};background-image:url('/demo/vposter-${t.id}.jpg')"></i><b>${esc(t.name)}</b><span>${t.photos ? `${t.slots} ảnh` : 'Chữ + ảnh nền'}</span></button>`).join('')}</div>
       `;
   } else if (curPanel === 'chu') {
@@ -362,13 +362,88 @@ function noteEditor(h, r, k) { // chữ dưới ảnh (Polaroid) / câu chữ tr
     },
   });
 }
-function lineEditor(tx, r, k) { // một dòng của thẻ chữ; dòng tự điền không sửa gì thì giữ nguyên
-  const l = tx.l, raw = l.text;
-  inlineEditor({
-    text: tx.text, x: r.left + (tx.box.l + tx.box.r) / 2 * k, y: r.top + (tx.box.t + tx.box.b) / 2 * k, w: (tx.box.r - tx.box.l) * k,
-    scale: (tx.sc || 1) * k, font: tx.font, color: tx.color, ls: tx.ls, caps: tx.caps, lh: tx.lh, n: tx.n, hide: { l },
-    onSet: (v) => { v = v.trim(); l.text = v === tx.text ? raw : v; engine.set(video, info()); engine.seek(engine.time()); },
+// một thẻ chữ: bấm dòng chữ trên video → ô sửa đè đúng chỗ, Enter xuống dòng (mỗi dòng một hàng chữ),
+// thanh nhỏ phía trên đổi font / cỡ / màu cho các dòng đang sửa; bấm ra ngoài hoặc Esc là xong.
+// Dòng tự điền ({chu_re}…) không sửa gì thì giữ nguyên để vẫn tự đổi theo thiệp.
+const LN_COLORS = ['', '#ffffff', '#fff1d6', '#f3d38b', '#d4a24c', '#f4b6c2', '#d6455d', '#8b1a24', '#2c2c2c'];
+function lineEditor(tx, r, k) {
+  if ($('#noteEd')) return;
+  const l = tx.l, sc = video.scenes.find((x) => x.lines.includes(l)); if (!sc) return;
+  if (!engine.paused()) $('#pp').click();
+  const raw = l.text, extra = [], scale = (tx.sc || 1) * k;
+  const cx = r.left + (tx.box.l + tx.box.r) / 2 * k, cy = r.top + (tx.box.t + tx.box.b) / 2 * k;
+  const inp = document.createElement('textarea');
+  inp.id = 'noteEd'; inp.className = 'in-ed'; inp.value = tx.text; inp.spellcheck = false; inp.rows = 1;
+  const tools = document.createElement('div'); tools.className = 'ln-tools';
+  const px = (v) => String(v).replace(/([\d.]+)px/, (_, n) => (+n * scale).toFixed(1) + 'px');
+  const styleInp = () => {
+    Object.assign(inp.style, { font: px(engine.fontCss(l.font, l.size)), color: l.color || tx.color, caretColor: l.color || tx.color,
+      letterSpacing: l.font === 'caps' ? px(Math.round(l.size * 0.3) + 'px') : '0px', textTransform: l.font === 'caps' ? 'uppercase' : 'none', lineHeight: l.size * (l.font === 'script' ? 1.18 : 1.32) * scale + 'px' });
+    inp.rows = Math.max(1, inp.value.split('\n').length);
+  };
+  Object.assign(inp.style, { left: cx + 'px', top: cy + 'px', width: Math.max(220, (tx.box.r - tx.box.l) * k + 40) + 'px', transform: 'translate(-50%,-50%)' });
+  let palOpen = false, fontOpen = false;
+  // xem trước kiểu chữ: tên mỗi font viết bằng chính font đó
+  const fprev = (id, px) => { const f = engine.fontCss(id, px).replace(/^\s*\d+\s+/, (w) => w); return `font:${f.replace(/"/g, "'")};${id === 'caps' ? `letter-spacing:${Math.round(px * 0.18)}px;text-transform:uppercase;` : ''}`; };
+  const drawTools = () => {
+    const cur = l.color || tx.color;
+    const fname = (META.video.fonts.find((f) => f.id === l.font) || {}).name || 'Kiểu chữ';
+    tools.innerHTML = `<button type="button" class="lt-font" data-t="fonts" title="Kiểu chữ" style="${fprev(l.font, 13)}">${esc(fname)}</button>
+      <div class="lt-fonts"${fontOpen ? '' : ' hidden'}>${META.video.fonts.map((f) => `<button type="button" data-f="${f.id}" class="${f.id === l.font ? 'on' : ''}" style="${fprev(f.id, 15)}">${esc(f.name)}</button>`).join('')}</div>
+      <span class="sep"></span>
+      <span class="lt-size"><button type="button" data-t="dn" title="Nhỏ hơn" aria-label="Nhỏ hơn">−</button><b>${l.size}</b><button type="button" data-t="up" title="To hơn" aria-label="To hơn">+</button></span>
+      <span class="sep"></span>
+      <button type="button" class="lt-color" data-t="pal" title="Màu chữ" aria-label="Màu chữ"><i style="background:${cur}"></i></button>
+      <div class="lt-pal"${palOpen ? '' : ' hidden'}>${LN_COLORS.map((c) => `<button type="button" class="sw${(l.color || '') === c ? ' on' : ''}" data-c="${c}" title="${c ? c : 'Màu của mẫu'}" style="${c ? `background:${c}` : ''}">${c ? '' : 'A'}</button>`).join('')}<label class="sw own" title="Màu khác">＋<input type="color" data-t="own" value="${/^#/.test(cur) ? cur : '#ffffff'}"></label></div>`;
+  };
+  const group = () => [l, ...extra];
+  const set = () => {
+    const rows = inp.value.split('\n');
+    if (rows.length > 8) toast('Mỗi thẻ tối đa 8 dòng');
+    const want = Math.min(rows.length, 8) - 1;
+    while (extra.length < want) { const n = { ...l, text: '' }; sc.lines.splice(sc.lines.indexOf(extra[extra.length - 1] || l) + 1, 0, n); extra.push(n); }
+    while (extra.length > want) { const n = extra.pop(); sc.lines.splice(sc.lines.indexOf(n), 1); }
+    l.text = rows[0].trim() === tx.text ? raw : rows[0].trim();
+    extra.forEach((n, i) => { Object.assign(n, { font: l.font, size: l.size, tone: l.tone, color: l.color, text: (rows[i + 1] || '').trim() }); });
+    engine.set(video, info()); engine.hideText({ ls: group() }); engine.seek(engine.time());
+    styleInp();
+  };
+  const restyle = (p, v) => { group().forEach((n) => { n[p] = v; }); drawTools(); set(); schedule(600); };
+  tools.addEventListener('mousedown', (e) => { if (e.target.closest('button')) e.preventDefault(); }); // bấm nút: ô chữ không mất con trỏ
+  tools.addEventListener('click', (e) => {
+    const b = e.target.closest('button'); if (!b) return;
+    if (b.dataset.t === 'dn') restyle('size', Math.max(20, l.size - 6));
+    else if (b.dataset.t === 'up') restyle('size', Math.min(220, l.size + 6));
+    else if (b.dataset.t === 'pal') { palOpen = !palOpen; fontOpen = false; drawTools(); }
+    else if (b.dataset.t === 'fonts') { fontOpen = !fontOpen; palOpen = false; drawTools(); }
+    else if (b.dataset.f) { fontOpen = false; restyle('font', b.dataset.f); }
+    else if (b.dataset.c !== undefined) { palOpen = false; restyle('color', b.dataset.c); }
+    inp.focus();
   });
+  tools.addEventListener('change', (e) => {
+    if (e.target.dataset.t === 'font') restyle('font', e.target.value);
+    else if (e.target.dataset.t === 'own') restyle('color', e.target.value.toLowerCase());
+    inp.focus();
+  });
+  drawTools(); styleInp();
+  document.body.appendChild(inp); document.body.appendChild(tools);
+  const ir = inp.getBoundingClientRect();
+  tools.style.left = Math.max(8, Math.min(innerWidth - tools.offsetWidth - 8, cx - tools.offsetWidth / 2)) + 'px';
+  tools.style.top = Math.max(8, ir.top - tools.offsetHeight - 14) + 'px';
+  engine.hideText({ ls: group() });
+  inp.focus(); inp.select();
+  inp.addEventListener('input', () => { set(); schedule(600); });
+  let closed = false;
+  const done = () => {
+    if (closed) return; closed = true;
+    set();
+    extra.filter((n) => !n.text).forEach((n) => sc.lines.splice(sc.lines.indexOf(n), 1)); // bỏ dòng trống thừa
+    inp.remove(); tools.remove(); document.removeEventListener('mousedown', outside, true);
+    engine.hideText(null); engine.set(video, info()); engine.seek(engine.time()); schedule(100); renderTl();
+  };
+  const outside = (e) => { if (e.target !== inp && !tools.contains(e.target)) done(); };
+  document.addEventListener('mousedown', outside, true);
+  inp.addEventListener('keydown', (ev) => { if (ev.key === 'Escape') { ev.preventDefault(); done(); } }); // Enter = xuống dòng
 }
 // sửa chữ dưới một tấm ảnh (Polaroid): ô nhập nổi tại vị trí cho trước
 // căn / phóng to một ảnh của video: kéo để chọn phần hiện ra, thanh trượt để phóng (lưu "#p=x,y,z" trên link ảnh)

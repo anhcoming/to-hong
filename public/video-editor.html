@@ -61,6 +61,29 @@
 .pv-act button:hover{background:#d6455d;color:#fff}
 .in-ed{position:fixed;z-index:50;margin:0;padding:2px 10px;border:0;border-radius:8px;background:transparent;text-align:center;resize:none;overflow:hidden;outline:2px dashed rgba(214,69,93,.9);outline-offset:4px}
 .in-ed::selection{background:rgba(214,69,93,.35)}
+/* thanh đổi font / cỡ / màu phía trên ô sửa chữ: một hàng gọn dạng viên thuốc, bảng màu mở khi bấm chấm màu */
+.ln-tools{position:fixed;z-index:55;display:flex;align-items:center;gap:4px;height:42px;padding:0 6px 0 4px;border-radius:999px;background:var(--surface);box-shadow:0 0 0 1px var(--line),0 10px 28px rgba(120,40,50,.22);white-space:nowrap}
+.ln-tools .lt-font{height:32px;max-width:128px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;border:0;border-radius:999px;padding:0 26px 0 12px;background:transparent url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%236f6668' stroke-width='2.4'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E") right 8px center/12px no-repeat;color:var(--ink);cursor:pointer}
+.ln-tools .lt-font:hover{background-color:var(--primary-soft)}
+/* danh sách font: mỗi dòng viết bằng chính font đó */
+.ln-tools .lt-fonts{position:absolute;left:0;top:calc(100% + 6px);display:grid;gap:2px;min-width:168px;padding:5px;border-radius:14px;background:var(--surface);box-shadow:0 0 0 1px var(--line),0 10px 28px rgba(120,40,50,.22)}
+.ln-tools .lt-fonts[hidden]{display:none}
+.ln-tools .lt-fonts button{display:block;width:100%;padding:7px 10px;border:0;border-radius:9px;background:none;color:var(--ink);text-align:left;cursor:pointer;line-height:1.25;white-space:nowrap}
+.ln-tools .lt-fonts button:hover{background:var(--primary-soft)}
+.ln-tools .lt-fonts button.on{background:var(--primary-soft);color:var(--primary)}
+.ln-tools .sep{width:1px;height:20px;background:var(--line);margin:0 2px}
+.ln-tools .lt-size{display:inline-flex;align-items:center;gap:2px}
+.ln-tools .lt-size button{width:30px;height:30px;border:0;border-radius:50%;background:none;color:var(--ink);font:600 18px/1 inherit;cursor:pointer}
+.ln-tools .lt-size button:hover{background:var(--primary-soft);color:var(--primary)}
+.ln-tools .lt-size b{min-width:26px;text-align:center;font-size:12.5px;color:var(--muted);font-variant-numeric:tabular-nums}
+.ln-tools .lt-color{width:34px;height:34px;border:0;border-radius:50%;background:none;cursor:pointer;display:grid;place-items:center}
+.ln-tools .lt-color i{width:20px;height:20px;border-radius:50%;box-shadow:inset 0 0 0 1px rgba(0,0,0,.2),0 0 0 2px var(--surface),0 0 0 3px var(--line)}
+.ln-tools .lt-color:hover{background:var(--primary-soft)}
+.ln-tools .lt-pal{position:absolute;right:0;top:calc(100% + 8px);display:grid;grid-template-columns:repeat(5,26px);gap:8px;padding:10px;border-radius:14px;background:var(--surface);box-shadow:0 0 0 1px var(--line),0 10px 28px rgba(120,40,50,.22)}
+.ln-tools .lt-pal[hidden]{display:none}
+.ln-tools .sw{width:26px;height:26px;padding:0;border:0;border-radius:50%;box-shadow:inset 0 0 0 1px rgba(0,0,0,.18);background:var(--surface);color:var(--muted);font:700 11px/1 inherit;position:relative;display:grid;place-items:center;cursor:pointer}
+.ln-tools .sw.on{box-shadow:0 0 0 2px var(--surface),0 0 0 4px var(--primary)}
+.ln-tools .sw.own input{position:absolute;inset:0;opacity:0;cursor:pointer}
 #cv{cursor:default}
 .txpop .selbar{margin-top:0;border:0;padding:0;background:none}
 .txpop .selrow b{display:none}
@@ -87,6 +110,7 @@
 .tokbox{margin-top:8px;font-size:12.5px}.tokbox summary{cursor:pointer;color:var(--primary);font-weight:600;list-style:none}.tokbox summary::-webkit-details-marker{display:none}.tokbox .tokens{margin-top:8px}
 .scene.flash{animation:scFlash 1.2s ease}@keyframes scFlash{0%,35%{box-shadow:0 0 0 3px rgba(214,69,93,.45)}100%{box-shadow:0 0 0 3px rgba(214,69,93,0)}}
 .shacts{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+.mobhint{display:none;margin:0 0 12px;padding:9px 12px;border-radius:12px;background:var(--primary-soft);color:var(--ink);font-size:12.5px}
 #cv{cursor:pointer}
 .note-ed{position:fixed;z-index:50;transform:translate(-50%,-50%);height:auto;padding:6px 14px;border:2px solid var(--primary);border-radius:12px;background:#fffdf8;color:#4a3a33;font-family:'Dancing Script',cursive;font-weight:700;text-align:center;box-shadow:0 10px 30px rgba(0,0,0,.25);outline:none}
 .vslot.sample .vpic{filter:saturate(.55) brightness(1.04);opacity:.78}.vslot.sample:hover .vpic{opacity:1;filter:none}
@@ -245,6 +269,16 @@ body{height:100vh;display:flex;flex-direction:column;overflow:hidden;background:
   .tl{order:2;flex:none}
   .rail{order:3;flex-direction:row;overflow-x:auto;border-right:0;border-bottom:1px solid var(--line);padding:6px;position:sticky;top:0;z-index:5}
   .rail button{flex:1;min-width:58px}
+  /* điện thoại: Mẫu / Nhạc thành thanh tab gọn (icon + chữ một hàng), thanh dưới video bỏ cột số cảnh (chỉ giữ nút tốc độ) */
+  .rail{flex:none;gap:6px;padding:8px 12px;background:var(--surface)}
+  .rail button{flex-direction:row;justify-content:center;gap:6px;height:40px;min-height:40px;padding:0 12px;border-radius:999px;font-size:13px}
+  .rail button svg{display:block;width:18px;height:18px;flex:none}
+  .tl{padding:8px 10px 10px;gap:8px}
+  .tl .tlinfo{padding-right:0;border-right:0;justify-content:flex-end}
+  .tl .tlinfo b,.tl .tlinfo span{display:none}
+  .tl .tlinfo .tlspd{margin:0;padding:6px 8px}
+  .tl .clip.tcard{width:104px}
+  .mobhint{display:block}
   .side{order:4;border-right:0;overflow:visible}
   .sbar h1{max-width:46vw}
   .sbar .xl{display:none}

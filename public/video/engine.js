@@ -399,7 +399,7 @@
           var bw = Math.max.apply(0, it.parts.map(function (p) { return ctx.measureText(p).width; })), bh = it.parts.length * it.lh;
           textHits.push({ l: l, text: resolve(l.text, vals), m: ctx.getTransform(), x: cx - bw / 2 - 24, y: y - 6, w: bw + 48, h: bh + 12, font: ctx.font, color: ctx.fillStyle, glow: ctx.shadowColor, ls: hasLS ? ctx.letterSpacing : '0px', caps: l.font === 'caps', lh: it.lh, n: it.parts.length });
         }
-        if (l !== hideL) it.parts.forEach(function (ln, k) { // dòng đang sửa trên trang sửa: ẩn, ô nhập đè đúng chỗ
+        if (hideLs.indexOf(l) < 0) it.parts.forEach(function (ln, k) { // dòng đang sửa trên trang sửa: ẩn, ô nhập đè đúng chỗ
           ctx.fillText(ln, cx, y + it.lh * (k + 0.5) + (1 - pIn) * 34);
         });
         y += it.parts.length * it.lh + gap;
@@ -1067,7 +1067,7 @@
       return out;
     }
 
-    var noteHits = [], photoHits = [], textHits = [], hideL = null, hideJ = -1, hideK = 'notes'; // dòng chữ / ảnh trên khung hình vừa vẽ (trang sửa bấm vào để sửa)
+    var noteHits = [], photoHits = [], textHits = [], hideLs = [], hideJ = -1, hideK = 'notes'; // dòng chữ / ảnh trên khung hình vừa vẽ (trang sửa bấm vào để sửa)
     function renderAt(t) {
       if (!video) return;
       noteHits = []; photoHits = []; textHits = [];
@@ -1345,7 +1345,8 @@
       // (x, y) theo điểm ảnh canvas → dòng chữ dưới ảnh nằm ở đó (tấm trên cùng trước) hoặc null
       noteOf: function (j) { return noteOf(j); },
       // ẩn một dòng chữ (đang sửa tại chỗ trên trang sửa): { l } dòng của cảnh chữ, { j } chữ dưới ảnh; null = hiện lại
-      hideText: function (o) { hideL = (o && o.l) || null; hideJ = o && o.j != null ? o.j : -1; hideK = (o && o.key) || 'notes'; if (pausedAt !== null) renderAt(pausedAt); },
+      fontCss: function (kind, size) { return font(kind, size); }, // kiểu chữ canvas của mẫu đang dùng (ô sửa chữ trên trang sửa dùng cùng font)
+      hideText: function (o) { hideLs = (o && (o.ls || (o.l ? [o.l] : []))) || []; hideJ = o && o.j != null ? o.j : -1; hideK = (o && o.key) || 'notes'; if (pausedAt !== null) renderAt(pausedAt); },
       // (x, y) theo điểm ảnh canvas → dòng chữ của cảnh chữ nằm ở đó: { l: dòng (sửa l.text), text, box, sc: điểm ảnh / đơn vị } hoặc null
       textAt: function (x, y) {
         for (var k = textHits.length - 1; k >= 0; k--) {
