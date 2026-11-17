@@ -40,7 +40,9 @@ const PAY_CSS = `<style>
 .qrt b{color:var(--ink,#1f1a1b);font-variant-numeric:tabular-nums}
 .qrt.low b{color:var(--primary,#d6455d)}
 @keyframes qrPulse{to{box-shadow:0 0 0 8px rgba(47,125,91,0)}}
-.pay-cp{font-size:14px;text-transform:uppercase}.pay-cp::placeholder{text-transform:none;font-size:14px}
+.pay-cp{font-size:14px;text-transform:uppercase}.pay-cp.bad{border-color:#c0392b;box-shadow:0 0 0 3px rgba(192,57,43,.12)}
+.cp-err{margin:0 0 10px 4px;font-size:13px;color:#c0392b}
+.cp-err:not([hidden])+p{margin-top:4px}.pay-cp::placeholder{text-transform:none;font-size:14px}
 .pay-pill{display:inline-block;margin-top:4px;background:var(--ok-soft,#e6f3ec);color:var(--ok,#2f7d5b);font-size:11px;font-weight:700;padding:2px 8px;border-radius:999px}
 </style>`;
 
@@ -166,11 +168,12 @@ window.openPayModal = async function (cardId, onDone, product = 'card') {
           <div><span>Nội dung</span><b class="code">${esc(o.code)}</b></div>
         </div>
       </div>
-      <form id="cp" style="display:flex;gap:8px;margin-bottom:14px">
-        <input class="input pay-cp" name="c" placeholder="Mã giảm giá (nếu có)" value="${esc(o.coupon || '')}">
+      <form id="cp" style="display:flex;gap:8px;margin-bottom:4px">
+        <input class="input pay-cp" name="c" placeholder="Mã giảm giá (nếu có)" value="${esc(o.coupon || '')}" aria-describedby="cpErr">
         <button class="btn plain">Áp dụng</button>
       </form>
-      <p class="muted" style="font-size:12px;text-align:center;margin:10px 0 0">Thanh toán là bạn đồng ý với <a href="/dieu-khoan" target="_blank" rel="noopener" style="color:inherit;text-decoration:underline">Điều khoản</a> và <a href="/hoan-tien" target="_blank" rel="noopener" style="color:inherit;text-decoration:underline">Chính sách hoàn tiền</a>.</p>`;
+      <p class="cp-err" id="cpErr" role="alert" hidden></p>
+      <p class="muted" style="font-size:12px;text-align:center;margin:14px 0 0">Thanh toán là bạn đồng ý với <a href="/dieu-khoan" target="_blank" rel="noopener" style="color:inherit;text-decoration:underline">Điều khoản</a> và <a href="/hoan-tien" target="_blank" rel="noopener" style="color:inherit;text-decoration:underline">Chính sách hoàn tiền</a>.</p>`;
     modalHead(box); // nút × đứng yên khi cuộn
     $$('[data-sel]', box).forEach((b) => (b.onclick = () => { sel = b.dataset.sel; render(); }));
     $('#cp', box).onsubmit = async (e) => {
@@ -180,8 +183,12 @@ window.openPayModal = async function (cardId, onDone, product = 'card') {
         orders[sel] = o;
         render();
         toast(o.status === 'paid' ? 'Mã giảm 100% — đã kích hoạt' : o.coupon ? 'Đã áp dụng mã giảm giá' : 'Đã bỏ mã giảm giá');
-      } catch (err) { toast(err.message, true); }
+      } catch (err) { // mã sai: báo ngay dưới ô nhập, viền ô đỏ; gõ lại là tắt
+        const m = $('#cpErr', box), inp = e.target.c;
+        m.textContent = err.message; m.hidden = false; inp.classList.add('bad'); inp.focus();
+      }
     };
+    $('#cp', box).c.addEventListener('input', (e) => { const m = $('#cpErr', box); m.hidden = true; e.target.classList.remove('bad'); });
     // đồng hồ hiệu lực mã QR: hết 1 phút → làm mờ mã, hiện "Mã QR đã hết hạn" + nút tạo mã mới
     const qrRun = () => {
       const qb = $('#qrBox', box), qs = $('#qrS', box), qt = $('#qrT', box); if (!qb || !qs || !qt) return clearInterval(qrTick);
