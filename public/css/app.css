@@ -201,3 +201,5 @@ table.tbl{width:100%;border-collapse:collapse;font-size:14px}
   .tb-bottom .tb-plus i{width:46px;height:46px;margin:0;border-radius:50%;background:var(--grad)!important;color:#fff;font-size:24px;box-shadow:0 6px 16px rgba(214,69,93,.35)}
   .tb-bottom i.av{width:24px;height:24px;background:linear-gradient(135deg,#f6d7dc,#e9b7c0)!important}
 }
+/* mục đang chọn ở thanh tab dưới: icon tô đặc (nét bên trong trắng) */
+@media (max-width:760px){.tb-bottom>a.on svg>*{fill:currentColor}.tb-bottom>a.on svg>*:last-child{fill:none;stroke:#fff}.tb-bottom>a.on[href="/video-cua-toi"] svg>*:last-child{fill:currentColor;stroke:currentColor}}
