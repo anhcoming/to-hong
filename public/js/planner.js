@@ -114,15 +114,18 @@ function renderHome() {
         <p class="names">${names() ? esc(names()) : 'Sổ tay cưới của bạn'}</p>
         <p class="when">💍 ${w.date ? `${esc(wdName(w.date))}, ${dvn(w.date)} · ${esc(Lunar.lunarText(w.date))}` : 'Chưa chọn ngày cưới'} · ${esc(S.ov.regions[w.region])}</p>
         <button class="pedit" id="gear">✎ Sửa thông tin &amp; mời người cùng làm</button>
+        <div class="pmob"><p class="pbig">${d === null ? '<span>Chưa chọn ngày cưới</span>' : d > 0 ? `<b>${d}</b><span>ngày nữa là cưới</span>` : d === 0 ? '<b>🎉</b><span>Hôm nay là ngày cưới!</span>' : '<b>♥</b><span>Đã cưới</span>'}</p>
+          <div class="pbar"><i style="width:${pct}%"></i></div>
+          <p class="pft"><span>Đã xong ${st.tasksDone}/${st.tasks} việc</span><button id="gear2">✎ Sửa · Mời</button></p></div>
       </div>
       ${ring(pct, d === null ? '—' : d > 0 ? d : d === 0 ? '🎉' : '♥', d === null ? 'chưa có ngày' : d > 0 ? 'ngày nữa' : d === 0 ? 'hôm nay!' : 'đã cưới')}
     </section>
     <div class="ptiles">
-      <button class="pcard ptile" data-go="tasks"><small>✓ Việc cần làm</small><b>${st.tasksDone}<span> / ${st.tasks}</span></b>
+      <button class="pcard ptile" data-go="tasks"><small><i>✓</i><span>Việc cần làm</span></small><b>${st.tasksDone}<span> / ${st.tasks}</span></b>
         <em class="${late ? 'warn' : ''}">${late ? `${late} việc quá hạn · ` : ''}${week} việc trong 7 ngày tới</em><div class="pbar"><i style="width:${pct}%"></i></div></button>
-      <button class="pcard ptile" data-go="budget"><small>₫ Ngân sách</small><b>${short(st.actual)}<span> / ${cap ? short(cap) : '—'}</span></b>
+      <button class="pcard ptile" data-go="budget"><small><i>₫</i><span>Ngân sách</span></small><b>${short(st.actual)}<span> / ${cap ? short(cap) : '—'}</span></b>
         <em class="${cap && st.actual > cap ? 'warn' : ''}">${cap ? (st.actual > cap ? `Vượt ${short(st.actual - cap)}` : `Đã chi ${Math.round((st.actual / cap) * 100)}% · còn ${short(cap - st.actual)}`) : 'Chưa đặt ngân sách →'}</em><div class="pbar"><i class="${cap && st.actual > cap ? 'over' : ''}" style="width:${cap ? Math.min(100, (st.actual / cap) * 100) : 0}%"></i></div></button>
-      <button class="pcard ptile" data-go="guests"><small>☺ Khách mời</small><b>${gs.total}<span> khách</span></b>
+      <button class="pcard ptile" data-go="guests"><small><i>☺</i><span>Khách mời</span></small><b>${gs.total}<span> khách</span></b>
         <em>${gs.yesPeople} người sẽ đến · dự kiến ${tables} mâm</em><div class="pbar"><i style="width:${gs.people ? Math.min(100, (gs.yesPeople / gs.people) * 100) : 0}%"></i></div></button>
     </div>
     <div class="ptwo">
@@ -139,7 +142,7 @@ function renderHome() {
     </div>`;
   const sb = $('#setupBtn');
   if (sb) sb.onclick = settingsModal;
-  $('#gear').onclick = settingsModal;
+  $('#gear').onclick = $('#gear2').onclick = settingsModal;
 }
 
 // ---------- việc cần làm ----------
@@ -184,19 +187,23 @@ function taskDetail(t) {
   const di = dueInfo(t), cta = t.cta && CTA[t.cta];
   const subs = t.subtasks || [];
   const ed = evDate(t.event);
-  return `<div class="pd-top"><h3>${esc(t.title)}</h3><button class="pck ${t.done ? 'on' : ''}" data-ck="${t.id}" aria-label="Đánh dấu xong">${t.done ? '✓' : ''}</button></div>
-    <div class="pfl">
-      <span>Hạn chót</span><span>${t.due ? dvn(t.due) + ' ' : ''}<em class="pchip ${di.cls}">${esc(t.done ? 'Đã xong' : di.label)}</em></span>
-      <span>Thuộc lễ</span><span>${EV_ICON[t.event] || ''} ${esc(evLabel(t.event))}${t.event !== 'sau' && ed ? ` (${dvn(ed)})` : ''}</span>
-      <span>Nhóm việc</span><span>${esc(t.category || 'Khác')}</span>
-      <span>Người làm</span><span>${t.assignee ? `${avatar(t.assignee, 'sm')} ${esc(memberName(t.assignee))}` : '<span class="muted">Chưa giao</span>'}</span>
+  // kiểu A: ô tròn xong cạnh tên · chip (hạn, lễ, nhóm, người làm — bấm để sửa) · việc nhỏ & ghi chú gõ thẳng · một nút chính + ⋯ (Sửa / Xoá)
+  const chip = (cls, html) => `<button class="pdchip ${cls}" data-edit="${t.id}">${html}</button>`;
+  return `<div class="pd-top"><button class="pck round ${t.done ? 'on' : ''}" data-ck="${t.id}" aria-label="${t.done ? 'Bỏ đánh dấu' : 'Đánh dấu xong'}">${t.done ? '✓' : ''}</button><h3>${esc(t.title)}</h3></div>
+    <div class="pdchips">
+      ${t.done ? chip('ok', '✓ Đã xong') : chip(di.cls, `📅 ${t.due ? dvn(t.due) + ' · ' : ''}${esc(di.label)}`)}
+      ${chip('', `${EV_ICON[t.event] || ''} ${esc(evLabel(t.event))}${t.event !== 'sau' && ed ? ` · ${dvn(ed)}` : ''}`)}
+      ${chip('', esc(t.category || 'Khác'))}
+      ${t.assignee ? chip('', `${avatar(t.assignee, 'sm')} ${esc(memberName(t.assignee))}`) : chip('dash', '👤 Giao cho ai?')}
     </div>
-    <div class="ph3" style="margin-top:4px">Việc nhỏ <span class="muted" style="font-size:12px;font-weight:600">${subs.filter((x) => x.done).length}/${subs.length}</span></div>
+    <div class="pdlbl">Việc nhỏ <span>${subs.filter((x) => x.done).length}/${subs.length}</span></div>
     <ul class="psub">${subs.map((x) => `<li class="${x.done ? 'd' : ''}"><button class="pck sm ${x.done ? 'on' : ''}" data-sub="${t.id}:${x.id}">${x.done ? '✓' : ''}</button><span>${esc(x.title)}</span><button class="pdel" data-subdel="${t.id}:${x.id}" aria-label="Xoá việc nhỏ">×</button></li>`).join('')}</ul>
-    <form class="psubadd" data-subadd="${t.id}"><input name="s" maxlength="120" placeholder="+ Thêm việc nhỏ (VD: hỏi giá 3 nơi)"><button class="btn sm plain">Thêm</button></form>
-    <div class="pnote2">${t.note ? esc(t.note) : '<span class="muted">Chưa có ghi chú — bấm Sửa để thêm (nhà cung cấp, số điện thoại…).</span>'}</div>
+    <form class="psubadd" data-subadd="${t.id}"><b>＋</b><input name="s" maxlength="120" placeholder="Thêm việc nhỏ… (Enter để thêm)" enterkeyhint="done"></form>
+    <div class="pdlbl">Ghi chú</div>
+    <textarea class="pnote2" data-note="${t.id}" maxlength="500" rows="2" placeholder="Gõ ghi chú: nhà cung cấp, số điện thoại…">${esc(t.note || '')}</textarea>
     ${cta && !t.done ? `<button class="btn sm soft" style="margin-top:12px" data-cta="${t.cta}">${cta[0]} →</button>` : ''}
-    <div class="pd-acts"><button class="btn sm" data-ck="${t.id}">${t.done ? '↺ Chưa xong' : '✓ Đánh dấu xong'}</button><button class="btn sm plain" data-edit="${t.id}">✎ Sửa</button><button class="btn sm plain" data-tdel="${t.id}">Xoá</button></div>`;
+    <div class="pd-acts"><button class="btn ${t.done ? 'pdundo' : ''}" data-ck="${t.id}">${t.done ? '↺ Đánh dấu chưa xong' : '✓ Đánh dấu xong'}</button>
+      <details class="pdmore"><summary aria-label="Thêm">⋯</summary><div><button data-edit="${t.id}">✎ Sửa việc</button><button class="red" data-tdel="${t.id}">Xoá việc</button></div></details></div>`;
 }
 
 // ---------- ngân sách ----------
@@ -603,6 +610,7 @@ function openTaskDetail(id) {
     detailBox = { box, close };
     box.addEventListener('click', onAction);
     box.addEventListener('submit', onSubmit);
+    box.addEventListener('change', onNote);
     new MutationObserver(() => { if (!document.body.contains(box)) detailBox = null; }).observe(document.body, { childList: true });
   });
 }
@@ -675,6 +683,14 @@ async function onAction(e) {
     } else if (d.open) openTaskDetail(d.open);
   } catch (err) { toast(err.message, true); }
 }
+// ghi chú gõ thẳng trong chi tiết việc: rời ô là lưu ngầm
+async function onNote(e) {
+  const n = e.target.closest('[data-note]');
+  if (!n) return;
+  const t = S.tasks.find((x) => x.id === n.dataset.note);
+  if (!t || (t.note || '') === n.value) return;
+  try { await saveTask(t, { note: n.value }); toast('Đã lưu ghi chú'); } catch (err) { toast(err.message, true); }
+}
 // thêm việc nhỏ (form trong bảng / hộp chi tiết)
 async function onSubmit(e) {
   const f = e.target.closest('[data-subadd]');
@@ -693,6 +709,7 @@ function bind() {
   const main = $('#main');
   main.addEventListener('click', onAction);
   main.addEventListener('submit', onSubmit);
+  main.addEventListener('change', onNote);
   // nhập tiền: định dạng 1.000.000 khi gõ, tự lưu
   main.addEventListener('input', (e) => {
     const t = e.target;
