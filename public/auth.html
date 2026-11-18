@@ -73,7 +73,8 @@ document.addEventListener('meta', (e) => {
   $('#seg').hidden = true; $('#orLine').hidden = true;
   if (mode === 'register') setMode('login');
   $('#title').innerHTML = 'Chào mừng <span class="grad">bạn</span>';
-  if (!loi) { $('#f').hidden = true; $('#oldToggle').hidden = false; }
+  $('#f').hidden = true; // chỉ đăng nhập bằng Google / Facebook
+  if (loi) { $('#sub2').textContent = loi; $('#sub2').style.color = '#c0392b'; } // lỗi từ Google / Facebook: báo ngay dưới tiêu đề (ô email đã ẩn)
   $('#oldLink').onclick = (ev) => { ev.preventDefault(); $('#f').hidden = false; $('#oldToggle').hidden = true; $('[name=email]').focus(); };
 });
 function setMode(m) {

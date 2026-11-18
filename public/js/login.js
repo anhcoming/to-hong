@@ -80,7 +80,7 @@
       if (inApp && m.googleLogin) $('.lgm-ia').hidden = false;
       sw.hidden = !m.emailSignup;
       setMode(m.emailSignup ? mode : 'login');
-      if (social && mode !== 'register') emailBtn.hidden = false; else f.hidden = false;
+      if (!social) f.hidden = false; // chỉ đăng nhập bằng Google / Facebook; ô email chỉ hiện khi máy chưa cấu hình hai nút đó (chạy thử)
       if (!social) f.email.focus();
     });
     f.onsubmit = function (e) {
