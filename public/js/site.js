@@ -20,10 +20,12 @@
   var MENU = [['/mau-thiep', 'Thiệp cưới', 'tpl'], ['/slide-cuoi', 'Slide cưới', 'slide'], ['/man-hinh-led-dam-cuoi', 'Màn hình LED', 'led'], ['/video-dam-ngo', 'Video dạm ngõ', 'damngo'], ['/so-tay-cuoi', 'Sổ tay cưới', 'planner'], ['/video', 'Video báo hỷ', 'baohy']]; // các chức năng chính
   var page = document.body.getAttribute('data-page') || '';
 
-  // Bảng menu điện thoại (trang chủ và các trang giới thiệu): thẻ lớn Thiệp cưới + 3 ô sản phẩm + hàng tài khoản.
+  // Bảng menu điện thoại (trang chủ và các trang giới thiệu): danh sách chức năng + hàng tài khoản.
   // Icon nét 24×24 (màu theo currentColor).
   var ICON = {
     card: '<rect x="3" y="5" width="18" height="14" rx="2.5"/><path d="M3.5 6.5 12 13l8.5-6.5"/>',
+    slide: '<rect x="3" y="4" width="18" height="12" rx="2"/><path d="M12 16v4M8 20h8"/><path d="m10 8 4 2-4 2z"/>',
+    clap: '<path d="M4 10h16v9a1.5 1.5 0 0 1-1.5 1.5h-13A1.5 1.5 0 0 1 4 19z"/><path d="m4 10-.6-3.2 15-3 .6 3.2"/><path d="m8.5 6.2 2 3.3M13.5 5.2l2 3.3"/>',
     led: '<rect x="2.5" y="4" width="19" height="12.5" rx="2"/><path d="M8 20.5h8M12 16.5v4"/><path d="m12 7 .9 1.9 2 .3-1.5 1.4.4 2-1.8-1-1.8 1 .4-2-1.5-1.4 2-.3z"/>',
     video: '<rect x="3" y="6" width="13" height="12" rx="2.5"/><path d="m16 10.5 5-3v9l-5-3"/>',
     book: '<path d="M5 4.5A1.5 1.5 0 0 1 6.5 3H19v15H6.5A1.5 1.5 0 0 0 5 19.5z"/><path d="M5 19.5A1.5 1.5 0 0 0 6.5 21H19v-3"/><path d="M9 8h6M9 11.5h4"/>',
@@ -33,18 +35,33 @@
     user: '<circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/>'
   };
   var svg = function (k) { return '<svg viewBox="0 0 24 24" aria-hidden="true">' + ICON[k] + '</svg>'; };
+  // Mỗi chức năng một hàng: icon nét · tên (· nhãn Miễn phí); mục đang xem tô hồng; cuối là nút Tạo thiệp + hàng tài khoản nhỏ.
+  var MP = [
+    ['/mau-thiep', 'card', 'Thiệp cưới', 'tpl'],
+    ['/video', 'clap', 'Video báo hỷ TikTok', 'baohy', 'Miễn phí'],
+    ['/slide-cuoi', 'slide', 'Slide cưới', 'slide'],
+    ['/man-hinh-led-dam-cuoi', 'led', 'Màn hình LED', 'led'],
+    ['/video-dam-ngo', 'video', 'Video dạm ngõ', 'damngo'],
+    ['/so-tay-cuoi', 'book', 'Sổ tay cưới', 'planner']
+  ];
   function renderMPanel(user) {
     var acct = user
       ? '<a href="/so-tay">' + svg('pen') + 'Sổ tay của tôi</a><a href="#" data-theme-toggle>' + svg('moon') + 'Sáng / tối</a><a href="#" data-logout>' + svg('out') + 'Đăng xuất</a>'
       : '<a href="/dang-nhap">' + svg('user') + 'Đăng nhập</a><a href="#" data-theme-toggle>' + svg('moon') + 'Sáng / tối</a>';
-    var html = '<a class="mp-big" href="/mau-thiep"><b>Thiệp cưới online</b><small>Mỗi khách một lời mời có tên riêng</small><span class="go">Xem mẫu →</span>' + svg('card') + '</a>' +
-      '<div class="mp-three">' + [['led', MENU[1]], ['video', MENU[2]], ['book', MENU[3]]].map(function (x) {
-        return '<a href="' + x[1][0] + '"><i>' + svg(x[0]) + '</i>' + x[1][1] + '</a>';
+    var html = '<div class="mp-list">' + MP.map(function (m) {
+        return '<a href="' + m[0] + '"' + (m[3] === page ? ' class="on"' : '') + '>' + svg(m[1]) + m[2] + (m[4] ? '<em>' + m[4] + '</em>' : '') + '</a>';
       }).join('') + '</div>' +
-      '<a href="/video" style="display:flex;align-items:center;gap:10px;margin:10px 0 0;padding:12px 14px;border-radius:14px;background:rgba(214,69,93,.08);color:inherit;text-decoration:none;font-weight:700">🎬 Video báo hỷ đăng TikTok<small style="margin-left:auto;padding:2px 9px;border-radius:999px;background:#d6455d;color:#fff;font-size:11px;font-weight:700">MIỄN PHÍ</small></a>' +
+      '<a class="mp-cta" href="/mau-thiep">' + (user ? '＋ Tạo thiệp mới' : 'Tạo thiệp miễn phí 7 ngày') + '</a>' +
       '<div class="mp-acct">' + acct + '</div>';
     document.querySelectorAll('.mpanel').forEach(function (p) { p.innerHTML = html; });
   }
+  // chạm ra ngoài menu đang mở (phần nền tối) thì đóng menu
+  document.addEventListener('click', function (e) {
+    var o = document.querySelector('.mopen');
+    if (!o || o.contains(e.target)) return;
+    o.classList.remove('mopen');
+    var b = o.querySelector('.burger'); if (b) b.setAttribute('aria-expanded', 'false');
+  });
   window.renderMPanel = renderMPanel;
   document.addEventListener('click', function (e) {
     var t = e.target.closest && e.target.closest('.mpanel [data-theme-toggle], .mpanel [data-logout]');
