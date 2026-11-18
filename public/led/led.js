@@ -618,8 +618,10 @@
   // Mọi hạt chuyển động trong shader (card đồ hoạ tính) nên hàng chục nghìn hạt vẫn 60 khung hình/giây. Máy không có WebGL → bản canvas 2D.
   var GLFX = {
     gl: null, cv: null, time: 0, rip: [], heroes: [], sparks: [], nextDrop: 0,
-    VS_PTS: 'attribute vec4 aP;uniform float uT,uAsp,uPx;uniform vec3 uRip[8];uniform vec4 uRp;uniform vec3 uCen;uniform vec2 uSt;varying float vA;' +
+    VS_PTS: 'attribute vec4 aP;uniform float uT,uAsp,uPx;uniform vec3 uRip[8];uniform vec4 uRp;uniform vec3 uCen;uniform vec2 uSt;uniform vec3 uXf;varying float vA;' +
       'void main(){float seed=aP.z;float tw=pow(0.5+0.5*sin(uT*(1.2+seed*3.7)+seed*61.0),3.0);' +
+      'if(aP.w>2.5){vec2 q=vec2(uXf.x*aP.x+uXf.y*aP.y,-uXf.y*aP.x+uXf.x*aP.y)/uXf.z;gl_Position=vec4(q.x/uAsp,q.y,0.0,1.0);float dust=step(3.5,aP.w);float bg=step(0.975,fract(seed*29.0))*(1.0-dust);' +
+      'gl_PointSize=uPx*(mix(2.0,1.5,dust)+mix(3.0,2.0,dust)*fract(seed*7.3)+bg*4.5);vA=(0.3+0.7*tw)*(0.7+0.6*fract(seed*3.1)+bg*0.6)*mix(1.0,0.75,dust);return;}' +
       'if(aP.w>1.5){gl_Position=vec4(aP.xy,0.0,1.0);float big=step(0.965,fract(seed*29.0));gl_PointSize=uPx*(1.3+2.2*fract(seed*7.3)+big*3.5);vA=(0.18+0.82*tw)*(0.55+0.45*fract(seed*3.1)+big*0.5);return;}' +
       'float fl=aP.w<0.5?1.0:0.0;float ang=aP.y+uT*(fl>0.5?0.03:-0.02)*(1.0+0.7/(0.5+aP.x));' +
       'float thick=(fract(seed*91.7)-0.5)*(0.05+0.09*aP.x);vec3 p=vec3(cos(ang)*aP.x,(fl>0.5?-0.95:0.95)+thick,sin(ang)*aP.x);float lift=0.0;' +
@@ -637,6 +639,20 @@
       'void main(){float zc=3.2-aPos.z;float k=2.1445;gl_Position=vec4(aPos.x*k/uAsp,aPos.y*k,0.0,zc);gl_PointSize=max(1.0,aSA.x*uPx*2.3/zc);vA=aSA.y;}',
     FS: 'precision mediump float;varying float vA;uniform vec3 uCol;uniform float uPoint;' +
       'void main(){float a=1.0;if(uPoint>0.5){float d=length(gl_PointCoord-0.5);a=smoothstep(0.5,0.0,d);a*=a;}float v=a*vA;gl_FragColor=vec4(uCol*v,v);}',
+    VS_Q: 'attribute vec2 aQ;void main(){gl_Position=vec4(aQ,0.0,1.0);}',
+    FS_Q: 'precision highp float;uniform vec2 uRes;uniform float uT;uniform vec3 uXf;' +
+      'float h(vec2 p){return fract(sin(dot(p,vec2(127.1,311.7)))*43758.5453);}' +
+      'float n(vec2 p){vec2 i=floor(p),f=fract(p);f=f*f*(3.0-2.0*f);return mix(mix(h(i),h(i+vec2(1.0,0.0)),f.x),mix(h(i+vec2(0.0,1.0)),h(i+vec2(1.0,1.0)),f.x),f.y);}' +
+      'float fbm(vec2 p){float v=0.0,a=0.5;for(int i=0;i<5;i++){v+=a*n(p);p=p*2.03+vec2(11.7,5.3);a*=0.5;}return v;}' +
+      'void main(){vec2 p=(gl_FragCoord.xy-0.5*uRes)/uRes.y;p=vec2(uXf.x*p.x-uXf.y*p.y,uXf.y*p.x+uXf.x*p.y)*uXf.z;' +
+      'float a=0.5;vec2 q=vec2(cos(a)*p.x+sin(a)*p.y,-sin(a)*p.x+cos(a)*p.y);' +       // q.x dọc dải, q.y ngang dải
+      'float warp=fbm(q*vec2(1.1,1.8)+vec2(uT*0.006,3.1))-0.5;float y=q.y+warp*0.2;' +
+      'float w=0.13+0.1*fbm(vec2(q.x*1.4+3.0,1.7));float band=exp(-pow(y/w,2.0));' +
+      'float cloud=fbm(q*vec2(2.1,4.4)+vec2(uT*0.009,uT*0.003));' +
+      'float lane=smoothstep(0.44,0.6,fbm(q*vec2(2.6,8.5)+vec2(7.3+uT*0.004,2.0)))*smoothstep(0.3,0.0,abs(y+0.02));' +
+      'float wisp=fbm(q*vec2(5.0,11.0)+vec2(uT*0.012,4.0));float d=band*(0.1+1.9*cloud*cloud)*(0.55+0.9*wisp)*(1.0-0.88*lane);' +
+      'vec3 c=mix(vec3(0.42,0.5,0.86),vec3(0.9,0.86,1.0),cloud)*d*0.62+vec3(0.5,0.3,0.55)*band*band*cloud*0.1;' +
+      'float halo=exp(-pow(y/(w*2.6),2.0))*0.05;c+=vec3(0.3,0.36,0.7)*halo;gl_FragColor=vec4(c,max(c.r,max(c.g,c.b)));}',
     prog: function (vs, fs) {
       var gl = this.gl, mk = function (t, src) { var sh = gl.createShader(t); gl.shaderSource(sh, src); gl.compileShader(sh); if (!gl.getShaderParameter(sh, gl.COMPILE_STATUS)) throw new Error(gl.getShaderInfoLog(sh)); return sh; };
       var p = gl.createProgram(); gl.attachShader(p, mk(gl.VERTEX_SHADER, vs)); gl.attachShader(p, mk(gl.FRAGMENT_SHADER, fs)); gl.linkProgram(p);
@@ -653,6 +669,15 @@
         var dens = Math.max(0.3, L.density), i, a = [];
         // sàn + trần: một phần hạt rải đều cả đĩa, một phần dồn về tâm (tâm sáng rực)
         var disc = function (n, kind, R, pw) { for (var q = 0; q < n; q++) { var u = Math.random(); a.push(R * Math.pow(u, pw || 0.62), Math.random() * 6.2832, Math.random(), kind); } };
+        if (this.mode === 'thienha') {
+          // toạ độ sao theo đơn vị nửa chiều cao màn (x: ±tỉ lệ màn, y: ±1), rộng hơn màn một chút để xoay / thu phóng không hở mép
+          for (i = 0; i < Math.round(3800 * dens); i++) a.push(rnd(-2.3, 2.3), rnd(-1.3, 1.3), Math.random(), 3);
+          var ca = Math.cos(0.5), sa = Math.sin(0.5);
+          for (i = 0; i < Math.round(15000 * dens); i++) { // bụi sao dồn theo dải chéo (cùng góc với lớp mây trong shader)
+            var qx = rnd(-1.5, 1.5), qy = (Math.random() + Math.random() + Math.random() - 1.5) * 0.2;
+            a.push(2 * (ca * qx - sa * qy), 2 * (sa * qx + ca * qy), Math.random(), Math.random() < 0.12 ? 3 : 4);
+          }
+        } else {
         if (this.mode === 'saoroi') { disc(Math.round(15000 * dens), 0, 2.0, 0.8); disc(Math.round(8000 * dens), 0, 3.0); } // Sao rơi: sàn là một đĩa kim tuyến gọn, dày ở tâm
         else disc(Math.round(34000 * dens), 0, 3.0);
         disc(Math.round((this.mode === 'saoroi' ? 16000 : 24000) * dens), 1, 3.0);
@@ -660,6 +685,7 @@
         for (i = 0; i < Math.round(2600 * dens); i++) { // dải ngân hà: sao dồn quanh một đường chéo qua nửa trên màn
           var mx = rnd(-1.1, 1.1), my = 0.5 + mx * 0.22 + (Math.random() + Math.random() + Math.random() - 1.5) * 0.3;
           a.push(mx, my, Math.random(), 2);
+        }
         }
         this.nPts = a.length / 4;
         this.bPts = gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER, this.bPts); gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(a), gl.STATIC_DRAW);
@@ -677,7 +703,8 @@
         this.nDrop = nD * 2;
         this.bDrop = gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER, this.bDrop); gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(d), gl.STATIC_DRAW);
         this.bDyn = gl.createBuffer(); this.dyn = new Float32Array(5 * 400);
-        this.pPts = this.prog(this.VS_PTS, this.FS); this.pDrop = this.prog(this.VS_DROP, this.FS); this.pDyn = this.prog(this.VS_DYN, this.FS);
+        this.pPts = this.prog(this.VS_PTS, this.FS);
+        if (this.mode === 'thienha') { this.pQ = this.prog(this.VS_Q, this.FS_Q); this.bQ = gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER, this.bQ); gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, 1, -1, -1, 1, 1, 1]), gl.STATIC_DRAW); } this.pDrop = this.prog(this.VS_DROP, this.FS); this.pDyn = this.prog(this.VS_DYN, this.FS);
         gl.disable(gl.DEPTH_TEST); gl.enable(gl.BLEND); gl.blendFunc(gl.ONE, gl.ONE);
         this.rip = []; for (i = 0; i < 8; i++) this.rip.push([0, 0, -99]);
         this.ripI = 0; this.heroes = []; this.sparks = []; this.time = 0; this.nextDrop = 0.6; this.star = null; this.nextStar = 1.2; this.glowT = -99; this.glow = 0; this.rings = []; this.bRing = gl.createBuffer();
@@ -699,7 +726,7 @@
       this.time += dt * L.speed;
       var t = this.time, g = 3.4;
       // giọt sáng rơi: xuất phát ở trần, rơi nhanh dần; chạm sàn → vòng sóng + loé + bắn hạt
-      if (this.mode !== 'saoroi' && t > this.nextDrop) {
+      if (this.mode === 'dembac' && t > this.nextDrop) {
         this.nextDrop = t + rnd(0.7, 1.8);
         var an = rnd(0, 6.2832), rr = 2.2 * Math.sqrt(Math.random());
         this.heroes.push({ x: Math.cos(an) * rr, z: Math.min(1.7, Math.sin(an) * rr), t0: t, dur: rnd(0.75, 0.95) });
@@ -753,8 +780,17 @@
         gl.uniform3fv(gl.getUniformLocation(p, 'uCol'), rgb); gl.uniform1f(gl.getUniformLocation(p, 'uPoint'), point);
       };
       var attr = function (p, name, size, stride, off) { var l = gl.getAttribLocation(p, name); if (l < 0) return; gl.enableVertexAttribArray(l); gl.vertexAttribPointer(l, size, gl.FLOAT, false, stride, off); };
+      // Dải ngân hà: cả bầu trời xoay và thu phóng cực chậm (như đang trôi); lớp mây vẽ trước, sao vẽ sau
+      var th = this.mode === 'thienha', xa = th ? 0.035 * Math.sin(t * 0.045) : 0, xf = [Math.cos(xa), Math.sin(xa), th ? 1.07 + 0.05 * Math.sin(t * 0.033) : 1];
+      if (th) {
+        gl.useProgram(this.pQ);
+        gl.uniform2f(gl.getUniformLocation(this.pQ, 'uRes'), cv.width, cv.height); gl.uniform1f(gl.getUniformLocation(this.pQ, 'uT'), t); gl.uniform3fv(gl.getUniformLocation(this.pQ, 'uXf'), xf);
+        gl.bindBuffer(gl.ARRAY_BUFFER, this.bQ); attr(this.pQ, 'aQ', 2, 8, 0);
+        gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+      }
       // hạt sàn / trần / bụi sao
       use(this.pPts, 1);
+      gl.uniform3fv(gl.getUniformLocation(this.pPts, 'uXf'), xf);
       var flat = []; for (i = 0; i < 8; i++) flat.push(this.rip[i][0], this.rip[i][1], this.rip[i][2]);
       gl.uniform3fv(gl.getUniformLocation(this.pPts, 'uRip'), new Float32Array(flat));
       var sr = this.mode === 'saoroi';
@@ -764,7 +800,7 @@
       gl.bindBuffer(gl.ARRAY_BUFFER, this.bPts); attr(this.pPts, 'aP', 4, 16, 0);
       gl.drawArrays(gl.POINTS, 0, this.nPts);
       // thác: vệt (đoạn thẳng) + đầu hạt
-      if (!sr) {
+      if (this.mode === 'dembac') {
       gl.bindBuffer(gl.ARRAY_BUFFER, this.bDrop);
       use(this.pDrop, 0); attr(this.pDrop, 'aD', 4, 20, 0); attr(this.pDrop, 'aTail', 1, 20, 16);
       gl.drawArrays(gl.LINES, 0, this.nDrop);
@@ -811,6 +847,11 @@
   // Hai thẻ <video> thay phiên: gần hết video thì bản kia phát lại từ đầu và hiện dần lên → chỗ nối vòng lặp không bị giật.
   var FADE = 1.4, vbg = null;
   FX.none = { init: function () {}, draw: function () {} };
+  // Dải ngân hà: dải mây sao chạy chéo màn (WebGL); máy không có WebGL dùng hiệu ứng "Ngân hà" vẽ bằng canvas
+  FX.thienha = {
+    init: function () { GLFX.mode = 'thienha'; this.useGl = GLFX.start(); if (!this.useGl) FX.nganha.init.call(FX.nganha); },
+    draw: function (dt, t) { if (this.useGl && GLFX.gl) GLFX.draw(dt); else FX.nganha.draw.call(FX.nganha, dt, t); },
+  };
   FX.saoroi = { mode: 'saoroi', init: FX.dembac.init, draw: FX.dembac.draw, fall: FX.dembac.fall }; // biến thể của Đêm kim tuyến bạc (xem GLFX)
   function isVideo() { return !!(C.videos && C.videos[L.effect]); }
   function setupVideo() {
@@ -865,7 +906,7 @@
 
   function resetFx() {
     parts = []; extra = [];
-    if (L.effect !== 'dembac' && L.effect !== 'saoroi') GLFX.stop();
+    if (L.effect !== 'dembac' && L.effect !== 'saoroi' && L.effect !== 'thienha') GLFX.stop();
     setupVideo();
     (isVideo() ? FX.none : FX[L.effect] || FX.sao).init();
   }
