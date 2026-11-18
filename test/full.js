@@ -36,7 +36,7 @@ const eq = (a, b, msg) => { assert.deepEqual(a, b, msg); n++; };
 
   // ---------- trang công khai ----------
   const pages = {
-    '/': [/id="hb"/, /id="heroGo"/, /id="video"/, /class="hnav"/],
+    '/': [/id="hb"/, /id="heroGo"/, /id="mau"/, /class="hnav"/],
     '/mau-thiep': [/id="fStyle"/],
     '/video-dam-ngo': [/id="vgal"/, /Video <em>dạm ngõ<\/em>/],
     '/slide-cuoi': [/id="vgal"/, /Slide ảnh cưới/],
