@@ -492,3 +492,11 @@ body.drag .drophint{opacity:1}
 .bhy-phones video{width:30%;max-width:230px;aspect-ratio:9/16;object-fit:cover;border-radius:22px;border:6px solid #1d1719;background:#1d1719;box-shadow:0 30px 60px rgba(40,10,20,.28)}
 .bhy-phones video:nth-child(2){width:36%;max-width:270px;transform:translateY(-14px)}
 @media (max-width:900px){.bhy{padding:56px 0}.bhy .wrap{grid-template-columns:1fr;gap:28px}.bhy-phones{gap:10px}.bhy-phones video{border-width:4px;border-radius:16px}}
+
+/* Chuyển thanh menu (rộng hết ↔ viên nổi) cho mượt: trước đây animate top / width / border-radius / padding trên một khối có
+   backdrop-filter → trình duyệt tính lại bố cục + làm mờ lại mỗi khung hình → giật. Giờ chỉ trượt bằng transform (chạy trên GPU),
+   độ rộng / bo góc / lề đổi ngay một lần, nền + bóng mờ dần. */
+.hnav{top:14px;transition:transform .32s cubic-bezier(.2,.7,.2,1),background-color .25s,box-shadow .25s;will-change:transform}
+.hnav:not(.up){transform:translate(-50%,26px)}
+.hnav>.wrap{transition:none}
+@media (max-width:600px){.hnav:not(.up){top:14px;transform:translate(-50%,22px)}}

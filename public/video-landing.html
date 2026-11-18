@@ -39,15 +39,17 @@
 .steps3 h3{margin:0 0 4px;font-size:17px}
 .steps3 p{margin:0;color:var(--muted);font-size:14px}
 @media (max-width:720px){.steps3{grid-template-columns:1fr}}
+/* điện thoại: 2 mẫu một hàng, tên + nút xếp dọc cho vừa */
+@media (max-width:600px){.vgal{grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:10px}.vt{border-radius:14px}.vt .body{flex-direction:column;align-items:stretch;gap:8px;padding:10px}.vt h3{font-size:14px}.vt .body .btn{width:100%;justify-content:center;padding:8px 10px;font-size:13px}.vt .tag{top:7px;left:7px;padding:2px 8px;font-size:10.5px}}
 </style>
 </head>
 <body data-page="damngo">
 <header id="nav"></header>
 
 <section class="phero"><div class="wrap center">
-  <span class="eyebrow">Xem thử miễn phí · Tải MP4 Full HD</span>
+  <span class="eyebrow">Tải MP4 Full HD</span>
   <h1>Video <em>dạm ngõ</em> chiếu TV</h1>
-  <p class="sub">Phông nền chiếu TV cho lễ dạm ngõ, ăn hỏi, vu quy: chọn mẫu có sẵn, điền tên hai bạn, ngày lễ và lời cảm ơn — ngày âm lịch tự tính.</p>
+  <p class="sub">Phông nền chiếu TV cho dạm ngõ, ăn hỏi — chọn mẫu, điền tên là xong.</p>
   <div class="vgal" id="vgal" aria-live="polite"></div>
 </div></section>
 

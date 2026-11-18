@@ -363,20 +363,20 @@ window.renderTopbar = async function (active) {
     ['/so-tay', 'Sổ tay', 'planner', '<path d="M5 4.5A1.5 1.5 0 0 1 6.5 3H19v15H6.5A1.5 1.5 0 0 0 5 19.5z"/><path d="M5 19.5A1.5 1.5 0 0 0 6.5 21H19v-3"/><path d="M9 8h6M9 11.5h4"/>']];
   const ic = (d) => `<svg viewBox="0 0 24 24" aria-hidden="true">${d}</svg>`;
   const NEW = `<a href="/mau-thiep"><b>Thiệp cưới</b><small>Chọn mẫu, điền tên là xong</small></a><a href="/slide-cuoi"><b>Slide / video cưới</b><small>Ảnh cưới chiếu TV, tải MP4</small></a><a href="/man-hinh-led-dam-cuoi"><b>Màn hình LED</b><small>Trình chiếu tên đôi tại tiệc</small></a>`;
-  const ACCT = u ? `<div class="who"><b>${esc(u.name || '')}</b>${esc(u.email)}</div><a href="/">Trang chủ</a><a href="/mau-thiep">Xem mẫu thiệp</a><a href="#" data-tb-theme>Đổi nền sáng / tối</a><a href="#" id="logoutBtn">Đăng xuất</a>` : '';
+  const ACCT = u ? `<div class="who"><b>${esc(u.name || '')}</b>${esc(u.email)}</div><a href="#" data-tb-theme class="ico"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5z"/></svg>Đổi nền sáng / tối</a><a href="#" id="logoutBtn" class="ico"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 4h3a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-3"/><path d="M10 16l-4-4 4-4M6 12h10"/></svg>Đăng xuất</a>` : '';
   const bar = document.createElement('header');
   bar.className = 'topbar tb';
   bar.innerHTML = `<div class="wrap">
-    <a class="logo" href="/"><span class="lw">${esc(meta.brand)}</span><svg class="lh" viewBox="0 0 32 30" aria-hidden="true"><path d="M16 28C6.5 21 3 16 3 11.5 3 7.9 5.8 5 9.4 5c2.6 0 4.6 1.4 6.6 3.9C18 6.4 20 5 22.6 5 26.2 5 29 7.9 29 11.5 29 16 25.5 21 16 28z"/></svg></a>
+    <a class="logo" href="/" aria-label="Về trang chủ"><span class="lhome" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 11 12 4l8 7v8.5a1.5 1.5 0 0 1-1.5 1.5H15v-6H9v6H5.5A1.5 1.5 0 0 1 4 19.5z"/></svg></span><span class="lw">${esc(meta.brand)}</span><svg class="lh" viewBox="0 0 32 30" aria-hidden="true"><path d="M16 28C6.5 21 3 16 3 11.5 3 7.9 5.8 5 9.4 5c2.6 0 4.6 1.4 6.6 3.9C18 6.4 20 5 22.6 5 26.2 5 29 7.9 29 11.5 29 16 25.5 21 16 28z"/></svg></a>
     ${u ? `<nav class="tb-tabs" aria-label="Của tôi">${TABS.map(([h, n, k]) => `<a href="${h}"${k === active ? ' class="on" aria-current="page"' : ''}>${n}</a>`).join('')}</nav>` : ''}
     <span class="tb-sp"></span>
     ${u ? (active === 'cards'
       ? `<div class="tb-dd tb-mmain"><button type="button" class="btn sm" aria-expanded="false">＋ Tạo mới</button><div class="tb-menu">${NEW}</div></div>`
-      : '<a class="btn sm tb-mmain" href="/thiep-cua-toi">Thiệp của tôi</a>') : ''}
+      : '') : ''}
     ${window.themeBtn ? themeBtn() : ''}
     ${u ? `<a class="tb-link" href="/mau-thiep">Xem mẫu</a>
       <div class="tb-dd tb-new"><button type="button" class="tb-newbtn" aria-expanded="false">＋ Tạo mới</button><div class="tb-menu">${NEW}</div></div>
-      <div class="tb-dd tb-me"><button type="button" class="tb-av" aria-label="Tài khoản" aria-expanded="false">${esc(ini)}</button><div class="tb-menu">${ACCT}</div></div>`
+      <div class="tb-dd tb-me"><button type="button" class="tb-av" aria-label="Tài khoản" aria-expanded="false"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg></button><div class="tb-menu">${ACCT}</div></div>`
       : '<a href="/dang-nhap" class="btn sm">Đăng nhập</a>'}
   </div>`;
   document.body.prepend(bar);

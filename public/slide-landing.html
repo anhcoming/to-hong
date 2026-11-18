@@ -39,15 +39,17 @@
 .steps3 h3{margin:0 0 4px;font-size:17px}
 .steps3 p{margin:0;color:var(--muted);font-size:14px}
 @media (max-width:720px){.steps3{grid-template-columns:1fr}}
+/* điện thoại: 2 mẫu một hàng, tên + nút xếp dọc cho vừa */
+@media (max-width:600px){.vgal{grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:10px}.vt{border-radius:14px}.vt .body{flex-direction:column;align-items:stretch;gap:8px;padding:10px}.vt h3{font-size:14px}.vt .body .btn{width:100%;justify-content:center;padding:8px 10px;font-size:13px}.vt .tag{top:7px;left:7px;padding:2px 8px;font-size:10.5px}}
 </style>
 </head>
 <body data-page="slide">
 <header id="nav"></header>
 
 <section class="phero"><div class="wrap center">
-  <span class="eyebrow">Slide ảnh cưới · Video ảnh cưới</span>
+  <span class="eyebrow">Video ảnh cưới</span>
   <h1>Slide ảnh cưới <em>kể chuyện hai bạn</em></h1>
-  <p class="sub">Thả bộ ảnh cưới một lần, ảnh tự xếp vào từng cảnh: cặp ảnh treo như triển lãm, ảnh nguyên khung, dải ba ảnh, ảnh tràn màn. Video chiếu lặp trên màn LED, TV khi khách vào tiệc.</p>
+  <p class="sub">Thả ảnh cưới, tự xếp thành video chiếu màn LED, TV khi khách vào tiệc.</p>
   <h2 class="h2" style="margin:34px 0 6px;text-align:left">Nền buổi lễ <small style="font-size:15px;color:var(--muted);font-weight:500">· khoảng 2 phút, chiếu lặp suốt tiệc</small></h2>
   <div class="vgal" id="vgal" aria-live="polite"></div>
   <h2 class="h2" style="margin:40px 0 6px;text-align:left">Phim kể chuyện <small style="font-size:15px;color:var(--muted);font-weight:500">· ngắn, nhiều hiệu ứng chuyển cảnh</small></h2>

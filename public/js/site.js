@@ -75,7 +75,7 @@
   var nav = document.getElementById('nav');
   if (nav) {
     nav.className = 'nav' + (document.body.hasAttribute('data-solid') ? ' always' : '');
-    nav.innerHTML = '<div class="wrap"><a class="logo" href="/">' + LOGO + '</a>' +
+    nav.innerHTML = '<div class="wrap"><a class="logo" href="/" aria-label="Về trang chủ">' + (page === 'home' ? '' : '<span class="lhome" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 11 12 4l8 7v8.5a1.5 1.5 0 0 1-1.5 1.5H15v-6H9v6H5.5A1.5 1.5 0 0 1 4 19.5z"/></svg></span>') + LOGO + '</a>' +
       '<nav class="menu">' + MENU.map(function (m) { return '<a href="' + m[0] + '"' + (m[2] === page ? ' class="on"' : '') + '>' + m[1] + '</a>'; }).join('') + '</nav>' +
       (window.themeBtn ? themeBtn() : '') + '<div class="acts" id="navActs"><a class="btn btn-ghost btn-sm login" href="/dang-nhap">Đăng nhập</a><a class="btn btn-main btn-sm" href="/mau-thiep">Tạo thiệp</a></div>' +
       '<button class="burger" id="burger" type="button" aria-label="Mở menu" aria-expanded="false"><i></i></button></div>' +
@@ -153,11 +153,73 @@
     document.dispatchEvent(new CustomEvent('meta', { detail: m }));
   }).catch(function () {});
 
+  // Thanh 5 nút dưới cùng trên điện thoại — giống hệt thanh dưới của trang tài khoản (common.js renderTopbar),
+  // thay cho menu ☰: chưa đăng nhập thì dẫn tới trang giới thiệu, đã đăng nhập thì tới đồ của mình.
+  var SB = [
+    ['card', 'Thiệp', 'tpl', '/mau-thiep', '/thiep-cua-toi', '<rect x="3" y="5" width="18" height="14" rx="2.5"/><path d="M3.5 6.5 12 13l8.5-6.5"/>'],
+    ['clap', 'Báo hỷ', 'baohy', '/video', '/video', '<path d="M4 10h16v9a1.5 1.5 0 0 1-1.5 1.5h-13A1.5 1.5 0 0 1 4 19z"/><path d="m4 10-.6-3.2 15-3 .6 3.2"/><path d="m8.5 6.2 2 3.3M13.5 5.2l2 3.3"/>', 'Free'],
+    ['led', 'Màn LED', 'led', '/man-hinh-led-dam-cuoi', '/thiep-cua-toi?mo=led', '<rect x="2.5" y="4" width="19" height="12.5" rx="2"/><path d="M8 20.5h8M12 16.5v4"/><path d="m12 7 .9 1.9 2 .3-1.5 1.4.4 2-1.8-1-1.8 1 .4-2-1.5-1.4 2-.3z"/>'],
+    ['slide', 'Slide', 'slide', '/slide-cuoi', '/video-cua-toi', '<rect x="3" y="4" width="18" height="12" rx="2"/><path d="M12 16v4M8 20h8"/><path d="m10 8 4 2-4 2z"/>'],
+    ['book', 'Sổ tay', 'planner', '/so-tay-cuoi', '/so-tay', '<path d="M5 4.5A1.5 1.5 0 0 1 6.5 3H19v15H6.5A1.5 1.5 0 0 0 5 19.5z"/><path d="M5 19.5A1.5 1.5 0 0 0 6.5 21H19v-3"/><path d="M9 8h6M9 11.5h4"/>']
+  ];
+  var sbar = null;
+  if (page) {
+    var sst = document.createElement('style');
+    sst.textContent = '.sbar{display:none}@media (max-width:760px){'
+      + '.burger,.hnav .burger,.mpanel{display:none!important}'
+      + '#hacts,#navActs{display:none!important}.uav{display:block!important;margin-left:auto}'
+      + '.nav .logo{display:inline-flex;align-items:center}.lhome{margin-right:8px;display:grid!important;place-items:center;flex:none;width:28px;height:28px;border-radius:50%;background:rgba(214,69,93,.1);color:#d6455d}.lhome svg{width:15px;height:15px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}'
+      + 'body{padding-bottom:calc(92px + env(safe-area-inset-bottom))}.totop{bottom:calc(88px + env(safe-area-inset-bottom))!important}'
+      + '.sbar{position:fixed;z-index:48;left:12px;right:12px;bottom:calc(12px + env(safe-area-inset-bottom));height:62px;padding:0 8px;display:flex;align-items:center;justify-content:space-around;border-radius:999px;background:rgba(255,255,255,.92);backdrop-filter:blur(12px) saturate(1.4);-webkit-backdrop-filter:blur(12px) saturate(1.4);box-shadow:0 0 0 1px var(--line,#f0e4e6),0 12px 30px rgba(120,40,50,.16)}'
+      + '[data-theme="dark"] .sbar{background:rgba(31,25,27,.92)}'
+      + '.sbar a{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;font-family:inherit;font-size:10.5px;font-weight:600;line-height:1.2;white-space:nowrap;color:var(--muted,#8a7d80);text-decoration:none}'
+      + '.sbar i{position:relative;display:grid;place-items:center;height:24px;font-style:normal}'
+      + '.sbar svg{width:21px;height:21px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}'
+      + '.sbar a.on{color:#d6455d}.sbar a.on svg>*{fill:currentColor}.sbar a.on svg>*:last-child{fill:none;stroke:#fff}'
+      + '.sbar em{position:absolute;top:-6px;left:50%;margin-left:5px;padding:0 5px;border-radius:99px;background:#d6455d;color:#fff;font-size:8.5px;font-style:normal;font-weight:700;line-height:14px}}';
+    sst.textContent += '.lhome{display:none}.uav{display:none;position:relative;flex:none}'
+      + '.uav>a,.uav>button{display:grid;place-items:center;width:40px;height:40px;padding:0;border-radius:50%;border:1px solid var(--line,#f0e4e6);background:var(--card,#fff);color:var(--ink,#2b2224);cursor:pointer;font:inherit;font-size:13px;font-weight:800;text-decoration:none}'
+      + '.uav>a,.uav>button{border:0!important;background:rgba(214,69,93,.1)!important;color:#d6455d!important}'
+      + '.uav svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}'
+      + '.uav .um{position:absolute;right:0;top:calc(100% + 10px);z-index:60;min-width:230px;padding:8px;border-radius:14px;background:var(--card,#fff);box-shadow:0 0 0 1px var(--line,#f0e4e6),0 20px 50px rgba(120,40,50,.18);display:none}'
+      + '.uav.open .um{display:block}.uav .um a{display:flex;align-items:center;gap:10px;padding:10px;border-radius:10px;font-size:14px;color:var(--ink,#2b2224);text-decoration:none}.uav .um a:hover{background:rgba(214,69,93,.08)}'
+      + '.uav .um svg{flex:none;width:18px;height:18px;color:var(--muted,#8a7d80)}.uav .who{padding:8px 10px 10px;margin-bottom:4px;border-bottom:1px solid var(--line,#f0e4e6);font-size:13px;color:var(--muted,#8a7d80);overflow:hidden;text-overflow:ellipsis}.uav .who b{display:block;color:var(--ink,#2b2224);font-size:14px}';
+    document.head.appendChild(sst);
+    // điện thoại: góc trên chỉ còn icon tài khoản (chưa đăng nhập → trang đăng nhập; đã đăng nhập → ảnh đại diện + menu tài khoản)
+    var uav = document.createElement('div'); uav.className = 'uav';
+    uav.innerHTML = '<a href="/dang-nhap" aria-label="Đăng nhập"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg></a>';
+    var actsBox = document.getElementById('hacts') || document.getElementById('navActs');
+    if (actsBox) actsBox.parentNode.insertBefore(uav, actsBox.nextSibling);
+    window.drawUav = function (user) {
+      var esc = function (t) { return String(t || '').replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); };
+      uav.innerHTML = '<button type="button" aria-label="Tài khoản" aria-expanded="false"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg></button><div class="um"><div class="who"><b>' + esc(user.name) + '</b>' + esc(user.email) + '</div>'
+        + '<a href="#" data-theme-toggle><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5z"/></svg>Đổi nền sáng / tối</a><a href="#" data-logout><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 4h3a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-3"/><path d="M10 16l-4-4 4-4M6 12h10"/></svg>Đăng xuất</a></div>'; // Thiệp / Sổ tay đã có ở thanh dưới
+      var b = uav.querySelector('button');
+      b.onclick = function (e) { e.stopPropagation(); var on = !uav.classList.contains('open'); uav.classList.toggle('open', on); b.setAttribute('aria-expanded', on); };
+      uav.querySelector('.um').onclick = function (e) {
+        var t = e.target.closest('[data-theme-toggle],[data-logout]'); if (!t) return;
+        e.preventDefault(); uav.classList.remove('open');
+        if (t.hasAttribute('data-theme-toggle')) { if (window.toggleTheme) toggleTheme(); return; }
+        progress.start(); fetch('/api/auth/logout', { method: 'POST' }).then(function () { location.reload(); }, function () { progress.done(); });
+      };
+      document.addEventListener('click', function (e) { if (!uav.contains(e.target)) uav.classList.remove('open'); });
+    };
+    sbar = document.createElement('nav'); sbar.className = 'sbar'; sbar.setAttribute('aria-label', 'Chức năng');
+    var drawSbar = function (user) {
+      sbar.innerHTML = SB.map(function (b) {
+        return '<a href="' + (user ? b[4] : b[3]) + '"' + (b[2] === page ? ' class="on"' : '') + '><i><svg viewBox="0 0 24 24" aria-hidden="true">' + b[5] + '</svg>' + (b[6] ? '<em>' + b[6] + '</em>' : '') + '</i>' + b[1] + '</a>';
+      }).join('');
+    };
+    drawSbar(null);
+    document.body.appendChild(sbar);
+    window.drawSbar = drawSbar;
+  }
+
   // đã đăng nhập → nút trên thanh đổi thành "Sổ tay của tôi"
   fetch('/api/me').then(function (r) { return r.json(); }).then(function (me) {
     var a = document.getElementById('navActs');
     if (me.user && a) a.innerHTML = '<a class="btn btn-main btn-sm" href="/thiep-cua-toi">Thiệp của tôi</a>';
-    if (me.user) renderMPanel(me.user);
+    if (me.user) { renderMPanel(me.user); if (window.drawSbar) drawSbar(me.user); if (window.drawUav) drawUav(me.user); }
   }).catch(function () {});
 
   // khung 16:9 chứa trang 1280×720 (video, màn LED)

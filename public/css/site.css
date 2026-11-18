@@ -362,3 +362,6 @@ body:has(.mopen)::after{content:"";position:fixed;inset:0;z-index:49;background:
 .legal .box{background:var(--bg2);border:1px solid var(--line);border-radius:16px;padding:16px 18px;margin:0 0 16px}
 .legal .box p:last-child{margin-bottom:0}
 @media (max-width:480px){.legal{padding-top:104px}.legal .intro{font-size:16px}.legal h2{font-size:18px}}
+
+/* điện thoại: đầu trang giới thiệu gọn — chỉ giữ nút chính (nút phụ như "Xem toàn màn hình" / "Xem có gì" đã có ngay bên dưới) */
+@media (max-width:600px){.phero .cta .btn-ghost{display:none}}
