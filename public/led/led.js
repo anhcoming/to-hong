@@ -758,7 +758,7 @@
       var flat = []; for (i = 0; i < 8; i++) flat.push(this.rip[i][0], this.rip[i][1], this.rip[i][2]);
       gl.uniform3fv(gl.getUniformLocation(this.pPts, 'uRip'), new Float32Array(flat));
       var sr = this.mode === 'saoroi';
-      gl.uniform4fv(gl.getUniformLocation(this.pPts, 'uRp'), sr ? [0.6, 0.16, 0.55, 0.85] : [0.62, 0.075, 0.95, 1]); // tốc độ lan, độ dày vòng, tắt dần, độ mạnh
+      gl.uniform4fv(gl.getUniformLocation(this.pPts, 'uRp'), sr ? [0.55, 0.24, 0.45, 1.5] : [0.62, 0.075, 0.95, 1]); // tốc độ lan, độ dày vòng, tắt dần, độ mạnh
       gl.uniform2fv(gl.getUniformLocation(this.pPts, 'uSt'), sr ? [0.72, 0.6] : [1, 1]); // Sao rơi: hạt nhỏ và dịu hơn
       gl.uniform3fv(gl.getUniformLocation(this.pPts, 'uCen'), sr ? [0.45, 1.5 * this.glow, 1.5] : [0, 0, 1]);    // sáng tâm sàn: cố định, bừng lên khi sao chạm, độ gom
       gl.bindBuffer(gl.ARRAY_BUFFER, this.bPts); attr(this.pPts, 'aP', 4, 16, 0);
@@ -771,28 +771,30 @@
       gl.uniform1f(gl.getUniformLocation(this.pDrop, 'uPoint'), 1);
       gl.drawArrays(gl.POINTS, 0, this.nDrop);
       }
-      // vòng sóng mặt nước (Sao rơi): mỗi lần sao chạm sàn có 3 gợn tròn đồng tâm lan ra, mảnh, mờ dần theo thời gian và khi ra tới rìa
+      // sóng sáng (Sao rơi): sau khi sao chạm sàn, một quầng sáng mềm toả từ tâm ra — bên trong sáng mờ, sáng nhất ở mép sóng rồi tan dần
+      // ra ngoài (không vẽ nét). Kim tuyến nằm trong mép sóng cũng sáng lên (shader ở trên) nên nhìn như sóng ánh sáng lan trên mặt nước.
       if (sr && this.rings.length) {
-        var RV = [], strips = 0, SEG = 96;
+        var RV = [], strips = 0, SEG = 72;
         for (i = this.rings.length - 1; i >= 0; i--) {
           var ra = t - this.rings[i];
-          if (ra > 5) { this.rings.splice(i, 1); continue; }
-          for (var w = 0; w < 3; w++) {
-            var a2 = ra - w * 0.42; if (a2 <= 0.02) continue;
-            var rad = 0.6 * a2, al = 0.8 * Math.exp(-a2 * 0.5) * (1 - w * 0.22) * (1 - Math.min(1, Math.max(0, (rad - 1.9) / 0.9)));
-            if (al < 0.01) continue;
-            for (var th = 0; th < 3; th++) { // 3 đường sát nhau → nét dày mềm hơn 1 điểm ảnh
-              var r3 = rad + (th - 1) * 0.012, al3 = al * (th === 1 ? 1 : 0.5);
-              for (var q3 = 0; q3 <= SEG; q3++) { var an3 = q3 / SEG * 6.2832; RV.push(Math.cos(an3) * r3, -0.94, Math.sin(an3) * r3, 1, al3); }
+          if (ra > 6) { this.rings.splice(i, 1); continue; }
+          for (var w = 0; w < 2; w++) {
+            var a2 = ra - w * 0.7; if (a2 <= 0.02) continue;
+            var rad = 0.55 * a2, fade = Math.exp(-a2 * 0.45) * (1 - w * 0.45) * (1 - Math.min(1, Math.max(0, (rad - 1.8) / 1.0)));
+            if (fade < 0.01) continue;
+            var pk = 0.5 * fade, inn = 0.24 * fade, wid = 0.22 + rad * 0.14;
+            var band = function (r1, al1, r2, al2) {
+              for (var q3 = 0; q3 <= SEG; q3++) { var an3 = q3 / SEG * 6.2832, cx = Math.cos(an3), sz = Math.sin(an3); RV.push(cx * r1, -0.945, sz * r1, 1, al1, cx * r2, -0.945, sz * r2, 1, al2); }
               strips++;
-            }
+            };
+            band(0, inn, Math.max(0.01, rad - wid * 0.5), inn * 1.4); band(Math.max(0.01, rad - wid * 0.5), inn * 1.4, rad, pk); band(rad, pk, rad + wid, 0);
           }
         }
         if (strips) {
           use(this.pDyn, 0);
           gl.bindBuffer(gl.ARRAY_BUFFER, this.bRing); gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(RV), gl.DYNAMIC_DRAW);
           attr(this.pDyn, 'aPos', 3, 20, 0); attr(this.pDyn, 'aSA', 2, 20, 12);
-          for (i = 0; i < strips; i++) gl.drawArrays(gl.LINE_STRIP, i * (SEG + 1), SEG + 1);
+          for (i = 0; i < strips; i++) gl.drawArrays(gl.TRIANGLE_STRIP, i * (SEG + 1) * 2, (SEG + 1) * 2);
         }
       }
       // giọt sáng, loé, hạt bắn
