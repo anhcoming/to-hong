@@ -1,5 +1,5 @@
-// Combo "Trọn bộ ngày cưới" = kích hoạt thiệp + 1 lượt màn LED + 1 lượt video trên tài khoản.
-// Khách nháp nhiều LED / video, ưng cái nào thì dùng lượt cho cái đó; chỉ có đúng một bản nháp thì tự dùng lượt.
+// Combo "Trọn bộ ngày cưới" gắn với MỘT thiệp: kích hoạt thiệp + màn LED + video của chính thiệp đó (có sẵn thì mở ngay,
+// tạo sau thì tự mở lúc tạo). Thiệp khác không liên quan. Lượt Trọn bộ kiểu cũ (user.credits) vẫn dùng được qua /redeem.
 const assert = require('assert');
 const fs = require('fs'), os = require('os'), path = require('path');
 process.env.DATA_DIR = fs.mkdtempSync(path.join(os.tmpdir(), 'thiep-combo-'));
@@ -41,7 +41,7 @@ const buyCombo = async (id) => { const o = (await call('u', 'POST', `/api/cards/
   let r = await call('x', 'GET', '/api/meta');
   assert.equal(r.json.comboPrice, comboNow);
 
-  // 1. mua Trọn bộ khi chưa làm LED / video → thiệp kích hoạt, cộng 1 lượt mỗi loại
+  // 1. mua Trọn bộ khi chưa làm LED / video → thiệp kích hoạt; LED / video của thiệp này tạo lúc nào cũng tự kích hoạt
   const a = await newCard('combo-a');
   assert.equal((await call('u', 'POST', `/api/cards/${a}/order`, { product: 'combo', coupon: 'GIAMRIENG' })).status, 400, 'không áp mã cho Trọn bộ');
   r = await call('u', 'POST', `/api/cards/${a}/order`, { product: 'combo' });
@@ -53,33 +53,26 @@ const buyCombo = async (id) => { const o = (await call('u', 'POST', `/api/cards/
   assert.equal((await pay(r.json.order)).json.result, 'paid', 'mã CB… vẫn nhận ra dù nội dung có "MBVCB"');
   let c = await card(a);
   assert.ok(c.paid && c.combo, 'thiệp kích hoạt, gắn Trọn bộ');
-  assert.deepEqual(c.credits, { led: 1, video: 1 }, 'cộng 1 lượt LED + 1 lượt video');
+  assert.deepEqual(c.credits, { led: 0, video: 0 }, 'không còn cộng lượt');
   assert.ok(!c.led.created && !c.video.created, 'chưa tự tạo LED / video');
   assert.equal((await call('u', 'POST', `/api/cards/${a}/order`, { product: 'combo' })).status, 400, 'thiệp đã có Trọn bộ');
+  r = await call('u', 'PUT', `/api/cards/${a}`, { led: {} });
+  assert.ok(r.json.card.led.paid, 'tạo màn LED trên thiệp Trọn bộ → kích hoạt luôn');
+  assert.ok(!(await call('x', 'GET', '/led/combo-a')).text.includes('Bản dùng thử'), 'màn LED Trọn bộ không có dòng dùng thử');
+  r = await call('u', 'PUT', `/api/cards/${a}`, { video: {} });
+  assert.ok(r.json.card.video.paid, 'tạo video trên thiệp Trọn bộ → kích hoạt luôn');
+  assert.equal((await call('u', 'POST', `/api/cards/${a}/order`, { product: 'led' })).status, 400, 'không mua lẻ lại LED đã có trong Trọn bộ');
 
-  // dùng lượt: phải tạo trước, dùng xong hết lượt
-  assert.equal((await call('u', 'POST', `/api/cards/${a}/redeem`, { product: 'led' })).status, 400, 'chưa tạo LED thì chưa dùng lượt được');
-  await call('u', 'PUT', `/api/cards/${a}`, { led: {} });
-  assert.equal((await call('v', 'POST', `/api/cards/${a}/redeem`, { product: 'led' })).status, 404, 'người khác không dùng lượt được');
-  r = await call('u', 'POST', `/api/cards/${a}/redeem`, { product: 'led' });
-  assert.equal(r.status, 200);
-  assert.ok(r.json.card.led.paid);
-  assert.deepEqual(r.json.card.credits, { led: 0, video: 1 });
-  assert.ok(!(await call('x', 'GET', '/led/combo-a')).text.includes('Bản dùng thử'), 'màn LED dùng lượt thì hết dòng dùng thử');
-
-  // 2. nhiều bản nháp LED ở các thiệp khác nhau → không tự dùng, khách chọn
+  // 2. LED nháp có sẵn: mua Trọn bộ thiệp b → chỉ LED của thiệp b được mở; thiệp d (thiệp khác) không liên quan
   const b = await newCard('combo-b'), d = await newCard('combo-d');
   await call('u', 'PUT', `/api/cards/${b}`, { led: {} });
   await call('u', 'PUT', `/api/cards/${d}`, { led: {} });
   await buyCombo(b);
-  assert.deepEqual((await card(b)).credits, { led: 1, video: 2 }, 'hai bản nháp LED → giữ lượt, lượt video cộng dồn');
-  assert.ok(!(await card(b)).led.paid && !(await card(d)).led.paid);
-  r = await call('u', 'POST', `/api/cards/${d}/redeem`, { product: 'led' });
-  assert.ok(r.json.card.led.paid, 'dùng lượt cho đúng bản khách chọn (thiệp d)');
-  assert.ok(!(await card(b)).led.paid, 'bản còn lại vẫn là dùng thử');
-  assert.equal((await call('u', 'POST', `/api/cards/${b}/redeem`, { product: 'led' })).status, 400, 'hết lượt LED');
+  assert.ok((await card(b)).led.paid, 'LED có sẵn của thiệp Trọn bộ được mở ngay');
+  assert.ok(!(await card(d)).led.paid, 'LED của thiệp khác vẫn là dùng thử');
+  assert.ok(!(await card(d)).paid, 'thiệp khác chưa kích hoạt');
 
-  // 3. đúng một bản nháp video → mua Trọn bộ / nâng cấp thì tự dùng lượt luôn
+  // 3. đã mua thiệp lẻ, có video nháp → nâng lên Trọn bộ (trả phần chênh) thì video mở luôn, LED làm sau cũng mở
   const e = await newCard('combo-e');
   await call('u', 'PUT', `/api/cards/${e}`, { video: {} });
   r = await call('u', 'POST', `/api/cards/${e}/order`, { product: 'card' });
@@ -93,9 +86,20 @@ const buyCombo = async (id) => { const o = (await call('u', 'POST', `/api/cards/
   assert.ok(!(await card(e)).combo, 'thiếu tiền thì chưa nâng cấp');
   assert.equal((await pay(up)).json.result, 'paid');
   c = await card(e);
-  assert.ok(c.combo && c.video.paid, 'chỉ một bản nháp video → tự dùng lượt');
-  assert.deepEqual(c.credits, { led: 0, video: 2 }, 'video: 2 lượt cũ còn nguyên (lượt mới đã dùng)');
-  assert.ok((await card(b)).led.paid, 'LED: thiệp b là bản nháp LED duy nhất còn lại → lượt LED mới tự dùng cho nó');
+  assert.ok(c.combo && c.video.paid, 'nâng cấp → video có sẵn mở luôn');
+  assert.ok((await call('u', 'PUT', `/api/cards/${e}`, { led: {} })).json.card.led.paid, 'LED làm sau cũng mở');
+
+  // 3b. nhân bản thiệp Trọn bộ → bản sao là thiệp mới, không kèm Trọn bộ
+  const dup = (await call('u', 'POST', `/api/cards/${e}/duplicate`)).json.card;
+  c = await card(dup.id);
+  assert.ok(!c.paid && !c.combo && !c.led.paid && !c.video.paid, 'bản sao không được Trọn bộ');
+
+  // 3c. lượt Trọn bộ kiểu cũ (trước 18/11/2026) vẫn dùng được
+  require('../lib/db').db.users.find((u) => u.email === 'combo@test.vn').credits = { led: 1, video: 0 };
+  assert.equal((await call('v', 'POST', `/api/cards/${d}/redeem`, { product: 'led' })).status, 404, 'người khác không dùng lượt được');
+  r = await call('u', 'POST', `/api/cards/${d}/redeem`, { product: 'led' });
+  assert.ok(r.json.card.led.paid, 'lượt cũ dùng cho LED của thiệp d');
+  assert.equal((await call('u', 'POST', `/api/cards/${d}/redeem`, { product: 'led' })).status, 400, 'hết lượt cũ');
 
   // 4. mua lẻ vẫn được
   const f = await newCard('combo-f');
@@ -103,6 +107,6 @@ const buyCombo = async (id) => { const o = (await call('u', 'POST', `/api/cards/
   r = await call('u', 'POST', `/api/cards/${f}/order`, { product: 'led' });
   assert.equal(r.json.order.amount, config.ledPrice);
 
-  console.log('✓ Trọn bộ: cộng lượt LED + video, khách chọn bản để dùng lượt, tự dùng khi chỉ có một bản, nâng cấp trả phần chênh');
+  console.log('✓ Trọn bộ gắn với thiệp: mở thiệp + LED + video của thiệp đó (có sẵn hay làm sau), thiệp khác không liên quan, nâng cấp trả phần chênh, lượt cũ vẫn dùng được');
   process.exit(0);
 })().catch((e) => { console.error('✗', e); process.exit(1); });

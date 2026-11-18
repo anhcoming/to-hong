@@ -17,7 +17,7 @@
   }
   // logo giống trang chủ: chữ viết tay tô gradient, tim nhỏ cuối chữ (CSS .logo .lw / .lh)
   var LOGO = '<span class="lw" data-brand>Cưới Nha</span><svg class="lh" viewBox="0 0 32 30" aria-hidden="true"><path d="M16 28C6.5 21 3 16 3 11.5 3 7.9 5.8 5 9.4 5c2.6 0 4.6 1.4 6.6 3.9C18 6.4 20 5 22.6 5 26.2 5 29 7.9 29 11.5 29 16 25.5 21 16 28z"/></svg>';
-  var MENU = [['/mau-thiep', 'Thiệp cưới', 'tpl'], ['/slide-cuoi', 'Slide cưới', 'slide'], ['/man-hinh-led-dam-cuoi', 'Màn hình LED', 'led'], ['/video-dam-ngo', 'Video dạm ngõ', 'damngo'], ['/so-tay-cuoi', 'Sổ tay cưới', 'planner']]; // các chức năng chính
+  var MENU = [['/mau-thiep', 'Thiệp cưới', 'tpl'], ['/slide-cuoi', 'Slide cưới', 'slide'], ['/man-hinh-led-dam-cuoi', 'Màn hình LED', 'led'], ['/video-dam-ngo', 'Video dạm ngõ', 'damngo'], ['/so-tay-cuoi', 'Sổ tay cưới', 'planner'], ['/video', 'Video báo hỷ', 'baohy']]; // các chức năng chính
   var page = document.body.getAttribute('data-page') || '';
 
   // Bảng menu điện thoại (trang chủ và các trang giới thiệu): thẻ lớn Thiệp cưới + 3 ô sản phẩm + hàng tài khoản.
@@ -41,6 +41,7 @@
       '<div class="mp-three">' + [['led', MENU[1]], ['video', MENU[2]], ['book', MENU[3]]].map(function (x) {
         return '<a href="' + x[1][0] + '"><i>' + svg(x[0]) + '</i>' + x[1][1] + '</a>';
       }).join('') + '</div>' +
+      '<a href="/video" style="display:flex;align-items:center;gap:10px;margin:10px 0 0;padding:12px 14px;border-radius:14px;background:rgba(214,69,93,.08);color:inherit;text-decoration:none;font-weight:700">🎬 Video báo hỷ đăng TikTok<small style="margin-left:auto;padding:2px 9px;border-radius:999px;background:#d6455d;color:#fff;font-size:11px;font-weight:700">MIỄN PHÍ</small></a>' +
       '<div class="mp-acct">' + acct + '</div>';
     document.querySelectorAll('.mpanel').forEach(function (p) { p.innerHTML = html; });
   }

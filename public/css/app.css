@@ -187,7 +187,17 @@ table.tbl{width:100%;border-collapse:collapse;font-size:14px}
   .tb-menu.up.right{left:auto;right:0;transform:translateY(4px)}.tb-dd.open .tb-menu.up.right{transform:none}
   .tb-me{display:none}
 }
-@media (max-width:760px){body.has-tb-bottom .topbar.tb{display:none}body.has-tb-bottom{padding-top:env(safe-area-inset-top)}} /* điện thoại: đã có thanh tab dưới (Trang chủ trong mục Tôi) → bỏ thanh trên chỉ còn logo */
+/* nút về trang chủ: chỉ hiện ở điện thoại (máy tính bấm logo / menu tài khoản) */
+.tb-home{display:none;align-items:center;gap:6px;height:34px;padding:0 12px;border-radius:999px;font-size:13px;font-weight:600;color:var(--muted);text-decoration:none;white-space:nowrap}
+.tb-home svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.tb-home:hover{color:var(--primary);background:var(--primary-soft)}
+/* điện thoại (có thanh tab dưới): thanh trên mảnh — logo + "Trang chủ" */
+@media (max-width:760px){
+  body.has-tb-bottom{padding-top:env(safe-area-inset-top)}
+  body.has-tb-bottom .topbar.tb{padding:8px 0 4px}
+  body.has-tb-bottom .topbar.tb .wrap{height:46px;padding:0 6px 0 16px}
+  body.has-tb-bottom .tb-home{display:inline-flex}
+}
 
 /* thanh tab dưới kiểu "viên thuốc nổi": bo tròn, cách mép, nền trắng mờ; nút ＋ tròn nằm ngang hàng */
 @media (max-width:760px){

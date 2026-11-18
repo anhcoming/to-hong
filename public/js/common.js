@@ -370,6 +370,7 @@ window.renderTopbar = async function (active) {
     <a class="logo" href="/"><span class="lw">${esc(meta.brand)}</span><svg class="lh" viewBox="0 0 32 30" aria-hidden="true"><path d="M16 28C6.5 21 3 16 3 11.5 3 7.9 5.8 5 9.4 5c2.6 0 4.6 1.4 6.6 3.9C18 6.4 20 5 22.6 5 26.2 5 29 7.9 29 11.5 29 16 25.5 21 16 28z"/></svg></a>
     ${u ? `<nav class="tb-tabs" aria-label="Của tôi">${TABS.map(([h, n, k]) => `<a href="${h}"${k === active ? ' class="on" aria-current="page"' : ''}>${n}</a>`).join('')}</nav>` : ''}
     <span class="tb-sp"></span>
+    <a class="tb-home" href="/"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 11.5 12 4l8 7.5"/><path d="M6 10v10h12V10"/></svg>Trang chủ</a>
     ${window.themeBtn ? themeBtn() : ''}
     ${u ? `<a class="tb-link" href="/mau-thiep">Xem mẫu</a>
       <div class="tb-dd tb-new"><button type="button" class="tb-newbtn" aria-expanded="false">＋ Tạo mới</button><div class="tb-menu">${NEW}</div></div>

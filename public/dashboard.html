@@ -39,11 +39,13 @@
   .vitem .info{padding:12px 14px 14px;gap:6px}
   .vitem .acts{flex-wrap:nowrap}.vitem .acts>.btn:first-child{flex:1;justify-content:center}
   body.has-tb-bottom #pageSub,body.has-tb-bottom #newBtn{display:none}
-  body.has-tb-bottom .head{margin:18px 0 14px}
+  body.has-tb-bottom .head{margin:8px 0 12px}
+  .head h1{font-size:22px}
 }
 .link{font-size:13px;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 @media (max-width:560px){.item{grid-template-columns:84px 1fr}.thumb{min-height:120px}}
 .trialbar{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:8px 12px;margin:10px 0 2px;padding:10px 12px;border-radius:12px;background:var(--warn-soft);color:var(--warn);font-size:14px}
+.trialbar .xs{display:none}
 .trialbar b.cd{font-variant-numeric:tabular-nums;white-space:nowrap}
 .trialbar.soon,.trialbar.over{background:#fde8e6;color:var(--danger)}
 .upbar{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:8px 12px;margin:10px 0 2px;padding:10px 12px;border-radius:12px;background:var(--primary-soft);font-size:14px}
@@ -76,9 +78,21 @@
 .row .ra{display:flex;gap:6px;align-items:center;flex:none}
 @media (max-width:760px){
   .hero{grid-template-columns:1fr}
-  .hero>.thumb{aspect-ratio:auto;height:170px;background-position:center 45%;border-radius:inherit;border-bottom-left-radius:0;border-bottom-right-radius:0}
-  .hero .info{padding:16px}.hero h2{font-size:22px}
-  .kpis{grid-template-columns:repeat(2,minmax(0,1fr))}.prods{grid-template-columns:1fr}
+  .hero>.thumb{aspect-ratio:auto;height:150px;background-position:center 45%;border-radius:inherit;border-bottom-left-radius:0;border-bottom-right-radius:0}
+  /* điện thoại: chữ + nút gọn lại cho vừa một màn */
+  .hero .info{padding:14px 14px 16px;gap:10px}.hero h2{font-size:19px}
+  .sub{font-size:13px}.next{font-size:13px}
+  /* gọn: số liệu thành một dòng chữ, nút "Mở thiệp" vào menu ⋯, Màn LED / Video hai ô nhỏ cạnh nhau */
+  .kpis{display:flex!important;flex-wrap:wrap;gap:4px 14px}.kpi{padding:0!important;border:0;background:none;text-align:left!important}
+  .kpi b{display:inline!important;font-size:15px!important;margin-right:3px}.kpi span{display:inline!important;font-size:12.5px!important}
+  .hero .acts .open{display:none}
+  .trialbar{flex-wrap:nowrap;padding:8px 8px 8px 12px;font-size:13px}.trialbar .xl{display:none}.trialbar .xs{display:inline}.trialbar>span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.trialbar .btn{flex:none;padding:6px 12px;font-size:12.5px}.trialbar{gap:6px;padding:7px 7px 7px 10px;font-size:12.5px}
+  .prods{grid-template-columns:minmax(0,1fr) minmax(0,1fr)!important;gap:8px}.prod{min-width:0}
+  .prod{gap:8px;padding:9px 10px!important}.prod .go{display:none}.prod .ic{width:30px!important;height:30px!important;font-size:15px!important}
+  .prod .tx{font-size:11.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.prod .tx b{font-size:13.5px!important}
+  .hero .acts{flex-wrap:nowrap}.hero .acts>.btn{flex:1 1 0;min-width:0;justify-content:center;padding:9px 12px;font-size:13.5px;white-space:nowrap}
+  .prod{padding:10px 12px}.prod .ic{width:34px;height:34px;font-size:17px}.prod .tx b{font-size:14px}
+  .kpis{grid-template-columns:repeat(4,minmax(0,1fr));gap:6px}.kpi{padding:8px 8px 7px;text-align:center}.kpi b{font-size:17px}.kpi span{font-size:11px;line-height:1.25;display:block}.prods{grid-template-columns:1fr}
   .row .chip{display:none}
 }
 </style>
@@ -100,6 +114,7 @@
 <script>if (/[?&]tao=/.test(location.search)) { document.querySelector('main.wrap').hidden = true; document.getElementById('creating').hidden = false; }</script>
 <script src="/js/common.js"></script>
 <script src="/js/pay.js"></script>
+<script src="/js/story.js" defer></script>
 <script>
 let META;
 // cùng một trang cho hai danh sách: /thiep-cua-toi (thiệp) và /video-cua-toi (video cưới)
@@ -128,7 +143,7 @@ function upgradeBar(c) {
 function trialBar(c) {
   if (c.paid || c.status !== 'published') return '';
   if (c.expired) return `<div class="trialbar over"><span>🔒 <b>Link đã bị khoá</b> — khách mở thiệp sẽ thấy "Thiệp đang tạm khoá". Kích hoạt để mở lại ngay.</span><button class="btn sm" data-a="pay">Kích hoạt</button></div>`;
-  return `<div class="trialbar" data-end="${c.trialEndsAt}"><span>⏳ Link sẽ bị khoá sau <b class="cd">${countdown(c.trialEndsAt)}</b></span><button class="btn sm" data-a="pay">Kích hoạt</button></div>`;
+  return `<div class="trialbar" data-end="${c.trialEndsAt}"><span>⏳ <span class="xl">Dùng thử — link sẽ bị khoá sau</span><span class="xs">Link khoá sau</span> <b class="cd">${countdown(c.trialEndsAt)}</b></span><button class="btn sm" data-a="pay">Kích hoạt</button></div>`;
 }
 function countdown(end) {
   const s = Math.max(0, Math.floor((end - Date.now()) / 1000));
@@ -174,13 +189,16 @@ function daysTo(d) {
   const n = Math.round((new Date(d + 'T00:00:00') - new Date(new Date().toDateString())) / 864e5);
   return n > 0 ? `Còn ${n} ngày` : n === 0 ? 'Hôm nay là ngày cưới 🎉' : '';
 }
-const moreMenu = () => `<details class="more"><summary class="btn sm plain" aria-label="Thêm">⋯</summary><div><button data-a="dup">Nhân bản thiệp</button><button data-a="del" class="danger">Xoá thiệp</button></div></details>`;
-// ô Màn LED / Video cưới của đám cưới này: trạng thái + một nút đi tiếp (thay cho thanh "Còn lượt Trọn bộ" và nút lẻ)
+const moreMenu = (c) => `<details class="more"><summary class="btn sm plain" aria-label="Thêm">⋯</summary><div>${c && c.status === 'published' && c.url ? `<a class="mi" href="${esc(c.url)}" target="_blank" rel="noopener">Mở thiệp</a>` : ''}<button data-a="dup">Nhân bản thiệp</button><button data-a="del" class="danger">Xoá thiệp</button></div></details>`;
+// ô Màn LED / Video cưới của đám cưới này: trạng thái + một nút đi tiếp. Thiệp Trọn bộ: LED / video của thiệp này đã gồm trong gói
+// (tạo là kích hoạt luôn). "Còn N lượt" chỉ còn cho khách mua Trọn bộ kiểu cũ (lượt, trước 18/11/2026).
 function prodTile(c, kind) {
   const s = kind === 'led' ? c.led : c.video, left = (c.credits || {})[kind] || 0;
   const name = kind === 'led' ? 'Màn hình LED' : 'Video cưới', ic = kind === 'led' ? '✨' : '🎬';
   const href = kind === 'led' ? `/sua-led/${c.id}${s.created ? '' : '?tao=1'}` : `/sua-video/${c.id}`;
-  const st = left > 0 ? `<span class="gift">🎁 Còn ${left} lượt Trọn bộ</span>`
+  const st = s.paid ? '<span style="color:var(--ok)">● Đã kích hoạt</span>'
+    : isCombo(c) ? '<span class="gift">🎁 Có trong Trọn bộ</span>'
+    : left > 0 ? `<span class="gift">🎁 Còn ${left} lượt Trọn bộ</span>`
     : !s.created ? (kind === 'led' ? 'Chiếu tên đôi trên màn tiệc' : 'Ảnh cưới chiếu TV, tải MP4')
     : s.paid ? '<span style="color:var(--ok)">● Đã kích hoạt</span>' : s.expired ? '<span style="color:var(--danger)">Hết dùng thử</span>' : 'Đang dùng thử';
   return `<a class="prod" href="${href}"><span class="ic">${ic}</span><span class="tx"><b>${name}</b>${st}</span><span class="go">${s.created ? 'Mở →' : 'Tạo →'}</span></a>`;
@@ -194,17 +212,18 @@ function heroCard(c) {
         <div class="top">
           <div style="min-width:0"><h2>${esc(c.names || c.title)}</h2>
             <div class="sub">${c.date ? `<span>📅 ${dateVN(c.date)}</span>` : ''}${dd ? `<span class="dday">${dd}</span>` : ''}<span>${esc(tplName(c.template))}</span></div></div>
-          ${moreMenu()}
+          ${moreMenu(c)}
         </div>
-        <div class="meta">${stateChip(c)}</div>
+        ${trialBar(c) ? '' : `<div class="meta">${stateChip(c)}</div>`}
         ${trialBar(c)}${upgradeBar(c)}
         ${pub ? `<div class="kpis"><div class="kpi"><b>${c.views}</b><span>lượt xem</span></div><div class="kpi"><b>${c.guests}</b><span>khách mời</span></div><div class="kpi"><b>${c.rsvpYes}</b><span>người sẽ đến</span></div><div class="kpi"><b>${c.wishes}</b><span>lời chúc</span></div></div>`
           : '<p class="next">Thiệp đang là bản nháp — điền thông tin, chọn ảnh rồi bấm <b>Phát hành</b> để có link gửi khách.</p>'}
         <div class="acts">
           <a class="btn" href="/sua/${c.id}">${pub ? 'Sửa thiệp' : 'Tiếp tục sửa thiệp'}</a>
-          ${pub ? `<button class="btn soft" data-a="share">Sao chép link</button><a class="btn plain" target="_blank" href="${esc(c.url)}">Mở thiệp</a>` : ''}
+          ${pub ? `<button class="btn soft" data-a="share">Sao chép link</button><a class="btn plain open" target="_blank" href="${esc(c.url)}">Mở thiệp</a>` : ''}
           ${!c.paid && !pub ? `<button class="btn plain" data-a="pay">Kích hoạt · ${money(META.price)}</button>` : ''}
         </div>
+        <button class="btn soft block story" data-a="story">🎬 Tạo video đăng TikTok / Story</button>
         <div class="prods">${prodTile(c, 'led')}${prodTile(c, 'video')}</div>
       </div>
     </article>`;
@@ -215,7 +234,7 @@ function rowCard(c) {
       <a class="mini" href="/sua/${c.id}" style="background-image:url('${thumbOf(c)}')"></a>
       <div class="tx"><b>${esc(c.names || c.title)}</b><span>${esc(tplName(c.template))}${c.date ? ' · ' + dateVN(c.date) : ''}</span></div>
       ${stateChip(c)}
-      <div class="ra"><a class="btn sm plain" href="/sua/${c.id}">Sửa</a>${moreMenu()}</div>
+      <div class="ra"><a class="btn sm plain" href="/sua/${c.id}">Sửa</a>${moreMenu(c)}</div>
     </div>`;
 }
 // menu ⋯: mở cái này thì đóng cái khác; sát mép trái màn hình (điện thoại) thì mở sang phải; bấm ra ngoài thì đóng
@@ -263,6 +282,7 @@ function loadVideos(cards, el) {
 async function act(a, id, c) {
   try {
     if (a === 'share') copyText(c.url, 'Đã sao chép link thiệp');
+    if (a === 'story') storyModal(id);
     if (a === 'vshare') copyText(c.video.url, 'Đã chép link — mở trên Smart TV hoặc máy tính nối TV');
     if (a === 'vpay') openPayModal(id, load, 'video');
     if (a === 'pay') openPayModal(id, load);

@@ -47,7 +47,6 @@ const PRODUCTS = {
 const ownerOf = (card) => db.users.find((u) => u.id === card.userId) || null;
 const creditsOf = (card) => { const u = ownerOf(card); const c = (u && u.credits) || {}; return { led: c.led || 0, video: c.video || 0 }; };
 // các LED / video chưa kích hoạt của chủ thiệp (trên mọi thiệp của họ)
-const unpaidOf = (userId, kind) => db.cards.filter((c) => c.userId === userId && c[kind] && !c[kind].paid);
 function useCredit(card, kind, via = 'credit') {
   const u = ownerOf(card);
   if (!u || !u.credits || !(u.credits[kind] > 0)) throw httpError(400, `Bạn không còn lượt ${kind === 'led' ? 'màn LED' : 'video'} Trọn bộ`);
@@ -59,17 +58,20 @@ function useCredit(card, kind, via = 'credit') {
   // ghi lại thành đơn 0đ để trang quản trị thấy lượt nào dùng ở đâu
   db.orders.push({ id: rid(12), code: PRODUCTS[kind].prefix + rid(6).toUpperCase(), product: kind, cardId: card.id, userId: card.userId, amount: 0, status: 'paid', paidVia: via, createdAt: target.paidAt, paidAt: target.paidAt });
 }
-// Trọn bộ: kích hoạt thiệp + cộng lượt; chủ thiệp chỉ có đúng một LED (video) chưa kích hoạt thì dùng lượt luôn
+// Trọn bộ gắn với MỘT thiệp: kích hoạt thiệp + màn LED + video của chính thiệp đó — có sẵn thì mở ngay, tạo sau thì tự mở
+// lúc tạo (PUT /api/cards/:id). Thiệp khác của cùng chủ không liên quan (tạo thiệp mới = mua riêng).
+// Lượt Trọn bộ cũ (user.credits, trước 18/11/2026) vẫn dùng được qua /redeem — không cộng thêm lượt nữa.
+function comboUnlock(card, kind, at = Date.now()) {
+  const t = card[kind];
+  if (!card.combo || !t || t.paid) return;
+  t.paid = true; t.paidAt = at;
+  // ghi thành đơn 0đ để trang quản trị thấy LED / video nào được mở nhờ Trọn bộ
+  db.orders.push({ id: rid(12), code: PRODUCTS[kind].prefix + rid(6).toUpperCase(), product: kind, cardId: card.id, userId: card.userId, amount: 0, status: 'paid', paidVia: 'combo', createdAt: at, paidAt: at });
+}
 function activateCombo(card, at) {
   card.paid = true; card.paidAt = card.paidAt || at; card.combo = true;
-  const u = ownerOf(card);
-  if (!u) return;
-  u.credits = { led: 0, video: 0, ...(u.credits || {}) };
-  for (const kind of ['led', 'video']) {
-    u.credits[kind] += 1;
-    const pending = unpaidOf(card.userId, kind);
-    if (pending.length === 1) useCredit(pending[0], kind, 'combo');
-  }
+  comboUnlock(card, 'led', at);
+  comboUnlock(card, 'video', at);
 }
 
 // Giá thiệp: `price` là giá mở bán đang thu, `listPrice` là giá gốc (hiện gạch ngang) tới hết ngày `promoEndsAt`
@@ -202,7 +204,11 @@ function cardSummary(card) {
 }
 function cardFull(card) {
   // chuẩn hoá khi trả về: thiệp lưu từ trước có đủ các trường mới (trang phục, hỏi đáp, hiệu ứng…)
-  return { ...cardSummary(card), data: cd.normalize(card.data), ledConfig: card.led || null, videoConfig: card.video || null };
+  const d = cd.normalize(card.data);
+  // thiệp chưa có ảnh nào: kèm bộ ảnh mẫu của mẫu đang chọn (trình sửa đang hiện các ảnh này; video TikTok cũng dùng)
+  const demo = !d.cover && !d.photos.some(Boolean) && (templates[card.template] || {}).demo;
+  const samplePhotos = demo ? [demo.cover, ...(demo.photos || [])].filter(Boolean).slice(0, 10) : undefined;
+  return { ...cardSummary(card), data: d, ledConfig: card.led || null, videoConfig: card.video || null, samplePhotos };
 }
 
 function qrPay(amount, code) {
@@ -369,7 +375,7 @@ route('GET', '/api/meta', async (req, res) => {
 // ---------------- thống kê truy cập ----------------
 // Trang giới thiệu gửi về (public/js/site.js): p = đường dẫn, v = lượt đầu trong ngày của trình duyệt này, n = lần đầu ghé,
 // r = nguồn tới, m = điện thoại; hoặc u = bấm "Dùng mẫu" (thiep:<mẫu> | video:<mẫu> | led:<màu>-<hiệu ứng>).
-const TRACK_PAGES = { '/': 'Trang chủ', '/mau-thiep': 'Mẫu thiệp', '/video-dam-ngo': 'Video dạm ngõ', '/slide-cuoi': 'Slide cưới', '/man-hinh-led-dam-cuoi': 'Màn hình LED', '/so-tay-cuoi': 'Sổ tay cưới', '/dang-nhap': 'Đăng nhập', '/goi-y': 'Gợi ý thiệp từ ảnh' };
+const TRACK_PAGES = { '/': 'Trang chủ', '/mau-thiep': 'Mẫu thiệp', '/video-dam-ngo': 'Video dạm ngõ', '/slide-cuoi': 'Slide cưới', '/man-hinh-led-dam-cuoi': 'Màn hình LED', '/so-tay-cuoi': 'Sổ tay cưới', '/dang-nhap': 'Đăng nhập', '/goi-y': 'Gợi ý thiệp từ ảnh', '/video': 'Video báo hỷ' };
 route('POST', '/api/t', async (req, res, ctx) => {
   try {
     if (stats.isBot(req) || stats.isOwner(req, ctx)) throw 0; // bot và máy của chủ web không tính
@@ -567,8 +573,8 @@ route('PUT', '/api/cards/:id', async (req, res, ctx) => {
   }
   if (b.data) { card.data = cd.normalize(b.data); Wd.syncFromCard(card); }
   if (b.data && b.slug === undefined && card.userId) autoSlug(card); // thiệp nháp của khách chưa đăng nhập: giữ nguyên
-  if (b.led) card.led = ledLib.normalize(b.led, card.led); // lần lưu đầu tiên bắt đầu dùng thử màn LED
-  if (b.video) card.video = videoLib.normalize(b.video, card.video);
+  if (b.led) { card.led = ledLib.normalize(b.led, card.led); comboUnlock(card, 'led'); } // lần lưu đầu tiên bắt đầu dùng thử màn LED (thiệp Trọn bộ: kích hoạt luôn)
+  if (b.video) { card.video = videoLib.normalize(b.video, card.video); comboUnlock(card, 'video'); }
   card.updatedAt = Date.now();
   if (b.data || b.template || b.palette) DRAFTS.delete(card.id);
   save();
@@ -806,6 +812,9 @@ route('POST', '/api/cards/:id/order', async (req, res, ctx) => {
     order.amount = price - off;
     if (d) { order.coupon = d.code; order.discount = off; } else { delete order.coupon; delete order.discount; }
   }
+  // giá đã hạ sau khi tạo đơn (đổi giá trong config.json): đơn đang chờ theo giá mới. Chỉ hạ, không nâng giá đơn khách đã thấy
+  // (khách lỡ chuyển theo QR cũ giá cao hơn vẫn được kích hoạt: SePay nhận khi số tiền ≥ giá đơn).
+  if (!d && !order.coupon) { const now = P.price(card); if (now < order.amount) order.amount = now; }
   // mã giảm hết 100% → không cần chuyển khoản, kích hoạt luôn
   if (order.amount <= 0 && d) markPaid(order, 'coupon');
   save();
@@ -1312,6 +1321,7 @@ const PAGES = {
   '/video-cua-toi': 'dashboard.html', // cùng trang với "Thiệp của tôi", hiện danh sách video
   '/so-tay-cuoi': 'planner-landing.html',
   '/goi-y': 'suggest.html', // thả ảnh cưới → gợi ý thiệp
+  '/video': 'video-tiktok.html', // video báo hỷ đăng TikTok, miễn phí, không cần đăng nhập (dựng trên máy khách)
   '/dieu-khoan': 'dieu-khoan.html', '/chinh-sach-bao-mat': 'chinh-sach-bao-mat.html', '/hoan-tien': 'hoan-tien.html', // trang pháp lý
 };
 const MIME = {

@@ -96,7 +96,7 @@ window.openPayModal = async function (cardId, onDone, product = 'card') {
     el.innerHTML = `${PAY_CSS}<div class="in">
         <div class="big">🎉</div>
         <h2>${o.product === 'combo' ? 'Đã kích hoạt Trọn bộ ngày cưới' : `Đã kích hoạt ${esc(o.productName.toLowerCase())}`}</h2>
-        ${o.product === 'combo' ? '<p class="muted" style="margin:0 0 6px">Thiệp đã kích hoạt. Bạn có thêm 1 lượt màn LED và 1 lượt video — làm thử thoải mái, ưng cái nào thì bấm <b>Dùng lượt Trọn bộ</b> trên cái đó.</p>' : ''}
+        ${o.product === 'combo' ? '<p class="muted" style="margin:0 0 6px">Thiệp, <b>màn hình LED</b> và <b>video cưới</b> của thiệp này đều đã kích hoạt. Chưa làm LED / video thì làm lúc nào cũng được, không phải trả thêm.</p>' : ''}
         <p class="muted">Đã nhận ${money(o.amount)}. Cảm ơn hai bạn — chúc đám cưới thật vui!</p>
         <button class="btn block lg" id="payDone" style="margin-top:22px">Xong</button>
       </div>`;

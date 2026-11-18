@@ -131,6 +131,16 @@ async function call(who, method, url, body, raw) {
   r = await call('u2', 'POST', '/api/cards', { template: 'dodam' });
   r = await call('u2', 'POST', `/api/cards/${r.json.card.id}/order`, {});
   assert.equal(r.json.order.bank.accountNo, require('../config.json').payment.accountNo, 'QR vẫn trỏ tài khoản trong config.json');
+  // đơn đang chờ tạo lúc giá cao hơn → mở lại thì theo giá mới (chỉ hạ, không nâng)
+  {
+    const cid = (await call('u2', 'POST', '/api/cards', { template: 'dodam' })).json.card.id;
+    const code = (await call('u2', 'POST', `/api/cards/${cid}/order`, {})).json.order.code;
+    const ord = require('../lib/db').db.orders.find((o) => o.code === code);
+    ord.amount = cfg.price + 30000;
+    assert.equal((await call('u2', 'POST', `/api/cards/${cid}/order`, {})).json.order.amount, cfg.price, 'đơn đang chờ hạ theo giá mới');
+    ord.amount = cfg.price - 10000;
+    assert.equal((await call('u2', 'POST', `/api/cards/${cid}/order`, {})).json.order.amount, cfg.price - 10000, 'không nâng giá đơn đang chờ');
+  }
   assert.equal((await call('x', 'GET', '/api/meta')).json.price, cfg.price, 'giá theo config.json');
   // giá cũ còn sót trong kho dữ liệu (trước khi bỏ sửa giá trên web) bị bỏ qua
   require('../lib/db').db.settings.price = 1000;

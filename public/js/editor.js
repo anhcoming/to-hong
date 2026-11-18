@@ -919,9 +919,11 @@ function shareModal(first) {
     <p class="muted" style="margin:0 0 16px">Gửi link chung cho mọi người, hoặc vào tab <b>Khách mời</b> để tạo link có tên riêng từng khách.</p>
     <div style="display:flex;gap:8px;margin-bottom:12px"><input class="input" readonly value="${esc(url)}"><button class="btn" id="cpL">Chép link</button></div>
     <a class="btn block ghost" href="${esc(url)}" target="_blank">Mở thiệp như khách mời</a>
+    <button class="btn block soft" id="toStory" style="margin-top:8px">🎬 Tạo video đăng TikTok / Story</button>
     ${card.paid ? '' : `<p class="muted" style="font-size:13px;margin:16px 0 0">Bản dùng thử: mời tối đa ${META.trialGuestLimit} khách, hiệu lực ${META.trialDays} ngày. <a href="#" id="toPay">Kích hoạt để mời tới 3.000 khách</a></p>`}`,
   (box, close) => {
     $('#cpL', box).onclick = () => copyText(url, 'Đã chép link thiệp');
+    $('#toStory', box).onclick = () => { close(); storyModal(CARD_ID); };
     const tp = $('#toPay', box); if (tp) tp.onclick = (e) => { e.preventDefault(); close(); openPayModal(CARD_ID, reloadCard); };
   });
 }
