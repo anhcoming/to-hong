@@ -126,3 +126,4 @@ body.fs .ctl .i-off{display:block}
 #stage.st-thanh .bigdate i,#stage.st-thanh .cd i{color:var(--text);opacity:.7}
 #stage.st-thanh.portrait .names{font-size:200px}
 #stage.st-thanh.portrait .names .amp{margin:0}
+#fxgl{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
