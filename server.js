@@ -1403,6 +1403,10 @@ function serveStatic(req, res, pathname) {
   if (/^\/sua-led\/[\w-]+$/.test(pathname)) return serveFile(res, path.join(PUBLIC_DIR, 'led-editor.html'), 'no-cache');
   if (/^\/tham-gia\/[\w-]+$/.test(pathname)) return serveFile(res, path.join(PUBLIC_DIR, 'join.html'), 'no-cache');
   if (/^\/sua-video\/[\w-]+$/.test(pathname)) return serveFile(res, path.join(PUBLIC_DIR, 'video-editor.html'), 'no-cache');
+  if (pathname === '/js/cn-guard.js') { // chặn F12 cho khách (lib/guard.js); máy của chủ web nhận bản rỗng
+    res.writeHead(200, { 'Content-Type': MIME['.js'], 'Cache-Control': 'private, no-cache', 'Vary': 'Cookie', 'X-Content-Type-Options': 'nosniff' });
+    return res.end(stats.ownerDevice(req) ? '/* máy của chủ web: không chặn */\n' : require('./lib/guard').source);
+  }
   if (pathname === '/js/lunar.js') { // dựng từ module trong bộ nhớ, không đọc tệp (xem lib/lunar.js)
     res.writeHead(200, { 'Content-Type': MIME['.js'], 'Cache-Control': 'no-cache', 'X-Content-Type-Options': 'nosniff' });
     return res.end(require('./lib/lunar').browserSource);

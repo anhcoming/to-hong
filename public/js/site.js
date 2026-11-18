@@ -2,6 +2,8 @@
 (function () {
   'use strict';
   // popup đăng nhập: link /dang-nhap mở tại chỗ thay vì sang trang
+  // chặn mở công cụ nhà phát triển cho khách (máy chủ trả bản rỗng cho máy của chủ web — xem lib/guard.js)
+  if (!document.querySelector('script[src="/js/cn-guard.js"]')) { var gd = document.createElement('script'); gd.src = '/js/cn-guard.js'; gd.defer = true; document.head.appendChild(gd); }
   if (!document.querySelector('script[src="/js/login.js"]')) { var lg = document.createElement('script'); lg.src = '/js/login.js'; document.head.appendChild(lg); }
   // thanh chạy mảnh trên cùng khi rời trang / chờ đăng xuất (trang ứng dụng đã có bản đầy đủ trong common.js)
   if (!window.progress) {
