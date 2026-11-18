@@ -617,16 +617,16 @@
   // Mọi hạt chuyển động trong shader (card đồ hoạ tính) nên hàng chục nghìn hạt vẫn 60 khung hình/giây. Máy không có WebGL → bản canvas 2D.
   var GLFX = {
     gl: null, cv: null, time: 0, rip: [], heroes: [], sparks: [], nextDrop: 0,
-    VS_PTS: 'attribute vec4 aP;uniform float uT,uAsp,uPx;uniform vec3 uRip[6];varying float vA;' +
+    VS_PTS: 'attribute vec4 aP;uniform float uT,uAsp,uPx;uniform vec3 uRip[8];varying float vA;' +
       'void main(){float seed=aP.z;float tw=pow(0.5+0.5*sin(uT*(1.2+seed*3.7)+seed*61.0),3.0);' +
       'if(aP.w>1.5){gl_Position=vec4(aP.xy,0.0,1.0);float big=step(0.965,fract(seed*29.0));gl_PointSize=uPx*(1.3+2.2*fract(seed*7.3)+big*3.5);vA=(0.18+0.82*tw)*(0.55+0.45*fract(seed*3.1)+big*0.5);return;}' +
       'float fl=aP.w<0.5?1.0:0.0;float ang=aP.y+uT*(fl>0.5?0.03:-0.02)*(1.0+0.7/(0.5+aP.x));' +
       'float thick=(fract(seed*91.7)-0.5)*(0.05+0.09*aP.x);vec3 p=vec3(cos(ang)*aP.x,(fl>0.5?-0.95:0.95)+thick,sin(ang)*aP.x);float lift=0.0;' +
-      'if(fl>0.5){for(int i=0;i<6;i++){float age=uT-uRip[i].z;if(age>0.0&&age<2.4){float d=distance(p.xz,uRip[i].xy);' +
-      'float w=exp(-pow((d-age*0.6)/0.06,2.0))*exp(-age*1.5);float w2=exp(-pow((d-age*0.6+0.16)/0.05,2.0))*exp(-age*2.2)*0.5;lift+=w+w2;}}}' +
-      'p.y+=lift*0.045;float zc=3.2-p.z;float f=2.1445;gl_Position=vec4(p.x*f/uAsp*zc/zc,p.y*f,0.0,zc);gl_Position.x=p.x*f/uAsp;' +
-      'float sz=uPx*(2.4+5.0*fract(seed*13.7)*fract(seed*5.1))*2.6/zc;gl_PointSize=max(1.0,sz)*(1.0+lift*0.6);' +
-      'float far=clamp(1.3-zc*0.09,0.5,1.0);vA=((0.5+1.1*tw)*(1.15+0.35*exp(-aP.x*0.8))*(fl>0.5?1.0:0.8)+lift*0.8)*far*smoothstep(0.15,0.7,zc)*(1.0-smoothstep(1.7,3.0,aP.x)*0.92);}',
+      'if(fl>0.5){for(int i=0;i<8;i++){float age=uT-uRip[i].z;if(age>0.0&&age<3.2){float d=distance(p.xz,uRip[i].xy);' +
+      'float w=exp(-pow((d-age*0.62)/0.075,2.0))*exp(-age*0.95);float w2=exp(-pow((d-age*0.62+0.2)/0.06,2.0))*exp(-age*1.5)*0.55;lift+=w+w2;}}}' +
+      'p.y+=lift*0.065;float zc=3.2-p.z;float f=2.1445;gl_Position=vec4(p.x*f/uAsp*zc/zc,p.y*f,0.0,zc);gl_Position.x=p.x*f/uAsp;' +
+      'float sz=uPx*(2.4+5.0*fract(seed*13.7)*fract(seed*5.1))*2.6/zc;gl_PointSize=max(1.0,sz)*(1.0+lift*1.0);' +
+      'float far=clamp(1.3-zc*0.09,0.5,1.0);vA=((0.5+1.1*tw)*(1.15+0.35*exp(-aP.x*0.8))*(fl>0.5?1.0:0.8)+lift*1.7)*far*smoothstep(0.15,0.7,zc)*(1.0-smoothstep(1.7,3.0,aP.x)*0.92);}',
     VS_DROP: 'attribute vec4 aD;attribute float aTail;uniform float uT,uAsp,uPx;varying float vA;' +
       'void main(){float f=fract(uT*aD.w+aD.z);float ft=max(f-0.01-0.028*f,0.0);float ff=aTail>0.5?ft:f;' +
       'float y0=0.95+(fract(aD.z*53.0)-0.5)*0.5;vec3 p=vec3(aD.x,y0-ff*ff*(y0+0.95),aD.y);float zc=3.2-p.z;float k=2.1445;gl_Position=vec4(p.x*k/uAsp,p.y*k,0.0,zc);' +
@@ -676,7 +676,7 @@
         this.bDyn = gl.createBuffer(); this.dyn = new Float32Array(5 * 400);
         this.pPts = this.prog(this.VS_PTS, this.FS); this.pDrop = this.prog(this.VS_DROP, this.FS); this.pDyn = this.prog(this.VS_DYN, this.FS);
         gl.disable(gl.DEPTH_TEST); gl.enable(gl.BLEND); gl.blendFunc(gl.ONE, gl.ONE);
-        this.rip = []; for (i = 0; i < 6; i++) this.rip.push([0, 0, -99]);
+        this.rip = []; for (i = 0; i < 8; i++) this.rip.push([0, 0, -99]);
         this.ripI = 0; this.heroes = []; this.sparks = []; this.time = 0; this.nextDrop = 0.6;
         stage.insertBefore(cv, canvas.nextSibling);
         return true;
@@ -703,7 +703,7 @@
         h = this.heroes[i];
         var f = (t - h.t0) / h.dur;
         if (f >= 1) {
-          this.rip[this.ripI] = [h.x, h.z, t]; this.ripI = (this.ripI + 1) % 6;
+          this.rip[this.ripI] = [h.x, h.z, t]; this.ripI = (this.ripI + 1) % 8;
           this.sparks.push({ x: h.x, y: -0.95, z: h.z, vx: 0, vy: 0, vz: 0, t0: t, max: 0.45, flash: 1 });
           for (var q = 0; q < 5; q++) { var a3 = rnd(0, 6.2832), v = rnd(0.1, 0.3); this.sparks.push({ x: h.x, y: -0.95, z: h.z, vx: Math.cos(a3) * v, vy: rnd(0.3, 0.7), vz: Math.sin(a3) * v, t0: t, max: rnd(0.3, 0.55) }); }
           this.heroes.splice(i, 1); continue;
@@ -729,7 +729,7 @@
       var attr = function (p, name, size, stride, off) { var l = gl.getAttribLocation(p, name); if (l < 0) return; gl.enableVertexAttribArray(l); gl.vertexAttribPointer(l, size, gl.FLOAT, false, stride, off); };
       // hạt sàn / trần / bụi sao
       use(this.pPts, 1);
-      var flat = []; for (i = 0; i < 6; i++) flat.push(this.rip[i][0], this.rip[i][1], this.rip[i][2]);
+      var flat = []; for (i = 0; i < 8; i++) flat.push(this.rip[i][0], this.rip[i][1], this.rip[i][2]);
       gl.uniform3fv(gl.getUniformLocation(this.pPts, 'uRip'), new Float32Array(flat));
       gl.bindBuffer(gl.ARRAY_BUFFER, this.bPts); attr(this.pPts, 'aP', 4, 16, 0);
       gl.drawArrays(gl.POINTS, 0, this.nPts);
