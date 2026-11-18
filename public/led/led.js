@@ -250,7 +250,7 @@
         }
         // quầng sáng tâm sàn (đập rất nhẹ) và vệt sáng mờ dọc dải trần
         var pul = 0.85 + 0.15 * Math.sin(t * 0.9 * sp);
-        ctx.globalAlpha = (this.mode === 'saobang' && this.useGl ? 0.3 + 0.4 * GLFX.glow : this.mode === 'saoroi' && this.useGl ? 0.05 + 0.45 * GLFX.glow : this.useGl ? 0.16 : 0.9) * pul; // bản WebGL: chỉ còn một quầng rất nhạt, không thành cụm trắng
+        ctx.globalAlpha = (this.mode === 'saobang' && this.useGl ? 0.18 + 0.2 * GLFX.glow : this.mode === 'saoroi' && this.useGl ? 0.05 + 0.45 * GLFX.glow : this.useGl ? 0.16 : 0.9) * pul; // bản WebGL: chỉ còn một quầng rất nhạt, không thành cụm trắng
         ctx.drawImage(this.core, W / 2 - W * 0.45, floor - H * 0.1, W * 0.9, H * 0.2);
         if (!this.useGl) { ctx.globalAlpha = 0.22; ctx.drawImage(this.core, W / 2 - W * 0.55, top - H * 0.045, W * 1.1, H * 0.09); }
         // kim tuyến: 4 tấm đổi độ sáng lệch pha + trôi ngang rất chậm ngược chiều nhau → lấp lánh, có chiều sâu
@@ -711,7 +711,7 @@
           }
         } else {
         if (this.mode === 'saoroi') { disc(Math.round(15000 * dens), 0, 2.0, 0.8); disc(Math.round(8000 * dens), 0, 3.0); } // Sao rơi: sàn là một đĩa kim tuyến gọn, dày ở tâm
-        else if (this.mode === 'saobang') { disc(Math.round(20000 * dens), 0, 2.2, 1.25); disc(Math.round(10000 * dens), 0, 3.0); } // Đêm sao băng: sàn dồn sáng ở tâm
+        else if (this.mode === 'saobang') { disc(Math.round(17000 * dens), 0, 2.4, 0.95); disc(Math.round(10000 * dens), 0, 3.0); } // Đêm sao băng: sàn sáng nhẹ ở tâm, tan dần ra rìa
         else disc(Math.round(34000 * dens), 0, 3.0);
         if (this.mode === 'saobang') { // dải trần phẳng: mép dưới thẳng ngang (y = 0.3), hạt dày ở mép rồi thưa dần lên trên
           for (i = 0; i < Math.round(24000 * dens); i++) {
@@ -842,11 +842,11 @@
       var flat = []; for (i = 0; i < 8; i++) flat.push(this.rip[i][0], this.rip[i][1], this.rip[i][2]);
       gl.uniform3fv(gl.getUniformLocation(this.pPts, 'uRip'), new Float32Array(flat));
       var sb = this.mode === 'saobang', sr = this.mode === 'saoroi' || sb;
-      gl.uniform4fv(gl.getUniformLocation(this.pPts, 'uRp'), sr ? [0.55, 0.24, 0.45, sb ? 1.1 : 1.5] : [0.38, 0.045, 2.0, 0.55]); // tốc độ lan, độ dày vòng, tắt dần, độ mạnh
+      gl.uniform4fv(gl.getUniformLocation(this.pPts, 'uRp'), sr ? (sb ? [0.5, 0.3, 0.5, 0.7] : [0.55, 0.24, 0.45, 1.5]) : [0.38, 0.045, 2.0, 0.55]); // tốc độ lan, độ dày vòng, tắt dần, độ mạnh
       gl.uniform1f(gl.getUniformLocation(this.pPts, 'uCeil'), sb ? 2.4 : 1);
       gl.uniform1f(gl.getUniformLocation(this.pPts, 'uT'), t); // (dải trần dùng uT để thở) // Đêm sao băng: dải trần sáng rõ
       gl.uniform2fv(gl.getUniformLocation(this.pPts, 'uSt'), sb ? [0.8, 0.55 + 0.15 * Math.sin(t * 0.3)] : sr ? [0.72, 0.6] : [1, 1]); // Sao rơi: hạt nhỏ và dịu hơn
-      gl.uniform3fv(gl.getUniformLocation(this.pPts, 'uCen'), sb ? [0.5, 1.3 * this.glow, 1.3] : sr ? [0, 1.7 * this.glow, 1.5] : [0, 0, 1]); // sáng tâm sàn: cố định, bừng lên khi sao chạm, độ gom
+      gl.uniform3fv(gl.getUniformLocation(this.pPts, 'uCen'), sb ? [0.35, 0.55 * this.glow, 0.7] : sr ? [0, 1.7 * this.glow, 1.5] : [0, 0, 1]); // sáng tâm sàn: cố định, bừng lên khi sao chạm, độ gom
       gl.bindBuffer(gl.ARRAY_BUFFER, this.bPts); attr(this.pPts, 'aP', 4, 16, 0);
       gl.drawArrays(gl.POINTS, 0, this.nPts);
       // thác: vệt (đoạn thẳng) + đầu hạt
