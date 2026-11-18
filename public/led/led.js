@@ -250,7 +250,7 @@
         }
         // quầng sáng tâm sàn (đập rất nhẹ) và vệt sáng mờ dọc dải trần
         var pul = 0.85 + 0.15 * Math.sin(t * 0.9 * sp);
-        ctx.globalAlpha = (this.mode === 'saoroi' && this.useGl ? 0.05 + 0.45 * GLFX.glow : this.useGl ? 0.16 : 0.9) * pul; // bản WebGL: chỉ còn một quầng rất nhạt, không thành cụm trắng
+        ctx.globalAlpha = (this.mode === 'saobang' && this.useGl ? 0.3 + 0.4 * GLFX.glow : this.mode === 'saoroi' && this.useGl ? 0.05 + 0.45 * GLFX.glow : this.useGl ? 0.16 : 0.9) * pul; // bản WebGL: chỉ còn một quầng rất nhạt, không thành cụm trắng
         ctx.drawImage(this.core, W / 2 - W * 0.45, floor - H * 0.1, W * 0.9, H * 0.2);
         if (!this.useGl) { ctx.globalAlpha = 0.22; ctx.drawImage(this.core, W / 2 - W * 0.55, top - H * 0.045, W * 1.1, H * 0.09); }
         // kim tuyến: 4 tấm đổi độ sáng lệch pha + trôi ngang rất chậm ngược chiều nhau → lấp lánh, có chiều sâu
@@ -618,7 +618,7 @@
   // Mọi hạt chuyển động trong shader (card đồ hoạ tính) nên hàng chục nghìn hạt vẫn 60 khung hình/giây. Máy không có WebGL → bản canvas 2D.
   var GLFX = {
     gl: null, cv: null, time: 0, rip: [], heroes: [], sparks: [], nextDrop: 0,
-    VS_PTS: 'attribute vec4 aP;uniform float uT,uAsp,uPx;uniform vec3 uRip[8];uniform vec4 uRp;uniform vec3 uCen;uniform vec2 uSt;uniform vec3 uXf;varying float vA;' +
+    VS_PTS: 'attribute vec4 aP;uniform float uT,uAsp,uPx;uniform vec3 uRip[8];uniform vec4 uRp;uniform vec3 uCen;uniform vec2 uSt;uniform vec3 uXf;uniform float uCeil;varying float vA;' +
       'void main(){float seed=aP.z;float tw=pow(0.5+0.5*sin(uT*(1.2+seed*3.7)+seed*61.0),3.0);' +
       'if(aP.w>2.5){vec2 q=vec2(uXf.x*aP.x+uXf.y*aP.y,-uXf.y*aP.x+uXf.x*aP.y)/uXf.z;gl_Position=vec4(q.x/uAsp,q.y,0.0,1.0);float dust=step(3.5,aP.w);float bg=step(0.975,fract(seed*29.0))*(1.0-dust);' +
       'gl_PointSize=uPx*(mix(2.0,1.5,dust)+mix(3.0,2.0,dust)*fract(seed*7.3)+bg*4.5);vA=(0.3+0.7*tw)*(0.7+0.6*fract(seed*3.1)+bg*0.6)*mix(1.0,0.75,dust);return;}' +
@@ -628,8 +628,8 @@
       'if(fl>0.5){for(int i=0;i<8;i++){float age=uT-uRip[i].z;if(age>0.0&&age<6.0){float d=distance(p.xz,uRip[i].xy);' +
       'float w=exp(-pow((d-age*uRp.x)/uRp.y,2.0))*exp(-age*uRp.z);float w2=exp(-pow((d-age*uRp.x+uRp.y*2.7)/(uRp.y*0.8),2.0))*exp(-age*uRp.z*1.6)*0.55;lift+=(w+w2)*uRp.w;}}}' +
       'p.y+=lift*0.065;float zc=3.2-p.z;float f=2.1445;gl_Position=vec4(p.x*f/uAsp*zc/zc,p.y*f,0.0,zc);gl_Position.x=p.x*f/uAsp;' +
-      'float sz=uPx*(2.4+5.0*fract(seed*13.7)*fract(seed*5.1))*2.6/zc;gl_PointSize=max(1.0,sz*uSt.x)*(1.0+lift*1.0);' +
-      'float far=clamp(1.3-zc*0.09,0.5,1.0);vA=((0.5+1.1*tw)*(1.15+0.35*exp(-aP.x*0.8)+fl*(uCen.x+uCen.y)*exp(-aP.x*uCen.z))*(fl>0.5?1.0:0.8)+lift*1.7)*far*smoothstep(0.15,0.7,zc)*(1.0-smoothstep(1.7,3.0,aP.x)*0.92)*uSt.y;}',
+      'float sz=uPx*(2.4+5.0*fract(seed*13.7)*fract(seed*5.1))*2.6/zc*(fl>0.5?1.0:mix(1.0,1.35,step(1.01,uCeil)));gl_PointSize=max(1.0,sz*uSt.x)*(1.0+lift*1.0);' +
+      'float far=clamp(1.3-zc*0.09,0.5,1.0);vA=((0.5+1.1*tw)*(1.15+0.35*exp(-aP.x*0.8)+fl*(uCen.x+uCen.y)*exp(-aP.x*uCen.z))*(fl>0.5?1.0:0.8*uCeil)+lift*1.7)*far*smoothstep(0.15,0.7,zc)*(1.0-smoothstep(1.7,3.0,aP.x)*0.92)*uSt.y;}',
     VS_DROP: 'attribute vec4 aD;attribute float aTail;uniform float uT,uAsp,uPx;varying float vA;' +
       'void main(){float f=fract(uT*aD.w+aD.z);float ft=max(f-0.01-0.028*f,0.0);float ff=aTail>0.5?ft:f;' +
       'float y0=0.95+(fract(aD.z*53.0)-0.5)*0.5;vec3 p=vec3(aD.x,y0-ff*ff*(y0+0.95),aD.y);float zc=3.2-p.z;float k=2.1445;gl_Position=vec4(p.x*k/uAsp,p.y*k,0.0,zc);' +
@@ -704,8 +704,9 @@
           }
         } else {
         if (this.mode === 'saoroi') { disc(Math.round(15000 * dens), 0, 2.0, 0.8); disc(Math.round(8000 * dens), 0, 3.0); } // Sao rơi: sàn là một đĩa kim tuyến gọn, dày ở tâm
+        else if (this.mode === 'saobang') { disc(Math.round(20000 * dens), 0, 2.2, 1.25); disc(Math.round(10000 * dens), 0, 3.0); } // Đêm sao băng: sàn dồn sáng ở tâm
         else disc(Math.round(34000 * dens), 0, 3.0);
-        disc(Math.round((this.mode === 'saoroi' ? 16000 : 24000) * dens), 1, 3.0);
+        disc(Math.round((this.mode === 'saoroi' ? 16000 : this.mode === 'saobang' ? 42000 : 24000) * dens), 1, this.mode === 'saobang' ? 3.4 : 3.0); // trần (Đêm sao băng: dải trần dày, sáng)
         for (i = 0; i < Math.round(2600 * dens); i++) a.push(rnd(-1, 1), rnd(-1, 1), Math.random(), 2); // sao rải khắp trời
         for (i = 0; i < Math.round(2600 * dens); i++) { // dải ngân hà: sao dồn quanh một đường chéo qua nửa trên màn
           var mx = rnd(-1.1, 1.1), my = 0.5 + mx * 0.22 + (Math.random() + Math.random() + Math.random() - 1.5) * 0.3;
@@ -735,7 +736,7 @@
         this.ripI = 0; this.heroes = []; this.sparks = []; this.time = 0; this.nextDrop = 0.6; this.star = null; this.nextStar = 1.2; this.glowT = -99; this.glow = 0; this.rings = []; this.bRing = gl.createBuffer();
         // ?dbg=<0..1>: sao đang rơi tới phần đó của quãng đường; ?dbg=1.x: x giây sau khi sao chạm sàn (để chụp kiểm tra mẫu Sao rơi)
         var dbg = /[?&]dbg=([\d.]+)/.exec(location.search);
-        if (dbg && this.mode === 'saoroi') { var dv = +dbg[1]; if (dv < 1) this.star = { t0: -dv * 1.5, dur: 1.5 }; else { this.glowT = -(dv - 1); this.rip[0] = [0, 0, -(dv - 1)]; this.ripI = 1; this.nextStar = 99; this.rings.push(-(dv - 1)); } }
+        if (dbg && (this.mode === 'saoroi' || this.mode === 'saobang')) { var dv = +dbg[1]; if (dv < 1) this.star = { t0: -dv * 1.5, dur: 1.5 }; else { this.glowT = -(dv - 1); this.rip[0] = [0, 0, -(dv - 1)]; this.ripI = 1; this.nextStar = 99; this.rings.push(-(dv - 1)); } }
         stage.insertBefore(cv, canvas.nextSibling);
         return true;
       } catch (e) { this.stop(); return false; }
@@ -779,7 +780,7 @@
       }
       // Sao rơi: cứ ~6 giây một ngôi sao sáng có đuôi dài rơi thẳng từ dải trên xuống tâm sàn → loé lớn, đĩa kim tuyến bừng sáng
       // rồi dịu dần, một vòng sóng rộng lan ra tới rìa
-      if (this.mode === 'saoroi') {
+      if (this.mode === 'saoroi' || this.mode === 'saobang') {
         if (!this.star && t > this.nextStar) this.star = { t0: t, dur: 1.5 };
         if (this.star) {
           var fs = (t - this.star.t0) / this.star.dur, SZ = 0;
@@ -827,10 +828,11 @@
       gl.uniform3fv(gl.getUniformLocation(this.pPts, 'uXf'), xf);
       var flat = []; for (i = 0; i < 8; i++) flat.push(this.rip[i][0], this.rip[i][1], this.rip[i][2]);
       gl.uniform3fv(gl.getUniformLocation(this.pPts, 'uRip'), new Float32Array(flat));
-      var sr = this.mode === 'saoroi';
-      gl.uniform4fv(gl.getUniformLocation(this.pPts, 'uRp'), sr ? [0.55, 0.24, 0.45, 1.5] : [0.38, 0.045, 2.0, 0.55]); // tốc độ lan, độ dày vòng, tắt dần, độ mạnh
-      gl.uniform2fv(gl.getUniformLocation(this.pPts, 'uSt'), sr ? [0.72, 0.6] : [1, 1]); // Sao rơi: hạt nhỏ và dịu hơn
-      gl.uniform3fv(gl.getUniformLocation(this.pPts, 'uCen'), sr ? [0, 1.7 * this.glow, 1.5] : [0, 0, 1]);    // sáng tâm sàn: cố định, bừng lên khi sao chạm, độ gom
+      var sb = this.mode === 'saobang', sr = this.mode === 'saoroi' || sb;
+      gl.uniform4fv(gl.getUniformLocation(this.pPts, 'uRp'), sr ? [0.55, 0.24, 0.45, sb ? 1.1 : 1.5] : [0.38, 0.045, 2.0, 0.55]); // tốc độ lan, độ dày vòng, tắt dần, độ mạnh
+      gl.uniform1f(gl.getUniformLocation(this.pPts, 'uCeil'), sb ? 2.4 : 1); // Đêm sao băng: dải trần sáng rõ
+      gl.uniform2fv(gl.getUniformLocation(this.pPts, 'uSt'), sb ? [0.85, 0.8] : sr ? [0.72, 0.6] : [1, 1]); // Sao rơi: hạt nhỏ và dịu hơn
+      gl.uniform3fv(gl.getUniformLocation(this.pPts, 'uCen'), sb ? [0.7, 1.3 * this.glow, 1.3] : sr ? [0, 1.7 * this.glow, 1.5] : [0, 0, 1]); // sáng tâm sàn: cố định, bừng lên khi sao chạm, độ gom
       gl.bindBuffer(gl.ARRAY_BUFFER, this.bPts); attr(this.pPts, 'aP', 4, 16, 0);
       gl.drawArrays(gl.POINTS, 0, this.nPts);
       // thác: vệt (đoạn thẳng) + đầu hạt
@@ -896,6 +898,7 @@
   FX.satindo = silkFx([[0.012, 0.0, 0.0], [0.62, 0.05, 0.035], [0.3, 0.1, 0.07]]);
   FX.satinnga = silkFx([[0.55, 0.55, 0.58], [0.96, 0.96, 0.97], [0.06, 0.06, 0.06]]);
   FX.saoroi = { mode: 'saoroi', init: FX.dembac.init, draw: FX.dembac.draw, fall: FX.dembac.fall }; // biến thể của Đêm kim tuyến bạc (xem GLFX)
+  FX.saobang = { mode: 'saobang', init: FX.dembac.init, draw: FX.dembac.draw, fall: FX.dembac.fall }; // Đêm sao băng: dải trần dày + sàn sáng ở tâm + sao rơi
   function isVideo() { return !!(C.videos && C.videos[L.effect]); }
   function setupVideo() {
     var v = C.videos && C.videos[L.effect];
@@ -950,7 +953,7 @@
 
   function resetFx() {
     parts = []; extra = [];
-    if (!/^(dembac|saoroi|thienha|satindo|satinnga)$/.test(L.effect)) GLFX.stop();
+    if (!/^(dembac|saoroi|saobang|thienha|satindo|satinnga)$/.test(L.effect)) GLFX.stop();
     setupVideo();
     (isVideo() ? FX.none : FX[L.effect] || FX.sao).init();
   }
