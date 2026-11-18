@@ -1,3 +1,5 @@
+// popup đăng nhập: link /dang-nhap mở tại chỗ thay vì sang trang
+if (!document.querySelector('script[src="/js/login.js"]')) { const lg = document.createElement('script'); lg.src = '/js/login.js'; document.head.appendChild(lg); }
 // Tiện ích dùng chung cho các trang ứng dụng
 window.$ = (s, r) => (r || document).querySelector(s);
 window.$$ = (s, r) => Array.from((r || document).querySelectorAll(s));
@@ -386,10 +388,10 @@ window.renderTopbar = async function (active) {
     // 5 nút theo các chức năng chính (thay cho menu ☰): Thiệp · Báo hỷ (miễn phí) · Màn LED · Slide · Sổ tay.
     // Tài khoản ở ảnh đại diện góc trên; Màn LED mở thẳng màn LED của thiệp chính (dashboard đọc ?mo=led).
     const BT = [['/thiep-cua-toi', 'Thiệp', 'cards', TABS[0][3]],
-      ['/video', 'Báo hỷ', 'baohy', '<path d="M4 10h16v9a1.5 1.5 0 0 1-1.5 1.5h-13A1.5 1.5 0 0 1 4 19z"/><path d="m4 10-.6-3.2 15-3 .6 3.2"/><path d="m8.5 6.2 2 3.3M13.5 5.2l2 3.3"/>', 'Miễn phí'],
+      ['/video', 'Báo hỷ', 'baohy', '<path d="M4 10h16v9a1.5 1.5 0 0 1-1.5 1.5h-13A1.5 1.5 0 0 1 4 19z"/><path d="m4 10-.6-3.2 15-3 .6 3.2"/><path d="m8.5 6.2 2 3.3M13.5 5.2l2 3.3"/>', 'Free'],
       ['/thiep-cua-toi?mo=led', 'Màn LED', 'led', '<rect x="2.5" y="4" width="19" height="12.5" rx="2"/><path d="M8 20.5h8M12 16.5v4"/><path d="m12 7 .9 1.9 2 .3-1.5 1.4.4 2-1.8-1-1.8 1 .4-2-1.5-1.4 2-.3z"/>'],
       ['/video-cua-toi', 'Slide', 'videos', '<rect x="3" y="4" width="18" height="12" rx="2"/><path d="M12 16v4M8 20h8"/><path d="m10 8 4 2-4 2z"/>'],
-      ['/so-tay', 'Sổ tay', 'planner', TABS[2][3], 'Miễn phí']];
+      ['/so-tay', 'Sổ tay', 'planner', TABS[2][3], 'Free']];
     bt.innerHTML = BT.map(([h, n, k, d, tag]) => `<a href="${h}"${k === active ? ' class="on"' : ''}><i>${ic(d)}${tag ? `<em>${tag}</em>` : ''}</i>${n}</a>`).join('');
     document.body.appendChild(bt);
     document.body.classList.add('has-tb-bottom');

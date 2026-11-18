@@ -1,6 +1,8 @@
 // Phần chung của các trang giới thiệu: thanh trên, chân trang, giá từ cấu hình, hiệu ứng hiện dần.
 (function () {
   'use strict';
+  // popup đăng nhập: link /dang-nhap mở tại chỗ thay vì sang trang
+  if (!document.querySelector('script[src="/js/login.js"]')) { var lg = document.createElement('script'); lg.src = '/js/login.js'; document.head.appendChild(lg); }
   // thanh chạy mảnh trên cùng khi rời trang / chờ đăng xuất (trang ứng dụng đã có bản đầy đủ trong common.js)
   if (!window.progress) {
     var bar = null, n = 0, tm = null;
@@ -157,10 +159,10 @@
   // thay cho menu ☰: chưa đăng nhập thì dẫn tới trang giới thiệu, đã đăng nhập thì tới đồ của mình.
   var SB = [
     ['card', 'Thiệp', 'tpl', '/mau-thiep', '/thiep-cua-toi', '<rect x="3" y="5" width="18" height="14" rx="2.5"/><path d="M3.5 6.5 12 13l8.5-6.5"/>'],
-    ['clap', 'Báo hỷ', 'baohy', '/video', '/video', '<path d="M4 10h16v9a1.5 1.5 0 0 1-1.5 1.5h-13A1.5 1.5 0 0 1 4 19z"/><path d="m4 10-.6-3.2 15-3 .6 3.2"/><path d="m8.5 6.2 2 3.3M13.5 5.2l2 3.3"/>', 'Miễn phí'],
+    ['clap', 'Báo hỷ', 'baohy', '/video', '/video', '<path d="M4 10h16v9a1.5 1.5 0 0 1-1.5 1.5h-13A1.5 1.5 0 0 1 4 19z"/><path d="m4 10-.6-3.2 15-3 .6 3.2"/><path d="m8.5 6.2 2 3.3M13.5 5.2l2 3.3"/>', 'Free'],
     ['led', 'Màn LED', 'led', '/man-hinh-led-dam-cuoi', '/thiep-cua-toi?mo=led', '<rect x="2.5" y="4" width="19" height="12.5" rx="2"/><path d="M8 20.5h8M12 16.5v4"/><path d="m12 7 .9 1.9 2 .3-1.5 1.4.4 2-1.8-1-1.8 1 .4-2-1.5-1.4 2-.3z"/>'],
     ['slide', 'Slide', 'slide', '/slide-cuoi', '/video-cua-toi', '<rect x="3" y="4" width="18" height="12" rx="2"/><path d="M12 16v4M8 20h8"/><path d="m10 8 4 2-4 2z"/>'],
-    ['book', 'Sổ tay', 'planner', '/so-tay-cuoi', '/so-tay', '<path d="M5 4.5A1.5 1.5 0 0 1 6.5 3H19v15H6.5A1.5 1.5 0 0 0 5 19.5z"/><path d="M5 19.5A1.5 1.5 0 0 0 6.5 21H19v-3"/><path d="M9 8h6M9 11.5h4"/>', 'Miễn phí']
+    ['book', 'Sổ tay', 'planner', '/so-tay-cuoi', '/so-tay', '<path d="M5 4.5A1.5 1.5 0 0 1 6.5 3H19v15H6.5A1.5 1.5 0 0 0 5 19.5z"/><path d="M5 19.5A1.5 1.5 0 0 0 6.5 21H19v-3"/><path d="M9 8h6M9 11.5h4"/>', 'Free']
   ];
   var sbar = null;
   if (page) {
