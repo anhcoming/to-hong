@@ -618,3 +618,13 @@ body.drag .drophint{opacity:1}
   .hnav.mopen::before{clip-path:inset(0 0 0 0 round 0)}
 }
 @media (max-width:760px){.hnav>.wrap,.hnav:not(.up)>.wrap{padding-left:24px;padding-right:16px}} /* lề trong cố định, đủ chỗ khi nền thu thành viên */
+
+/* nút "Thử ngay trong 5s": vệt sáng lướt ngang mỗi ~3 giây + ngôi sao lấp lánh — kéo mắt mà không rối. Đang đọc ảnh / máy bật giảm
+   chuyển động thì tắt */
+.hcta .go{position:relative;overflow:hidden}
+.hcta .go::after{content:"";position:absolute;top:0;bottom:0;left:-60%;width:40%;pointer-events:none;background:linear-gradient(100deg,transparent,rgba(255,255,255,.5),transparent);transform:skewX(-20deg);animation:goShine 2.8s ease-in-out infinite}
+@keyframes goShine{0%,55%{left:-60%}85%,100%{left:130%}}
+.hcta .go .ico{animation:goTw 1.6s ease-in-out infinite}
+@keyframes goTw{0%,100%{transform:scale(1) rotate(0)}30%{transform:scale(1.3) rotate(18deg)}60%{transform:scale(.9) rotate(-6deg)}}
+.hb.busy .hcta .go::after,.hb.busy .hcta .go .ico,.hb.off .hcta .go::after,.hb.off .hcta .go .ico{animation:none}
+@media (prefers-reduced-motion:reduce){.hcta .go::after,.hcta .go .ico{animation:none}}
