@@ -95,13 +95,22 @@
     return [h, mx ? d / mx : 0, mx];
   }
   // Đặc điểm một ảnh (đọc trên bản 64px): biểu đồ màu, độ sáng, vùng da người (đoán chỗ có mặt), độ nét
+  // kích thước bản 64px giữ tỉ lệ ảnh
+  function smallSize(W, H) {
+    var S = 64;
+    return [W >= H ? S : Math.max(8, Math.round(S * W / H)), H > W ? S : Math.max(8, Math.round(S * H / W))];
+  }
   function analyze(url) {
     return loadImg(url).then(function (im) {
-      var S = 64, w = im.naturalWidth >= im.naturalHeight ? S : Math.max(8, Math.round(S * im.naturalWidth / im.naturalHeight));
-      var h = im.naturalHeight > im.naturalWidth ? S : Math.max(8, Math.round(S * im.naturalHeight / im.naturalWidth));
+      var sz = smallSize(im.naturalWidth, im.naturalHeight), w = sz[0], h = sz[1];
       var c = document.createElement('canvas'); c.width = w; c.height = h;
       var g = c.getContext('2d', { willReadFrequently: true }); g.drawImage(im, 0, 0, w, h);
-      var px = g.getImageData(0, 0, w, h).data, n = w * h;
+      return features(g.getImageData(0, 0, w, h).data, w, h);
+    });
+  }
+  function features(px, w, h) {
+    {
+      var n = w * h;
       var hist = new Array(12).fill(0), lum = 0, colorful = 0, skin = 0, sx = 0, sy = 0, sharp = 0;
       var L = new Float32Array(n);
       for (var i = 0; i < n; i++) {
@@ -119,8 +128,67 @@
         hist: hist, lum: lum / n, colorful: colorful / n, sharp: sharp / n,
         skin: skin / n, cx: skin ? sx / skin / w : 0.5, cy: skin ? sy / skin / h : 0.4,
       };
-    });
+    }
   }
 
-  window.PhotoPrep = { idb: idb, loadImg: loadImg, shrink: shrink, thumb: thumb, rgb2hsv: rgb2hsv, analyze: analyze };
+  // ---------- luồng phụ (Web Worker): giải mã + thu nhỏ + nén JPEG + phân tích màu ngoài luồng chính ----------
+  // Ảnh điện thoại 12MP: giải mã, vẽ thu nhỏ, nén lại đều nặng; làm ở luồng chính thì hoạt hình / cuộn trang bị giật khi khách
+  // chọn nhiều ảnh. Trình duyệt có OffscreenCanvas thì làm hết trong luồng phụ; không có (máy cũ) thì quay về cách cũ.
+  var isWorker = typeof window === 'undefined';
+  if (isWorker) {
+    var draw = function (bm, W, H) {
+      var c = new OffscreenCanvas(W, H);
+      c.getContext('2d').drawImage(bm, 0, 0, W, H);
+      return c;
+    };
+    self.onmessage = function (e) {
+      var m = e.data;
+      createImageBitmap(m.file, { imageOrientation: 'from-image' }).then(function (bm) {
+        var W = bm.width, H = bm.height, out = {};
+        var side = m.op === 'thumb' ? (m.side || 280) : 1600;
+        var sc = Math.min(1, side / Math.max(W, H)), w = Math.round(W * sc), h = Math.round(H * sc);
+        var c = draw(bm, w, h);
+        var job = c.convertToBlob({ type: 'image/jpeg', quality: m.op === 'thumb' ? 0.8 : 0.85 }).then(function (b) { out.blob = b; out.w = w; out.h = h; });
+        if (m.op === 'prep') {
+          var sz = smallSize(W, H), g = draw(bm, sz[0], sz[1]).getContext('2d', { willReadFrequently: true });
+          out.feat = features(g.getImageData(0, 0, sz[0], sz[1]).data, sz[0], sz[1]);
+        }
+        return job.then(function () { if (bm.close) bm.close(); self.postMessage({ id: m.id, ok: out }); });
+      }).catch(function (err) { self.postMessage({ id: m.id, err: String(err && err.message || err) }); });
+    };
+    return;
+  }
+
+  var worker = null, jobs = {}, seq = 0;
+  function useWorker() {
+    if (worker === false) return null;
+    if (worker) return worker;
+    try {
+      if (!window.Worker || !window.OffscreenCanvas || !window.createImageBitmap || !OffscreenCanvas.prototype.convertToBlob) throw 0;
+      worker = new Worker('/js/photoprep.js');
+      worker.onmessage = function (e) { var j = jobs[e.data.id]; if (!j) return; delete jobs[e.data.id]; e.data.err ? j.no(new Error(e.data.err)) : j.ok(e.data.ok); };
+      worker.onerror = function () { worker.terminate(); worker = false; Object.keys(jobs).forEach(function (k) { jobs[k].no(new Error('worker')); delete jobs[k]; }); };
+    } catch (e) { worker = false; }
+    return worker || null;
+  }
+  function ask(op, file, extra) {
+    var w = useWorker();
+    if (!w) return Promise.reject(new Error('no-worker'));
+    return new Promise(function (ok, no) { var id = ++seq; jobs[id] = { ok: ok, no: no }; w.postMessage(Object.assign({ id: id, op: op, file: file }, extra || {})); });
+  }
+  // thu nhỏ + phân tích một ảnh trong một lần đọc → { blob, w, h, feat }
+  function prep(file) {
+    return ask('prep', file).catch(function () {
+      return shrink(file).then(function (s) {
+        var url = URL.createObjectURL(s.blob);
+        return analyze(url).then(function (feat) { s.feat = feat; return s; }).finally(function () { URL.revokeObjectURL(url); });
+      });
+    });
+  }
+  var thumbMain = thumb;
+  thumb = function (file, side) {
+    return ask('thumb', file, { side: side }).then(function (r) { return URL.createObjectURL(r.blob); }, function () { return thumbMain(file, side); });
+  };
+
+  window.PhotoPrep = { idb: idb, loadImg: loadImg, shrink: shrink, thumb: thumb, prep: prep, rgb2hsv: rgb2hsv, analyze: analyze, features: features };
 })();

@@ -409,13 +409,14 @@ body.drag .drophint{opacity:1}
 .fan *{animation-duration:7s;animation-iteration-count:infinite}
 .fan.restart *{animation:none!important}
 /* ảnh: 3 tấm xếp chồng bên trái, lần lượt bay vào khung */
-.fan .fp{position:absolute;z-index:6;width:118px;height:154px;object-fit:cover;object-position:50% 20%;border:5px solid #fff;border-radius:9px;box-shadow:0 14px 32px rgba(0,0,0,.38);animation-timing-function:cubic-bezier(.55,.05,.3,1)}
+.fan .fp{position:absolute;z-index:6;left:221px;top:88px;will-change:transform,opacity;width:118px;height:154px;object-fit:cover;object-position:50% 20%;border:5px solid #fff;border-radius:9px;box-shadow:0 14px 32px rgba(0,0,0,.38);animation-timing-function:cubic-bezier(.55,.05,.3,1)}
 .fan .fp0{animation-name:fp0}.fan .fp1{animation-name:fp1}.fan .fp2{animation-name:fp2}
-@keyframes fp0{0%,12%{left:0;top:80px;transform:rotate(-11deg);opacity:1}30%{left:221px;top:88px;transform:rotate(0) scale(.62);opacity:1}32%,94%{left:221px;top:88px;transform:scale(.4);opacity:0}100%{left:0;top:80px;transform:rotate(-11deg);opacity:1}}
-@keyframes fp1{0%,15%{left:40px;top:56px;transform:rotate(7deg);opacity:1}33%{left:221px;top:88px;transform:rotate(0) scale(.62);opacity:1}35%,94%{left:221px;top:88px;transform:scale(.4);opacity:0}100%{left:40px;top:56px;transform:rotate(7deg);opacity:1}}
-@keyframes fp2{0%,18%{left:20px;top:96px;transform:rotate(-2deg);opacity:1}36%{left:221px;top:88px;transform:rotate(0) scale(.62);opacity:1}38%,94%{left:221px;top:88px;transform:scale(.4);opacity:0}100%{left:20px;top:96px;transform:rotate(-2deg);opacity:1}}
-.fan .hand{position:absolute;z-index:8;width:34px;height:34px;color:#fff;filter:drop-shadow(0 3px 6px rgba(0,0,0,.5));animation-name:fhand;animation-timing-function:cubic-bezier(.55,.05,.3,1)}
-@keyframes fhand{0%{left:150px;top:260px;opacity:0}7%,12%{left:96px;top:196px;opacity:1}32%{left:300px;top:200px;opacity:1}37%,100%{left:330px;top:240px;opacity:0}}
+/* chỉ dùng transform + opacity (chạy trên GPU): lúc trang đang bận đọc ảnh của khách, ảnh vẫn bay mượt */
+@keyframes fp0{0%,12%{transform:translate(-221px,-8px) rotate(-11deg) scale(1);opacity:1}30%{transform:translate(0,0) rotate(0) scale(.62);opacity:1}32%,94%{transform:translate(0,0) rotate(0) scale(.4);opacity:0}100%{transform:translate(-221px,-8px) rotate(-11deg) scale(1);opacity:1}}
+@keyframes fp1{0%,15%{transform:translate(-181px,-32px) rotate(7deg) scale(1);opacity:1}33%{transform:translate(0,0) rotate(0) scale(.62);opacity:1}35%,94%{transform:translate(0,0) rotate(0) scale(.4);opacity:0}100%{transform:translate(-181px,-32px) rotate(7deg) scale(1);opacity:1}}
+@keyframes fp2{0%,18%{transform:translate(-201px,8px) rotate(-2deg) scale(1);opacity:1}36%{transform:translate(0,0) rotate(0) scale(.62);opacity:1}38%,94%{transform:translate(0,0) rotate(0) scale(.4);opacity:0}100%{transform:translate(-201px,8px) rotate(-2deg) scale(1);opacity:1}}
+.fan .hand{position:absolute;z-index:8;left:96px;top:196px;will-change:transform,opacity;width:34px;height:34px;color:#fff;filter:drop-shadow(0 3px 6px rgba(0,0,0,.5));animation-name:fhand;animation-timing-function:cubic-bezier(.55,.05,.3,1)}
+@keyframes fhand{0%{transform:translate(54px,64px);opacity:0}7%,12%{transform:translate(0,0);opacity:1}32%{transform:translate(204px,4px);opacity:1}37%,100%{transform:translate(234px,44px);opacity:0}}
 /* khung thiệp rỗng */
 .fan .slot{position:absolute;z-index:2;left:194px;top:14px;width:172px;height:306px;border:2px dashed rgba(214,69,93,.45);border-radius:18px;background:rgba(255,255,255,.62);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;color:#b5485a;font:600 12px var(--sans);animation-name:fslot}
 .fan .slot i{width:42px;height:42px;border-radius:50%;display:grid;place-items:center;border:2px dashed currentColor;font-style:normal;font-size:22px;opacity:.8}
@@ -448,7 +449,7 @@ body.drag .drophint{opacity:1}
 .hcta .hmsg{margin:2px 0 0;max-width:340px;font-size:13px;line-height:1.5;color:#e0707f;text-align:center}
 /* khách thả ảnh: ẩn thiệp mẫu, chỉ còn ảnh CỦA KHÁCH bay vào khung rỗng (lặp, nhanh hơn) trong lúc trang đọc ảnh thật; khung nhấp nháy + vòng xoay */
 .hb.busy .fan .tpl,.hb.busy .fan .flash,.hb.busy .fan .sp{display:none}
-.hb.busy .fan .fp0,.hb.busy .fan .fp1,.hb.busy .fan .fp2,.hb.busy .fan .hand{animation-duration:3.2s}
+.hb.busy .fan .fp0,.hb.busy .fan .fp1,.hb.busy .fan .fp2,.hb.busy .fan .fp3,.hb.busy .fan .hand{animation-duration:3.2s}
 .hb.busy .fan .slot{animation:slotBusy 1.5s ease-in-out infinite}
 .hb.busy .fan .slot i{border-style:solid;border-color:currentColor transparent currentColor transparent;animation:spin .9s linear infinite}
 @keyframes slotBusy{0%,100%{transform:none;box-shadow:none}50%{transform:scale(1.03);box-shadow:0 0 0 7px rgba(243,215,154,.2),0 0 38px 6px rgba(239,125,141,.4)}}
@@ -516,13 +517,13 @@ body.drag .drophint{opacity:1}
    rồi thiệp mẫu bung ra như cũ; hết vòng thì ảnh hiện lại chỗ cũ. Điện thoại / màn hẹp giữ kiểu 3 ảnh xếp bên trái. */
 .fan .fp3{display:none}
 @media (min-width:1100px){
-  .fan .fp{width:150px;height:184px;border:8px solid #fff;border-bottom-width:30px;border-radius:4px;box-shadow:0 18px 40px rgba(0,0,0,.2)}
+  .fan .fp{left:205px;top:70px;width:150px;height:184px;border:8px solid #fff;border-bottom-width:30px;border-radius:4px;box-shadow:0 18px 40px rgba(0,0,0,.2)}
   .fan .fp3{display:block;animation-name:fp3;object-position:30% 20%}
   .fan .hand{display:none}
-  @keyframes fp0{0%,14%{left:-250px;top:0;transform:rotate(-8deg);opacity:1}34%{left:205px;top:70px;transform:rotate(0) scale(.55);opacity:1}37%,93%{left:205px;top:70px;transform:scale(.35);opacity:0}100%{left:-250px;top:0;transform:rotate(-8deg);opacity:1}}
-  @keyframes fp1{0%,14%{left:-170px;top:196px;transform:rotate(6deg);opacity:1}34%{left:205px;top:70px;transform:rotate(0) scale(.55);opacity:1}37%,93%{left:205px;top:70px;transform:scale(.35);opacity:0}100%{left:-170px;top:196px;transform:rotate(6deg);opacity:1}}
-  @keyframes fp2{0%,14%{left:660px;top:6px;transform:rotate(7deg);opacity:1}34%{left:205px;top:70px;transform:rotate(0) scale(.55);opacity:1}37%,93%{left:205px;top:70px;transform:scale(.35);opacity:0}100%{left:660px;top:6px;transform:rotate(7deg);opacity:1}}
-  @keyframes fp3{0%,14%{left:580px;top:200px;transform:rotate(-5deg);opacity:1}34%{left:205px;top:70px;transform:rotate(0) scale(.55);opacity:1}37%,93%{left:205px;top:70px;transform:scale(.35);opacity:0}100%{left:580px;top:200px;transform:rotate(-5deg);opacity:1}}
+  @keyframes fp0{0%,14%{transform:translate(-455px,-70px) rotate(-8deg) scale(1);opacity:1}34%{transform:translate(0,0) rotate(0) scale(.55);opacity:1}37%,93%{transform:translate(0,0) rotate(0) scale(.35);opacity:0}100%{transform:translate(-455px,-70px) rotate(-8deg) scale(1);opacity:1}}
+  @keyframes fp1{0%,14%{transform:translate(-375px,126px) rotate(6deg) scale(1);opacity:1}34%{transform:translate(0,0) rotate(0) scale(.55);opacity:1}37%,93%{transform:translate(0,0) rotate(0) scale(.35);opacity:0}100%{transform:translate(-375px,126px) rotate(6deg) scale(1);opacity:1}}
+  @keyframes fp2{0%,14%{transform:translate(455px,-64px) rotate(7deg) scale(1);opacity:1}34%{transform:translate(0,0) rotate(0) scale(.55);opacity:1}37%,93%{transform:translate(0,0) rotate(0) scale(.35);opacity:0}100%{transform:translate(455px,-64px) rotate(7deg) scale(1);opacity:1}}
+  @keyframes fp3{0%,14%{transform:translate(375px,130px) rotate(-5deg) scale(1);opacity:1}34%{transform:translate(0,0) rotate(0) scale(.55);opacity:1}37%,93%{transform:translate(0,0) rotate(0) scale(.35);opacity:0}100%{transform:translate(375px,130px) rotate(-5deg) scale(1);opacity:1}}
 }
 @media (prefers-reduced-motion:reduce){.fan .fp3{display:none!important}}
 
@@ -562,14 +563,14 @@ body.drag .drophint{opacity:1}
 /* điện thoại / màn hẹp (<1100px): cùng kiểu với máy tính — 4 ảnh polaroid nhỏ quanh khung, cùng lúc bay vào, biến mất,
    tim đập, rồi thiệp bung ra (vị trí ảnh nằm gọn trong phần nhìn thấy của khối hoạt hình) */
 @media (max-width:1099px){
-  .fan .fp{width:110px;height:136px;border:6px solid #fff;border-bottom-width:22px;border-radius:4px;box-shadow:0 14px 30px rgba(0,0,0,.2)}
+  .fan .fp{left:225px;top:100px;width:110px;height:136px;border:6px solid #fff;border-bottom-width:22px;border-radius:4px;box-shadow:0 14px 30px rgba(0,0,0,.2)}
   .fan .fp3{display:block;animation-name:fp3;object-position:30% 20%}
   .fan .hand{display:none}
   .fan .ldh{animation-name:ldwinm}.fan .slot>i,.fan .slot>span{animation-name:ldoffm}
-  @keyframes fp0{0%,14%{left:24px;top:8px;transform:rotate(-8deg);opacity:1}34%{left:225px;top:100px;transform:rotate(0) scale(.55);opacity:1}37%,93%{left:225px;top:100px;transform:scale(.35);opacity:0}100%{left:24px;top:8px;transform:rotate(-8deg);opacity:1}}
-  @keyframes fp1{0%,14%{left:56px;top:176px;transform:rotate(6deg);opacity:1}34%{left:225px;top:100px;transform:rotate(0) scale(.55);opacity:1}37%,93%{left:225px;top:100px;transform:scale(.35);opacity:0}100%{left:56px;top:176px;transform:rotate(6deg);opacity:1}}
-  @keyframes fp2{0%,14%{left:420px;top:14px;transform:rotate(7deg);opacity:1}34%{left:225px;top:100px;transform:rotate(0) scale(.55);opacity:1}37%,93%{left:225px;top:100px;transform:scale(.35);opacity:0}100%{left:420px;top:14px;transform:rotate(7deg);opacity:1}}
-  @keyframes fp3{0%,14%{left:396px;top:182px;transform:rotate(-5deg);opacity:1}34%{left:225px;top:100px;transform:rotate(0) scale(.55);opacity:1}37%,93%{left:225px;top:100px;transform:scale(.35);opacity:0}100%{left:396px;top:182px;transform:rotate(-5deg);opacity:1}}
+  @keyframes fp0{0%,14%{transform:translate(-201px,-92px) rotate(-8deg) scale(1);opacity:1}34%{transform:translate(0,0) rotate(0) scale(.55);opacity:1}37%,93%{transform:translate(0,0) rotate(0) scale(.35);opacity:0}100%{transform:translate(-201px,-92px) rotate(-8deg) scale(1);opacity:1}}
+  @keyframes fp1{0%,14%{transform:translate(-169px,76px) rotate(6deg) scale(1);opacity:1}34%{transform:translate(0,0) rotate(0) scale(.55);opacity:1}37%,93%{transform:translate(0,0) rotate(0) scale(.35);opacity:0}100%{transform:translate(-169px,76px) rotate(6deg) scale(1);opacity:1}}
+  @keyframes fp2{0%,14%{transform:translate(195px,-86px) rotate(7deg) scale(1);opacity:1}34%{transform:translate(0,0) rotate(0) scale(.55);opacity:1}37%,93%{transform:translate(0,0) rotate(0) scale(.35);opacity:0}100%{transform:translate(195px,-86px) rotate(7deg) scale(1);opacity:1}}
+  @keyframes fp3{0%,14%{transform:translate(171px,82px) rotate(-5deg) scale(1);opacity:1}34%{transform:translate(0,0) rotate(0) scale(.55);opacity:1}37%,93%{transform:translate(0,0) rotate(0) scale(.35);opacity:0}100%{transform:translate(171px,82px) rotate(-5deg) scale(1);opacity:1}}
   @keyframes ldwinm{0%,37%{opacity:0;transform:scale(.9);filter:drop-shadow(0 0 0 rgba(214,69,93,0))}39%{opacity:1;transform:scale(1)}41.5%{transform:scale(1.14);filter:drop-shadow(0 0 16px rgba(214,69,93,.5))}44%{opacity:1;transform:scale(1);filter:drop-shadow(0 0 2px rgba(214,69,93,.1))}46%,100%{opacity:0;transform:scale(.96);filter:drop-shadow(0 0 0 rgba(214,69,93,0))}}
   @keyframes ldoffm{0%,35%{opacity:1}37%,52%{opacity:0}54%,100%{opacity:1}}
 }

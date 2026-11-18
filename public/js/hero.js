@@ -22,11 +22,9 @@
       if (i >= list.length) return Promise.resolve(out);
       var f = list[i++];
       lbl.textContent = 'Đang đọc ảnh ' + i + '/' + list.length + '…';
-      return P.shrink(f).then(function (s) {
-        var url = URL.createObjectURL(s.blob);
-        return P.analyze(url).then(function (feat) {
-          out.push({ id: Date.now().toString(36) + Math.random().toString(36).slice(2, 7), blob: s.blob, w: s.w, h: s.h, feat: feat });
-        }).finally(function () { URL.revokeObjectURL(url); });
+      // đọc ảnh ở luồng phụ (photoprep.js) → hoạt hình không bị giật dù khách chọn 12 ảnh
+      return P.prep(f).then(function (s) {
+        out.push({ id: Date.now().toString(36) + Math.random().toString(36).slice(2, 7), blob: s.blob, w: s.w, h: s.h, feat: s.feat });
       }).catch(function () { /* ảnh lỗi: bỏ qua */ }).then(function () { return wait(30); }).then(one); // nghỉ một nhịp giữa các ảnh cho hoạt hình chạy đều
     };
     return one();
