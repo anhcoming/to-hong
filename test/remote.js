@@ -62,7 +62,7 @@ const stored = () => JSON.parse(kv.get('cuoinha:db').val);
   process.env.KV_REST_API_TOKEN = 't';
   delete process.env.POSTGRES_URL; delete process.env.DATABASE_URL;
   // cài đặt đã lưu sẵn trong kho từ trước khi bản chạy này khởi động (vd. sửa trên trang quản trị ở bản chạy khác)
-  kv.set('cuoinha:db', { val: JSON.stringify({ users: [], sessions: {}, cards: [], guests: [], rsvps: [], wishes: [], orders: [], bankTxns: [], weddings: [], tasks: [], budget: [], settings: { price: 111000, listPrice: 111000, trialDays: 9 } }) });
+  kv.set('cuoinha:db', { val: JSON.stringify({ users: [], sessions: {}, cards: [], guests: [], rsvps: [], wishes: [], orders: [], bankTxns: [], weddings: [], tasks: [], budget: [], settings: { price: 111000, listPrice: 111000, trialDays: 9, support: { zalo: '0911222333', email: 'ho-tro@test.vn' } } }) });
   kv.set('cuoinha:ver', { val: 'aa' });
 
   const server = require('../server');
@@ -72,8 +72,10 @@ const stored = () => JSON.parse(kv.get('cuoinha:db').val);
   // 1. cài đặt trong kho có hiệu lực dù lúc khởi động dữ liệu chưa nạp
   let r = await call('x', 'GET', '/api/meta');
   assert.equal(r.status, 200);
-  assert.equal(r.json.price, 111000, 'giá sửa trên trang quản trị phải được áp sau khi nạp dữ liệu');
-  assert.equal(r.json.trialDays, 9);
+  assert.equal(r.json.trialDays, 9, 'số ngày dùng thử sửa trên trang quản trị phải được áp sau khi nạp dữ liệu');
+  assert.deepEqual(r.json.support, { zalo: '0911222333', email: 'ho-tro@test.vn' }, 'liên hệ hỗ trợ sửa trên trang quản trị phải được áp');
+  // giá bán chỉ đặt trong config.json (không sửa trên web nữa): giá cũ còn sót trong kho bị bỏ qua
+  assert.equal(r.json.price, require('../config.json').price, 'giá cũ còn sót trong db.settings không được đè giá trong config.json');
 
   // 2. ghi bình thường: đăng ký, tạo thiệp, phát hành → có trong kho
   r = await call('u', 'POST', '/api/auth/register', { email: 'remote@test.vn', password: '123456', name: 'Xa' });
