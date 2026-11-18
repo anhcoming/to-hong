@@ -146,14 +146,14 @@ window.openPayModal = async function (cardId, onDone, product = 'card') {
       <div style="text-align:center"><h2>Kích hoạt thiệp</h2><p class="muted" style="margin:0 0 14px">${esc(o.card ? o.card.names || o.card.title : '')}</p></div>
       ${opt('card', 'Chỉ thiệp cưới', 'Mời tới 3.000 khách, dùng vĩnh viễn')}
       ${opt('combo', 'Trọn bộ ngày cưới', 'Thiệp + màn LED + video MP4', `Chỉ thêm ${Math.round((orders.combo.amount - orders.card.amount) / 1000)}k`)}
-      <div style="text-align:center;margin-top:4px">${o.wasPrice ? `<div class="muted" style="font-size:15px;text-decoration:line-through">${money(o.wasPrice)}</div>` : ''}<div style="font-family:var(--serif);font-size:34px;font-weight:600;color:var(--primary);line-height:1.2">${money(o.amount)}</div>${until}${o.coupon ? ` <span class="chip ok">Đã áp mã ${esc(o.coupon)}</span>` : ''}</div>`
+      <div style="text-align:center;margin-top:4px">${o.wasPrice ? `<div class="muted" style="font-size:15px">${o.retail ? 'Mua lẻ ' : ''}<s>${money(o.wasPrice)}</s></div>` : ''}<div style="font-family:var(--serif);font-size:34px;font-weight:600;color:var(--primary);line-height:1.2">${money(o.amount)}</div>${until}${o.coupon ? ` <span class="chip ok">Đã áp mã ${esc(o.coupon)}</span>` : ''}</div>`
       : `
       <div style="text-align:center">
         <h2>${p === 'combo' && o.upgrade ? 'Nâng lên Trọn bộ' : `Kích hoạt ${esc(o.productName.toLowerCase())}`}</h2>
         <p class="muted" style="margin:0 0 6px">${p === 'combo' && o.upgrade ? 'Thiệp đã kích hoạt · thêm màn LED + video MP4' : esc(o.card ? o.card.names || o.card.title : '')}</p>
-        ${o.wasPrice ? `<div class="muted" style="font-size:16px;text-decoration:line-through;margin-top:4px">${money(o.wasPrice)}</div>` : ''}
+        ${o.wasPrice ? `<div class="muted" style="font-size:16px;margin-top:4px">${o.retail ? 'Mua lẻ ' : ''}<s>${money(o.wasPrice)}</s></div>` : ''}
         <div style="font-family:var(--serif);font-size:36px;font-weight:600;color:var(--primary)">${money(o.amount)}</div>
-        ${until}${p === 'combo' && o.upgrade ? ` <span class="chip ok">Rẻ hơn mua lẻ ${money(o.wasPrice - o.amount)}</span>` : ''}
+        ${until}${p === 'combo' && (o.upgrade || o.retail) && o.wasPrice ? ` <span class="chip ok">Rẻ hơn mua lẻ ${money(o.wasPrice - o.amount)}</span>` : ''}
         ${o.coupon ? `<span class="chip ok">Đã áp mã ${esc(o.coupon)}</span>` : ''}
       </div>`;
     box.innerHTML = `${PAY_CSS}<button class="modal-x" aria-label="Đóng">×</button>${head}

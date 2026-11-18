@@ -10,6 +10,7 @@ process.env.ALLOW_EMAIL_SIGNUP = '1'; // bài kiểm thử tạo tài khoản b�
 process.env.ADMIN_PASSWORD = 'mat-khau-quan-tri';
 process.env.SEPAY_API_KEY = 'khoa-sepay-thu';
 const server = require('../server');
+const config = require('../config.json'); // giá thiệp đọc từ cấu hình (đổi giá không phải sửa bài kiểm thử)
 
 let base;
 const jar = {};
@@ -144,7 +145,7 @@ async function call(who, method, url, body) {
   await call('qt', 'PUT', '/api/admin/settings', { coupons: { GIAMRIENG: '30000' } }); // mã riêng do quản trị tạo
   r = await call('u', 'POST', `/api/cards/${id}/order`, { coupon: 'giamrieng' });
   const order = r.json.order;
-  assert.equal(order.amount, 99000);
+  assert.equal(order.amount, config.price - 30000);
   assert.match(order.qr, /img\.vietqr\.io/);
   assert.equal((await call('anon', 'POST', `/api/orders/${order.code}/claim`)).status, 401, 'người ngoài không báo chuyển khoản hộ được');
   r = await call('u', 'POST', `/api/orders/${order.code}/claim`);

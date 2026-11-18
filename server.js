@@ -216,6 +216,8 @@ function wasPrice(o, product) {
   if (product === 'card' && promoActive() && o.amount + (o.discount || 0) === config.price) return { wasPrice: config.listPrice, promoEndsAt: end };
   if (product === 'combo' && o.upgrade) return { wasPrice: config.ledPrice + config.videoPrice, promoEndsAt: comboPromo() ? end : null };
   if (product === 'combo' && comboPromo() && o.amount + (o.discount || 0) === config.comboPrice) return { wasPrice: config.comboListPrice, promoEndsAt: end };
+  // Trọn bộ không có giá gốc riêng: gạch ngang tổng tiền mua lẻ thiệp + LED + video (giá thật, không phải giá ảo)
+  if (product === 'combo') { const le = cardPrice() + config.ledPrice + config.videoPrice; if (le > o.amount + (o.discount || 0)) return { wasPrice: le, retail: true }; }
   return {};
 }
 function orderView(o) {

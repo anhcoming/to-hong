@@ -36,7 +36,7 @@ const buyCombo = async (id) => { const o = (await call('u', 'POST', `/api/cards/
   await call('u', 'POST', '/api/auth/register', { email: 'combo@test.vn', password: '123456', name: 'Combo' });
   await call('v', 'POST', '/api/auth/register', { email: 'khac@test.vn', password: '123456', name: 'Khác' });
   const promo = Date.now() <= Date.parse(`${config.promoEndsAt}T23:59:59+07:00`);
-  const comboNow = promo ? config.comboPrice : config.comboListPrice;
+  const comboNow = !promo && config.comboListPrice > config.comboPrice ? config.comboListPrice : config.comboPrice; // không có giá gốc thì giá không đổi sau hạn
 
   let r = await call('x', 'GET', '/api/meta');
   assert.equal(r.json.comboPrice, comboNow);
@@ -47,7 +47,9 @@ const buyCombo = async (id) => { const o = (await call('u', 'POST', `/api/cards/
   r = await call('u', 'POST', `/api/cards/${a}/order`, { product: 'combo' });
   assert.match(r.json.order.code, /^CB/);
   assert.equal(r.json.order.amount, comboNow);
-  if (promo) assert.equal(r.json.order.wasPrice, config.comboListPrice);
+  // giá gạch: giá gốc Trọn bộ khi đang có giá mở bán; không có thì tổng tiền mua lẻ thiệp + LED + video
+  const comboPromoOn = promo && config.comboListPrice > config.comboPrice;
+  assert.equal(r.json.order.wasPrice, comboPromoOn ? config.comboListPrice : (promo || !(config.listPrice > config.price) ? config.price : config.listPrice) + config.ledPrice + config.videoPrice);
   assert.equal((await pay(r.json.order)).json.result, 'paid', 'mã CB… vẫn nhận ra dù nội dung có "MBVCB"');
   let c = await card(a);
   assert.ok(c.paid && c.combo, 'thiệp kích hoạt, gắn Trọn bộ');

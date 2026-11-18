@@ -158,6 +158,11 @@ a{color:inherit}
 
 .credit{text-align:center;padding:20px 16px 36px;font-size:12px;color:var(--muted)}
 .credit a{text-decoration:none}
+.credit .mk{display:inline-flex;flex-direction:column;align-items:center;gap:3px;padding:10px 18px;border-radius:14px;background:var(--paper);border:1px dashed var(--line);color:var(--ink);font-size:13px;line-height:1.35}
+.credit:has(>.mk){opacity:1!important} /* nhiều mẫu làm mờ chân thiệp (opacity .5) — dòng mời tạo thiệp cần đọc rõ */
+.credit .mk i{font-style:normal;font-weight:600;white-space:nowrap}
+.credit .mk small{font-size:12px;color:var(--muted)}
+.credit .mk>span{font-size:11px;color:var(--muted);letter-spacing:.02em}
 /* thiệp chưa kích hoạt: nhãn nhỏ cố định góc trên, nổi cả trên màn mở thiệp */
 .trial-tag{position:fixed;z-index:55;top:10px;left:max(10px,calc(50% - 230px));padding:5px 11px;border-radius:999px;background:rgba(20,20,20,.62);color:#fff;font:600 11px/1.2 system-ui,-apple-system,'Segoe UI',sans-serif;letter-spacing:.04em;text-decoration:none;backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);pointer-events:auto}
 .wm{display:inline-block;padding:8px 14px;border-radius:999px;background:var(--paper);border:1px dashed var(--line)}
