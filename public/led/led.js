@@ -700,7 +700,7 @@
       var t = this.time, g = 3.4;
       // giọt sáng rơi: xuất phát ở trần, rơi nhanh dần; chạm sàn → vòng sóng + loé + bắn hạt
       if (this.mode !== 'saoroi' && t > this.nextDrop) {
-        this.nextDrop = t + rnd(0.25, 0.7);
+        this.nextDrop = t + rnd(0.7, 1.8);
         var an = rnd(0, 6.2832), rr = 2.2 * Math.sqrt(Math.random());
         this.heroes.push({ x: Math.cos(an) * rr, z: Math.min(1.7, Math.sin(an) * rr), t0: t, dur: rnd(0.75, 0.95) });
       }
@@ -710,8 +710,8 @@
         var f = (t - h.t0) / h.dur;
         if (f >= 1) {
           this.rip[this.ripI] = [h.x, h.z, t]; this.ripI = (this.ripI + 1) % 8;
-          this.sparks.push({ x: h.x, y: -0.95, z: h.z, vx: 0, vy: 0, vz: 0, t0: t, max: 0.45, flash: 1 });
-          for (var q = 0; q < 5; q++) { var a3 = rnd(0, 6.2832), v = rnd(0.1, 0.3); this.sparks.push({ x: h.x, y: -0.95, z: h.z, vx: Math.cos(a3) * v, vy: rnd(0.3, 0.7), vz: Math.sin(a3) * v, t0: t, max: rnd(0.3, 0.55) }); }
+          this.sparks.push({ x: h.x, y: -0.95, z: h.z, vx: 0, vy: 0, vz: 0, t0: t, max: 0.3, flash: 1 });
+          for (var q = 0; q < 2; q++) { var a3 = rnd(0, 6.2832), v = rnd(0.08, 0.2); this.sparks.push({ x: h.x, y: -0.95, z: h.z, vx: Math.cos(a3) * v, vy: rnd(0.3, 0.7), vz: Math.sin(a3) * v, t0: t, max: rnd(0.3, 0.55) }); }
           this.heroes.splice(i, 1); continue;
         }
         for (var j = 0; j < 14; j++) { var fj = Math.max(0, f - j * 0.012); put(h.x, 0.95 - fj * fj * 1.9, h.z, 3.4 - j * 0.14, (1 - j / 14) * 0.8); } // đầu giọt + vệt đuôi
@@ -740,7 +740,7 @@
         s = this.sparks[i];
         var age = t - s.t0, k = 1 - age / s.max;
         if (k <= 0) { this.sparks.splice(i, 1); continue; }
-        if (s.flash) { put(s.x, s.y + 0.01, s.z, (7 + 12 * (1 - k)) * (s.big || 1), (s.big ? 0.6 : 0.7) * k * k); continue; }
+        if (s.flash) { put(s.x, s.y + 0.01, s.z, (s.big ? (7 + 12 * (1 - k)) * s.big : 4 + 5 * (1 - k)), (s.big ? 0.6 : 0.7) * k * k); continue; }
         put(s.x + s.vx * age, Math.max(-0.95, s.y + s.vy * age - 0.5 * g * age * age), s.z + s.vz * age, s.size || 2.2, 0.8 * k);
       }
       gl.viewport(0, 0, cv.width, cv.height);
@@ -758,7 +758,7 @@
       var flat = []; for (i = 0; i < 8; i++) flat.push(this.rip[i][0], this.rip[i][1], this.rip[i][2]);
       gl.uniform3fv(gl.getUniformLocation(this.pPts, 'uRip'), new Float32Array(flat));
       var sr = this.mode === 'saoroi';
-      gl.uniform4fv(gl.getUniformLocation(this.pPts, 'uRp'), sr ? [0.55, 0.24, 0.45, 1.5] : [0.62, 0.075, 0.95, 1]); // tốc độ lan, độ dày vòng, tắt dần, độ mạnh
+      gl.uniform4fv(gl.getUniformLocation(this.pPts, 'uRp'), sr ? [0.55, 0.24, 0.45, 1.5] : [0.38, 0.045, 2.0, 0.55]); // tốc độ lan, độ dày vòng, tắt dần, độ mạnh
       gl.uniform2fv(gl.getUniformLocation(this.pPts, 'uSt'), sr ? [0.72, 0.6] : [1, 1]); // Sao rơi: hạt nhỏ và dịu hơn
       gl.uniform3fv(gl.getUniformLocation(this.pPts, 'uCen'), sr ? [0, 1.7 * this.glow, 1.5] : [0, 0, 1]);    // sáng tâm sàn: cố định, bừng lên khi sao chạm, độ gom
       gl.bindBuffer(gl.ARRAY_BUFFER, this.bPts); attr(this.pPts, 'aP', 4, 16, 0);
