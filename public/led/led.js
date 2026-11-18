@@ -256,7 +256,7 @@
         // kim tuyến: 4 tấm đổi độ sáng lệch pha + trôi ngang rất chậm ngược chiều nhau → lấp lánh, có chiều sâu
         if (this.mode === 'saobang' && this.useGl) { // sương sáng xanh mờ phía sau dải kim tuyến trần, đậm nhất ngay trên mép dưới
           var y0 = H * 0.18, y1 = H * 0.46, gh = ctx.createLinearGradient(0, y0, 0, y1);
-          gh.addColorStop(0, rgba(pal.particle, 0)); gh.addColorStop(0.5, rgba(pal.particle, 0.1)); gh.addColorStop(0.62, rgba(pal.particle, 0.13)); gh.addColorStop(0.8, rgba(pal.particle, 0.04)); gh.addColorStop(1, rgba(pal.particle, 0));
+          gh.addColorStop(0, rgba(pal.particle, 0)); gh.addColorStop(0.4, rgba(pal.particle, 0.08)); gh.addColorStop(0.62, rgba(pal.particle, 0.09)); gh.addColorStop(0.85, rgba(pal.particle, 0.03)); gh.addColorStop(1, rgba(pal.particle, 0));
           ctx.globalAlpha = 0.85 + 0.15 * Math.sin(t * 0.3 * sp); ctx.fillStyle = gh; ctx.fillRect(0, y0, W, y1 - y0);
         }
         if (this.useGl && GLFX.gl) GLFX.draw(dt);
@@ -626,7 +626,7 @@
     VS_PTS: 'attribute vec4 aP;uniform float uT,uAsp,uPx;uniform vec3 uRip[8];uniform vec4 uRp;uniform vec3 uCen;uniform vec2 uSt;uniform vec3 uXf;uniform float uCeil;varying float vA;' +
       'void main(){float seed=aP.z;float tw=pow(0.5+0.5*sin(uT*(1.2+seed*3.7)+seed*61.0),3.0);' +
       'if(aP.w>4.5){gl_Position=vec4(aP.xy,0.0,1.0);float e=aP.y-0.3;float big=step(0.97,fract(seed*29.0));' +
-      'gl_PointSize=uPx*(2.0+3.8*fract(seed*7.3)*fract(seed*3.9)+big*4.0);float br=0.72+0.28*(0.5+0.5*sin(uT*0.35+aP.x*2.2+sin(uT*0.21+aP.x*1.3)*1.5));vA=(0.4+0.9*tw)*(0.4+1.2*exp(-max(e,0.0)*7.0)+big*0.5)*smoothstep(-0.2,0.03,e)*br;return;}' +
+      'gl_PointSize=uPx*(2.0+3.8*fract(seed*7.3)*fract(seed*3.9)+big*4.0);float br=0.72+0.28*(0.5+0.5*sin(uT*0.35+aP.x*2.2+sin(uT*0.21+aP.x*1.3)*1.5));vA=(0.4+0.9*tw)*(0.55+0.55*exp(-max(e,0.0)*2.2)+big*0.5)*smoothstep(-0.24,0.08,e)*smoothstep(0.75,0.35,e)*br;return;}' +
       'if(aP.w>2.5){vec2 q=vec2(uXf.x*aP.x+uXf.y*aP.y,-uXf.y*aP.x+uXf.x*aP.y)/uXf.z;gl_Position=vec4(q.x/uAsp,q.y,0.0,1.0);float dust=step(3.5,aP.w);float bg=step(0.975,fract(seed*29.0))*(1.0-dust);' +
       'gl_PointSize=uPx*(mix(2.0,1.5,dust)+mix(3.0,2.0,dust)*fract(seed*7.3)+bg*4.5);vA=(0.3+0.7*tw)*(0.7+0.6*fract(seed*3.1)+bg*0.6)*mix(1.0,0.75,dust);return;}' +
       'if(aP.w>1.5){gl_Position=vec4(aP.xy,0.0,1.0);float big=step(0.965,fract(seed*29.0));gl_PointSize=uPx*(1.3+2.2*fract(seed*7.3)+big*3.5);vA=(0.18+0.82*tw)*(0.55+0.45*fract(seed*3.1)+big*0.5);return;}' +
@@ -717,7 +717,7 @@
           for (i = 0; i < Math.round(24000 * dens); i++) {
             // mép dưới không thẳng tắp: lượn nhẹ theo chiều ngang; ~18% hạt rơi lấm tấm xuống dưới mép (thưa dần) → mép tự nhiên, không như bị cắt
             var bx = rnd(-1.02, 1.02), edge = 0.3 + 0.014 * Math.sin(bx * 3.7 + 0.8) + 0.008 * Math.sin(bx * 9.1 + 2.3);
-            a.push(bx, Math.random() < 0.18 ? edge + Math.log(Math.random() + 1e-4) * 0.045 : edge + Math.pow(Math.random(), 2.4) * 0.5 + (Math.random() - 0.5) * 0.02, Math.random(), 5);
+            a.push(bx, Math.random() < 0.2 ? edge + Math.log(Math.random() + 1e-4) * 0.06 : edge + Math.pow(Math.random(), 1.25) * 0.6 + (Math.random() - 0.5) * 0.06, Math.random(), 5);
           }
         } else disc(Math.round((this.mode === 'saoroi' ? 16000 : 24000) * dens), 1, 3.0); // trần (Đêm sao băng: dải trần dày, sáng)
         for (i = 0; i < Math.round(2600 * dens); i++) a.push(rnd(-1, 1), rnd(-1, 1), Math.random(), 2); // sao rải khắp trời
