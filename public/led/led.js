@@ -249,8 +249,8 @@
         }
         // quầng sáng tâm sàn (đập rất nhẹ) và vệt sáng mờ dọc dải trần
         var pul = 0.85 + 0.15 * Math.sin(t * 0.9 * sp);
-        ctx.globalAlpha = 0.9 * pul;
-        ctx.drawImage(this.core, W / 2 - W * 0.3, floor - H * 0.085, W * 0.6, H * 0.17);
+        ctx.globalAlpha = (this.useGl ? 0.16 : 0.9) * pul; // bản WebGL: chỉ còn một quầng rất nhạt, không thành cụm trắng
+        ctx.drawImage(this.core, W / 2 - W * 0.45, floor - H * 0.1, W * 0.9, H * 0.2);
         if (!this.useGl) { ctx.globalAlpha = 0.22; ctx.drawImage(this.core, W / 2 - W * 0.55, top - H * 0.045, W * 1.1, H * 0.09); }
         // kim tuyến: 4 tấm đổi độ sáng lệch pha + trôi ngang rất chậm ngược chiều nhau → lấp lánh, có chiều sâu
         if (this.useGl && GLFX.gl) GLFX.draw(dt);
@@ -619,14 +619,14 @@
     gl: null, cv: null, time: 0, rip: [], heroes: [], sparks: [], nextDrop: 0,
     VS_PTS: 'attribute vec4 aP;uniform float uT,uAsp,uPx;uniform vec3 uRip[6];varying float vA;' +
       'void main(){float seed=aP.z;float tw=pow(0.5+0.5*sin(uT*(1.2+seed*3.7)+seed*61.0),3.0);' +
-      'if(aP.w>1.5){gl_Position=vec4(aP.xy,0.0,1.0);gl_PointSize=uPx*(1.6+2.8*fract(seed*7.3));vA=(0.15+0.85*tw)*0.9;return;}' +
+      'if(aP.w>1.5){gl_Position=vec4(aP.xy,0.0,1.0);float big=step(0.965,fract(seed*29.0));gl_PointSize=uPx*(1.3+2.2*fract(seed*7.3)+big*3.5);vA=(0.18+0.82*tw)*(0.55+0.45*fract(seed*3.1)+big*0.5);return;}' +
       'float fl=aP.w<0.5?1.0:0.0;float ang=aP.y+uT*(fl>0.5?0.03:-0.02)*(1.0+0.7/(0.5+aP.x));' +
       'float thick=(fract(seed*91.7)-0.5)*(0.05+0.09*aP.x);vec3 p=vec3(cos(ang)*aP.x,(fl>0.5?-0.95:0.95)+thick,sin(ang)*aP.x);float lift=0.0;' +
-      'if(fl>0.5){for(int i=0;i<6;i++){float age=uT-uRip[i].z;if(age>0.0&&age<3.2){float d=distance(p.xz,uRip[i].xy);' +
-      'float w=exp(-pow((d-age*0.85)/0.085,2.0))*exp(-age*1.05);float w2=exp(-pow((d-age*0.85+0.22)/0.07,2.0))*exp(-age*1.6)*0.5;lift+=w+w2;}}}' +
-      'p.y+=lift*0.085;float zc=3.2-p.z;float f=2.1445;gl_Position=vec4(p.x*f/uAsp*zc/zc,p.y*f,0.0,zc);gl_Position.x=p.x*f/uAsp;' +
-      'float sz=uPx*(2.4+5.0*fract(seed*13.7)*fract(seed*5.1))*2.6/zc;gl_PointSize=max(1.0,sz)*(1.0+lift*1.4);' +
-      'float far=clamp(1.3-zc*0.09,0.5,1.0);vA=((0.5+1.1*tw)*(0.9+2.2*exp(-aP.x*1.2))*(fl>0.5?1.0:0.8)+lift*1.6)*far*smoothstep(0.15,0.7,zc)*(1.0-smoothstep(1.7,3.0,aP.x)*0.92);}',
+      'if(fl>0.5){for(int i=0;i<6;i++){float age=uT-uRip[i].z;if(age>0.0&&age<2.4){float d=distance(p.xz,uRip[i].xy);' +
+      'float w=exp(-pow((d-age*0.6)/0.06,2.0))*exp(-age*1.5);float w2=exp(-pow((d-age*0.6+0.16)/0.05,2.0))*exp(-age*2.2)*0.5;lift+=w+w2;}}}' +
+      'p.y+=lift*0.045;float zc=3.2-p.z;float f=2.1445;gl_Position=vec4(p.x*f/uAsp*zc/zc,p.y*f,0.0,zc);gl_Position.x=p.x*f/uAsp;' +
+      'float sz=uPx*(2.4+5.0*fract(seed*13.7)*fract(seed*5.1))*2.6/zc;gl_PointSize=max(1.0,sz)*(1.0+lift*0.6);' +
+      'float far=clamp(1.3-zc*0.09,0.5,1.0);vA=((0.5+1.1*tw)*(1.15+0.35*exp(-aP.x*0.8))*(fl>0.5?1.0:0.8)+lift*0.8)*far*smoothstep(0.15,0.7,zc)*(1.0-smoothstep(1.7,3.0,aP.x)*0.92);}',
     VS_DROP: 'attribute vec4 aD;attribute float aTail;uniform float uT,uAsp,uPx;varying float vA;' +
       'void main(){float f=fract(uT*aD.w+aD.z);float ft=max(f-0.01-0.028*f,0.0);float ff=aTail>0.5?ft:f;' +
       'float y0=0.95+(fract(aD.z*53.0)-0.5)*0.5;vec3 p=vec3(aD.x,y0-ff*ff*(y0+0.95),aD.y);float zc=3.2-p.z;float k=2.1445;gl_Position=vec4(p.x*k/uAsp,p.y*k,0.0,zc);' +
@@ -651,9 +651,13 @@
         this.gl = gl; this.cv = cv;
         var dens = Math.max(0.3, L.density), i, a = [];
         // sàn + trần: một phần hạt rải đều cả đĩa, một phần dồn về tâm (tâm sáng rực)
-        var disc = function (n, kind, R) { for (var q = 0; q < n; q++) { var u = Math.random(); a.push(Math.random() < 0.55 ? R * Math.sqrt(u) : R * 0.75 * u * u, Math.random() * 6.2832, Math.random(), kind); } };
+        var disc = function (n, kind, R) { for (var q = 0; q < n; q++) { var u = Math.random(); a.push(R * Math.pow(u, 0.62), Math.random() * 6.2832, Math.random(), kind); } };
         disc(Math.round(34000 * dens), 0, 3.0); disc(Math.round(24000 * dens), 1, 3.0);
-        for (i = 0; i < Math.round(1400 * dens); i++) a.push(rnd(-1, 1), rnd(-1, 1), Math.random(), 2); // bụi sao
+        for (i = 0; i < Math.round(2600 * dens); i++) a.push(rnd(-1, 1), rnd(-1, 1), Math.random(), 2); // sao rải khắp trời
+        for (i = 0; i < Math.round(2600 * dens); i++) { // dải ngân hà: sao dồn quanh một đường chéo qua nửa trên màn
+          var mx = rnd(-1.1, 1.1), my = 0.5 + mx * 0.22 + (Math.random() + Math.random() + Math.random() - 1.5) * 0.3;
+          a.push(mx, my, Math.random(), 2);
+        }
         this.nPts = a.length / 4;
         this.bPts = gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER, this.bPts); gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(a), gl.STATIC_DRAW);
         // thác: các dòng đổ quanh rìa + mưa kim tuyến thưa khắp sàn; mỗi hạt = một đoạn thẳng (đầu sáng, đuôi tắt)
@@ -690,7 +694,7 @@
       var t = this.time, g = 3.4;
       // giọt sáng rơi: xuất phát ở trần, rơi nhanh dần; chạm sàn → vòng sóng + loé + bắn hạt
       if (t > this.nextDrop) {
-        this.nextDrop = t + rnd(0.55, 1.3);
+        this.nextDrop = t + rnd(0.25, 0.7);
         var an = rnd(0, 6.2832), rr = 2.2 * Math.sqrt(Math.random());
         this.heroes.push({ x: Math.cos(an) * rr, z: Math.min(1.7, Math.sin(an) * rr), t0: t, dur: rnd(0.75, 0.95) });
       }
@@ -701,17 +705,17 @@
         if (f >= 1) {
           this.rip[this.ripI] = [h.x, h.z, t]; this.ripI = (this.ripI + 1) % 6;
           this.sparks.push({ x: h.x, y: -0.95, z: h.z, vx: 0, vy: 0, vz: 0, t0: t, max: 0.45, flash: 1 });
-          for (var q = 0; q < 12; q++) { var a3 = rnd(0, 6.2832), v = rnd(0.25, 0.7); this.sparks.push({ x: h.x, y: -0.95, z: h.z, vx: Math.cos(a3) * v, vy: rnd(0.7, 1.5), vz: Math.sin(a3) * v, t0: t, max: rnd(0.45, 0.8) }); }
+          for (var q = 0; q < 5; q++) { var a3 = rnd(0, 6.2832), v = rnd(0.1, 0.3); this.sparks.push({ x: h.x, y: -0.95, z: h.z, vx: Math.cos(a3) * v, vy: rnd(0.3, 0.7), vz: Math.sin(a3) * v, t0: t, max: rnd(0.3, 0.55) }); }
           this.heroes.splice(i, 1); continue;
         }
-        for (var j = 0; j < 14; j++) { var fj = Math.max(0, f - j * 0.012); put(h.x, 0.95 - fj * fj * 1.9, h.z, 9 - j * 0.5, (1 - j / 14) * 0.9); } // đầu giọt + vệt đuôi
+        for (var j = 0; j < 14; j++) { var fj = Math.max(0, f - j * 0.012); put(h.x, 0.95 - fj * fj * 1.9, h.z, 3.4 - j * 0.14, (1 - j / 14) * 0.8); } // đầu giọt + vệt đuôi
       }
       for (i = this.sparks.length - 1; i >= 0; i--) {
         s = this.sparks[i];
         var age = t - s.t0, k = 1 - age / s.max;
         if (k <= 0) { this.sparks.splice(i, 1); continue; }
-        if (s.flash) { put(s.x, s.y + 0.02, s.z, 26 + 60 * (1 - k), 0.9 * k * k); continue; }
-        put(s.x + s.vx * age, Math.max(-0.95, s.y + s.vy * age - 0.5 * g * age * age), s.z + s.vz * age, 4.5, 0.9 * k);
+        if (s.flash) { put(s.x, s.y + 0.01, s.z, 7 + 12 * (1 - k), 0.7 * k * k); continue; }
+        put(s.x + s.vx * age, Math.max(-0.95, s.y + s.vy * age - 0.5 * g * age * age), s.z + s.vz * age, 2.2, 0.8 * k);
       }
       gl.viewport(0, 0, cv.width, cv.height);
       gl.clearColor(0, 0, 0, 0); gl.clear(gl.COLOR_BUFFER_BIT);
