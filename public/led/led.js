@@ -680,10 +680,10 @@
         this.pPts = this.prog(this.VS_PTS, this.FS); this.pDrop = this.prog(this.VS_DROP, this.FS); this.pDyn = this.prog(this.VS_DYN, this.FS);
         gl.disable(gl.DEPTH_TEST); gl.enable(gl.BLEND); gl.blendFunc(gl.ONE, gl.ONE);
         this.rip = []; for (i = 0; i < 8; i++) this.rip.push([0, 0, -99]);
-        this.ripI = 0; this.heroes = []; this.sparks = []; this.time = 0; this.nextDrop = 0.6; this.star = null; this.nextStar = 1.2; this.glowT = -99; this.glow = 0;
+        this.ripI = 0; this.heroes = []; this.sparks = []; this.time = 0; this.nextDrop = 0.6; this.star = null; this.nextStar = 1.2; this.glowT = -99; this.glow = 0; this.rings = []; this.bRing = gl.createBuffer();
         // ?dbg=<0..1>: sao đang rơi tới phần đó của quãng đường; ?dbg=1.x: x giây sau khi sao chạm sàn (để chụp kiểm tra mẫu Sao rơi)
         var dbg = /[?&]dbg=([\d.]+)/.exec(location.search);
-        if (dbg && this.mode === 'saoroi') { var dv = +dbg[1]; if (dv < 1) this.star = { t0: -dv * 1.5, dur: 1.5 }; else { this.glowT = -(dv - 1); this.rip[0] = [0, 0.35, -(dv - 1)]; this.ripI = 1; this.nextStar = 99; } }
+        if (dbg && this.mode === 'saoroi') { var dv = +dbg[1]; if (dv < 1) this.star = { t0: -dv * 1.5, dur: 1.5 }; else { this.glowT = -(dv - 1); this.rip[0] = [0, 0, -(dv - 1)]; this.ripI = 1; this.nextStar = 99; this.rings.push(-(dv - 1)); } }
         stage.insertBefore(cv, canvas.nextSibling);
         return true;
       } catch (e) { this.stop(); return false; }
@@ -721,10 +721,11 @@
       if (this.mode === 'saoroi') {
         if (!this.star && t > this.nextStar) this.star = { t0: t, dur: 1.5 };
         if (this.star) {
-          var fs = (t - this.star.t0) / this.star.dur, SZ = 0.35;
+          var fs = (t - this.star.t0) / this.star.dur, SZ = 0;
           if (fs >= 1) {
             this.rip[this.ripI] = [0, SZ, t]; this.ripI = (this.ripI + 1) % 8;
-            this.glowT = t;
+            this.glowT = t; this.rings.push(t);
+            this.sparks.push({ x: 0, y: -0.95, z: SZ, vx: 0, vy: 2.1, vz: 0, t0: t, max: 1.15, size: 7 }); // giọt nảy ngược lên rồi rơi lại
             this.sparks.push({ x: 0, y: -0.95, z: SZ, vx: 0, vy: 0, vz: 0, t0: t, max: 1.1, flash: 1, big: 4.2 });
             for (var q2 = 0; q2 < 12; q2++) { var a4 = rnd(0, 6.2832), v4 = rnd(0.15, 0.55); this.sparks.push({ x: 0, y: -0.95, z: SZ, vx: Math.cos(a4) * v4, vy: rnd(0.5, 1.7), vz: Math.sin(a4) * v4, t0: t, max: rnd(0.5, 1.1) }); }
             this.star = null; this.nextStar = t + rnd(5, 7);
@@ -740,7 +741,7 @@
         var age = t - s.t0, k = 1 - age / s.max;
         if (k <= 0) { this.sparks.splice(i, 1); continue; }
         if (s.flash) { put(s.x, s.y + 0.01, s.z, (7 + 12 * (1 - k)) * (s.big || 1), (s.big ? 0.6 : 0.7) * k * k); continue; }
-        put(s.x + s.vx * age, Math.max(-0.95, s.y + s.vy * age - 0.5 * g * age * age), s.z + s.vz * age, 2.2, 0.8 * k);
+        put(s.x + s.vx * age, Math.max(-0.95, s.y + s.vy * age - 0.5 * g * age * age), s.z + s.vz * age, s.size || 2.2, 0.8 * k);
       }
       gl.viewport(0, 0, cv.width, cv.height);
       gl.clearColor(0, 0, 0, 0); gl.clear(gl.COLOR_BUFFER_BIT);
@@ -757,7 +758,7 @@
       var flat = []; for (i = 0; i < 8; i++) flat.push(this.rip[i][0], this.rip[i][1], this.rip[i][2]);
       gl.uniform3fv(gl.getUniformLocation(this.pPts, 'uRip'), new Float32Array(flat));
       var sr = this.mode === 'saoroi';
-      gl.uniform4fv(gl.getUniformLocation(this.pPts, 'uRp'), sr ? [0.6, 0.22, 0.55, 0.55] : [0.62, 0.075, 0.95, 1]); // tốc độ lan, độ dày vòng, tắt dần, độ mạnh
+      gl.uniform4fv(gl.getUniformLocation(this.pPts, 'uRp'), sr ? [0.6, 0.16, 0.55, 0.85] : [0.62, 0.075, 0.95, 1]); // tốc độ lan, độ dày vòng, tắt dần, độ mạnh
       gl.uniform2fv(gl.getUniformLocation(this.pPts, 'uSt'), sr ? [0.72, 0.6] : [1, 1]); // Sao rơi: hạt nhỏ và dịu hơn
       gl.uniform3fv(gl.getUniformLocation(this.pPts, 'uCen'), sr ? [0.45, 1.5 * this.glow, 1.5] : [0, 0, 1]);    // sáng tâm sàn: cố định, bừng lên khi sao chạm, độ gom
       gl.bindBuffer(gl.ARRAY_BUFFER, this.bPts); attr(this.pPts, 'aP', 4, 16, 0);
@@ -769,6 +770,30 @@
       gl.drawArrays(gl.LINES, 0, this.nDrop);
       gl.uniform1f(gl.getUniformLocation(this.pDrop, 'uPoint'), 1);
       gl.drawArrays(gl.POINTS, 0, this.nDrop);
+      }
+      // vòng sóng mặt nước (Sao rơi): mỗi lần sao chạm sàn có 3 gợn tròn đồng tâm lan ra, mảnh, mờ dần theo thời gian và khi ra tới rìa
+      if (sr && this.rings.length) {
+        var RV = [], strips = 0, SEG = 96;
+        for (i = this.rings.length - 1; i >= 0; i--) {
+          var ra = t - this.rings[i];
+          if (ra > 5) { this.rings.splice(i, 1); continue; }
+          for (var w = 0; w < 3; w++) {
+            var a2 = ra - w * 0.42; if (a2 <= 0.02) continue;
+            var rad = 0.6 * a2, al = 0.8 * Math.exp(-a2 * 0.5) * (1 - w * 0.22) * (1 - Math.min(1, Math.max(0, (rad - 1.9) / 0.9)));
+            if (al < 0.01) continue;
+            for (var th = 0; th < 3; th++) { // 3 đường sát nhau → nét dày mềm hơn 1 điểm ảnh
+              var r3 = rad + (th - 1) * 0.012, al3 = al * (th === 1 ? 1 : 0.5);
+              for (var q3 = 0; q3 <= SEG; q3++) { var an3 = q3 / SEG * 6.2832; RV.push(Math.cos(an3) * r3, -0.94, Math.sin(an3) * r3, 1, al3); }
+              strips++;
+            }
+          }
+        }
+        if (strips) {
+          use(this.pDyn, 0);
+          gl.bindBuffer(gl.ARRAY_BUFFER, this.bRing); gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(RV), gl.DYNAMIC_DRAW);
+          attr(this.pDyn, 'aPos', 3, 20, 0); attr(this.pDyn, 'aSA', 2, 20, 12);
+          for (i = 0; i < strips; i++) gl.drawArrays(gl.LINE_STRIP, i * (SEG + 1), SEG + 1);
+        }
       }
       // giọt sáng, loé, hạt bắn
       if (n) {
