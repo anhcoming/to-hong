@@ -856,9 +856,12 @@ function markPaid(o, via) {
   o.paidAt = Date.now();
   o.paidVia = via;
   const card = db.cards.find((c) => c.id === o.cardId);
-  if (card && o.product === 'combo') return activateCombo(card, o.paidAt);
-  const target = card && PRODUCTS[o.product || 'card'].sub(card);
-  if (target) { target.paid = true; target.paidAt = o.paidAt; }
+  if (card && o.product === 'combo') activateCombo(card, o.paidAt);
+  else {
+    const target = card && PRODUCTS[o.product || 'card'].sub(card);
+    if (target) { target.paid = true; target.paidAt = o.paidAt; }
+  }
+  closeCovered(o);
 }
 
 function productPaid(o) {
@@ -866,6 +869,19 @@ function productPaid(o) {
   const target = card && PRODUCTS[o.product || 'card'].sub(card);
   return !!(target && target.paid);
 }
+// Đơn đang chờ mà sản phẩm của nó đã được trả bằng đơn khác (vd. tạo đơn thiệp 99k rồi trả đơn Trọn bộ 129k) → tự đóng,
+// khỏi nằm mãi ở "Cần xử lý" và khỏi bị trả nhầm lần nữa. `by`: đơn vừa trả (không có = dọn dữ liệu cũ lúc nạp kho).
+function closeCovered(by) {
+  let n = 0;
+  db.orders.forEach((x) => {
+    if (x === by || x.status !== 'pending' || (by && x.cardId !== by.cardId) || !productPaid(x)) return;
+    x.status = 'cancelled'; x.cancelledAt = (by && by.paidAt) || Date.now();
+    x.note = by ? `Tự đóng — đã thanh toán qua đơn ${by.code}` : 'Tự đóng — sản phẩm đã được thanh toán qua đơn khác';
+    n++;
+  });
+  return n;
+}
+store.onLoad(() => { if (closeCovered()) save(); });
 
 // SePay báo có giao dịch vào tài khoản ngân hàng (https://docs.sepay.vn — webhook, xác thực "API Key").
 // Tìm mã đơn (TH/LD/VD + 6 ký tự) trong nội dung chuyển khoản; đủ tiền thì kích hoạt ngay.

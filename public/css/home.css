@@ -535,13 +535,15 @@ body.drag .drophint{opacity:1}
 @keyframes ldwin{0%,37%{opacity:0;transform:scale(.9);filter:drop-shadow(0 0 0 rgba(214,69,93,0))}39.5%{opacity:1;transform:scale(1)}42%{transform:scale(1.14);filter:drop-shadow(0 0 16px rgba(214,69,93,.5))}44.5%{opacity:1;transform:scale(1);filter:drop-shadow(0 0 2px rgba(214,69,93,.1))}46.5%,100%{opacity:0;transform:scale(.96);filter:drop-shadow(0 0 0 rgba(214,69,93,0))}}
 @keyframes ldoff{0%,36%{opacity:1}38%,52%{opacity:0}54%,100%{opacity:1}}
 /* các lớp trái tim nhạt dần lan ra từ trái tim giữa (như sóng nhịp tim) */
-.fan .ldh::before,.fan .ldh::after{content:"♥";position:absolute;inset:0;display:grid;place-items:center;color:#f08a9a;z-index:-1;opacity:0;animation:ldwave 1.1s ease-out infinite}
-.fan .ldh::after{color:#f7bcc6;animation-delay:.45s}
+/* trái tim vẽ bằng SVG (không dùng ký tự ♥: mỗi máy một phông, Android ra méo / lệch) */
+.fan .ldh svg{display:block;width:40px;height:38px;fill:#d6455d}
+.fan .ldh::before,.fan .ldh::after{content:"";position:absolute;left:12px;top:13px;width:40px;height:38px;background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 30'%3E%3Cpath fill='%23f08a9a' d='M16 28C6.5 21 3 16 3 11.5 3 7.9 5.8 5 9.4 5c2.6 0 4.6 1.4 6.6 3.9C18 6.4 20 5 22.6 5 26.2 5 29 7.9 29 11.5 29 16 25.5 21 16 28z'/%3E%3C/svg%3E") center/contain no-repeat;z-index:-1;opacity:0;animation:ldwave 1.1s ease-out infinite}
+.fan .ldh::after{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 30'%3E%3Cpath fill='%23f7bcc6' d='M16 28C6.5 21 3 16 3 11.5 3 7.9 5.8 5 9.4 5c2.6 0 4.6 1.4 6.6 3.9C18 6.4 20 5 22.6 5 26.2 5 29 7.9 29 11.5 29 16 25.5 21 16 28z'/%3E%3C/svg%3E");animation-delay:.45s}
 @keyframes ldwave{0%{transform:scale(1);opacity:.75}100%{transform:scale(2.1);opacity:0}}
 .hb.off .fan .ldh::before,.hb.off .fan .ldh::after{animation-play-state:paused}
 @media (min-width:1100px){
   .fan .ldh{animation-name:ldwin2}.fan .slot>i,.fan .slot>span{animation-name:ldoff2}
-  @keyframes ldwin2{0%,35%{opacity:0;transform:scale(.9);filter:drop-shadow(0 0 0 rgba(214,69,93,0))}37.5%{opacity:1;transform:scale(1)}40.5%{transform:scale(1.14);filter:drop-shadow(0 0 16px rgba(214,69,93,.5))}43.5%{opacity:1;transform:scale(1);filter:drop-shadow(0 0 2px rgba(214,69,93,.1))}46%,100%{opacity:0;transform:scale(.96);filter:drop-shadow(0 0 0 rgba(214,69,93,0))}}
+  @keyframes ldwin2{0%,37%{opacity:0;transform:scale(.9);filter:drop-shadow(0 0 0 rgba(214,69,93,0))}39%{opacity:1;transform:scale(1)}41.5%{transform:scale(1.14);filter:drop-shadow(0 0 16px rgba(214,69,93,.5))}44%{opacity:1;transform:scale(1);filter:drop-shadow(0 0 2px rgba(214,69,93,.1))}46%,100%{opacity:0;transform:scale(.96);filter:drop-shadow(0 0 0 rgba(214,69,93,0))}}
   @keyframes ldoff2{0%,35%{opacity:1}37%,52%{opacity:0}54%,100%{opacity:1}}
 }
 .hb.busy .fan .ldh{display:none}.hb.busy .fan .slot>i,.hb.busy .fan .slot>span{animation:none}
@@ -568,7 +570,7 @@ body.drag .drophint{opacity:1}
   @keyframes fp1{0%,14%{left:56px;top:176px;transform:rotate(6deg);opacity:1}34%{left:225px;top:100px;transform:rotate(0) scale(.55);opacity:1}37%,93%{left:225px;top:100px;transform:scale(.35);opacity:0}100%{left:56px;top:176px;transform:rotate(6deg);opacity:1}}
   @keyframes fp2{0%,14%{left:420px;top:14px;transform:rotate(7deg);opacity:1}34%{left:225px;top:100px;transform:rotate(0) scale(.55);opacity:1}37%,93%{left:225px;top:100px;transform:scale(.35);opacity:0}100%{left:420px;top:14px;transform:rotate(7deg);opacity:1}}
   @keyframes fp3{0%,14%{left:396px;top:182px;transform:rotate(-5deg);opacity:1}34%{left:225px;top:100px;transform:rotate(0) scale(.55);opacity:1}37%,93%{left:225px;top:100px;transform:scale(.35);opacity:0}100%{left:396px;top:182px;transform:rotate(-5deg);opacity:1}}
-  @keyframes ldwinm{0%,35%{opacity:0;transform:scale(.9);filter:drop-shadow(0 0 0 rgba(214,69,93,0))}37.5%{opacity:1;transform:scale(1)}40.5%{transform:scale(1.14);filter:drop-shadow(0 0 16px rgba(214,69,93,.5))}43.5%{opacity:1;transform:scale(1);filter:drop-shadow(0 0 2px rgba(214,69,93,.1))}46%,100%{opacity:0;transform:scale(.96);filter:drop-shadow(0 0 0 rgba(214,69,93,0))}}
+  @keyframes ldwinm{0%,37%{opacity:0;transform:scale(.9);filter:drop-shadow(0 0 0 rgba(214,69,93,0))}39%{opacity:1;transform:scale(1)}41.5%{transform:scale(1.14);filter:drop-shadow(0 0 16px rgba(214,69,93,.5))}44%{opacity:1;transform:scale(1);filter:drop-shadow(0 0 2px rgba(214,69,93,.1))}46%,100%{opacity:0;transform:scale(.96);filter:drop-shadow(0 0 0 rgba(214,69,93,0))}}
   @keyframes ldoffm{0%,35%{opacity:1}37%,52%{opacity:0}54%,100%{opacity:1}}
 }
 @media (prefers-reduced-motion:reduce){.fan .fp3{display:none!important}}
@@ -582,4 +584,11 @@ body.drag .drophint{opacity:1}
   .hnav:not(.up){transform:translate(-50%,36px)}
   .hnav.up{transform:translate(-50%,0)}
   .hnav>.wrap,.hnav:not(.up)>.wrap{padding-left:16px;padding-right:8px}
+}
+
+/* điện thoại: bớt chữ — bỏ dòng "Tải ảnh cưới lên → có ngay danh sách thiệp gợi ý" (nút ngay dưới đã nói đủ), nút sát lên */
+@media (max-width:700px){
+  .fan .cap{display:none}
+  .stage{padding-bottom:4px}
+  .hcta{margin-top:18px}
 }

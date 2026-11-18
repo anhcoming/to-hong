@@ -107,6 +107,16 @@ const buyCombo = async (id) => { const o = (await call('u', 'POST', `/api/cards/
   r = await call('u', 'POST', `/api/cards/${f}/order`, { product: 'led' });
   assert.equal(r.json.order.amount, config.ledPrice);
 
+  // đã tạo đơn thiệp lẻ (chưa trả) rồi trả đơn Trọn bộ → đơn thiệp lẻ tự đóng, không còn nằm ở "Cần xử lý"
+  const { db } = require('../lib/db');
+  const z = await newCard('combo-z');
+  const lone = (await call('u', 'POST', `/api/cards/${z}/order`, {})).json.order;
+  assert.match(lone.code, /^TH/);
+  const cb = await buyCombo(z);
+  const loneDb = db.orders.find((o) => o.code === lone.code);
+  assert.equal(loneDb.status, 'cancelled', 'đơn thiệp lẻ đang chờ tự đóng khi Trọn bộ đã trả');
+  assert.match(loneDb.note, new RegExp(cb.code));
+  assert.equal(db.orders.find((o) => o.code === cb.code).status, 'paid');
   console.log('✓ Trọn bộ gắn với thiệp: mở thiệp + LED + video của thiệp đó (có sẵn hay làm sau), thiệp khác không liên quan, nâng cấp trả phần chênh, lượt cũ vẫn dùng được');
   process.exit(0);
 })().catch((e) => { console.error('✗', e); process.exit(1); });
