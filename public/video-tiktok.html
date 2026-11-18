@@ -33,7 +33,7 @@
 .tc{display:flex;flex-direction:column;border-radius:18px;background:var(--card);border:1px solid var(--line);overflow:hidden;box-shadow:0 12px 30px rgba(120,40,50,.07);cursor:pointer;transition:transform .2s,box-shadow .2s}
 .tc:hover{transform:translateY(-4px);box-shadow:0 20px 40px rgba(120,40,50,.14)}
 .tc .pv{position:relative;display:block;background:#1a1214}
-.tc canvas{display:block;width:100%;aspect-ratio:9/16}
+.tc video{display:block;width:100%;aspect-ratio:9/16;object-fit:cover;background:#1a1214}
 .tc .bd{position:absolute;top:10px;left:10px;padding:3px 9px;border-radius:999px;background:rgba(0,0,0,.55);color:#fff;font-size:11.5px;font-weight:700;backdrop-filter:blur(4px)}
 .tc .bd.free2{left:auto;right:10px;background:var(--red)}
 .tc .tb{display:flex;flex-direction:column;align-items:stretch;gap:8px;padding:12px 12px 14px}.tc .use{width:100%}
@@ -84,35 +84,22 @@
 (function () {
   var $ = function (s, r) { return (r || document).querySelector(s); };
   var esc = function (s) { return String(s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); };
-  var set = function (pre, n, ext, cover) { var a = cover ? [cover] : []; for (var i = 1; i <= n; i++) a.push('/demo/' + pre + '-' + i + '.' + ext); return a; };
-  // mẫu có sẵn = kiểu (story.js) + tông màu + nhạc + bộ ảnh mẫu
-  var TPL = [
-    { st: 'phongbi', tone: 'hong', name: 'Phong bì hồng', music: '/music/canon.mp3', mname: 'Canon in D', ph: set('hoamoc', 8, 'webp', '/demo/hoamoc-c1.webp') },
-    { st: 'dienanh', tone: 'hong', name: 'Điện ảnh', music: '/music/air.mp3', mname: 'Air on the G String', ph: set('tim', 8, 'jpg') },
-    { st: 'polaroid', tone: 'nau', name: 'Polaroid kỷ niệm', music: '/music/eine-kleine.mp3', mname: 'Eine kleine Nachtmusik', ph: set('nau', 8, 'jpg') },
-    { st: 'toigian', tone: 'xanhduong', name: 'Tối giản xanh', music: '/music/blue-danube.mp3', mname: 'Sóng Danube xanh', ph: set('dodam', 8, 'jpg') },
-    { st: 'songhy', tone: 'do', name: 'Song hỷ đỏ', music: '/music/wedding-march.mp3', mname: 'Hành khúc đám cưới', ph: set('longphung', 10, 'jpg', '/demo/longphung-cover.jpg') },
-    { st: 'phongbi', tone: 'xanhla', name: 'Phong bì xanh lá', music: '/music/eine-kleine.mp3', mname: 'Eine kleine Nachtmusik', ph: set('xanhla', 9, 'jpg') },
-    { st: 'toigian', tone: 'hong', name: 'Tối giản hồng', music: '/music/radetzky.mp3', mname: 'Hành khúc Radetzky', ph: set('hoamoc', 8, 'webp', '/demo/hoamoc-c1.webp') },
-    { st: 'dienanh', tone: 'nau', name: 'Điện ảnh hoài niệm', music: '/music/clair-de-lune.mp3', mname: 'Clair de Lune', ph: set('toduyen', 7, 'webp') },
-    { st: 'polaroid', tone: 'tim', name: 'Polaroid mộng mơ', music: '/music/waltz-flowers.mp3', mname: 'Valse những bông hoa', ph: set('xanhla', 9, 'jpg') },
-    { st: 'songhy', tone: 'xanhngoc', name: 'Song hỷ xanh ngọc', music: '/music/hornpipe.mp3', mname: 'Alla Hornpipe', ph: set('songhy', 8, 'jpg') },
-  ];
-  var card = function (ph, d) {
-    d = d || {};
-    return { template: '', palette: '', data: { groom: { name: d.groom || 'Gia Huy' }, bride: { name: d.bride || 'Bảo Ngọc' }, date: d.date === undefined ? '2026-12-20' : d.date,
-      events: [{ name: 'Tiệc cưới', time: d.time === undefined ? '18:00' : d.time, place: d.place === undefined ? 'Sảnh Ngọc Lan — Nhà hàng tiệc cưới' : d.place }], cover: ph[0], photos: ph.slice(1), music: d.music || '' } };
-  };
+  // mẫu có sẵn (public/js/story.js → STORY_TEMPLATES): kiểu + tông màu + nhạc + bộ ảnh mẫu; video xem trước dựng sẵn ở /demo/story/
+  var TPL = window.STORY_TEMPLATES || [], card = window.storySampleCard;
   var NAMES = {}; (window.STORY_STYLES || []).forEach(function (s) { NAMES[s.id] = s.name; });
 
   // ---------- lưới mẫu ----------
   var filter = '';
   $('#chips').innerHTML = '<button class="on" data-f="">Tất cả</button>' + (window.STORY_STYLES || []).map(function (s) { return '<button data-f="' + s.id + '">' + s.name + '</button>'; }).join('');
   $('#grid').innerHTML = TPL.map(function (t, i) {
-    return '<article class="tc" data-i="' + i + '" data-st="' + t.st + '"><span class="pv"><canvas width="216" height="384"></canvas><span class="bd">' + NAMES[t.st] + '</span><span class="bd free2">Miễn phí</span></span>'
+    return '<article class="tc" data-i="' + i + '" data-st="' + t.st + '"><span class="pv"><video src="/demo/story/' + t.id + '.mp4" poster="/demo/story/' + t.id + '.jpg" muted loop playsinline preload="none"></video><span class="bd">' + NAMES[t.st] + '</span><span class="bd free2">Miễn phí</span></span>'
       + '<div class="tb"><div><h3>' + esc(t.name) + '</h3><small>♪ ' + esc(t.mname) + ' · 3–10 ảnh</small></div><button class="use" type="button">Dùng mẫu</button></div></article>';
   }).join('');
-  document.querySelectorAll('.tc').forEach(function (el) { var t = TPL[+el.dataset.i]; storyPlayer(el.querySelector('canvas'), card(t.ph), t.st, t.tone, 15); el.onclick = function () { openUse(t); }; });
+  // video xem trước: chỉ phát khi đang hiện trên màn hình (mượt, không tốn máy như vẽ trực tiếp)
+  var io = window.IntersectionObserver && new IntersectionObserver(function (es) {
+    es.forEach(function (e) { var v = e.target; if (e.isIntersecting) { var p = v.play(); if (p && p.catch) p.catch(function () {}); } else v.pause(); });
+  }, { threshold: 0.35 });
+  document.querySelectorAll('.tc').forEach(function (el) { var t = TPL[+el.dataset.i]; if (io) io.observe(el.querySelector('video')); el.onclick = function () { openUse(t); }; });
   $('#chips').onclick = function (e) {
     var b = e.target.closest('[data-f]'); if (!b) return; filter = b.dataset.f;
     document.querySelectorAll('#chips button').forEach(function (x) { x.classList.toggle('on', x === b); });

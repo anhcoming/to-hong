@@ -79,7 +79,7 @@
     <p class="lead">Thả ảnh cưới, nhập tên và ngày cưới — có ngay video dọc khoảng 20 giây kèm nhạc để báo tin vui trên TikTok, Reels, Story. 5 kiểu, nhiều tông màu, không cần đăng ký.</p>
     <div class="vs-acts"><a class="btn btn-main" href="/video">Tạo video miễn phí</a></div>
   </div>
-  <div class="bhy-phones" id="bhyPhones"><canvas width="270" height="480" data-st="polaroid"></canvas><canvas width="270" height="480" data-st="phongbi"></canvas><canvas width="270" height="480" data-st="songhy"></canvas></div>
+  <div class="bhy-phones" id="bhyPhones"><video src="/demo/story/polaroid-nau.mp4" poster="/demo/story/polaroid-nau.jpg" muted loop playsinline preload="none"></video><video src="/demo/story/phongbi-hong.mp4" poster="/demo/story/phongbi-hong.jpg" muted loop playsinline preload="none"></video><video src="/demo/story/songhy-do.mp4" poster="/demo/story/songhy-do.jpg" muted loop playsinline preload="none"></video></div>
 </div></section>
 
 <!-- khu video cưới -->
@@ -199,20 +199,12 @@
 <script src="/js/photoprep.js"></script>
 <script src="/js/hero.js"></script>
 <script>
-// video báo hỷ: nạp story.js + ảnh mẫu khi khối này sắp hiện trên màn hình
+// video báo hỷ: video xem trước dựng sẵn (/demo/story/), chỉ phát khi khối này đang hiện trên màn hình
 (function () {
   var box = document.getElementById('bhyPhones'); if (!box || !window.IntersectionObserver) return;
-  var io = new IntersectionObserver(function (e) {
-    if (!e[0].isIntersecting) return; io.disconnect();
-    var s = document.createElement('script'); s.src = '/js/story.js'; s.onload = function () {
-      var set = function (pre, n, ext, cover) { var a = cover ? [cover] : []; for (var i = 1; i <= n; i++) a.push('/demo/' + pre + '-' + i + '.' + ext); return a; };
-      var card = function (ph) { return { template: '', palette: '', data: { groom: { name: 'Gia Huy' }, bride: { name: 'Bảo Ngọc' }, date: '2026-12-20', events: [{ name: 'Tiệc cưới', time: '18:00', place: 'Sảnh Ngọc Lan — Nhà hàng tiệc cưới' }], cover: ph[0], photos: ph.slice(1) } }; };
-      var D = { polaroid: [card(set('nau', 8, 'jpg')), 'nau'], phongbi: [card(set('hoamoc', 8, 'webp', '/demo/hoamoc-c1.webp')), 'hong'], songhy: [card(set('longphung', 10, 'jpg', '/demo/longphung-cover.jpg')), 'do'] };
-      box.querySelectorAll('canvas').forEach(function (c) { var d = D[c.dataset.st]; storyPlayer(c, d[0], c.dataset.st, d[1]); });
-    };
-    document.body.appendChild(s);
-  }, { rootMargin: '300px' });
-  io.observe(box);
+  new IntersectionObserver(function (e) {
+    box.querySelectorAll('video').forEach(function (v) { if (e[0].isIntersecting) { var p = v.play(); if (p && p.catch) p.catch(function () {}); } else v.pause(); });
+  }, { threshold: 0.2 }).observe(box);
 })();
 </script>
 <script>

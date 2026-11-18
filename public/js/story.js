@@ -22,11 +22,17 @@
     var t = new Promise(function (ok) { setTimeout(ok, 4000); });
     return Promise.race([Promise.all(want.map(function (f) { return document.fonts.load(f, 'Đẹp Ngọc'); })), t]).catch(function () {});
   }
-  function loadImg(url) {
+  // ảnh thu nhỏ sẵn (cạnh dài ≤ maxSide) thành ImageBitmap: mỗi khung vẽ lại ảnh nhỏ → dựng / xem trước nhanh hơn nhiều
+  function loadImg(url, maxSide) {
     return new Promise(function (ok) {
       if (!url) return ok(null);
       var im = new Image(); im.crossOrigin = 'anonymous'; im.decoding = 'async';
-      im.onload = function () { ok(im); }; im.onerror = function () { ok(null); };
+      im.onload = function () {
+        var k = Math.min(1, (maxSide || 1400) / Math.max(im.width, im.height));
+        if (k >= 1 || !window.createImageBitmap) return ok(im);
+        createImageBitmap(im, { resizeWidth: Math.round(im.width * k), resizeHeight: Math.round(im.height * k), resizeQuality: 'high' }).then(ok, function () { ok(im); });
+      };
+      im.onerror = function () { ok(null); };
       im.src = String(url).split('#')[0];
     });
   }
@@ -69,7 +75,10 @@
   function cover(g, im, x, y, w, h, zoom, fx, fy) {
     if (!im) { g.fillStyle = '#e9cfd3'; g.fillRect(x, y, w, h); return; }
     var s = Math.max(w / im.width, h / im.height) * (zoom || 1), iw = im.width * s, ih = im.height * s;
+    // luôn cắt trong khung: ảnh ngang đặt vào khung dọc không được lòi ra ngoài (mép ảnh hiện hai bên phong bì)
+    g.save(); g.beginPath(); g.rect(x, y, w, h); g.clip();
     g.drawImage(im, x + (w - iw) * (fx == null ? 0.5 : fx), y + (h - ih) * (fy == null ? 0.35 : fy), iw, ih);
+    g.restore();
   }
   function rrect(g, x, y, w, h, r) { g.beginPath(); g.moveTo(x + r, y); g.arcTo(x + w, y, x + w, y + h, r); g.arcTo(x + w, y + h, x, y + h, r); g.arcTo(x, y + h, x, y, r); g.arcTo(x, y, x + w, y, r); g.closePath(); }
   function text(g, s, x, y, font, color, alpha, opts) {
@@ -468,14 +477,14 @@
 
   // ---------- dữ liệu thiệp → nội dung video ----------
   var WD = ['Chủ nhật', 'Thứ hai', 'Thứ ba', 'Thứ tư', 'Thứ năm', 'Thứ sáu', 'Thứ bảy'];
-  function assets(card) {
+  function assets(card, maxSide) {
     var d = card.data;
     var photos = [d.cover].concat(d.photos || []).filter(Boolean).filter(function (u, i, a) { return a.indexOf(u) === i; });
     if (!photos.length) photos = (card.samplePhotos || []).length ? card.samplePhotos : ['/demo/cover-' + card.template + '-' + card.palette + '.jpg']; // chưa có ảnh: bộ ảnh mẫu của mẫu (như trình sửa đang hiện)
     var m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(d.date || '');
     var main = (d.events || []).find(function (e) { return /tiệc/i.test(e.name || ''); }) || (d.events || [])[0] || {};
     var mus = d.music || (d.musicOff ? '' : '/music/canon.mp3');
-    return Promise.all(photos.slice(0, 10).map(loadImg)).then(function (ims) {
+    return Promise.all(photos.slice(0, 10).map(function (u) { return loadImg(u, maxSide); })).then(function (ims) {
       ims = ims.filter(Boolean);
             // đoạn chiếu: tới 6 ảnh album (ít ảnh thì thêm ảnh bìa, vẫn thiếu thì lặp); 3 ảnh rơi ở cảnh mời: ưu tiên ảnh chưa chiếu
       var slides = ims.slice(1, 7); if (slides.length < 3) slides = slides.concat(ims.slice(0, 1));
@@ -493,24 +502,28 @@
     });
   }
 
-  function render(card, onProgress, styleId, toneId) {
-    onProgress = onProgress || function () {};
-    var style = STYLES[styleId] || STYLES.phongbi, T;
+  // opts: { scale (khổ ra so với 1080×1920, mặc định 2/3 = 720×1280 — đủ nét cho TikTok, dựng nhanh gấp đôi), bitrate, noAudio }
+  function render(card, onProgress, styleId, toneId, opts) {
+    onProgress = onProgress || function () {}; opts = opts || {};
+    var style = STYLES[styleId] || STYLES.phongbi, T, S = opts.scale || 2 / 3;
     if (!window.VideoEncoder || !window.VideoFrame) return Promise.reject(new Error('Trình duyệt này chưa dựng được video — mở bằng Chrome, Edge hoặc Safari bản mới nhé'));
-    var A, canvas = document.createElement('canvas'); canvas.width = W; canvas.height = H;
-    var g = canvas.getContext('2d');
-    return Promise.all([window.Mp4Muxer ? null : loadScript('/vendor/mp4-muxer.js'), loadFonts(), assets(card)]).then(function (r) {
+    var OW = Math.round(W * S / 2) * 2, OH = Math.round(H * S / 2) * 2; // H.264 cần cạnh chẵn
+    var A, canvas = document.createElement('canvas'); canvas.width = OW; canvas.height = OH;
+    var g = canvas.getContext('2d', { alpha: false });
+    return Promise.all([window.Mp4Muxer ? null : loadScript('/vendor/mp4-muxer.js'), loadFonts(), assets(card, Math.max(600, Math.round(1500 * S)))]).then(function (r) {
       A = r[2]; A.P = tone(toneHex(card, toneId, styleId)); T = style.timeline(A);
       var AVC = ['avc1.640028', 'avc1.4d0028', 'avc1.42e028'], chunks = [], meta = null, failed = null;
       var enc = new VideoEncoder({
         output: function (chunk, m) { if (!meta && m && m.decoderConfig) meta = m; var b = new Uint8Array(chunk.byteLength); chunk.copyTo(b); chunks.push({ data: b, type: chunk.type, ts: chunk.timestamp, dur: chunk.duration || Math.round(1e6 / FPS) }); },
         error: function (e) { failed = e; },
       });
-      var base = { width: W, height: H, bitrate: 6e6, bitrateMode: 'variable', framerate: FPS, avc: { format: 'avc' } };
+      var base = { width: OW, height: OH, bitrate: opts.bitrate || 4e6, bitrateMode: 'variable', framerate: FPS, avc: { format: 'avc' } };
+      // ưu tiên mã hoá bằng phần cứng (nhanh hơn nhiều trên điện thoại), không được thì để trình duyệt tự chọn
+      var tries = []; AVC.forEach(function (codec) { tries.push({ codec: codec, hardwareAcceleration: 'prefer-hardware' }); }); AVC.forEach(function (codec) { tries.push({ codec: codec }); });
       function pick(i) {
-        if (i >= AVC.length) return Promise.reject(new Error('Trình duyệt chưa hỗ trợ mã hoá H.264 — dùng Chrome hoặc Edge bản mới nhé'));
-        var c = Object.assign({ codec: AVC[i] }, base);
-        return VideoEncoder.isConfigSupported(c).then(function (x) { return x.supported ? c : pick(i + 1); });
+        if (i >= tries.length) return Promise.reject(new Error('Trình duyệt chưa hỗ trợ mã hoá H.264 — dùng Chrome hoặc Edge bản mới nhé'));
+        var c = Object.assign({}, base, tries[i]);
+        return VideoEncoder.isConfigSupported(c).then(function (x) { return x.supported ? c : pick(i + 1); }, function () { return pick(i + 1); });
       }
       function breathe() { return new Promise(function (res) { var ch = new MessageChannel(); ch.port1.onmessage = function () { res(); }; ch.port2.postMessage(0); }); }
       var total = Math.round(T.D * FPS), i = 0;
@@ -520,7 +533,7 @@
           if (failed) return Promise.reject(failed);
           if (i >= total) return enc.flush();
           if (enc.encodeQueueSize > 6) return breathe().then(next);
-          style.frame(g, i / FPS, A, T);
+          g.setTransform(S, 0, 0, S, 0, 0); style.frame(g, i / FPS, A, T);
           var f = new VideoFrame(canvas, { timestamp: Math.round(i * 1e6 / FPS), duration: Math.round(1e6 / FPS) });
           enc.encode(f, { keyFrame: i % (FPS * 2) === 0 }); f.close(); i++;
           if (i % 10 === 0) onProgress(0.8 * i / total, 'Đang dựng hình');
@@ -531,14 +544,14 @@
     }).then(function (v) {
       onProgress(0.84, 'Đang ghép nhạc');
       return aacConfig().then(function (cfg) {
-        if (!cfg || !A.music) return [v, null, null];
+        if (!cfg || !A.music || opts.noAudio) return [v, null, null];
         return renderMusic(A.music, T.D).then(function (buf) { return [v, cfg, buf]; }, function (e) { console.warn('Bỏ qua nhạc:', e); return [v, null, null]; });
       });
     }).then(function (x) {
       var v = x[0], cfg = x[1], buf = x[2];
       var muxer = new Mp4Muxer.Muxer({
         target: new Mp4Muxer.ArrayBufferTarget(),
-        video: { codec: 'avc', width: W, height: H, frameRate: FPS },
+        video: { codec: 'avc', width: OW, height: OH, frameRate: FPS },
         audio: buf ? { codec: 'aac', numberOfChannels: 2, sampleRate: SR } : undefined,
         fastStart: 'in-memory', firstTimestampBehavior: 'offset',
       });
@@ -641,7 +654,7 @@
         card = r[1];
         if (!card.template && curTone === 'thiep') curTone = 'hong'; // không gắn với thiệp nào: bỏ lựa chọn theo màu thiệp
         if (!card.data.groom.name || !card.data.bride.name) throw new Error('Điền tên cô dâu và chú rể trước khi tạo video nhé');
-        return assets(card);
+        return assets(card, 700); // xem trước nhỏ: ảnh nhỏ cho mượt
       }).then(function (a) {
         A = a;
         function thumbs() { // ảnh xem trước từng kiểu, theo tông màu đang chọn
@@ -684,7 +697,7 @@
     var gap = 1000 / (fps || 25);
     var stopped = false, raf = 0, seen = true, io = window.IntersectionObserver ? new IntersectionObserver(function (e) { seen = e[0].isIntersecting; }) : null;
     if (io) io.observe(canvas);
-    Promise.all([loadFonts(), assets(card)]).then(function (r) {
+    Promise.all([loadFonts(), assets(card, 600)]).then(function (r) {
       var A = r[1], st = STYLES[styleId], T; A.P = tone(toneHex(card, toneId, styleId)); T = st.timeline(A);
       var g = canvas.getContext('2d'), t0 = performance.now(), last = 0;
       g.setTransform(canvas.width / W, 0, 0, canvas.height / H, 0, 0); st.frame(g, st.preview, A, T);
@@ -697,6 +710,34 @@
     return function () { stopped = true; cancelAnimationFrame(raf); if (io) io.disconnect(); };
   };
   window.STORY_STYLES = STYLE_IDS.map(function (id) { return { id: id, name: STYLES[id].name, desc: STYLES[id].desc }; });
+  // mẫu có sẵn ở trang /video (kiểu + tông màu + nhạc + bộ ảnh mẫu). Video xem trước dựng sẵn ở /demo/story/<id>.mp4 (+ .jpg) —
+  // đổi mẫu nào thì dựng lại video xem trước của mẫu đó (window.storyRender(..., { scale: 1/3, bitrate: 7e5, noAudio: true })).
+  var dset = function (pre, n, ext, cover) { var a = cover ? [cover] : []; for (var i = 1; i <= n; i++) a.push('/demo/' + pre + '-' + i + '.' + ext); return a; };
+  window.STORY_TEMPLATES = [
+    { id: 'phongbi-hong', st: 'phongbi', tone: 'hong', name: 'Phong bì hồng', music: '/music/canon.mp3', mname: 'Canon in D', ph: dset('hoamoc', 8, 'webp', '/demo/hoamoc-c1.webp') },
+    { id: 'dienanh', st: 'dienanh', tone: 'hong', name: 'Điện ảnh', music: '/music/air.mp3', mname: 'Air on the G String', ph: dset('tim', 8, 'jpg') },
+    { id: 'polaroid-nau', st: 'polaroid', tone: 'nau', name: 'Polaroid kỷ niệm', music: '/music/eine-kleine.mp3', mname: 'Eine kleine Nachtmusik', ph: dset('nau', 8, 'jpg') },
+    { id: 'toigian-xanh', st: 'toigian', tone: 'xanhduong', name: 'Tối giản xanh', music: '/music/blue-danube.mp3', mname: 'Sóng Danube xanh', ph: dset('dodam', 8, 'jpg') },
+    { id: 'songhy-do', st: 'songhy', tone: 'do', name: 'Song hỷ đỏ', music: '/music/wedding-march.mp3', mname: 'Hành khúc đám cưới', ph: dset('longphung', 10, 'jpg', '/demo/longphung-cover.jpg') },
+    { id: 'phongbi-xanhla', st: 'phongbi', tone: 'xanhla', name: 'Phong bì xanh lá', music: '/music/eine-kleine.mp3', mname: 'Eine kleine Nachtmusik', ph: dset('xanhla', 9, 'jpg') },
+    { id: 'toigian-hong', st: 'toigian', tone: 'hong', name: 'Tối giản hồng', music: '/music/radetzky.mp3', mname: 'Hành khúc Radetzky', ph: dset('hoamoc', 8, 'webp', '/demo/hoamoc-c1.webp') },
+    { id: 'dienanh-nau', st: 'dienanh', tone: 'nau', name: 'Điện ảnh hoài niệm', music: '/music/clair-de-lune.mp3', mname: 'Clair de Lune', ph: dset('toduyen', 7, 'webp') },
+    { id: 'polaroid-tim', st: 'polaroid', tone: 'tim', name: 'Polaroid mộng mơ', music: '/music/waltz-flowers.mp3', mname: 'Valse những bông hoa', ph: dset('xanhla', 9, 'jpg') },
+    { id: 'songhy-xanhngoc', st: 'songhy', tone: 'xanhngoc', name: 'Song hỷ xanh ngọc', music: '/music/hornpipe.mp3', mname: 'Alla Hornpipe', ph: dset('songhy', 8, 'jpg') },
+  ];
+  window.storySampleCard = function (ph, d) {
+    d = d || {};
+    return { template: '', palette: '', data: { groom: { name: d.groom || 'Gia Huy' }, bride: { name: d.bride || 'Bảo Ngọc' }, date: d.date === undefined ? '2026-12-20' : d.date,
+      events: [{ name: 'Tiệc cưới', time: d.time === undefined ? '18:00' : d.time, place: d.place === undefined ? 'Sảnh Ngọc Lan — Nhà hàng tiệc cưới' : d.place }], cover: ph[0], photos: ph.slice(1), music: d.music || '' } };
+  };
+  // ảnh đại diện (khung tiêu biểu của mẫu) → JPEG nhỏ, dùng làm poster cho video xem trước
+  window.storyPoster = function (card, styleId, toneId, w, h) {
+    return Promise.all([loadFonts(), assets(card, 700)]).then(function (r) {
+      var A = r[1], st = STYLES[styleId], c = document.createElement('canvas'); c.width = w || 360; c.height = h || 640; A.P = tone(toneHex(card, toneId, styleId));
+      var g = c.getContext('2d'); g.setTransform(c.width / W, 0, 0, c.height / H, 0, 0); st.frame(g, st.preview, A, st.timeline(A));
+      return new Promise(function (ok) { c.toBlob(ok, 'image/jpeg', 0.82); });
+    });
+  };
   window.storyRender = render; // để thử nghiệm
   // xem nhanh vài khung (không mã hoá) — dùng khi chỉnh bố cục
   window.storyFrames = function (card, times, styleId, toneId) {
