@@ -17,7 +17,19 @@ img{display:block;max-width:100%}
 .btn-sm{padding:9px 18px;font-size:14px}
 
 /* thanh trên: gọn 3 mục, "Sản phẩm" là menu thả; đã đăng nhập thì thấy ảnh đại diện (dựng ngay trong index.html) */
-.hnav{position:fixed;top:14px;left:50%;transform:translateX(-50%);z-index:50;width:min(1240px,calc(100% - 8vw),calc(100% - 24px));border-radius:30px;transition:border-radius .2s;background:rgba(255,255,255,.6);backdrop-filter:blur(16px) saturate(1.6);-webkit-backdrop-filter:blur(16px) saturate(1.6);border:1px solid rgba(255,255,255,.55);box-shadow:0 10px 30px rgba(120,40,50,.1),inset 0 1px 0 rgba(255,255,255,.7)}
+/* thanh giá chạy ngang trên cùng: nằm trong luồng trang (cuộn xuống thì trôi đi); viên menu nằm ngay dưới, cuộn thì lên sát mép (.up, site.js) */
+.pbar{position:absolute;top:0;left:0;right:0;z-index:49;display:block;height:40px;background:linear-gradient(90deg,#c93a55,#e2586f,#c93a55);color:#fff;text-decoration:none;font-size:14px;font-weight:600;white-space:nowrap}
+.pbar-m{display:flex;align-items:center;height:100%;overflow:hidden;-webkit-mask-image:linear-gradient(90deg,transparent,#000 6%,#000 94%,transparent);mask-image:linear-gradient(90deg,transparent,#000 6%,#000 94%,transparent)}
+.pbar-in{display:inline-flex;align-items:center;animation:pbar 40s linear infinite}
+.pbar:hover .pbar-in{animation-play-state:paused}
+.pbar-in>span{padding:0 16px}
+.pbar b{display:inline-block;margin-left:6px;padding:2px 9px;border-radius:999px;background:#fff;color:#c93a55;font-weight:800;font-size:14.5px}
+.pbar em{font-style:normal}
+.pbar i{font-style:normal;opacity:.6}
+@keyframes pbar{to{transform:translateX(-50%)}}
+@media (prefers-reduced-motion:reduce){.pbar-in{animation:none}}
+@media (max-width:600px){.pbar{height:36px;font-size:13px}.pbar b{font-size:13.5px}}
+.hnav{position:fixed;top:48px;left:50%;transform:translateX(-50%);z-index:50;width:min(1240px,calc(100% - 8vw),calc(100% - 24px));border-radius:30px;transition:top .25s,border-radius .2s;background:rgba(255,255,255,.6);backdrop-filter:blur(16px) saturate(1.6);-webkit-backdrop-filter:blur(16px) saturate(1.6);border:1px solid rgba(255,255,255,.55);box-shadow:0 10px 30px rgba(120,40,50,.1),inset 0 1px 0 rgba(255,255,255,.7)}
 .hnav>.wrap{display:flex;align-items:center;gap:22px;height:58px;max-width:none;padding:0 10px 0 24px}
 .logo{display:flex;align-items:center;gap:0;text-decoration:none;white-space:nowrap;line-height:1}
 .logo .lw{position:relative;top:-2px;font:700 30px/1 var(--script);letter-spacing:.01em;text-transform:none;background:linear-gradient(135deg,var(--acc),var(--acc2));-webkit-background-clip:text;background-clip:text;color:transparent}
@@ -52,6 +64,7 @@ img{display:block;max-width:100%}
 .burger i,.burger i::before,.burger i::after{display:block;width:16px;height:2px;border-radius:2px;background:var(--ink);position:relative;transition:.2s}
 .burger i::before,.burger i::after{content:"";position:absolute;left:0}
 .burger i::before{top:-5px}.burger i::after{top:5px}
+.hnav.up{top:14px}
 .hnav.mopen{border-radius:24px}
 .hnav.mopen .burger i{background:transparent}
 .hnav.mopen .burger i::before{top:0;transform:rotate(45deg)}
@@ -372,7 +385,7 @@ html.js .rv.in{opacity:1;transform:none}
    Xếp giữa trên tường thiệp trôi (làm mờ, chìm). Khối giữa là hoạt hình lặp 7 giây: vài ảnh bay vào một khung thiệp rỗng
    → khung loé sáng → tung ra 3 mẫu thiệp xoè như quân bài. Bấm nút / bấm hoạt hình / thả ảnh vào trang để chọn ảnh thật
    (public/js/hero.js): ảnh của khách thay vào hoạt hình rồi sang /goi-y gợi ý mẫu, không phải chọn lại. */
-.hb{position:relative;overflow:hidden;padding:104px 16px 92px;text-align:center;background:var(--bg)}
+.hb{position:relative;overflow:hidden;padding:144px 16px 92px;text-align:center;background:var(--bg)}
 .hb>:not(.wall){position:relative;z-index:1}
 /* tường thiệp phía sau: trôi chậm, nhoè và chìm để không tranh với nội dung */
 .hb .wall{position:absolute;inset:-4% -2%;z-index:0;display:grid;grid-template-columns:repeat(6,1fr);gap:14px;padding:0 14px;transform:rotate(-4deg);pointer-events:none;filter:blur(3px) saturate(.8);opacity:.5}
@@ -442,7 +455,7 @@ body.drag .drophint{opacity:1}
 @keyframes slotBusy{0%,100%{transform:none;box-shadow:none}50%{transform:scale(1.03);box-shadow:0 0 0 7px rgba(243,215,154,.2),0 0 38px 6px rgba(239,125,141,.4)}}
 @keyframes spin{to{transform:rotate(360deg)}}
 @media (max-width:700px){
-  .hb{padding:104px 16px 70px}
+  .hb{padding:140px 16px 70px}
   .hb h1{font-size:32px}
   .hb .wall{grid-template-columns:repeat(3,1fr);filter:none;opacity:.22} /* điện thoại: không làm nhoè (nặng máy), chỉ cho chìm */
   .hb::after{background:linear-gradient(180deg,var(--bg) 0%,rgba(255,255,255,.62) 14%,rgba(255,255,255,.66) 78%,var(--bg) 100%)}

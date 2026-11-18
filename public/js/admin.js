@@ -568,7 +568,7 @@ async function settings() {
   const was = (list, price) => (list > price ? `<s>${money(list)}</s>` : '');
   $('#view').innerHTML = `${page('Cài đặt', 'Mỗi nhóm bấm Sửa để đổi — áp dụng ngay, không cần khởi động lại.')}
     <div class="set">
-      <div class="box"><div class="bh"><h3>Giá bán</h3><button class="btn sm plain" data-ed="price">Sửa</button></div>
+      <div class="box"><div class="bh"><h3>Giá bán</h3><small class="s">Đặt trong config.json · đổi giá cần sửa mã nguồn</small></div>
         <div class="srow"><div><b>Thiệp cưới</b><small>${s.promoEndsAt && s.listPrice > s.price ? `Giá mở bán đến hết ${ddmm(s.promoEndsAt)}` : 'Không có giá gạch'}</small></div><span class="v">${was(s.listPrice, s.price)}${money(s.price)}</span></div>
         <div class="srow"><div><b>Trọn bộ</b><small>Thiệp + màn LED + video</small></div><span class="v">${was(s.comboListPrice, s.comboPrice)}${money(s.comboPrice)}</span></div>
         <div class="srow"><div><b>Màn hình LED</b></div><span class="v">${money(s.ledPrice)}</span></div>
@@ -598,11 +598,6 @@ async function settings() {
   };
   const inp = (name, label, value, extra = '') => `<label class="fl">${label}<input name="${name}" value="${esc(value ?? '')}" ${extra}></label>`;
   const FORMS = {
-    price: ['Sửa giá bán', `<div class="r2">${inp('price', 'Thiệp — đang bán', s.price, 'inputmode="numeric"')}${inp('listPrice', 'Giá gốc (gạch ngang)', s.listPrice || '', 'inputmode="numeric" placeholder="Trống = không giảm"')}</div>
-      <label class="fl">Giá mở bán đến hết ngày<input name="promoEndsAt" type="date" value="${esc(s.promoEndsAt || '')}"><small>Qua ngày này web tự thu theo giá gốc. Trống = không hạn, không hiện giá gạch.</small></label>
-      <div class="r2">${inp('comboPrice', 'Trọn bộ', s.comboPrice || '', 'inputmode="numeric"')}${inp('comboListPrice', 'Trọn bộ — giá gốc', s.comboListPrice || '', 'inputmode="numeric"')}</div>
-      <div class="r2">${inp('ledPrice', 'Màn hình LED', s.ledPrice, 'inputmode="numeric"')}${inp('videoPrice', 'Video cưới', s.videoPrice, 'inputmode="numeric"')}</div>
-      <p>Giá mới áp dụng cho đơn tạo từ bây giờ; đơn đang chờ giữ giá cũ.</p>`],
     trial: ['Sửa dùng thử', `<div class="r2">${inp('trialDays', 'Số ngày dùng thử', s.trialDays, 'inputmode="numeric"')}${inp('trialGuestLimit', 'Khách có link riêng', s.trialGuestLimit, 'inputmode="numeric"')}</div>`],
     brand: ['Sửa thương hiệu & hỗ trợ', `${inp('brand', 'Tên thương hiệu', s.brand)}${inp('tagline', 'Khẩu hiệu', s.tagline)}<div class="r2">${inp('sup.zalo', 'Zalo hỗ trợ', s.support.zalo)}${inp('sup.email', 'Email hỗ trợ', s.support.email, 'type="email"')}</div>`],
   };
@@ -617,7 +612,6 @@ async function settings() {
           if (out.support) out.support = { ...s.support, ...out.support };
           try {
             const r = await api('/api/admin/settings', { method: 'PUT', body: out });
-            if (A.meta) A.meta.price = r.settings.price;
             close(); toast('Đã lưu'); settings();
           } catch (e) { err(e); }
         };

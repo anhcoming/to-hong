@@ -122,26 +122,20 @@ async function call(who, method, url, body, raw) {
   assert.equal((await call('u2', 'GET', '/api/admin/stats')).status, 403, 'không cấp quyền quản trị cho tài khoản người dùng được nữa');
 
   // ---------- cài đặt ----------
-  r = await call('admin', 'PUT', '/api/admin/settings', { price: '99.000', coupons: { 'giam 10k!': '10000' }, payment: { bankBin: '970422', bankName: 'MB', accountNo: '0123 456', accountName: 'nguyen van a' } });
-  assert.equal(r.json.settings.price, 99000);
+  const cfg = require('../config.json');
+  r = await call('admin', 'PUT', '/api/admin/settings', { price: '50.000', comboPrice: '60.000', coupons: { 'giam 10k!': '10000' }, payment: { bankBin: '970422', bankName: 'MB', accountNo: '0123 456', accountName: 'nguyen van a' } });
+  assert.equal(r.json.settings.price, cfg.price, 'giá không sửa trên web (chỉ trong config.json)');
+  assert.equal(r.json.settings.comboPrice, cfg.comboPrice);
   assert.deepEqual(r.json.settings.coupons, { GIAM10K: 10000 });
   assert.equal(r.json.settings.payment, undefined, 'tài khoản nhận tiền không sửa trên web');
   r = await call('u2', 'POST', '/api/cards', { template: 'dodam' });
   r = await call('u2', 'POST', `/api/cards/${r.json.card.id}/order`, {});
   assert.equal(r.json.order.bank.accountNo, require('../config.json').payment.accountNo, 'QR vẫn trỏ tài khoản trong config.json');
-  assert.equal((await call('x', 'GET', '/api/meta')).json.price, 99000, 'giá mới áp dụng ngay');
-  // giá mở bán: còn hạn → thu giá đang bán, hiện giá gốc gạch; hết hạn → tự thu giá gốc
-  await call('admin', 'PUT', '/api/admin/settings', { listPrice: '179.000', promoEndsAt: '2099-01-31' });
-  r = await call('x', 'GET', '/api/meta');
-  assert.deepEqual([r.json.price, r.json.listPrice], [99000, 179000], 'còn hạn: giá mở bán + giá gốc gạch ngang');
-  assert.ok(r.json.promoEndsAt > Date.now());
-  await call('admin', 'PUT', '/api/admin/settings', { promoEndsAt: '2020-01-31' });
-  r = await call('x', 'GET', '/api/meta');
-  assert.deepEqual([r.json.price, r.json.listPrice], [179000, null], 'hết hạn: tự thu giá gốc, không hiện giá gạch');
-  r = await call('u2', 'POST', '/api/cards', { template: 'dodam' });
-  assert.equal((await call('u2', 'POST', `/api/cards/${r.json.card.id}/order`, {})).json.order.amount, 179000, 'đơn mới theo giá gốc');
-  await call('admin', 'PUT', '/api/admin/settings', { listPrice: '', promoEndsAt: '' });
-  assert.equal((await call('x', 'GET', '/api/meta')).json.price, 99000, 'bỏ giá gốc → về giá đang bán');
+  assert.equal((await call('x', 'GET', '/api/meta')).json.price, cfg.price, 'giá theo config.json');
+  // giá cũ còn sót trong kho dữ liệu (trước khi bỏ sửa giá trên web) bị bỏ qua
+  require('../lib/db').db.settings.price = 1000;
+  await call('admin', 'PUT', '/api/admin/settings', { trialDays: 7 });
+  assert.equal((await call('x', 'GET', '/api/meta')).json.price, cfg.price, 'bỏ qua giá cũ lưu trong cài đặt');
 
   // ---------- thiệp, đơn ----------
   r = await call('u2', 'POST', '/api/cards', { template: 'dodam' });

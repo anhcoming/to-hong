@@ -213,4 +213,10 @@
     a.target = '_blank'; a.rel = 'noopener';
   });
   window.SITE = { LOGO: LOGO, money: money };
+  // trang chủ: thanh giá trên cùng cuộn đi thì viên menu lên sát mép trên
+  var hn = document.getElementById('hnav');
+  if (hn && document.querySelector('.pbar')) {
+    var up = function () { hn.classList.toggle('up', window.scrollY > 34); };
+    window.addEventListener('scroll', up, { passive: true }); up();
+  }
 })();
