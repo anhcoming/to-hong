@@ -653,6 +653,20 @@
       'float wisp=fbm(q*vec2(5.0,11.0)+vec2(uT*0.012,4.0));float d=band*(0.1+1.9*cloud*cloud)*(0.55+0.9*wisp)*(1.0-0.88*lane);' +
       'vec3 c=mix(vec3(0.42,0.5,0.86),vec3(0.9,0.86,1.0),cloud)*d*0.62+vec3(0.5,0.3,0.55)*band*band*cloud*0.1;' +
       'float halo=exp(-pow(y/(w*2.6),2.0))*0.05;c+=vec3(0.3,0.36,0.7)*halo;gl_FragColor=vec4(c,max(c.r,max(c.g,c.b)));}',
+    // Lụa satin: mặt vải là một "bản đồ độ cao" gồm vài lớp sóng lớn bị uốn bởi nhiễu mịn (nếp vải), tính pháp tuyến rồi chiếu sáng:
+    // vùng khuất tối sâu, sườn nếp sáng dần, đỉnh nếp có vệt bóng hẹp như satin. Nếp trôi và đổi dạng rất chậm.
+    FS_SILK: 'precision highp float;uniform vec2 uRes;uniform float uT;uniform vec3 uA,uB,uC;' +
+      'float h(vec2 p){return fract(sin(dot(p,vec2(127.1,311.7)))*43758.5453);}' +
+      'float n(vec2 p){vec2 i=floor(p),f=fract(p);f=f*f*f*(f*(f*6.0-15.0)+10.0);return mix(mix(h(i),h(i+vec2(1.0,0.0)),f.x),mix(h(i+vec2(0.0,1.0)),h(i+vec2(1.0,1.0)),f.x),f.y);}' +
+      'float f2(vec2 p){return 0.6*n(p)+0.3*n(p*2.1+3.7)+0.1*n(p*4.3+9.1);}' +
+      'float H(vec2 p){float t=uT;float a=dot(p,vec2(0.3,0.954)),l=dot(p,vec2(0.954,-0.3));' +                 // a: ngang nếp, l: dọc nếp
+      'float m=f2(vec2(l*0.42+t*0.014,a*0.85)),m2=f2(vec2(l*0.28-t*0.01+7.0,a*0.5+3.0));' +                      // nếp uốn lượn chậm dọc theo chiều dài
+      'return 0.6*sin(a*3.3+5.2*m+t*0.09)+0.3*sin(a*6.4+l*0.7+6.0*m2-t*0.065)+0.09*sin(a*13.0+4.0*m+l*1.4+t*0.05);}' +
+      'void main(){vec2 p=(gl_FragCoord.xy-0.5*uRes)/uRes.y*1.2;float e=0.004;float h0=H(p),hx=H(p+vec2(e,0.0)),hy=H(p+vec2(0.0,e));' +
+      'vec3 N=normalize(vec3(-(hx-h0)/e*0.2,-(hy-h0)/e*0.2,1.0));vec3 L=normalize(vec3(-0.25,0.5,0.83));vec3 Hh=normalize(L+vec3(0.0,0.0,1.0));' +
+      'float df=max(dot(N,L),0.0);float sp=pow(max(dot(N,Hh),0.0),60.0);float sp2=pow(max(dot(N,Hh),0.0),9.0);' +
+      'vec3 col=mix(uA,uB,pow(smoothstep(0.35,1.0,df),1.5))+uC*(sp*0.55+sp2*0.22);' +
+      'vec2 q=gl_FragCoord.xy/uRes-0.5;col*=1.0-0.55*dot(q,q);gl_FragColor=vec4(col,1.0);}',
     prog: function (vs, fs) {
       var gl = this.gl, mk = function (t, src) { var sh = gl.createShader(t); gl.shaderSource(sh, src); gl.compileShader(sh); if (!gl.getShaderParameter(sh, gl.COMPILE_STATUS)) throw new Error(gl.getShaderInfoLog(sh)); return sh; };
       var p = gl.createProgram(); gl.attachShader(p, mk(gl.VERTEX_SHADER, vs)); gl.attachShader(p, mk(gl.FRAGMENT_SHADER, fs)); gl.linkProgram(p);
@@ -666,6 +680,12 @@
         var gl = cv.getContext('webgl', { alpha: true, antialias: true, premultipliedAlpha: true, powerPreference: 'high-performance' });
         if (!gl) return false;
         this.gl = gl; this.cv = cv;
+        if (this.mode === 'lua') {
+          this.pQ = this.prog(this.VS_Q, this.FS_SILK); this.bQ = gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER, this.bQ);
+          gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, 1, -1, -1, 1, 1, 1]), gl.STATIC_DRAW);
+          this.time = rnd(0, 200); stage.insertBefore(cv, canvas.nextSibling);
+          return true;
+        }
         var dens = Math.max(0.3, L.density), i, a = [];
         // sàn + trần: một phần hạt rải đều cả đĩa, một phần dồn về tâm (tâm sáng rực)
         var disc = function (n, kind, R, pw) { for (var q = 0; q < n; q++) { var u = Math.random(); a.push(R * Math.pow(u, pw || 0.62), Math.random() * 6.2832, Math.random(), kind); } };
@@ -724,6 +744,15 @@
       var gl = this.gl, cv = this.cv, i, h, s;
       if (cv.width !== canvas.width || cv.height !== canvas.height) { cv.width = canvas.width; cv.height = canvas.height; }
       this.time += dt * L.speed;
+      if (this.mode === 'lua') {
+        var K3 = this.silk, pq = this.pQ, loc = function (nm) { return gl.getUniformLocation(pq, nm); };
+        gl.viewport(0, 0, cv.width, cv.height); gl.disable(gl.BLEND); gl.useProgram(pq);
+        gl.uniform2f(loc('uRes'), cv.width, cv.height); gl.uniform1f(loc('uT'), this.time * 4);
+        gl.uniform3fv(loc('uA'), K3[0]); gl.uniform3fv(loc('uB'), K3[1]); gl.uniform3fv(loc('uC'), K3[2]);
+        gl.bindBuffer(gl.ARRAY_BUFFER, this.bQ); var lq = gl.getAttribLocation(pq, 'aQ'); gl.enableVertexAttribArray(lq); gl.vertexAttribPointer(lq, 2, gl.FLOAT, false, 8, 0);
+        gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+        return;
+      }
       var t = this.time, g = 3.4;
       // giọt sáng rơi: xuất phát ở trần, rơi nhanh dần; chạm sàn → vòng sóng + loé + bắn hạt
       if (this.mode === 'dembac' && t > this.nextDrop) {
@@ -852,11 +881,21 @@
     init: function () { GLFX.mode = 'thienha'; this.useGl = GLFX.start(); if (!this.useGl) FX.nganha.init.call(FX.nganha); },
     draw: function (dt, t) { if (this.useGl && GLFX.gl) GLFX.draw(dt); else FX.nganha.draw.call(FX.nganha, dt, t); },
   };
+  // Lụa satin (WebGL): màu bóng / màu vải / màu vệt sáng theo từng mẫu; máy không có WebGL dùng "Dải lụa" canvas
+  var silkFx = function (cols) {
+    return {
+      init: function () { GLFX.mode = 'lua'; GLFX.silk = cols; this.useGl = GLFX.start(); if (!this.useGl) FX.lua.init.call(FX.lua); },
+      draw: function (dt, t) { if (this.useGl && GLFX.gl) GLFX.draw(dt); else FX.lua.draw.call(FX.lua, dt, t); },
+    };
+  };
+  FX.satindo = silkFx([[0.035, 0.0, 0.004], [0.5, 0.03, 0.04], [0.6, 0.14, 0.1]]);
+  FX.satinnga = silkFx([[0.62, 0.62, 0.65], [0.9, 0.9, 0.92], [0.12, 0.12, 0.12]]);
   FX.saoroi = { mode: 'saoroi', init: FX.dembac.init, draw: FX.dembac.draw, fall: FX.dembac.fall }; // biến thể của Đêm kim tuyến bạc (xem GLFX)
   function isVideo() { return !!(C.videos && C.videos[L.effect]); }
   function setupVideo() {
     var v = C.videos && C.videos[L.effect];
     stage.classList.toggle('st-thanh', !!(C.styles && C.styles[L.effect] === 'thanh'));
+    stage.classList.toggle('st-lt', L.effect === 'satinnga'); // nền sáng: chữ sẫm, bóng chữ nhạt
     stage.classList.toggle('has-video', !!v);
     if (!v) { stage.classList.remove('vlight'); }
     if (!v) { if (vbg) { vbg.wrap.remove(); vbg = null; } return; }
@@ -906,7 +945,7 @@
 
   function resetFx() {
     parts = []; extra = [];
-    if (L.effect !== 'dembac' && L.effect !== 'saoroi' && L.effect !== 'thienha') GLFX.stop();
+    if (!/^(dembac|saoroi|thienha|satindo|satinnga)$/.test(L.effect)) GLFX.stop();
     setupVideo();
     (isVideo() ? FX.none : FX[L.effect] || FX.sao).init();
   }
