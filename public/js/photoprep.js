@@ -44,7 +44,36 @@
     });
   }
   // thu nhỏ ảnh (cạnh dài 1600px, JPEG) — nhẹ máy khi xem thử, và là bản sẽ tải lên sau này
+  // Ưu tiên createImageBitmap: trình duyệt giải mã ảnh gốc (12MP, vài MB) ở luồng riêng thay vì chặn luồng chính
+  // → hoạt hình ảnh bay vào khung ở trang chủ không bị giật. Máy cũ không có thì quay về cách đọc bằng <img>.
   function shrink(file) {
+    if (window.createImageBitmap) {
+      return createImageBitmap(file, { imageOrientation: 'from-image' }).then(function (bm) {
+        var sc = Math.min(1, 1600 / Math.max(bm.width, bm.height));
+        var c = document.createElement('canvas');
+        c.width = Math.round(bm.width * sc); c.height = Math.round(bm.height * sc);
+        c.getContext('2d').drawImage(bm, 0, 0, c.width, c.height);
+        if (bm.close) bm.close();
+        return new Promise(function (ok, no) {
+          c.toBlob(function (b) { b ? ok({ blob: b, w: c.width, h: c.height }) : no(new Error('Không đọc được ảnh này')); }, 'image/jpeg', 0.85);
+        });
+      }).catch(function () { return shrinkImg(file); });
+    }
+    return shrinkImg(file);
+  }
+  // ảnh nhỏ (cạnh dài ~280px) để hiện / cho bay trong hoạt hình — rất nhẹ, không phải vẽ ảnh gốc mỗi khung hình
+  function thumb(file, side) {
+    side = side || 280;
+    if (!window.createImageBitmap) return Promise.resolve(URL.createObjectURL(file));
+    return createImageBitmap(file, { imageOrientation: 'from-image' }).then(function (bm) {
+      var sc = Math.min(1, side / Math.max(bm.width, bm.height)), c = document.createElement('canvas');
+      c.width = Math.round(bm.width * sc); c.height = Math.round(bm.height * sc);
+      c.getContext('2d').drawImage(bm, 0, 0, c.width, c.height);
+      if (bm.close) bm.close();
+      return new Promise(function (ok) { c.toBlob(function (b) { ok(b ? URL.createObjectURL(b) : URL.createObjectURL(file)); }, 'image/jpeg', 0.8); });
+    }).catch(function () { return URL.createObjectURL(file); });
+  }
+  function shrinkImg(file) {
     var url = URL.createObjectURL(file);
     return loadImg(url).then(function (im) {
       var sc = Math.min(1, 1600 / Math.max(im.naturalWidth, im.naturalHeight));
@@ -93,5 +122,5 @@
     });
   }
 
-  window.PhotoPrep = { idb: idb, loadImg: loadImg, shrink: shrink, rgb2hsv: rgb2hsv, analyze: analyze };
+  window.PhotoPrep = { idb: idb, loadImg: loadImg, shrink: shrink, thumb: thumb, rgb2hsv: rgb2hsv, analyze: analyze };
 })();

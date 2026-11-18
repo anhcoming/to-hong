@@ -27,7 +27,7 @@
         return P.analyze(url).then(function (feat) {
           out.push({ id: Date.now().toString(36) + Math.random().toString(36).slice(2, 7), blob: s.blob, w: s.w, h: s.h, feat: feat });
         }).finally(function () { URL.revokeObjectURL(url); });
-      }).catch(function () { /* ảnh lỗi: bỏ qua */ }).then(one);
+      }).catch(function () { /* ảnh lỗi: bỏ qua */ }).then(function () { return wait(30); }).then(one); // nghỉ một nhịp giữa các ảnh cho hoạt hình chạy đều
     };
     return one();
   }
@@ -46,13 +46,17 @@
     if (!list.length) return say('Bạn chọn ảnh JPG, PNG hoặc ảnh chụp từ điện thoại nhé.');
     busy = true; say('');
     // ảnh của khách bay vào khung ngay lập tức (ảnh gốc, chưa cần đọc xong)
-    urls.forEach(URL.revokeObjectURL);
-    urls = list.slice(0, 3).map(function (f) { return URL.createObjectURL(f); });
-    var u = function (i) { return urls[i % urls.length]; };
-    var set = { p0: u(1), p1: u(2), p2: u(0), p3: u(3) };
-    fan.querySelectorAll('img[data-k]').forEach(function (img) { if (set[img.dataset.k]) img.src = set[img.dataset.k]; });
-    fan.classList.add('restart'); void fan.offsetWidth; fan.classList.remove('restart');
+    urls.forEach(URL.revokeObjectURL); urls = [];
     hb.classList.add('busy');
+    // ảnh bay trong khung = bản thu nhỏ ~280px (giải mã ở luồng riêng), không dùng ảnh gốc vài MB → hoạt hình không giật
+    Promise.all(list.slice(0, 4).map(function (f) { return P.thumb ? P.thumb(f) : Promise.resolve(URL.createObjectURL(f)); })).then(function (us) {
+      if (!busy) { us.forEach(URL.revokeObjectURL); return; }
+      urls = us;
+      var u = function (i) { return urls[i % urls.length]; };
+      var set = { p0: u(1), p1: u(2), p2: u(0), p3: u(3) };
+      fan.querySelectorAll('img[data-k]').forEach(function (img) { if (set[img.dataset.k]) img.src = set[img.dataset.k]; });
+      fan.classList.add('restart'); void fan.offsetWidth; fan.classList.remove('restart');
+    });
     go.disabled = true;
     var t0 = Date.now(), reduce = matchMedia('(prefers-reduced-motion:reduce)').matches;
     prep(list).then(function (photos) {

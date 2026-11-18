@@ -592,3 +592,16 @@ body.drag .drophint{opacity:1}
   .stage{padding-bottom:4px}
   .hcta{margin-top:18px}
 }
+
+/* điện thoại: chữ tiêu đề nhỏ lại, khối thiệp gọn hơn, nút "Thử ngay" vừa chữ (không kéo hết bề ngang) */
+@media (max-width:700px){
+  .hb h1{font-size:26px}
+  .fan{transform:scale(.66);margin-bottom:-112px}
+  .hcta .go{width:auto;max-width:none;padding:14px 40px;font-size:16px}
+}
+/* điện thoại: thêm khoảng thở giữa tiêu đề – thiệp – nút */
+@media (max-width:700px){.stage{margin-top:22px}.hcta{margin-top:30px}}
+
+
+/* đang đọc ảnh của khách: dừng tường thiệp + cánh hoa phía sau, dồn sức cho hoạt hình ảnh bay vào khung */
+.hb.busy .wall .col,.hb.busy .petals i{animation-play-state:paused}
