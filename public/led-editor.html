@@ -137,6 +137,14 @@ body{background:var(--bg)}
   .sbar h1{max-width:46vw}
   .sbar .hide-xs{display:none}
 }
+/* điện thoại: thanh trên 2 dòng — dòng 1 ← tên + trạng thái, dòng 2 các nút chia đều (trước đây nút đè lên tên) */
+@media (max-width:600px){
+  .sbar{flex-wrap:wrap;height:auto;padding:8px 10px 10px;row-gap:8px}
+  .sbar .ttl{flex:1}
+  .sbar h1{max-width:78vw}
+  .sbar .sp{display:none}
+  .sbar #acts:not(:empty){flex-basis:100%}
+}
 </style>
 </head>
 <body>

@@ -189,7 +189,9 @@ window.backTo = function (a, fallback) {
   a.href = fallback;
   a.onclick = (e) => {
     const ref = document.referrer;
-    if (!ref.startsWith(location.origin + '/') || ref === location.href || ref.includes('/dang-nhap') || history.length < 2) return;
+    // ?mo=… (nút thanh dưới chuyển thẳng sang trình sửa bằng location.replace): trang trước đã bị thay trong lịch sử,
+    // lùi lại sẽ quá một bước → đi theo href mặc định
+    if (!ref.startsWith(location.origin + '/') || ref === location.href || ref.includes('/dang-nhap') || /[?&]mo=/.test(ref) || history.length < 2) return;
     e.preventDefault();
     history.back();
   };
