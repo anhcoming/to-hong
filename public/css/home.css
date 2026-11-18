@@ -19,7 +19,11 @@ img{display:block;max-width:100%}
 /* thanh trên: gọn 3 mục, "Sản phẩm" là menu thả; đã đăng nhập thì thấy ảnh đại diện (dựng ngay trong index.html) */
 /* thanh giá chạy ngang trên cùng: nằm trong luồng trang (cuộn xuống thì trôi đi); viên menu nằm ngay dưới, cuộn thì lên sát mép (.up, site.js) */
 .pbar{position:absolute;top:0;left:0;right:0;z-index:49;display:block;height:40px;background:linear-gradient(90deg,#c93a55,#e2586f,#c93a55);color:#fff;text-decoration:none;font-size:14px;font-weight:600;white-space:nowrap}
-.pbar-m{display:flex;align-items:center;height:100%;overflow:hidden;-webkit-mask-image:linear-gradient(90deg,transparent,#000 6%,#000 94%,transparent);mask-image:linear-gradient(90deg,transparent,#000 6%,#000 94%,transparent)}
+.pbar-m{display:flex;align-items:center;height:100%;overflow:hidden}
+/* hai mép: phủ dải cùng màu nền cho chữ chìm dần (không làm mờ cả ô giá trắng thành vệt nhoè) */
+.pbar::before,.pbar::after{content:"";position:absolute;top:0;bottom:0;z-index:1;width:56px;pointer-events:none}
+.pbar::before{left:0;background:linear-gradient(90deg,#c93a55,rgba(201,58,85,0))}
+.pbar::after{right:0;background:linear-gradient(270deg,#c93a55,rgba(201,58,85,0))}
 .pbar-in{display:inline-flex;align-items:center;animation:pbar 40s linear infinite}
 .pbar:hover .pbar-in{animation-play-state:paused}
 .pbar-in>span{padding:0 16px}
@@ -29,7 +33,7 @@ img{display:block;max-width:100%}
 @keyframes pbar{to{transform:translateX(-50%)}}
 @media (prefers-reduced-motion:reduce){.pbar-in{animation:none}}
 @media (max-width:600px){.pbar{height:36px;font-size:13px}.pbar b{font-size:13.5px}}
-.hnav{position:fixed;top:48px;left:50%;transform:translateX(-50%);z-index:50;width:min(1240px,calc(100% - 8vw),calc(100% - 24px));border-radius:30px;transition:top .25s,border-radius .2s;background:rgba(255,255,255,.6);backdrop-filter:blur(16px) saturate(1.6);-webkit-backdrop-filter:blur(16px) saturate(1.6);border:1px solid rgba(255,255,255,.55);box-shadow:0 10px 30px rgba(120,40,50,.1),inset 0 1px 0 rgba(255,255,255,.7)}
+.hnav{position:fixed;top:40px;left:50%;transform:translateX(-50%);z-index:50;width:min(1240px,calc(100% - 8vw),calc(100% - 24px));border-radius:30px;transition:top .3s ease,width .3s ease,border-radius .3s ease,background-color .3s,box-shadow .3s;background:rgba(255,255,255,.6);backdrop-filter:blur(16px) saturate(1.6);-webkit-backdrop-filter:blur(16px) saturate(1.6);border:1px solid rgba(255,255,255,.55);box-shadow:0 10px 30px rgba(120,40,50,.1),inset 0 1px 0 rgba(255,255,255,.7)}
 .hnav>.wrap{display:flex;align-items:center;gap:22px;height:58px;max-width:none;padding:0 10px 0 24px}
 .logo{display:flex;align-items:center;gap:0;text-decoration:none;white-space:nowrap;line-height:1}
 .logo .lw{position:relative;top:-2px;font:700 30px/1 var(--script);letter-spacing:.01em;text-transform:none;background:linear-gradient(135deg,var(--acc),var(--acc2));-webkit-background-clip:text;background-clip:text;color:transparent}
@@ -472,3 +476,12 @@ body.drag .drophint{opacity:1}
   .fan .tB{transform:translate(-124px,16px) rotate(-12deg)}.fan .tC{transform:translate(124px,16px) rotate(12deg)}
   .fan .tD{transform:translate(-206px,42px) rotate(-24deg) scale(.86)}.fan .tE{transform:translate(206px,42px) rotate(24deg) scale(.86)}
 }
+
+/* đầu trang: menu trải hết bề ngang, nối liền dưới thanh giá; cuộn xuống (.up, site.js) thì thu về viên nổi bo tròn.
+   Lề trong tính theo khung 1240px để logo / nút đứng yên khi chuyển. */
+.hnav:not(.up){width:100%;border-radius:0;border-color:transparent;border-bottom-color:rgba(214,69,93,.12);background-color:rgba(255,255,255,.86);box-shadow:0 6px 18px rgba(120,40,50,.06)}
+.hnav>.wrap{transition:padding .3s ease}
+.hnav:not(.up)>.wrap{padding-left:max(24px,calc((100% - min(1240px,100% - 8vw)) / 2 + 24px));padding-right:max(10px,calc((100% - min(1240px,100% - 8vw)) / 2 + 10px))}
+.hnav.mopen:not(.up){background-color:rgba(255,255,255,.97)}
+[data-theme="dark"] .hnav:not(.up){background-color:rgba(18,13,14,.88);border-bottom-color:rgba(255,255,255,.08)}
+@media (max-width:600px){.hnav:not(.up){top:36px}.hnav:not(.up)>.wrap{padding-left:16px;padding-right:8px}}
