@@ -620,6 +620,8 @@
     gl: null, cv: null, time: 0, rip: [], heroes: [], sparks: [], nextDrop: 0,
     VS_PTS: 'attribute vec4 aP;uniform float uT,uAsp,uPx;uniform vec3 uRip[8];uniform vec4 uRp;uniform vec3 uCen;uniform vec2 uSt;uniform vec3 uXf;uniform float uCeil;varying float vA;' +
       'void main(){float seed=aP.z;float tw=pow(0.5+0.5*sin(uT*(1.2+seed*3.7)+seed*61.0),3.0);' +
+      'if(aP.w>4.5){gl_Position=vec4(aP.xy,0.0,1.0);float e=aP.y-0.3;float big=step(0.97,fract(seed*29.0));' +
+      'gl_PointSize=uPx*(1.4+2.6*fract(seed*7.3)+big*3.0);vA=(0.4+0.9*tw)*(0.45+1.3*exp(-e*3.0)+big*0.5)*smoothstep(-0.01,0.02,e);return;}' +
       'if(aP.w>2.5){vec2 q=vec2(uXf.x*aP.x+uXf.y*aP.y,-uXf.y*aP.x+uXf.x*aP.y)/uXf.z;gl_Position=vec4(q.x/uAsp,q.y,0.0,1.0);float dust=step(3.5,aP.w);float bg=step(0.975,fract(seed*29.0))*(1.0-dust);' +
       'gl_PointSize=uPx*(mix(2.0,1.5,dust)+mix(3.0,2.0,dust)*fract(seed*7.3)+bg*4.5);vA=(0.3+0.7*tw)*(0.7+0.6*fract(seed*3.1)+bg*0.6)*mix(1.0,0.75,dust);return;}' +
       'if(aP.w>1.5){gl_Position=vec4(aP.xy,0.0,1.0);float big=step(0.965,fract(seed*29.0));gl_PointSize=uPx*(1.3+2.2*fract(seed*7.3)+big*3.5);vA=(0.18+0.82*tw)*(0.55+0.45*fract(seed*3.1)+big*0.5);return;}' +
@@ -706,7 +708,9 @@
         if (this.mode === 'saoroi') { disc(Math.round(15000 * dens), 0, 2.0, 0.8); disc(Math.round(8000 * dens), 0, 3.0); } // Sao rơi: sàn là một đĩa kim tuyến gọn, dày ở tâm
         else if (this.mode === 'saobang') { disc(Math.round(20000 * dens), 0, 2.2, 1.25); disc(Math.round(10000 * dens), 0, 3.0); } // Đêm sao băng: sàn dồn sáng ở tâm
         else disc(Math.round(34000 * dens), 0, 3.0);
-        disc(Math.round((this.mode === 'saoroi' ? 16000 : this.mode === 'saobang' ? 42000 : 24000) * dens), 1, this.mode === 'saobang' ? 3.4 : 3.0); // trần (Đêm sao băng: dải trần dày, sáng)
+        if (this.mode === 'saobang') { // dải trần phẳng: mép dưới thẳng ngang (y = 0.3), hạt dày ở mép rồi thưa dần lên trên
+          for (i = 0; i < Math.round(30000 * dens); i++) a.push(rnd(-1.02, 1.02), 0.3 + Math.pow(Math.random(), 1.7) * 0.75 - Math.random() * 0.012, Math.random(), 5);
+        } else disc(Math.round((this.mode === 'saoroi' ? 16000 : 24000) * dens), 1, 3.0); // trần (Đêm sao băng: dải trần dày, sáng)
         for (i = 0; i < Math.round(2600 * dens); i++) a.push(rnd(-1, 1), rnd(-1, 1), Math.random(), 2); // sao rải khắp trời
         for (i = 0; i < Math.round(2600 * dens); i++) { // dải ngân hà: sao dồn quanh một đường chéo qua nửa trên màn
           var mx = rnd(-1.1, 1.1), my = 0.5 + mx * 0.22 + (Math.random() + Math.random() + Math.random() - 1.5) * 0.3;
