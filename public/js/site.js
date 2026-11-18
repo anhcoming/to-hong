@@ -217,6 +217,61 @@
     window.drawSbar = drawSbar;
   }
 
+  // Xem trước một mẫu (thiệp / video / màn LED) — dùng ở trang chủ và /mau-thiep: bấm thẻ là mở, không cần nút riêng.
+  // Điện thoại: toàn màn hình, tên mẫu góc trên trái, ✕ góc trên phải, dưới cùng nút Dùng mẫu liền khối (nút Back của máy cũng đóng).
+  // Máy tính: popup giữa màn (thiệp: khung điện thoại; video / LED: khung 16:9), cùng bố cục.
+  // o = { src, name, use, wide }
+  window.tplView = function (o) {
+    if (!document.getElementById('tvCss')) {
+      var c = document.createElement('style'); c.id = 'tvCss';
+      c.textContent = '.tv{position:fixed;inset:0;z-index:10060;display:flex;align-items:center;justify-content:center;background:rgba(20,10,14,.62);animation:tvIn .2s ease}'
+        + '@keyframes tvIn{from{opacity:0}}'
+        + '.tv .box{position:relative;display:flex;flex-direction:column;overflow:hidden;border-radius:22px;background:#fff;box-shadow:0 30px 80px rgba(0,0,0,.35)}'
+        + '.tv .vw{position:relative;overflow:hidden;background:#1a1214}.tv .vw iframe{position:absolute;left:0;top:0;border:0;transform-origin:0 0;background:#fff}'
+        + '.tv .nm{position:absolute;top:10px;left:10px;z-index:3;max-width:calc(100% - 70px);padding:0 16px;height:40px;line-height:40px;border-radius:999px;background:rgba(0,0,0,.5);color:#fff;font-size:15px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}'
+        + '.tv .box::after{content:"";position:absolute;left:0;right:0;bottom:0;height:120px;z-index:2;pointer-events:none;background:linear-gradient(0deg,rgba(0,0,0,.45),transparent)}'
+        + '.tv .go{position:absolute;left:16px;right:16px;bottom:16px;z-index:3;display:flex;align-items:center;justify-content:center;gap:8px;height:52px;border-radius:999px;background:linear-gradient(135deg,#d6455d,#ef7d8d);color:#fff;font-weight:700;font-size:16px;text-decoration:none;box-shadow:0 10px 26px rgba(214,69,93,.45)}'
+        + '.tv .go:active{transform:scale(.98)}'
+        + '.tv .x{position:absolute;top:10px;right:10px;z-index:3;width:40px;height:40px;border:0;border-radius:50%;background:rgba(0,0,0,.5);color:#fff;font-size:20px;line-height:1;display:grid;place-items:center;cursor:pointer}'
+        + '.tv .ld{position:absolute;inset:0;display:grid;place-items:center;color:#f3c9d0;font-size:13px}'
+        + '@media (max-width:600px){.tv{background:#000}.tv .box{width:100%;height:100%;border-radius:0}.tv .x,.tv .nm{top:max(10px,env(safe-area-inset-top))}.tv .go{bottom:max(16px,calc(env(safe-area-inset-bottom) + 8px))}}';
+      document.head.appendChild(c);
+    }
+    var esc = function (t) { return String(t || '').replace(/[&<>"]/g, function (ch) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[ch]; }); };
+    var el = document.createElement('div'); el.className = 'tv'; el.setAttribute('role', 'dialog'); el.setAttribute('aria-label', 'Xem trước mẫu ' + (o.name || ''));
+    // tên mẫu góc trên trái, ✕ góc trên phải, nút Dùng mẫu bo tròn nổi ở đáy (đều đè lên khung xem, có lớp tối mờ dần), không dải trắng
+    el.innerHTML = '<div class="box"><span class="nm">' + esc(o.name) + '</span><button class="x" type="button" aria-label="Đóng">✕</button><div class="vw"><span class="ld">Đang mở mẫu…</span><iframe title="Xem trước mẫu" src="' + esc(o.src) + '"></iframe></div>'
+      + '<a class="go" href="' + esc(o.use) + '">Dùng mẫu này<span aria-hidden="true">→</span></a></div>';
+    document.body.appendChild(el);
+    var box = el.querySelector('.box'), vw = el.querySelector('.vw'), fr = el.querySelector('iframe');
+    var fit = function () {
+      var mob = innerWidth <= 600, barH = 0;
+      if (o.wide) { // video / màn LED: trang 1280×720, thu nhỏ vừa khung
+        var W = mob ? innerWidth : Math.min(980, innerWidth - 80), H = Math.round(W * 9 / 16);
+        if (mob) { box.style.width = '100%'; box.style.height = '100%'; vw.style.flex = '1'; vw.style.height = ''; } else { box.style.width = W + 'px'; box.style.height = ''; vw.style.height = H + 'px'; vw.style.flex = ''; }
+        var vh = mob ? innerHeight - barH : H, sc = W / 1280;
+        fr.style.width = '1280px'; fr.style.height = '720px';
+        fr.style.transform = 'translate(0,' + Math.max(0, (vh - 720 * sc) / 2) + 'px) scale(' + sc + ')';
+      } else { // thiệp: trang dọc, cuộn được bên trong
+        if (mob) { box.style.width = '100%'; box.style.height = '100%'; vw.style.flex = '1'; vw.style.height = ''; fr.style.width = '100%'; fr.style.height = '100%'; }
+        else { var h = Math.min(780, innerHeight - 140); box.style.width = '400px'; box.style.height = ''; vw.style.height = h + 'px'; vw.style.flex = ''; fr.style.width = '100%'; fr.style.height = '100%'; }
+        fr.style.transform = '';
+      }
+    };
+    fit(); addEventListener('resize', fit);
+    var ov = document.body.style.overflow; document.body.style.overflow = 'hidden';
+    var onPop = function () { shut(true); };
+    var shut = function (fromPop) {
+      if (!el.parentNode) return;
+      el.remove(); document.body.style.overflow = ov; removeEventListener('resize', fit); removeEventListener('popstate', onPop); removeEventListener('keydown', onKey);
+      if (!fromPop && history.state && history.state.tv) history.back();
+    };
+    var onKey = function (e) { if (e.key === 'Escape') shut(); };
+    history.pushState({ tv: 1 }, ''); addEventListener('popstate', onPop); addEventListener('keydown', onKey);
+    el.querySelector('.x').onclick = function () { shut(); };
+    el.addEventListener('click', function (e) { if (e.target === el) shut(); });
+  };
+
   // đã đăng nhập → nút trên thanh đổi thành "Sổ tay của tôi"
   fetch('/api/me').then(function (r) { return r.json(); }).then(function (me) {
     var a = document.getElementById('navActs');

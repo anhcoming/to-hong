@@ -142,8 +142,6 @@ main.wrap{padding-top:104px} /* không có phần giới thiệu: nội dung n�
   });
 
   let stopLive = () => {}; // huỷ xem trước đang chạy (gán bên dưới, chỉ khi máy có chuột)
-  // nhãn ruy băng tràn mép trái thẻ: Hot = ruy băng đỏ mũi cờ nhọn, Mới = ruy băng xanh đuôi én (CSS .tag)
-  const badge = (t) => t.badge ? `<span class="tag${t.badge === 'Hot' ? ' hot' : ''}"><svg viewBox="0 0 100 26" preserveAspectRatio="none" aria-hidden="true"><path d="${t.badge === 'Hot' ? 'M0 0h88l12 13-12 13H0z' : 'M0 0h100l-8 13 8 13H0z'}"/></svg>${t.badge === 'Hot' ? 'Hot!' : esc(t.badge)}</span>` : '';
   function render() {
     stopLive();
     sync();
@@ -166,10 +164,10 @@ main.wrap{padding-top:104px} /* không có phần giới thiệu: nội dung n�
     $('#grid').removeAttribute('aria-busy');
     $('#grid').innerHTML = list.length ? list.map((t) => {
       const p = t.palettes[0];
-      return `<div class="tc" data-tpl="${t.id}" data-pal="${p.id}">${badge(t)}
+      return `<div class="tc" data-tpl="${t.id}" data-pal="${p.id}">
         <div class="pic"><a class="demo" href="/demo/${t.id}?palette=${p.id}" aria-label="Xem thử mẫu ${esc(t.name)}"><img src="${cover(t.id, p.id)}" alt="Mẫu thiệp ${esc(t.name)}" loading="lazy"></a>
         <div class="sw">${t.palettes.length > 1 ? t.palettes.map((q2) => `<button type="button" data-pal="${q2.id}" title="${esc(q2.name)}" aria-label="Bảng màu ${esc(q2.name)}" class="${q2.id === p.id ? 'on' : ''}" style="background:linear-gradient(135deg,${q2.swatch[0]} 50%,${q2.swatch[1]} 50%)"></button>`).join('') : ''}</div>
-        <div class="txt"><b>${esc(t.name)}</b><a class="use" href="/thiep-cua-toi?tao=${t.id}&mau=${p.id}">Dùng mẫu</a></div></div>
+        <div class="txt"><b>${esc(t.name)}</b></div></div>
       </div>`;
     }).join('') : '<div class="none"><p style="font-size:40px;margin:0">🔍</p><p>Chưa có mẫu khớp bộ lọc.</p><button class="btn btn-ghost" id="clear2">Xoá bộ lọc</button></div>';
     const c2 = $('#clear2'); if (c2) c2.onclick = clear;
@@ -183,12 +181,18 @@ main.wrap{padding-top:104px} /* không có phần giới thiệu: nội dung n�
     const b = e.target.closest('[data-x]'); if (!b) return;
     F[b.dataset.x] = ''; if (b.dataset.x === 'q') $('#q').value = ''; render();
   });
+  // bấm thẻ (trừ chấm màu) → xem trước (site.js tplView): điện thoại toàn màn, máy tính popup; trong đó tên mẫu + nút Dùng mẫu
+  $('#grid').addEventListener('click', (e) => {
+    if (e.target.closest('.sw') || !window.tplView || e.metaKey || e.ctrlKey) return;
+    const c = e.target.closest('.tc[data-tpl]'); if (!c) return;
+    e.preventDefault();
+    tplView({ name: c.querySelector('.txt b').textContent, src: `/demo/${c.dataset.tpl}?palette=${c.dataset.pal}`, use: `/thiep-cua-toi?tao=${c.dataset.tpl}&mau=${c.dataset.pal}` });
+  });
   $('#grid').addEventListener('click', (e) => {
     const b = e.target.closest('.sw button'); if (!b) return;
     const card = b.closest('.tc'), id = card.dataset.tpl, pal = b.dataset.pal;
     card.querySelectorAll('.sw button').forEach((x) => x.classList.toggle('on', x === b));
     card.querySelector('.pic a.demo').href = `/demo/${id}?palette=${pal}`;
-    card.querySelector('.use').href = `/thiep-cua-toi?tao=${id}&mau=${pal}`;
     card.querySelector('img').src = cover(id, pal);
     card.dataset.pal = pal; stopLive(); // đổi màu thì bỏ xem trước cũ, rê tiếp sẽ nạp đúng màu mới
   });

@@ -628,3 +628,13 @@ body.drag .drophint{opacity:1}
 @keyframes goTw{0%,100%{transform:scale(1) rotate(0)}30%{transform:scale(1.3) rotate(18deg)}60%{transform:scale(.9) rotate(-6deg)}}
 .hb.busy .hcta .go::after,.hb.busy .hcta .go .ico,.hb.off .hcta .go::after,.hb.off .hcta .go .ico{animation:none}
 @media (prefers-reduced-motion:reduce){.hcta .go::after,.hcta .go .ico{animation:none}}
+
+/* hàng mẫu thiệp: bỏ số thứ hạng to; tên mẫu luôn hiện dưới ảnh (điện thoại không có rê chuột); điện thoại thẻ nhỏ ~2,5 thẻ một hàng
+   để gợi ý vuốt ngang. Bấm thẻ → xem trước (tplView) */
+.ncard .nm{margin:8px 2px 0;font-size:13.5px;font-weight:600;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ncard[data-tpl] .info{display:none}
+.ncard[data-tpl]{cursor:pointer}
+@media (max-width:700px){
+  .nrow .ncard[data-tpl],.top .ncard[data-tpl]{width:136px;padding-left:0}
+  .ncard .nm{font-size:13px;margin-top:7px}
+}
