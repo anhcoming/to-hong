@@ -638,10 +638,15 @@
       'float sz=uPx*(2.4+5.0*fract(seed*13.7)*fract(seed*5.1))*2.6/zc*(fl>0.5?1.0:mix(1.0,1.35,step(1.01,uCeil)));gl_PointSize=max(1.0,sz*uSt.x)*(1.0+lift*1.0);' +
       'float far=clamp(1.3-zc*0.09,0.5,1.0);vA=((0.5+1.1*tw)*(1.15+0.35*exp(-aP.x*0.8)+fl*(uCen.x+uCen.y)*exp(-aP.x*uCen.z))*(fl>0.5?1.0:0.8*uCeil)+lift*1.7)*far*smoothstep(0.15,0.7,zc)*(1.0-smoothstep(1.7,3.0,aP.x)*0.92)*uSt.y;}',
     VS_DROP: 'attribute vec4 aD;attribute float aTail;uniform float uT,uAsp,uPx,uFlat;varying float vA;' +
-      'void main(){float f=fract(uT*aD.w+aD.z);float ft=max(f-0.01-0.028*f,0.0);float ff=aTail>0.5?ft:f;' +
-      'float y0=0.95+(fract(aD.z*53.0)-0.5)*0.5;vec3 p=vec3(aD.x,y0-ff*ff*(y0+0.95),aD.y*uFlat);float zc=3.2-p.z;float k=2.1445;gl_Position=vec4(p.x*k/uAsp,p.y*k,0.0,zc);' +
-      'gl_PointSize=max(1.0,uPx*2.6*2.3/zc);float mid=0.4+0.6*abs(f*f-0.5)*2.0;' +
-      'vA=(aTail>0.5?0.0:1.0)*smoothstep(0.0,0.3,f)*(1.0-smoothstep(0.9,1.0,f))*mid*(0.1+0.3*fract(aD.z*17.0))*clamp(1.3-zc*0.12,0.3,1.0);}',
+      // 0 → 0.86: rơi nhanh dần từ dải trên xuống sàn; 0.86 → 1: chạm sàn rồi nảy lên một nhịp nhỏ (lệch ngang chút) và tắt dần
+      'void main(){float f=fract(uT*aD.w+aD.z);float FL=0.86;float r=fract(aD.z*91.0);' +
+      'float y0=0.95+(fract(aD.z*53.0)-0.5)*0.5;vec3 p;float al;' +
+      'if(f<FL){float g=f/FL;float gt=max(g-0.012-0.03*g,0.0);float gg=aTail>0.5?gt:g;' +
+      'p=vec3(aD.x,y0-gg*gg*(y0+0.95),aD.y*uFlat);float mid=0.4+0.6*abs(g*g-0.5)*2.0;al=smoothstep(0.0,0.3,g)*mid;}' +
+      'else{float b=(f-FL)/(1.0-FL);float hb=(0.035+0.045*r)*4.0*b*(1.0-b);float side=(r-0.5)*0.09*b;' +
+      'p=vec3(aD.x+side,-0.95+hb,aD.y*uFlat);al=(aTail>0.5?0.0:1.0)*(1.0-b)*1.3;}' +
+      'float zc=3.2-p.z;float k=2.1445;gl_Position=vec4(p.x*k/uAsp,p.y*k,0.0,zc);gl_PointSize=max(1.0,uPx*2.6*2.3/zc);' +
+      'vA=(aTail>0.5?0.0:1.0)*al*(0.1+0.3*fract(aD.z*17.0))*clamp(1.3-zc*0.12,0.3,1.0);}',
     VS_DYN: 'attribute vec3 aPos;attribute vec2 aSA;uniform float uAsp,uPx,uFlat;varying float vA;' +
       'void main(){float zc=3.2-aPos.z*uFlat;float k=2.1445;gl_Position=vec4(aPos.x*k/uAsp,aPos.y*k,0.0,zc);gl_PointSize=max(1.0,aSA.x*uPx*2.3/zc);vA=aSA.y;}',
     FS: 'precision mediump float;varying float vA;uniform vec3 uCol;uniform float uPoint;' +
