@@ -840,17 +840,17 @@ function quickStart(forPublish) {
   const fam = (who, ten) => `<h4 style="margin:12px 0 8px">${ten}</h4><div class="grid2">${pf(who, 'fullName', 'Họ và tên đầy đủ', who === 'groom' ? 'Trần Gia Huy' : 'Lê Bảo Ngọc')}${pf(who, 'phone', 'Số điện thoại (nút gọi)', '0901 234 567', 20)}${par(who, 'father', 'Bố', 'Ông', 'Trần Quang Hải')}${par(who, 'mother', 'Mẹ', 'Bà', 'Nguyễn Thị Lan')}</div>${pf(who, 'address', 'Địa chỉ', 'Phường, tỉnh / thành', 160)}`;
   const evRows = () => d.events.map((e, i) => `<div class="ev" style="margin-bottom:8px"><div class="ev-h flat" style="cursor:default">${evSum(e, i)}<span class="ev-act"><button type="button" class="btn sm plain qe-main${e.main ? ' on' : ''}" data-qe-main="${i}" title="${e.main ? 'Lễ chính' : 'Đặt làm lễ chính'}">${e.main ? '★ Lễ chính' : '☆'}</button>${i ? `<button type="button" class="btn sm plain" data-qe-up="${i}" title="Lên trên">↑</button>` : ''}<button type="button" class="btn sm plain" data-qe-ed="${i}">Sửa</button></span></div></div>`).join('');
   openModal(`<h2 style="margin-top:0">${forPublish ? 'Còn thiếu vài thông tin' : info ? 'Thông tin chính' : 'Bắt đầu nhanh'}</h2>
-    <p class="muted" style="margin:-6px 0 14px;font-size:14px">${forPublish ? 'Điền đủ tên cô dâu, chú rể và ngày cưới để phát hành thiệp.' : info ? 'Mọi chữ trên thiệp đều bấm thẳng vào để sửa. Ở đây điền nhanh các thông tin chính một lượt.' : 'Điền mấy dòng này là thiệp có đủ nội dung chính. Mọi thứ khác bấm thẳng lên thiệp để sửa.'}</p>
-    <form id="qsF">
+    <p class="muted" style="margin:-6px 0 12px;font-size:13.5px">${forPublish ? 'Điền đủ tên cô dâu, chú rể và ngày cưới để phát hành thiệp.' : info ? 'Mọi chữ trên thiệp đều bấm thẳng vào để sửa. Ở đây điền nhanh các thông tin chính một lượt.' : 'Điền nhanh, phần khác bấm thẳng lên thiệp để sửa.'}</p>
+    <form id="qsF" class="qs">
       <div class="grid2">${inp('qsG', 'Tên chú rể', d.groom.name, { ph: 'Gia Huy', max: 40, req: 1 })}${inp('qsB', 'Tên cô dâu', d.bride.name, { ph: 'Bảo Ngọc', max: 40, req: 1 })}</div>
       ${info ? `<div class="grid2" style="margin-top:-4px">${rank('groom')}${rank('bride')}</div>` : ''}
       <div class="grid2">${inp('qsD', 'Ngày cưới', d.date, { type: 'date', req: 1 })}${inp('qsT', 'Giờ tiệc', (party && party.time) || d.time, { type: 'time' })}</div>
-      ${party ? inp('qsP', 'Nơi tổ chức tiệc (không bắt buộc)', party.place, { ph: 'Nhà hàng Ngọc Lan — Sảnh A', max: 120 }) : ''}
+      ${party ? inp('qsP', 'Nơi tổ chức', party.place, { ph: 'Nhà hàng Ngọc Lan — Sảnh A (không bắt buộc)', max: 120 }) : ''}
       ${info ? `<details class="ev" style="margin:4px 0 10px"><summary class="ev-h"><span class="ev-s"><b>Họ tên đầy đủ, bố mẹ, địa chỉ hai nhà</b><small>Không bắt buộc</small></span></summary><div class="ev-b">${fam('groom', 'Nhà trai')}${fam('bride', 'Nhà gái')}</div></details>
       <h3 style="margin:14px 0 8px;font-size:15px">Các lễ trong ngày cưới</h3><div id="qsEv">${evRows()}</div>
       ${d.events.length < 6 ? `<div class="chips2" style="margin-bottom:12px">${EV_PRESETS.map((n) => `<button type="button" data-qe-add="${esc(n)}">+ ${esc(n)}</button>`).join('')}<button type="button" data-qe-add="">+ Lễ khác</button></div>` : ''}` : ''}
       <button class="btn block" style="margin-top:6px">${forPublish ? 'Lưu & phát hành' : info ? 'Lưu' : 'Xong, xem thiệp'}</button>
-      ${forPublish || info ? '' : '<button type="button" class="btn block plain" id="qsSkip" style="margin-top:8px">Để sau</button>'}
+      ${forPublish || info ? '' : '<button type="button" class="qs-skip" id="qsSkip">Để sau</button>'}
     </form>`, (box, close) => {
     if (info) box.addEventListener('click', (e) => { // các lễ: đổi thứ tự tại chỗ; Sửa / Thêm → hộp sửa lễ
       const b = e.target.closest('[data-qe-up],[data-qe-ed],[data-qe-add],[data-qe-main]'); if (!b) return;

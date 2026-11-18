@@ -317,6 +317,12 @@ body.st-find .st-g,body.st-find .st-add{display:none}
 .fsep{border:0;border-top:1px dashed var(--line);margin:18px 0}
 @keyframes stIn{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:none}}
 @keyframes sheetUp{from{transform:translateY(40px);opacity:.4}to{transform:none;opacity:1}}
+/* hộp "Bắt đầu nhanh" gọn: tên chú rể / cô dâu và ngày / giờ luôn 2 cột (cả điện thoại), ô thấp hơn, "Để sau" là chữ nhỏ */
+.qs .grid2{grid-template-columns:minmax(0,1fr) minmax(0,1fr)!important;gap:10px}
+.qs .field{margin-bottom:10px;gap:4px}
+.qs .field input:not([type=checkbox]):not([type=radio]){min-height:42px;padding:8px 12px}
+.qs-skip{display:block;margin:10px auto 0;padding:6px 12px;border:0;background:none;color:var(--muted);font:inherit;font-size:13.5px;font-weight:600;cursor:pointer}
+.qs-skip:hover{color:var(--ink)}
 </style>
 </head>
 <body>
