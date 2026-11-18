@@ -250,7 +250,7 @@
         }
         // quầng sáng tâm sàn (đập rất nhẹ) và vệt sáng mờ dọc dải trần
         var pul = 0.85 + 0.15 * Math.sin(t * 0.9 * sp);
-        ctx.globalAlpha = (this.mode === 'saoroi' && this.useGl ? 0.3 + 0.7 * GLFX.glow : this.useGl ? 0.16 : 0.9) * pul; // bản WebGL: chỉ còn một quầng rất nhạt, không thành cụm trắng
+        ctx.globalAlpha = (this.mode === 'saoroi' && this.useGl ? 0.16 + 0.34 * GLFX.glow : this.useGl ? 0.16 : 0.9) * pul; // bản WebGL: chỉ còn một quầng rất nhạt, không thành cụm trắng
         ctx.drawImage(this.core, W / 2 - W * 0.45, floor - H * 0.1, W * 0.9, H * 0.2);
         if (!this.useGl) { ctx.globalAlpha = 0.22; ctx.drawImage(this.core, W / 2 - W * 0.55, top - H * 0.045, W * 1.1, H * 0.09); }
         // kim tuyến: 4 tấm đổi độ sáng lệch pha + trôi ngang rất chậm ngược chiều nhau → lấp lánh, có chiều sâu
@@ -618,7 +618,7 @@
   // Mọi hạt chuyển động trong shader (card đồ hoạ tính) nên hàng chục nghìn hạt vẫn 60 khung hình/giây. Máy không có WebGL → bản canvas 2D.
   var GLFX = {
     gl: null, cv: null, time: 0, rip: [], heroes: [], sparks: [], nextDrop: 0,
-    VS_PTS: 'attribute vec4 aP;uniform float uT,uAsp,uPx;uniform vec3 uRip[8];uniform vec4 uRp;uniform vec3 uCen;varying float vA;' +
+    VS_PTS: 'attribute vec4 aP;uniform float uT,uAsp,uPx;uniform vec3 uRip[8];uniform vec4 uRp;uniform vec3 uCen;uniform vec2 uSt;varying float vA;' +
       'void main(){float seed=aP.z;float tw=pow(0.5+0.5*sin(uT*(1.2+seed*3.7)+seed*61.0),3.0);' +
       'if(aP.w>1.5){gl_Position=vec4(aP.xy,0.0,1.0);float big=step(0.965,fract(seed*29.0));gl_PointSize=uPx*(1.3+2.2*fract(seed*7.3)+big*3.5);vA=(0.18+0.82*tw)*(0.55+0.45*fract(seed*3.1)+big*0.5);return;}' +
       'float fl=aP.w<0.5?1.0:0.0;float ang=aP.y+uT*(fl>0.5?0.03:-0.02)*(1.0+0.7/(0.5+aP.x));' +
@@ -626,8 +626,8 @@
       'if(fl>0.5){for(int i=0;i<8;i++){float age=uT-uRip[i].z;if(age>0.0&&age<6.0){float d=distance(p.xz,uRip[i].xy);' +
       'float w=exp(-pow((d-age*uRp.x)/uRp.y,2.0))*exp(-age*uRp.z);float w2=exp(-pow((d-age*uRp.x+uRp.y*2.7)/(uRp.y*0.8),2.0))*exp(-age*uRp.z*1.6)*0.55;lift+=(w+w2)*uRp.w;}}}' +
       'p.y+=lift*0.065;float zc=3.2-p.z;float f=2.1445;gl_Position=vec4(p.x*f/uAsp*zc/zc,p.y*f,0.0,zc);gl_Position.x=p.x*f/uAsp;' +
-      'float sz=uPx*(2.4+5.0*fract(seed*13.7)*fract(seed*5.1))*2.6/zc;gl_PointSize=max(1.0,sz)*(1.0+lift*1.0);' +
-      'float far=clamp(1.3-zc*0.09,0.5,1.0);vA=((0.5+1.1*tw)*(1.15+0.35*exp(-aP.x*0.8)+fl*(uCen.x+uCen.y)*exp(-aP.x*uCen.z))*(fl>0.5?1.0:0.8)+lift*1.7)*far*smoothstep(0.15,0.7,zc)*(1.0-smoothstep(1.7,3.0,aP.x)*0.92);}',
+      'float sz=uPx*(2.4+5.0*fract(seed*13.7)*fract(seed*5.1))*2.6/zc;gl_PointSize=max(1.0,sz*uSt.x)*(1.0+lift*1.0);' +
+      'float far=clamp(1.3-zc*0.09,0.5,1.0);vA=((0.5+1.1*tw)*(1.15+0.35*exp(-aP.x*0.8)+fl*(uCen.x+uCen.y)*exp(-aP.x*uCen.z))*(fl>0.5?1.0:0.8)+lift*1.7)*far*smoothstep(0.15,0.7,zc)*(1.0-smoothstep(1.7,3.0,aP.x)*0.92)*uSt.y;}',
     VS_DROP: 'attribute vec4 aD;attribute float aTail;uniform float uT,uAsp,uPx;varying float vA;' +
       'void main(){float f=fract(uT*aD.w+aD.z);float ft=max(f-0.01-0.028*f,0.0);float ff=aTail>0.5?ft:f;' +
       'float y0=0.95+(fract(aD.z*53.0)-0.5)*0.5;vec3 p=vec3(aD.x,y0-ff*ff*(y0+0.95),aD.y);float zc=3.2-p.z;float k=2.1445;gl_Position=vec4(p.x*k/uAsp,p.y*k,0.0,zc);' +
@@ -653,9 +653,9 @@
         var dens = Math.max(0.3, L.density), i, a = [];
         // sàn + trần: một phần hạt rải đều cả đĩa, một phần dồn về tâm (tâm sáng rực)
         var disc = function (n, kind, R, pw) { for (var q = 0; q < n; q++) { var u = Math.random(); a.push(R * Math.pow(u, pw || 0.62), Math.random() * 6.2832, Math.random(), kind); } };
-        if (this.mode === 'saoroi') { disc(Math.round(26000 * dens), 0, 1.9, 1.35); disc(Math.round(11000 * dens), 0, 3.0); } // Sao rơi: sàn là một đĩa kim tuyến gọn, dày ở tâm
+        if (this.mode === 'saoroi') { disc(Math.round(15000 * dens), 0, 2.0, 1.2); disc(Math.round(8000 * dens), 0, 3.0); } // Sao rơi: sàn là một đĩa kim tuyến gọn, dày ở tâm
         else disc(Math.round(34000 * dens), 0, 3.0);
-        disc(Math.round(24000 * dens), 1, 3.0);
+        disc(Math.round((this.mode === 'saoroi' ? 16000 : 24000) * dens), 1, 3.0);
         for (i = 0; i < Math.round(2600 * dens); i++) a.push(rnd(-1, 1), rnd(-1, 1), Math.random(), 2); // sao rải khắp trời
         for (i = 0; i < Math.round(2600 * dens); i++) { // dải ngân hà: sao dồn quanh một đường chéo qua nửa trên màn
           var mx = rnd(-1.1, 1.1), my = 0.5 + mx * 0.22 + (Math.random() + Math.random() + Math.random() - 1.5) * 0.3;
@@ -725,21 +725,21 @@
           if (fs >= 1) {
             this.rip[this.ripI] = [0, SZ, t]; this.ripI = (this.ripI + 1) % 8;
             this.glowT = t;
-            this.sparks.push({ x: 0, y: -0.95, z: SZ, vx: 0, vy: 0, vz: 0, t0: t, max: 0.9, flash: 1, big: 7 });
-            for (var q2 = 0; q2 < 28; q2++) { var a4 = rnd(0, 6.2832), v4 = rnd(0.2, 0.9); this.sparks.push({ x: 0, y: -0.95, z: SZ, vx: Math.cos(a4) * v4, vy: rnd(0.5, 1.7), vz: Math.sin(a4) * v4, t0: t, max: rnd(0.5, 1.1) }); }
+            this.sparks.push({ x: 0, y: -0.95, z: SZ, vx: 0, vy: 0, vz: 0, t0: t, max: 1.1, flash: 1, big: 4.2 });
+            for (var q2 = 0; q2 < 12; q2++) { var a4 = rnd(0, 6.2832), v4 = rnd(0.15, 0.55); this.sparks.push({ x: 0, y: -0.95, z: SZ, vx: Math.cos(a4) * v4, vy: rnd(0.5, 1.7), vz: Math.sin(a4) * v4, t0: t, max: rnd(0.5, 1.1) }); }
             this.star = null; this.nextStar = t + rnd(5, 7);
           } else for (var j2 = 0; j2 < 60; j2++) { // đầu sao + đuôi thon dần
             var fq = Math.max(0, fs - j2 * 0.006 * (0.4 + fs * 1.6)), u2 = 1 - j2 / 60;
-            put(0, 0.95 - fq * fq * 1.9, SZ, 3 + 24 * u2 * u2 * u2 + (j2 === 0 ? 30 : 0), Math.pow(u2, 1.2));
+            put(0, 0.95 - fq * fq * 1.9, SZ, 3 + 20 * u2 * u2 * u2 + (j2 === 0 ? 18 : 0), 0.8 * Math.pow(u2, 1.3));
           }
         }
-        this.glow = Math.exp(-Math.max(0, t - this.glowT) * 0.75);
+        this.glow = Math.exp(-Math.max(0, t - this.glowT) * 0.6);
       }
       for (i = this.sparks.length - 1; i >= 0; i--) {
         s = this.sparks[i];
         var age = t - s.t0, k = 1 - age / s.max;
         if (k <= 0) { this.sparks.splice(i, 1); continue; }
-        if (s.flash) { put(s.x, s.y + 0.01, s.z, (7 + 12 * (1 - k)) * (s.big || 1), (s.big ? 1 : 0.7) * k * k); continue; }
+        if (s.flash) { put(s.x, s.y + 0.01, s.z, (7 + 12 * (1 - k)) * (s.big || 1), (s.big ? 0.6 : 0.7) * k * k); continue; }
         put(s.x + s.vx * age, Math.max(-0.95, s.y + s.vy * age - 0.5 * g * age * age), s.z + s.vz * age, 2.2, 0.8 * k);
       }
       gl.viewport(0, 0, cv.width, cv.height);
@@ -757,8 +757,9 @@
       var flat = []; for (i = 0; i < 8; i++) flat.push(this.rip[i][0], this.rip[i][1], this.rip[i][2]);
       gl.uniform3fv(gl.getUniformLocation(this.pPts, 'uRip'), new Float32Array(flat));
       var sr = this.mode === 'saoroi';
-      gl.uniform4fv(gl.getUniformLocation(this.pPts, 'uRp'), sr ? [0.7, 0.2, 0.5, 0.9] : [0.62, 0.075, 0.95, 1]); // tốc độ lan, độ dày vòng, tắt dần, độ mạnh
-      gl.uniform3fv(gl.getUniformLocation(this.pPts, 'uCen'), sr ? [0.9, 3.2 * this.glow, 1.5] : [0, 0, 1]);    // sáng tâm sàn: cố định, bừng lên khi sao chạm, độ gom
+      gl.uniform4fv(gl.getUniformLocation(this.pPts, 'uRp'), sr ? [0.6, 0.22, 0.55, 0.55] : [0.62, 0.075, 0.95, 1]); // tốc độ lan, độ dày vòng, tắt dần, độ mạnh
+      gl.uniform2fv(gl.getUniformLocation(this.pPts, 'uSt'), sr ? [0.72, 0.6] : [1, 1]); // Sao rơi: hạt nhỏ và dịu hơn
+      gl.uniform3fv(gl.getUniformLocation(this.pPts, 'uCen'), sr ? [0.45, 1.5 * this.glow, 1.5] : [0, 0, 1]);    // sáng tâm sàn: cố định, bừng lên khi sao chạm, độ gom
       gl.bindBuffer(gl.ARRAY_BUFFER, this.bPts); attr(this.pPts, 'aP', 4, 16, 0);
       gl.drawArrays(gl.POINTS, 0, this.nPts);
       // thác: vệt (đoạn thẳng) + đầu hạt
