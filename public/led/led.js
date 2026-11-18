@@ -189,7 +189,7 @@
         gx.addColorStop(0, rgba(pal.particle, 0)); gx.addColorStop(0.5, rgba(pal.particle, 1)); gx.addColorStop(1, rgba(pal.particle, 0));
         gb.fillStyle = gx; gb.fillRect(0, 0, 48, 256);
         gb.globalCompositeOperation = 'destination-in';
-        var gy = gb.createLinearGradient(0, 0, 0, 256); gy.addColorStop(0, 'rgba(0,0,0,0)'); gy.addColorStop(0.12, 'rgba(0,0,0,.9)'); gy.addColorStop(0.55, 'rgba(0,0,0,.3)'); gy.addColorStop(0.9, 'rgba(0,0,0,.7)'); gy.addColorStop(1, 'rgba(0,0,0,0)');
+        var gy = gb.createLinearGradient(0, 0, 0, 256); gy.addColorStop(0, 'rgba(0,0,0,0)'); gy.addColorStop(0.3, 'rgba(0,0,0,.55)'); gy.addColorStop(0.55, 'rgba(0,0,0,.22)'); gy.addColorStop(0.75, 'rgba(0,0,0,.5)'); gy.addColorStop(1, 'rgba(0,0,0,0)');
         gb.fillStyle = gy; gb.fillRect(0, 0, 48, 256);
         self.beams = [];
         for (i = 0; i < 10; i++) self.beams.push({ x: rnd(0.06, 0.94), w: rnd(0.008, 0.024), a: rnd(0.05, 0.13), ph: rnd(0, 6.28), sp: rnd(0.2, 0.6) });
@@ -244,15 +244,14 @@
         // cột sáng nối trần với sàn (vẽ trước, nằm dưới kim tuyến)
         for (i = 0; i < this.beams.length; i++) {
           var b = this.beams[i], bw = b.w * W;
-          ctx.globalAlpha = b.a * (0.55 + 0.45 * Math.sin(t * b.sp * sp + b.ph));
-          ctx.drawImage(this.beam, b.x * W - bw / 2, top - H * 0.04, bw, floor - top + H * 0.08);
+          ctx.globalAlpha = b.a * (this.useGl ? 0.55 : 1) * (0.55 + 0.45 * Math.sin(t * b.sp * sp + b.ph));
+          ctx.drawImage(this.beam, b.x * W - bw * 1.5, top - H * 0.1, bw * 3, floor - top + H * 0.2);
         }
         // quầng sáng tâm sàn (đập rất nhẹ) và vệt sáng mờ dọc dải trần
         var pul = 0.85 + 0.15 * Math.sin(t * 0.9 * sp);
         ctx.globalAlpha = 0.9 * pul;
         ctx.drawImage(this.core, W / 2 - W * 0.3, floor - H * 0.085, W * 0.6, H * 0.17);
-        ctx.globalAlpha = 0.22;
-        ctx.drawImage(this.core, W / 2 - W * 0.55, top - H * 0.045, W * 1.1, H * 0.09);
+        if (!this.useGl) { ctx.globalAlpha = 0.22; ctx.drawImage(this.core, W / 2 - W * 0.55, top - H * 0.045, W * 1.1, H * 0.09); }
         // kim tuyến: 4 tấm đổi độ sáng lệch pha + trôi ngang rất chậm ngược chiều nhau → lấp lánh, có chiều sâu
         if (this.useGl && GLFX.gl) GLFX.draw(dt);
         else for (i = 0; i < this.layers.length; i++) {
@@ -622,17 +621,17 @@
       'void main(){float seed=aP.z;float tw=pow(0.5+0.5*sin(uT*(1.2+seed*3.7)+seed*61.0),3.0);' +
       'if(aP.w>1.5){gl_Position=vec4(aP.xy,0.0,1.0);gl_PointSize=uPx*(1.6+2.8*fract(seed*7.3));vA=(0.15+0.85*tw)*0.9;return;}' +
       'float fl=aP.w<0.5?1.0:0.0;float ang=aP.y+uT*(fl>0.5?0.03:-0.02)*(1.0+0.7/(0.5+aP.x));' +
-      'vec3 p=vec3(cos(ang)*aP.x,fl>0.5?-0.95:0.95,sin(ang)*aP.x);float lift=0.0;' +
+      'float thick=(fract(seed*91.7)-0.5)*(0.05+0.09*aP.x);vec3 p=vec3(cos(ang)*aP.x,(fl>0.5?-0.95:0.95)+thick,sin(ang)*aP.x);float lift=0.0;' +
       'if(fl>0.5){for(int i=0;i<6;i++){float age=uT-uRip[i].z;if(age>0.0&&age<3.2){float d=distance(p.xz,uRip[i].xy);' +
       'float w=exp(-pow((d-age*0.85)/0.085,2.0))*exp(-age*1.05);float w2=exp(-pow((d-age*0.85+0.22)/0.07,2.0))*exp(-age*1.6)*0.5;lift+=w+w2;}}}' +
       'p.y+=lift*0.085;float zc=3.2-p.z;float f=2.1445;gl_Position=vec4(p.x*f/uAsp*zc/zc,p.y*f,0.0,zc);gl_Position.x=p.x*f/uAsp;' +
       'float sz=uPx*(2.4+5.0*fract(seed*13.7)*fract(seed*5.1))*2.6/zc;gl_PointSize=max(1.0,sz)*(1.0+lift*1.4);' +
-      'float far=clamp(1.3-zc*0.09,0.5,1.0);vA=((0.5+1.1*tw)*(0.9+2.2*exp(-aP.x*1.2))*(fl>0.5?1.0:0.8)+lift*1.6)*far*smoothstep(0.15,0.7,zc);}',
+      'float far=clamp(1.3-zc*0.09,0.5,1.0);vA=((0.5+1.1*tw)*(0.9+2.2*exp(-aP.x*1.2))*(fl>0.5?1.0:0.8)+lift*1.6)*far*smoothstep(0.15,0.7,zc)*(1.0-smoothstep(1.7,3.0,aP.x)*0.92);}',
     VS_DROP: 'attribute vec4 aD;attribute float aTail;uniform float uT,uAsp,uPx;varying float vA;' +
       'void main(){float f=fract(uT*aD.w+aD.z);float ft=max(f-0.01-0.028*f,0.0);float ff=aTail>0.5?ft:f;' +
-      'vec3 p=vec3(aD.x,0.95-ff*ff*1.9,aD.y);float zc=3.2-p.z;float k=2.1445;gl_Position=vec4(p.x*k/uAsp,p.y*k,0.0,zc);' +
+      'float y0=0.95+(fract(aD.z*53.0)-0.5)*0.5;vec3 p=vec3(aD.x,y0-ff*ff*(y0+0.95),aD.y);float zc=3.2-p.z;float k=2.1445;gl_Position=vec4(p.x*k/uAsp,p.y*k,0.0,zc);' +
       'gl_PointSize=max(1.0,uPx*2.6*2.3/zc);float mid=0.4+0.6*abs(f*f-0.5)*2.0;' +
-      'vA=(aTail>0.5?0.0:1.0)*smoothstep(0.0,0.06,f)*(1.0-smoothstep(0.94,1.0,f))*mid*(0.15+0.4*fract(aD.z*17.0))*clamp(1.3-zc*0.12,0.3,1.0);}',
+      'vA=(aTail>0.5?0.0:1.0)*smoothstep(0.0,0.3,f)*(1.0-smoothstep(0.9,1.0,f))*mid*(0.1+0.3*fract(aD.z*17.0))*clamp(1.3-zc*0.12,0.3,1.0);}',
     VS_DYN: 'attribute vec3 aPos;attribute vec2 aSA;uniform float uAsp,uPx;varying float vA;' +
       'void main(){float zc=3.2-aPos.z;float k=2.1445;gl_Position=vec4(aPos.x*k/uAsp,aPos.y*k,0.0,zc);gl_PointSize=max(1.0,aSA.x*uPx*2.3/zc);vA=aSA.y;}',
     FS: 'precision mediump float;varying float vA;uniform vec3 uCol;uniform float uPoint;' +
@@ -647,7 +646,7 @@
       this.stop();
       try {
         var cv = document.createElement('canvas'); cv.id = 'fxgl';
-        var gl = cv.getContext('webgl', { alpha: true, antialias: false, premultipliedAlpha: true, powerPreference: 'high-performance' });
+        var gl = cv.getContext('webgl', { alpha: true, antialias: true, premultipliedAlpha: true, powerPreference: 'high-performance' });
         if (!gl) return false;
         this.gl = gl; this.cv = cv;
         var dens = Math.max(0.3, L.density), i, a = [];
