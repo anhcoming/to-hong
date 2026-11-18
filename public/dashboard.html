@@ -228,9 +228,8 @@ async function load() {
   if (sel) { // màn quản lý một thiệp: số liệu, gửi link, kích hoạt, màn LED / video
     document.querySelector('.head').hidden = true; $('#mine').innerHTML = '';
     el.innerHTML = `<a class="back" href="/thiep-cua-toi">‹ Quay lại</a><div class="dash">${heroCard(sel)}</div>`;
-  } else { // tab "Thiệp": toàn bộ mẫu; thiệp đang làm thành thanh gọn ở trên
-    const mine = cards.slice().sort((a, b) => (a === main ? -1 : b === main ? 1 : 0));
-    $('#mine').innerHTML = mine.length ? `<section class="mine"><h4>Thiệp của bạn</h4><div class="mrows">${mine.map(mineRow).join('')}</div></section>` : '';
+  } else { // tab "Thiệp": toàn bộ mẫu; thiệp của bạn ở nút "💌 Thiệp của bạn" trên thanh trên (common.js)
+    $('#mine').innerHTML = '';
     $('#pageTitle').textContent = 'Mẫu thiệp';
     $('#pageSub').textContent = `${(META.templates || []).length} mẫu · bấm để xem thử, ưng thì bấm Dùng mẫu`;
     el.innerHTML = tplSection();

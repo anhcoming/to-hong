@@ -358,6 +358,8 @@ window.renderTopbar = async function (active) {
   const meta = await fetch('/api/meta').then((r) => r.json());
   const me = await fetch('/api/me').then((r) => r.json());
   window.META = meta;
+  // nút "Thiệp của bạn" trên thanh trên: danh sách thiệp của tài khoản (thiệp chính lên đầu)
+  const myCards = me.user ? await fetch('/api/cards').then((r) => r.json()).then((j) => j.cards || []).catch(() => []) : [];
   // Kiểu "đồ của tôi": máy tính = logo · 3 tab Thiệp / Video / Sổ tay · Xem mẫu · ＋ Tạo mới · ảnh đại diện (menu tài khoản);
   // điện thoại = thanh trên logo · nút chính · ảnh đại diện, thanh dưới 5 nút: Thiệp · Báo hỷ · Màn LED · Slide · Sổ tay
   const u = me.user;
@@ -368,6 +370,12 @@ window.renderTopbar = async function (active) {
   const ic = (d) => `<svg viewBox="0 0 24 24" aria-hidden="true">${d}</svg>`;
   const NEW = `<a href="/mau-thiep"><b>Thiệp cưới</b><small>Chọn mẫu, điền tên là xong</small></a><a href="/slide-cuoi"><b>Slide / video cưới</b><small>Ảnh cưới chiếu TV, tải MP4</small></a><a href="/man-hinh-led-dam-cuoi"><b>Màn hình LED</b><small>Trình chiếu tên đôi tại tiệc</small></a>`;
   const ACCT = u ? `<div class="who"><b>${esc(u.name || '')}</b>${esc(u.email)}</div><a href="#" data-tb-theme class="ico"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5z"/></svg>Đổi nền sáng / tối</a><a href="#" id="logoutBtn" class="ico"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 4h3a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-3"/><path d="M10 16l-4-4 4-4M6 12h10"/></svg>Đăng xuất</a>` : '';
+  const rank = (c) => (c.combo ? 3 : c.paid ? 2 : c.status === 'published' ? 1 : 0);
+  const mine = myCards.slice().sort((a, b) => rank(b) - rank(a));
+  const cState = (c) => (c.combo ? ['ok', 'Trọn bộ đã kích hoạt'] : c.paid ? ['ok', 'Đã kích hoạt'] : c.status !== 'published' ? ['', 'Bản nháp'] : c.expired ? ['red', 'Link đã bị khoá'] : ['warn', 'Đang dùng thử']);
+  const tName = (id) => ((meta.templates || []).find((t) => t.id === id) || {}).name || id;
+  const MINE = mine.length ? `<div class="tb-dd tb-mine"><button type="button" class="tb-minebtn" aria-expanded="false" aria-label="Thiệp của bạn"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2.5"/><path d="M3.5 6.5 12 13l8.5-6.5"/><path class="hf" d="M12 17.6s-2.4-1.4-2.4-3a1.2 1.2 0 0 1 2.4-.4 1.2 1.2 0 0 1 2.4.4c0 1.6-2.4 3-2.4 3z"/></svg><span class="xl">Thiệp của bạn</span><em>${mine.length}</em><span class="xl car">▾</span></button>
+    <div class="tb-menu"><p class="tb-mh">Thiệp của bạn</p><div class="tb-ml">${mine.map((c, i) => { const st = cState(c); return `<div class="tb-mi${i ? '' : ' main'}"><a class="tb-mt" href="/thiep-cua-toi?thiep=${c.id}"><i style="background-image:url('${esc(c.cover ? c.cover.split('#')[0] : `/demo/cover-${c.template}-${c.palette}.jpg`)}')"></i><span><b>${esc(c.names || c.title || 'Thiệp cưới')}</b><small class="${st[0]}">${st[1]} · ${esc(tName(c.template))}</small></span></a><a class="tb-ms" href="/sua/${c.id}">Sửa</a></div>`; }).join('')}</div></div></div>` : '';
   const bar = document.createElement('header');
   bar.className = 'topbar tb';
   bar.innerHTML = `<div class="wrap">
@@ -378,7 +386,7 @@ window.renderTopbar = async function (active) {
       ? `<div class="tb-dd tb-mmain"><button type="button" class="btn sm" aria-expanded="false">＋ Tạo mới</button><div class="tb-menu">${NEW}</div></div>`
       : '') : ''}
     ${window.themeBtn ? themeBtn() : ''}
-    ${u ? `<a class="tb-link" href="/mau-thiep">Xem mẫu</a>
+    ${u ? `<a class="tb-link" href="/mau-thiep">Xem mẫu</a>${MINE}
       <div class="tb-dd tb-new"><button type="button" class="tb-newbtn" aria-expanded="false">＋ Tạo mới</button><div class="tb-menu">${NEW}</div></div>
       <div class="tb-dd tb-me"><button type="button" class="tb-av" aria-label="Tài khoản" aria-expanded="false"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg></button><div class="tb-menu">${ACCT}</div></div>`
       : '<a href="/dang-nhap" class="btn sm">Đăng nhập</a>'}
@@ -403,6 +411,22 @@ window.renderTopbar = async function (active) {
   const closeAll = (except) => dds.forEach((d) => { if (d !== except) { d.classList.remove('open'); const b = $('button', d); if (b) b.setAttribute('aria-expanded', 'false'); } });
   dds.forEach((d) => { const b = $('button', d); b.onclick = (e) => { e.stopPropagation(); const on = !d.classList.contains('open'); closeAll(d); d.classList.toggle('open', on); b.setAttribute('aria-expanded', on); }; });
   document.addEventListener('click', (e) => { if (!e.target.closest('.tb-dd')) closeAll(); });
+  // điện thoại: "Thiệp của bạn" mở thành tấm trượt từ dưới lên (đặt ngoài thanh trên — thanh trên có hiệu ứng mờ nên khung cố định bị giữ trong nó)
+  const mb = $('.tb-minebtn');
+  if (mb) {
+    const sh = document.createElement('div');
+    sh.className = 'tb-sheet'; sh.hidden = true;
+    sh.innerHTML = `<div class="tb-sheet-b">${$('.tb-mine .tb-menu').innerHTML}</div>`;
+    document.body.appendChild(sh);
+    sh.addEventListener('click', (e) => { if (e.target === sh) sh.hidden = true; });
+    const dd = mb.closest('.tb-dd');
+    mb.onclick = (e) => {
+      e.stopPropagation();
+      if (!matchMedia('(max-width:760px)').matches) { const on = !dd.classList.contains('open'); closeAll(dd); dd.classList.toggle('open', on); mb.setAttribute('aria-expanded', on); return; }
+      closeAll(); sh.hidden = false;
+    };
+    document.addEventListener('keydown', (e) => { if (e.key === 'Escape') sh.hidden = true; });
+  }
   document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeAll(); });
   document.addEventListener('click', async (e) => {
     const t = e.target.closest('[data-tb-theme],#logoutBtn,[data-tb-out]'); if (!t) return;
