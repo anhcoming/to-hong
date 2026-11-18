@@ -626,7 +626,7 @@
     VS_PTS: 'attribute vec4 aP;uniform float uT,uAsp,uPx;uniform vec3 uRip[8];uniform vec4 uRp;uniform vec3 uCen;uniform vec2 uSt;uniform vec3 uXf;uniform float uCeil;varying float vA;' +
       'void main(){float seed=aP.z;float tw=pow(0.5+0.5*sin(uT*(1.2+seed*3.7)+seed*61.0),3.0);' +
       'if(aP.w>4.5){gl_Position=vec4(aP.xy,0.0,1.0);float e=aP.y-0.3;float big=step(0.97,fract(seed*29.0));' +
-      'gl_PointSize=uPx*(1.6+3.0*fract(seed*7.3)*fract(seed*3.9)+big*2.5);float br=0.72+0.28*(0.5+0.5*sin(uT*0.35+aP.x*2.2+sin(uT*0.21+aP.x*1.3)*1.5));vA=(0.3+0.8*tw)*(0.35+0.45*exp(-max(e,0.0)*2.2)+big*0.3)*smoothstep(-0.24,0.08,e)*smoothstep(0.75,0.3,e)*br;return;}' +
+      'gl_PointSize=uPx*(1.6+3.0*fract(seed*7.3)*fract(seed*3.9)+big*2.5);float br=0.72+0.28*(0.5+0.5*sin(uT*0.35+aP.x*2.2+sin(uT*0.21+aP.x*1.3)*1.5));vA=(0.35+0.85*tw)*(0.42+0.55*exp(-max(e,0.0)*2.2)+big*0.35)*smoothstep(-0.24,0.08,e)*smoothstep(0.75,0.3,e)*br;return;}' +
       'if(aP.w>2.5){vec2 q=vec2(uXf.x*aP.x+uXf.y*aP.y,-uXf.y*aP.x+uXf.x*aP.y)/uXf.z;gl_Position=vec4(q.x/uAsp,q.y,0.0,1.0);float dust=step(3.5,aP.w);float bg=step(0.975,fract(seed*29.0))*(1.0-dust);' +
       'gl_PointSize=uPx*(mix(2.0,1.5,dust)+mix(3.0,2.0,dust)*fract(seed*7.3)+bg*4.5);vA=(0.3+0.7*tw)*(0.7+0.6*fract(seed*3.1)+bg*0.6)*mix(1.0,0.75,dust);return;}' +
       'if(aP.w>1.5){gl_Position=vec4(aP.xy,0.0,1.0);float big=step(0.965,fract(seed*29.0));gl_PointSize=uPx*(1.3+2.2*fract(seed*7.3)+big*3.5);vA=(0.18+0.82*tw)*(0.55+0.45*fract(seed*3.1)+big*0.5);return;}' +
