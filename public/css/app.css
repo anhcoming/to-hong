@@ -187,6 +187,14 @@ table.tbl{width:100%;border-collapse:collapse;font-size:14px}
   .tb-menu.up.right{left:auto;right:0;transform:translateY(4px)}.tb-dd.open .tb-menu.up.right{transform:none}
   .tb-me{display:none}
 }
+/* điện thoại: thanh trên giống trang chủ / trang giới thiệu — logo · nút chính (Thiệp của tôi / ＋ Tạo mới) · ☰ (máy tính đã có tab + Tạo mới + tài khoản) */
+.tb-mmain,.tb-burger{display:none}
+.tb-burger>button{display:grid;place-items:center;width:40px;height:40px;padding:0;border-radius:50%;border:1px solid var(--line);background:var(--surface);cursor:pointer}
+.tb-burger>button i,.tb-burger>button i::before,.tb-burger>button i::after{display:block;width:16px;height:2px;border-radius:2px;background:var(--ink);position:relative;transition:.2s}
+.tb-burger>button i::before,.tb-burger>button i::after{content:"";position:absolute;left:0}.tb-burger>button i::before{top:-5px}.tb-burger>button i::after{top:5px}
+.tb-burger.open>button i{background:transparent}.tb-burger.open>button i::before{top:0;transform:rotate(45deg)}.tb-burger.open>button i::after{top:0;transform:rotate(-45deg)}
+.tb-burger .tb-menu a{font-weight:600}.tb-burger .tb-menu em{margin-left:6px;padding:1px 7px;border-radius:999px;background:var(--primary);color:#fff;font-size:10.5px;font-style:normal;font-weight:700}
+.tb-burger .tb-menu hr{margin:6px 4px;border:0;border-top:1px solid var(--line)}
 /* nút về trang chủ: chỉ hiện ở điện thoại (máy tính bấm logo / menu tài khoản) */
 .tb-home{display:none;align-items:center;gap:6px;height:34px;padding:0 12px;border-radius:999px;font-size:13px;font-weight:600;color:var(--muted);text-decoration:none;white-space:nowrap}
 .tb-home svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
@@ -196,7 +204,9 @@ table.tbl{width:100%;border-collapse:collapse;font-size:14px}
   body.has-tb-bottom{padding-top:env(safe-area-inset-top)}
   body.has-tb-bottom .topbar.tb{padding:8px 0 4px}
   body.has-tb-bottom .topbar.tb .wrap{height:46px;padding:0 6px 0 16px}
-  body.has-tb-bottom .tb-home{display:inline-flex}
+  body.has-tb-bottom .tb-mmain{display:inline-flex}body.has-tb-bottom .tb-burger{display:block}
+  body.has-tb-bottom .tb-mmain>button{height:auto}
+  .tb-burger .tb-menu,.tb-mmain .tb-menu{position:fixed;left:12px;right:12px;top:62px;min-width:0}
 }
 
 /* thanh tab dưới kiểu "viên thuốc nổi": bo tròn, cách mép, nền trắng mờ; nút ＋ tròn nằm ngang hàng */

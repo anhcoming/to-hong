@@ -364,13 +364,19 @@ window.renderTopbar = async function (active) {
   const ic = (d) => `<svg viewBox="0 0 24 24" aria-hidden="true">${d}</svg>`;
   const NEW = `<a href="/mau-thiep"><b>Thiệp cưới</b><small>Chọn mẫu, điền tên là xong</small></a><a href="/slide-cuoi"><b>Slide / video cưới</b><small>Ảnh cưới chiếu TV, tải MP4</small></a><a href="/man-hinh-led-dam-cuoi"><b>Màn hình LED</b><small>Trình chiếu tên đôi tại tiệc</small></a>`;
   const ACCT = u ? `<div class="who"><b>${esc(u.name || '')}</b>${esc(u.email)}</div><a href="/">Trang chủ</a><a href="/mau-thiep">Xem mẫu thiệp</a><a href="#" data-tb-theme>Đổi nền sáng / tối</a><a href="#" id="logoutBtn">Đăng xuất</a>` : '';
+  // menu ☰ (điện thoại): cùng các mục với thanh trên của trang chủ / trang giới thiệu (public/js/site.js → MENU)
+  const MENU = [['/mau-thiep', 'Thiệp cưới'], ['/slide-cuoi', 'Slide cưới'], ['/man-hinh-led-dam-cuoi', 'Màn hình LED'], ['/video-dam-ngo', 'Video dạm ngõ'], ['/video', 'Video báo hỷ <em>Miễn phí</em>'], ['/so-tay-cuoi', 'Sổ tay cưới']]
+    .map(([h, n]) => `<a href="${h}">${n}</a>`).join('');
   const bar = document.createElement('header');
   bar.className = 'topbar tb';
   bar.innerHTML = `<div class="wrap">
     <a class="logo" href="/"><span class="lw">${esc(meta.brand)}</span><svg class="lh" viewBox="0 0 32 30" aria-hidden="true"><path d="M16 28C6.5 21 3 16 3 11.5 3 7.9 5.8 5 9.4 5c2.6 0 4.6 1.4 6.6 3.9C18 6.4 20 5 22.6 5 26.2 5 29 7.9 29 11.5 29 16 25.5 21 16 28z"/></svg></a>
     ${u ? `<nav class="tb-tabs" aria-label="Của tôi">${TABS.map(([h, n, k]) => `<a href="${h}"${k === active ? ' class="on" aria-current="page"' : ''}>${n}</a>`).join('')}</nav>` : ''}
     <span class="tb-sp"></span>
-    <a class="tb-home" href="/"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 11.5 12 4l8 7.5"/><path d="M6 10v10h12V10"/></svg>Trang chủ</a>
+    ${u ? (active === 'cards'
+      ? `<div class="tb-dd tb-mmain"><button type="button" class="btn sm" aria-expanded="false">＋ Tạo mới</button><div class="tb-menu">${NEW}</div></div>`
+      : '<a class="btn sm tb-mmain" href="/thiep-cua-toi">Thiệp của tôi</a>') : ''}
+    <div class="tb-dd tb-burger"><button type="button" aria-label="Mở menu" aria-expanded="false"><i></i></button><div class="tb-menu">${MENU}${ACCT ? '<hr>' + ACCT.replace('id="logoutBtn"', 'data-tb-out') : '<a href="/">Trang chủ</a>'}</div></div>
     ${window.themeBtn ? themeBtn() : ''}
     ${u ? `<a class="tb-link" href="/mau-thiep">Xem mẫu</a>
       <div class="tb-dd tb-new"><button type="button" class="tb-newbtn" aria-expanded="false">＋ Tạo mới</button><div class="tb-menu">${NEW}</div></div>
