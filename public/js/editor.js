@@ -849,8 +849,7 @@ function quickStart(forPublish) {
       ${info ? `<details class="ev" style="margin:4px 0 10px"><summary class="ev-h"><span class="ev-s"><b>Họ tên đầy đủ, bố mẹ, địa chỉ hai nhà</b><small>Không bắt buộc</small></span></summary><div class="ev-b">${fam('groom', 'Nhà trai')}${fam('bride', 'Nhà gái')}</div></details>
       <h3 style="margin:14px 0 8px;font-size:15px">Các lễ trong ngày cưới</h3><div id="qsEv">${evRows()}</div>
       ${d.events.length < 6 ? `<div class="chips2" style="margin-bottom:12px">${EV_PRESETS.map((n) => `<button type="button" data-qe-add="${esc(n)}">+ ${esc(n)}</button>`).join('')}<button type="button" data-qe-add="">+ Lễ khác</button></div>` : ''}` : ''}
-      <button class="btn block" style="margin-top:6px">${forPublish ? 'Lưu & phát hành' : info ? 'Lưu' : 'Xong, xem thiệp'}</button>
-      ${forPublish || info ? '' : '<button type="button" class="qs-skip" id="qsSkip">Để sau</button>'}
+      <div style="text-align:center;margin-top:6px"><button class="btn" style="min-width:140px;justify-content:center">${forPublish ? 'Lưu & phát hành' : 'Lưu'}</button></div>
     </form>`, (box, close) => {
     if (info) box.addEventListener('click', (e) => { // các lễ: đổi thứ tự tại chỗ; Sửa / Thêm → hộp sửa lễ
       const b = e.target.closest('[data-qe-up],[data-qe-ed],[data-qe-add],[data-qe-main]'); if (!b) return;
@@ -860,7 +859,6 @@ function quickStart(forPublish) {
       if (b.dataset.qeAdd !== undefined) eventModal(d.events.length, '', b.dataset.qeAdd); else eventModal(+b.dataset.qeEd);
     });
     if (!d.groom.name) setTimeout(() => $('#qsG', box).focus(), 60);
-    const sk = $('#qsSkip', box); if (sk) sk.onclick = close;
     $('#qsF', box).onsubmit = async (e) => {
       e.preventDefault();
       const v = (id) => ($(id, box) ? $(id, box).value.trim() : '');
