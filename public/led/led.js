@@ -2,6 +2,8 @@
 (function () {
   'use strict';
   var C = window.__LED;
+  // ?still=1: chụp ảnh đại diện mẫu (tools/previews.js) — cảnh hiện ngay, không chờ hiệu ứng hiện dần
+  if (/[?&]still=1(&|$)/.test(location.search)) document.documentElement.classList.add('still');
   var L = C.led;
   var stage = document.getElementById('stage');
   var canvas = document.getElementById('fx');
@@ -55,42 +57,91 @@
 
   // ---------------- hiệu ứng nền ----------------
   var FX = {
+    // Trời sao "điện ảnh": tinh vân mờ trôi chậm, sao xa lấp lánh, tia sáng rọi từ trên, sàn kim tuyến phối cảnh
+    // (hạt dày + sáng dần về đường chân trời, xoay chậm), bụi sáng gần trôi lên và sao băng.
+    // Các lớp mềm (tinh vân, tia sáng, quầng chân trời) vẽ sẵn một lần ở độ phân giải thấp rồi phóng to — mỗi khung hình chỉ dán ảnh.
     sao: {
       init: function () {
-        var n = Math.round(260 * L.density * AREA);
-        for (var i = 0; i < n; i++) parts.push({ x: rnd(0, W), y: rnd(0, H), r: rnd(0.6, 2.4), ph: rnd(0, 6.28), sp: rnd(0.6, 2) });
+        var self = this, A = AREA * L.density, i;
+        var soft = function (w, h, fn) { var c = document.createElement('canvas'); c.width = w; c.height = h; fn(c.getContext('2d'), w, h); return c; };
+        // tinh vân: vài đám sáng màu hạt + màu nhấn, rất nhạt
+        self.neb = soft(480, 270, function (g, w, h) {
+          var blobs = [[0.22, 0.28, 0.42, pal.particle, 0.16], [0.78, 0.22, 0.38, pal.accent, 0.13], [0.55, 0.45, 0.5, pal.particle, 0.1], [0.12, 0.62, 0.3, pal.accent, 0.08], [0.9, 0.55, 0.32, pal.particle, 0.08]];
+          blobs.forEach(function (b) { var gr = g.createRadialGradient(b[0] * w, b[1] * h, 0, b[0] * w, b[1] * h, b[2] * w); gr.addColorStop(0, rgba(b[3], b[4])); gr.addColorStop(1, rgba(b[3], 0)); g.fillStyle = gr; g.fillRect(0, 0, w, h); });
+        });
+        // tia sáng rọi dọc (một dải mềm, dùng lại nhiều lần với độ rộng khác nhau)
+        self.beam = soft(64, 256, function (g, w, h) {
+          var gx = g.createLinearGradient(0, 0, w, 0); gx.addColorStop(0, rgba(pal.particle, 0)); gx.addColorStop(0.5, rgba(pal.particle, 1)); gx.addColorStop(1, rgba(pal.particle, 0));
+          g.fillStyle = gx; g.fillRect(0, 0, w, h);
+          g.globalCompositeOperation = 'destination-in';
+          var gy = g.createLinearGradient(0, 0, 0, h); gy.addColorStop(0, 'rgba(0,0,0,0)'); gy.addColorStop(0.35, 'rgba(0,0,0,.9)'); gy.addColorStop(1, 'rgba(0,0,0,0)');
+          g.fillStyle = gy; g.fillRect(0, 0, w, h);
+        });
+        // quầng sáng đường chân trời của sàn kim tuyến
+        self.horizon = soft(512, 128, function (g, w, h) {
+          var gr = g.createRadialGradient(w / 2, w / 2, 0, w / 2, w / 2, w / 2); gr.addColorStop(0, rgba(pal.particle, 0.55)); gr.addColorStop(0.35, rgba(pal.particle, 0.16)); gr.addColorStop(1, rgba(pal.particle, 0));
+          g.setTransform(1, 0, 0, h / w, 0, 0); g.fillStyle = gr; g.fillRect(0, 0, w, w); // vòng tròn ép dẹt thành elip
+        });
+        self.beams = [];
+        for (i = 0; i < 5; i++) self.beams.push({ x: rnd(0.25, 0.75), w: rnd(0.04, 0.12), a: rnd(0.07, 0.17), ph: rnd(0, 6.28), sp: rnd(0.15, 0.4) });
+        for (i = 0; i < Math.round(240 * A); i++) parts.push({ k: 0, x: rnd(0, W), y: rnd(0, H * 0.78), r: rnd(0.5, 2), ph: rnd(0, 6.28), sp: rnd(0.6, 2) });
+        // sàn kim tuyến: hạt trên mặt phẳng nằm ngang, chiếu phối cảnh (u: ngang, d: độ sâu 0 = sát mắt, 1 = chân trời)
+        for (i = 0; i < Math.round(1700 * A); i++) parts.push({ k: 1, u: rnd(-1, 1), d: Math.pow(Math.random(), 0.45), r: rnd(0.5, 1.8), ph: rnd(0, 6.28), sp: rnd(1, 3.5) });
+        for (i = 0; i < Math.round(36 * A); i++) parts.push({ k: 2, x: rnd(0, W), y: rnd(0, H), r: rnd(6, 16), v: rnd(8, 22), ph: rnd(0, 6.28) });
       },
       draw: function (dt, t) {
-        for (var i = 0; i < parts.length; i++) {
-          var p = parts[i];
-          var a = 0.35 + 0.65 * (0.5 + 0.5 * Math.sin(p.ph + t * p.sp * L.speed));
-          ctx.globalAlpha = a;
-          var s = p.r * 6;
-          ctx.drawImage(sprite, p.x - s / 2, p.y - s / 2, s, s);
+        var sp = L.speed, i, p, s, a;
+        var hz = H * 0.66; // đường chân trời
+        // tinh vân trôi rất chậm
+        ctx.globalAlpha = 1;
+        var nx = Math.sin(t * 0.02 * sp) * W * 0.03, ny = Math.cos(t * 0.017 * sp) * H * 0.02;
+        ctx.drawImage(this.neb, -W * 0.05 + nx, -H * 0.05 + ny, W * 1.1, H * 1.1);
+        // tia sáng rọi
+        for (i = 0; i < this.beams.length; i++) {
+          var b = this.beams[i], bx = (b.x + 0.03 * Math.sin(t * b.sp * 0.3 * sp + b.ph)) * W, bw = b.w * W;
+          ctx.globalAlpha = b.a * (0.6 + 0.4 * Math.sin(t * b.sp * sp + b.ph));
+          ctx.drawImage(this.beam, bx - bw / 2, -H * 0.05, bw, hz + H * 0.08);
+        }
+        // quầng chân trời
+        ctx.globalAlpha = 1;
+        ctx.drawImage(this.horizon, -W * 0.05, hz - H * 0.16, W * 1.1, H * 0.32);
+        var rot = t * 0.03 * sp;
+        for (i = 0; i < parts.length; i++) {
+          p = parts[i];
+          if (p.k === 0) { // sao xa
+            a = 0.3 + 0.7 * (0.5 + 0.5 * Math.sin(p.ph + t * p.sp * sp));
+            ctx.globalAlpha = a; s = p.r * 6; ctx.drawImage(sprite, p.x - s / 2, p.y - s / 2, s, s);
+          } else if (p.k === 1) { // sàn kim tuyến (xoay chậm quanh tâm sàn)
+            var u = p.u * Math.cos(rot) - (p.d - 0.5) * 2 * Math.sin(rot) * 0.4, d = p.d;
+            var z = 0.12 + d * 0.88;                         // xa dần về chân trời
+            var x = W / 2 + u * W * 1.4 / (0.6 + z * 2.2), y = hz + (H - hz) * Math.pow(1 - d, 1.6);
+            if (x < -10 || x > W + 10) continue;
+            var near = 1 - d, glint = Math.pow(0.5 + 0.5 * Math.sin(p.ph + t * p.sp * sp), 6);
+            ctx.globalAlpha = Math.min(1, (0.3 + 0.7 * glint) * (0.45 + 0.55 * (1 - Math.abs(u) * 0.5)) * (0.55 + 0.45 * d) * 1.15);
+            s = p.r * (2.6 + near * 6); ctx.drawImage(sprite, x - s / 2, y - s / 2, s, s);
+          } else { // bụi sáng gần trôi lên, mờ (như ngoài tiêu cự)
+            p.y -= p.v * dt * sp; p.x += Math.sin(t * 0.4 + p.ph) * 6 * dt;
+            if (p.y < -30) { p.y = H + 30; p.x = rnd(0, W); }
+            ctx.globalAlpha = 0.1 + 0.12 * (0.5 + 0.5 * Math.sin(t * 0.8 + p.ph)); s = p.r * 6;
+            ctx.drawImage(sprite, p.x - s / 2, p.y - s / 2, s, s);
+          }
         }
         // sao băng
-        if (Math.random() < dt * 0.45 * L.speed * Math.max(0.5, L.density)) {
+        if (Math.random() < dt * 0.4 * sp * Math.max(0.5, L.density)) {
           var ang = rnd(0.35, 0.6);
-          extra.push({ x: rnd(W * 0.1, W * 0.95), y: rnd(-40, H * 0.35), vx: -Math.cos(ang), vy: Math.sin(ang), v: rnd(900, 1500), life: 0, max: rnd(0.8, 1.4), len: rnd(180, 320) });
+          extra.push({ x: rnd(W * 0.1, W * 0.95), y: rnd(-40, H * 0.3), vx: -Math.cos(ang), vy: Math.sin(ang), v: rnd(900, 1500), life: 0, max: rnd(0.8, 1.4), len: rnd(200, 360) });
         }
         ctx.lineCap = 'round';
         for (var j = extra.length - 1; j >= 0; j--) {
           var m = extra[j];
-          m.life += dt;
-          m.x += m.vx * m.v * dt * L.speed;
-          m.y += m.vy * m.v * dt * L.speed;
+          m.life += dt; m.x += m.vx * m.v * dt * sp; m.y += m.vy * m.v * dt * sp;
           var k = 1 - m.life / m.max;
-          if (k <= 0) { extra.splice(j, 1); continue; }
-          var tx = m.x - m.vx * m.len, ty = m.y - m.vy * m.len;
-          var gr = ctx.createLinearGradient(m.x, m.y, tx, ty);
-          gr.addColorStop(0, rgba(pal.particle, 0.95 * k));
-          gr.addColorStop(1, rgba(pal.particle, 0));
-          ctx.globalAlpha = 1;
-          ctx.strokeStyle = gr;
-          ctx.lineWidth = 3;
+          if (k <= 0 || m.y > hz) { extra.splice(j, 1); continue; }
+          var tx = m.x - m.vx * m.len, ty = m.y - m.vy * m.len, gr = ctx.createLinearGradient(m.x, m.y, tx, ty);
+          gr.addColorStop(0, rgba(pal.particle, 0.95 * k)); gr.addColorStop(1, rgba(pal.particle, 0));
+          ctx.globalAlpha = 1; ctx.strokeStyle = gr; ctx.lineWidth = 3;
           ctx.beginPath(); ctx.moveTo(m.x, m.y); ctx.lineTo(tx, ty); ctx.stroke();
-          ctx.globalAlpha = k;
-          ctx.drawImage(sprite, m.x - 14, m.y - 14, 28, 28);
+          ctx.globalAlpha = k; ctx.drawImage(sprite, m.x - 14, m.y - 14, 28, 28);
         }
       },
     },
@@ -427,9 +478,64 @@
     },
   };
 
+  // ---------------- nền video quay sẵn (lib/led.js → VIDEOS) ----------------
+  // Hai thẻ <video> thay phiên: gần hết video thì bản kia phát lại từ đầu và hiện dần lên → chỗ nối vòng lặp không bị giật.
+  var FADE = 1.4, vbg = null;
+  FX.none = { init: function () {}, draw: function () {} };
+  function isVideo() { return !!(C.videos && C.videos[L.effect]); }
+  function setupVideo() {
+    var v = C.videos && C.videos[L.effect];
+    stage.classList.toggle('has-video', !!v);
+    if (!v) { stage.classList.remove('vlight'); }
+    if (!v) { if (vbg) { vbg.wrap.remove(); vbg = null; } return; }
+    var light = v.shade === 'light';
+    if (!vbg || vbg.src !== v.src) {
+      if (vbg) vbg.wrap.remove();
+      var wrap = document.createElement('div');
+      wrap.id = 'bgv';
+      wrap.style.backgroundImage = 'url("' + v.poster + '")';
+      var mk = function () {
+        var e = document.createElement('video');
+        e.muted = true; e.defaultMuted = true; e.playsInline = true; e.preload = 'auto'; e.disablePictureInPicture = true;
+        e.setAttribute('muted', ''); e.setAttribute('playsinline', ''); e.setAttribute('aria-hidden', 'true');
+        e.src = v.src;
+        wrap.appendChild(e);
+        return e;
+      };
+      var a = mk(), b = mk();
+      b.classList.add('off');
+      var sh = document.createElement('i'); sh.className = 'vshade';
+      wrap.appendChild(sh);
+      stage.insertBefore(wrap, canvas);
+      vbg = { wrap: wrap, a: a, b: b, front: a, src: v.src, swapAt: 0 };
+      var start = function () { a.play().catch(function () {}); };
+      if (a.readyState >= 2) start(); else a.addEventListener('canplay', start, { once: true });
+    }
+    vbg.wrap.classList.toggle('light', light);
+    stage.classList.toggle('vlight', light);
+    var r = Math.max(0.5, Math.min(1.5, L.speed || 1));
+    vbg.a.playbackRate = vbg.b.playbackRate = r;
+  }
+  function tickVideo() {
+    if (!vbg) return;
+    var f = vbg.front, back = f === vbg.a ? vbg.b : vbg.a;
+    if (f.paused && !vbg.swapAt && f.readyState >= 2) f.play().catch(function () {}); // tab ẩn rồi hiện lại / bị chặn tự phát
+    if (!f.duration || vbg.swapAt) {
+      if (vbg.swapAt && performance.now() > vbg.swapAt) { f.pause(); vbg.front = back; vbg.swapAt = 0; }
+      return;
+    }
+    if (f.currentTime > f.duration - FADE - 0.15) {
+      back.currentTime = 0;
+      back.play().catch(function () {});
+      back.classList.remove('off'); f.classList.add('off');
+      vbg.swapAt = performance.now() + FADE * 1000 + 200;
+    }
+  }
+
   function resetFx() {
     parts = []; extra = [];
-    (FX[L.effect] || FX.sao).init();
+    setupVideo();
+    (isVideo() ? FX.none : FX[L.effect] || FX.sao).init();
   }
 
   var last = performance.now();
@@ -438,8 +544,9 @@
     last = now;
     ctx.setTransform(K, 0, 0, K, 0, 0);
     ctx.clearRect(0, 0, W, H);
-    (FX[L.effect] || FX.sao).draw(dt, now / 1000);
+    (isVideo() ? FX.none : FX[L.effect] || FX.sao).draw(dt, now / 1000);
     ctx.globalAlpha = 1;
+    tickVideo();
     requestAnimationFrame(frame);
   }
 

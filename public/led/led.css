@@ -91,3 +91,16 @@ body.fs .ctl .i-off{display:block}
   .ctl button{width:40px;height:40px}
 }
 @media (prefers-reduced-motion:reduce){.slide{transition:opacity .6s}}
+
+/* nền video quay sẵn: ảnh tĩnh của video hiện ngay trong lúc tải; hai lớp video thay phiên mờ dần ở chỗ nối vòng lặp */
+#bgv{position:absolute;inset:0;background:#000 center/cover no-repeat}
+#bgv video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;transition:opacity 1.4s ease}
+#bgv video.off{opacity:0}
+/* lớp phủ để chữ luôn đọc rõ: tối nhẹ ở giữa (chỗ có chữ) và đậm dần ra mép như ống kính */
+#bgv .vshade{position:absolute;inset:0;background:radial-gradient(ellipse 70% 62% at 50% 50%,rgba(0,0,0,.34),rgba(0,0,0,.12) 55%,rgba(0,0,0,.55) 100%)}
+#bgv.light .vshade{background:radial-gradient(ellipse 70% 62% at 50% 50%,rgba(255,250,242,.42),rgba(255,250,242,.16) 60%,rgba(60,40,20,.18) 100%)}
+#stage.has-video #fx{display:none}
+#stage.has-video:not(.vlight) .glow{text-shadow:0 0 30px color-mix(in srgb,var(--accent) 40%,transparent),0 3px 14px rgba(0,0,0,.55)}
+#stage.has-video:not(.vlight) .slide{text-shadow:0 2px 12px rgba(0,0,0,.45)}
+#stage.vlight .slide{text-shadow:0 1px 10px rgba(255,250,240,.7)}
+.still .slide{transition:none!important}

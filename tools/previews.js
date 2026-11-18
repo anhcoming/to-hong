@@ -67,7 +67,7 @@ const kb = (f) => Math.round(fs.statSync(f).size / 1024) + 'KB';
     const TOP_LED = [['do', 'sao'], ['den', 'remphale'], ['dem', 'phaohoa'], ['tim', 'hoadang'], ['hong', 'tim']]; // cùng danh sách với public/index.html
     await send('Emulation.setDeviceMetricsOverride', { width: 1280, height: 720, deviceScaleFactor: 1, mobile: false });
     for (const [p, e] of TOP_LED) try {
-      await send('Page.navigate', { url: `${BASE}/led/demo?preview=1&palette=${p}&effect=${e}` });
+      await send('Page.navigate', { url: `${BASE}/led/demo?preview=1&still=1&palette=${p}&effect=${e}` });
       await sleep(4500); // chờ font + cảnh đầu (tên cô dâu chú rể) hiện xong
       const file = path.join(OUT, `lposter-${p}-${e}.jpg`);
       const r = await send('Page.captureScreenshot', { format: 'jpeg', quality: 80, clip: { x: 0, y: 0, width: 1280, height: 720, scale: 1 } });
