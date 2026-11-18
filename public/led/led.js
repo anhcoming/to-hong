@@ -145,6 +145,93 @@
         }
       },
     },
+    // Đêm kim tuyến bạc: nền đen, một "sàn" kim tuyến bạc hình đĩa nhìn nghiêng ở dưới (sáng rực ở tâm, xoay chậm), một dải kim tuyến
+    // như trần sân khấu ở trên, khoảng tối ở giữa cho chữ, vài cột sáng mảnh nối trần với sàn, bụi sao rải khắp và sao băng mảnh.
+    // Hạt kim tuyến vẽ sẵn một lần vào vài tấm ảnh; mỗi khung hình chỉ dán các tấm đó (xoay + đổi độ sáng lệch pha → lấp lánh),
+    // nên hàng chục nghìn hạt mà máy yếu vẫn chạy mượt.
+    dembac: {
+      init: function () {
+        var self = this, dens = Math.max(0.3, L.density), i, j;
+        var port = H > W, TW = port ? 900 : 1600, TH = Math.round(TW * H / W);
+        var top = TH * (port ? 0.15 : 0.2), floor = TH * (port ? 0.85 : 0.8);
+        self.top = top / TH; self.floor = floor / TH;
+        var mk = function (w, h) { var c = document.createElement('canvas'); c.width = w; c.height = h; return c; };
+        // 4 tấm kim tuyến phủ cả màn, hạt đã chiếu phối cảnh sẵn (tròn, gần thì to); mỗi khung hình chỉ dán 4 tấm với độ sáng lệch pha
+        self.layers = [];
+        for (i = 0; i < 4; i++) {
+          var c = mk(TW, TH), g = c.getContext('2d');
+          var dot = function (x, y, r, a) { g.globalAlpha = a; g.drawImage(sprite, x - r, y - r, r * 2, r * 2); };
+          // đĩa nhìn nghiêng: tâm (cx, cy), bán kính rx / ry; hạt dày ở tâm; near = nửa gần mắt (to và sáng hơn)
+          var plate = function (cy, rx, ry, n, pw, flip) {
+            for (var q = 0; q < n; q++) {
+              var rr = Math.pow(Math.random(), pw), an = Math.random() * 6.2832, k = 1 - rr;
+              var sy = Math.sin(an) * (flip ? -1 : 1), near = 0.5 + 0.5 * sy;          // 1 = sát mắt
+              var glint = Math.random() < 0.035;
+              dot(TW / 2 + Math.cos(an) * rr * rx, cy + Math.sin(an) * rr * ry,
+                (glint ? rnd(3, 5) : rnd(0.9, 2)) * (0.65 + 0.7 * near * rr + 0.3 * k),
+                Math.min(1, (0.45 + 0.55 * Math.random()) * (0.4 + 0.9 * k) + (glint ? 0.35 : 0)));
+            }
+          };
+          plate(floor, TW * 0.62, TH * 0.21, Math.round(5200 * dens), 1.35, false);  // sàn
+          plate(top, TW * 0.8, TH * 0.14, Math.round(4200 * dens), 1.05, true);     // trần
+          for (j = 0; j < Math.round(1500 * dens); j++) { var yy = Math.pow(Math.random(), 1.4); dot(rnd(0, TW), top * (1 - yy * 1.25), Math.random() < 0.05 ? rnd(2, 3.2) : rnd(0.6, 1.4), rnd(0.25, 0.9) * (1 - yy * 0.4)); } // kim tuyến phía trên trần
+          for (j = 0; j < Math.round(320 * dens); j++) dot(rnd(0, TW), rnd(0, TH), Math.random() < 0.06 ? rnd(1.8, 2.8) : rnd(0.5, 1.1), rnd(0.2, 0.7)); // bụi sao rải khắp
+          self.layers.push({ c: c, ph: i * 1.57, sp: rnd(0.9, 1.5), dx: (i % 2 ? -1 : 1) * rnd(3, 7) });
+        }
+        // quầng sáng tâm sàn + cột sáng
+        self.core = mk(256, 256);
+        var gc = self.core.getContext('2d'), gr = gc.createRadialGradient(128, 128, 0, 128, 128, 128);
+        gr.addColorStop(0, 'rgba(255,255,255,.9)'); gr.addColorStop(0.16, rgba(pal.particle, 0.42)); gr.addColorStop(0.5, rgba(pal.particle, 0.1)); gr.addColorStop(1, rgba(pal.particle, 0));
+        gc.fillStyle = gr; gc.fillRect(0, 0, 256, 256);
+        self.beam = mk(48, 256);
+        var gb = self.beam.getContext('2d'), gx = gb.createLinearGradient(0, 0, 48, 0);
+        gx.addColorStop(0, rgba(pal.particle, 0)); gx.addColorStop(0.5, rgba(pal.particle, 1)); gx.addColorStop(1, rgba(pal.particle, 0));
+        gb.fillStyle = gx; gb.fillRect(0, 0, 48, 256);
+        gb.globalCompositeOperation = 'destination-in';
+        var gy = gb.createLinearGradient(0, 0, 0, 256); gy.addColorStop(0, 'rgba(0,0,0,0)'); gy.addColorStop(0.12, 'rgba(0,0,0,.9)'); gy.addColorStop(0.55, 'rgba(0,0,0,.3)'); gy.addColorStop(0.9, 'rgba(0,0,0,.7)'); gy.addColorStop(1, 'rgba(0,0,0,0)');
+        gb.fillStyle = gy; gb.fillRect(0, 0, 48, 256);
+        self.beams = [];
+        for (i = 0; i < 10; i++) self.beams.push({ x: rnd(0.06, 0.94), w: rnd(0.008, 0.024), a: rnd(0.05, 0.13), ph: rnd(0, 6.28), sp: rnd(0.2, 0.6) });
+        self.beams.push({ x: rnd(0.63, 0.72), w: 0.02, a: 0.34, ph: 0, sp: 0.25 }); // một cột sáng rõ hơn
+      },
+      draw: function (dt, t) {
+        var sp = L.speed, i, top = this.top * H, floor = this.floor * H;
+        // cột sáng nối trần với sàn (vẽ trước, nằm dưới kim tuyến)
+        for (i = 0; i < this.beams.length; i++) {
+          var b = this.beams[i], bw = b.w * W;
+          ctx.globalAlpha = b.a * (0.55 + 0.45 * Math.sin(t * b.sp * sp + b.ph));
+          ctx.drawImage(this.beam, b.x * W - bw / 2, top - H * 0.04, bw, floor - top + H * 0.08);
+        }
+        // quầng sáng tâm sàn (đập rất nhẹ) và vệt sáng mờ dọc dải trần
+        var pul = 0.85 + 0.15 * Math.sin(t * 0.9 * sp);
+        ctx.globalAlpha = 0.9 * pul;
+        ctx.drawImage(this.core, W / 2 - W * 0.3, floor - H * 0.085, W * 0.6, H * 0.17);
+        ctx.globalAlpha = 0.22;
+        ctx.drawImage(this.core, W / 2 - W * 0.55, top - H * 0.045, W * 1.1, H * 0.09);
+        // kim tuyến: 4 tấm đổi độ sáng lệch pha + trôi ngang rất chậm ngược chiều nhau → lấp lánh, có chiều sâu
+        for (i = 0; i < this.layers.length; i++) {
+          var l = this.layers[i], ox = Math.sin(t * 0.05 * sp + l.ph) * l.dx * (W / 1600);
+          ctx.globalAlpha = 0.45 + 0.55 * Math.pow(0.5 + 0.5 * Math.sin(t * l.sp * sp + l.ph), 1.5);
+          ctx.drawImage(l.c, ox - 8, 0, W + 16, H);
+        }
+        // sao băng mảnh, thưa
+        if (Math.random() < dt * 0.22 * sp) {
+          var ang = rnd(0.3, 0.55);
+          extra.push({ x: rnd(W * 0.2, W), y: rnd(-30, H * 0.12), vx: -Math.cos(ang), vy: Math.sin(ang), v: rnd(1000, 1600), life: 0, max: rnd(0.6, 1), len: rnd(180, 300) });
+        }
+        ctx.lineCap = 'round';
+        for (var j = extra.length - 1; j >= 0; j--) {
+          var m = extra[j];
+          m.life += dt; m.x += m.vx * m.v * dt * sp; m.y += m.vy * m.v * dt * sp;
+          var k = 1 - m.life / m.max;
+          if (k <= 0) { extra.splice(j, 1); continue; }
+          var tx = m.x - m.vx * m.len, ty = m.y - m.vy * m.len, gs = ctx.createLinearGradient(m.x, m.y, tx, ty);
+          gs.addColorStop(0, rgba(pal.particle, 0.9 * k)); gs.addColorStop(1, rgba(pal.particle, 0));
+          ctx.globalAlpha = 1; ctx.strokeStyle = gs; ctx.lineWidth = 1.6;
+          ctx.beginPath(); ctx.moveTo(m.x, m.y); ctx.lineTo(tx, ty); ctx.stroke();
+        }
+      },
+    },
     domdom: {
       init: function () {
         var n = Math.round(80 * L.density * AREA);
@@ -485,6 +572,7 @@
   function isVideo() { return !!(C.videos && C.videos[L.effect]); }
   function setupVideo() {
     var v = C.videos && C.videos[L.effect];
+    stage.classList.toggle('st-thanh', !!(C.styles && C.styles[L.effect] === 'thanh'));
     stage.classList.toggle('has-video', !!v);
     if (!v) { stage.classList.remove('vlight'); }
     if (!v) { if (vbg) { vbg.wrap.remove(); vbg = null; } return; }
@@ -555,6 +643,11 @@
     var g = C.groom || {}, b = C.bride || {};
     var gn = esc(g.name || 'Chú rể'), bn = esc(b.name || 'Cô dâu');
     var hy = L.hy ? '<p class="hy glow">囍</p>' : '';
+    // kiểu chữ "thanh": chữ lồng hai chữ cái đầu tên (vd. Gia Huy & Bảo Ngọc → H N) thay cho chữ 囍
+    if (C.styles && C.styles[L.effect] === 'thanh') {
+      var ini = function (n) { var w = String(n || '').trim().split(/\s+/).pop() || ''; return esc(w.charAt(0).toUpperCase()); };
+      hy = L.hy ? '<p class="mono" aria-hidden="true"><span>' + ini(g.name || 'Chú rể') + '</span><span>' + ini(b.name || 'Cô dâu') + '</span></p>' : '';
+    }
     var out = [];
     if (L.slides.names) {
       out.push('<div data-k="names" class="slide s-names">' + hy + (L.kicker || C.preview ? '<p class="kicker" data-e="led.kicker">' + esc(L.kicker) + '</p>' : '') +
