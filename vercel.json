@@ -1,15 +1,88 @@
 {
-  "regions": ["sin1"],
+  "regions": [
+    "sin1"
+  ],
   "functions": {
     "api/index.js": {
-      "includeFiles": "{public,lib,templates}/**",
+      "includeFiles": "{lib/**,templates/**,public/*.html}",
       "maxDuration": 30
     }
   },
+  "headers": [
+    {
+      "source": "/demo/(.*)\\.(jpg|jpeg|png|webp|svg|mp4)",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=604800, stale-while-revalidate=2592000"
+        }
+      ]
+    },
+    {
+      "source": "/demo/fonts/(.*)",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=2592000, stale-while-revalidate=31536000"
+        }
+      ]
+    },
+    {
+      "source": "/music/(.*)\\.mp3",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=2592000, stale-while-revalidate=31536000"
+        }
+      ]
+    },
+    {
+      "source": "/icons/(.*)",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=604800, stale-while-revalidate=2592000"
+        }
+      ]
+    },
+    {
+      "source": "/vendor/(.*)",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=86400, stale-while-revalidate=604800"
+        }
+      ]
+    }
+  ],
   "redirects": [
-    { "source": "/", "has": [{ "type": "host", "value": "to-hong.vercel.app" }], "destination": "https://cuoinha.com/", "permanent": true },
-    { "source": "/:path*", "has": [{ "type": "host", "value": "to-hong.vercel.app" }], "destination": "https://cuoinha.com/:path*", "permanent": true },
-    { "source": "/video-cuoi", "destination": "/video-dam-ngo", "permanent": true }
+    {
+      "source": "/",
+      "has": [
+        {
+          "type": "host",
+          "value": "to-hong.vercel.app"
+        }
+      ],
+      "destination": "https://cuoinha.com/",
+      "permanent": true
+    },
+    {
+      "source": "/:path*",
+      "has": [
+        {
+          "type": "host",
+          "value": "to-hong.vercel.app"
+        }
+      ],
+      "destination": "https://cuoinha.com/:path*",
+      "permanent": true
+    },
+    {
+      "source": "/video-cuoi",
+      "destination": "/video-dam-ngo",
+      "permanent": true
+    }
   ],
   "rewrites": [
     { "source": "/", "destination": "/index.html" },

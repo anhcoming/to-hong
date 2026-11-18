@@ -1343,7 +1343,7 @@ const PAGES = {
 const MIME = {
   '.html': 'text/html; charset=utf-8', '.css': 'text/css; charset=utf-8', '.js': 'text/javascript; charset=utf-8',
   '.json': 'application/json', '.jpg': 'image/jpeg', '.jpeg': 'image/jpeg', '.png': 'image/png', '.webp': 'image/webp',
-  '.svg': 'image/svg+xml', '.ico': 'image/x-icon', '.mp3': 'audio/mpeg', '.mp4': 'video/mp4', '.webmanifest': 'application/manifest+json', '.txt': 'text/plain; charset=utf-8', '.xml': 'application/xml',
+  '.svg': 'image/svg+xml', '.ico': 'image/x-icon', '.mp3': 'audio/mpeg', '.mp4': 'video/mp4', '.woff2': 'font/woff2', '.woff': 'font/woff', '.ttf': 'font/ttf', '.otf': 'font/otf', '.webmanifest': 'application/manifest+json', '.txt': 'text/plain; charset=utf-8', '.xml': 'application/xml',
 };
 
 function serveFile(res, file, cache, req) {
@@ -1391,7 +1391,8 @@ function serveStatic(req, res, pathname) {
   const file = path.normalize(path.join(PUBLIC_DIR, pathname));
   if (!file.startsWith(PUBLIC_DIR + path.sep)) return html(res, 404, renderNotice('Không tìm thấy trang', ''));
   // JS/CSS đổi theo phiên bản code: bắt trình duyệt kiểm tra lại, tránh khách chạy bản cũ
-  serveFile(res, file, /\.(jpg|png|webp|svg)$/.test(file) ? 'public, max-age=86400' : 'no-cache');
+  // ảnh/font/nhạc/video ít đổi → cho trình duyệt giữ lâu (trên Vercel CDN đặt header này qua vercel.json)
+  serveFile(res, file, /\.(woff2?|ttf|otf|mp3)$/.test(file) ? 'public, max-age=2592000' : /\.(jpe?g|png|webp|svg|mp4)$/.test(file) ? 'public, max-age=604800' : 'no-cache', req);
 }
 
 // ---------------- máy chủ ----------------
