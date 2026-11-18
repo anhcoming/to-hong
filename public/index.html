@@ -42,12 +42,13 @@
 
 <section class="hb" id="hb">
   <div class="wall" id="cols" aria-hidden="true"></div>
+  <div class="petals" id="petals" aria-hidden="true"></div>
   <h1>Thả ảnh cưới vào,<em>xem ngay thiệp của bạn</em></h1>
   <!-- vài ảnh bay vào khung thiệp rỗng → bung ra 5 mẫu thiệp thật (ảnh bìa mẫu); khách thả ảnh thì chỉ ảnh của họ bay vào + loading cho tới khi đọc xong; cả khối là chỗ bấm / thả ảnh (public/js/hero.js) -->
   <div class="stage" id="stage" role="button" tabindex="0" aria-label="Chọn hoặc kéo thả ảnh cưới để xem thiệp của bạn">
     <span class="drophint">Thả ảnh vào đây</span>
     <span class="fan" id="fan" aria-hidden="true">
-      <span class="slot"><i>+</i><span>Thiệp của bạn</span><b>Đang dựng thiệp…</b></span>
+      <span class="slot"><i>+</i><span>Thiệp của bạn</span><b>Đang dựng thiệp…</b><em class="ldh" aria-hidden="true">♥</em></span>
       <span class="tpl tD"><img src="/demo/cover-longphung-do-son.jpg" alt=""></span>
       <span class="tpl tE"><img src="/demo/cover-ngoctrai-trang-ngoc.jpg" alt=""></span>
       <span class="tpl tB"><img src="/demo/cover-dodam-do-ruou.jpg" alt=""></span>
@@ -55,7 +56,7 @@
       <span class="tpl tA"><img src="/demo/cover-songhy-do.jpg" alt=""></span>
       <span class="flash"></span>
       <!-- 3 ảnh cưới minh hoạ (public/demo/hero-1..3.jpg): ảnh tự do Pexels / Unsplash (dùng thương mại miễn phí) — Hải Nguyễn (Pexels), Hiển Nguyễn (Pexels), Vino Li (Unsplash); thu nhỏ còn cạnh dài 400px -->
-      <img class="fp fp0" data-k="p0" src="/demo/hero-2.jpg" alt=""><img class="fp fp1" data-k="p1" src="/demo/hero-3.jpg" alt=""><img class="fp fp2" data-k="p2" src="/demo/hero-1.jpg" alt="">
+      <img class="fp fp0" data-k="p0" src="/demo/hero-2.jpg" alt=""><img class="fp fp1" data-k="p1" src="/demo/hero-3.jpg" alt=""><img class="fp fp2" data-k="p2" src="/demo/hero-1.jpg" alt=""><img class="fp fp3" data-k="p3" src="/demo/hero-2.jpg" alt="">
       <svg class="hand" viewBox="0 0 24 24" fill="currentColor"><path d="M9 3a1.5 1.5 0 0 1 3 0v7h.5V5.5a1.5 1.5 0 0 1 3 0V11h.5V7.5a1.5 1.5 0 0 1 3 0V15a7 7 0 0 1-7 7h-.6a6 6 0 0 1-4.6-2.2L3.4 15.6a1.6 1.6 0 0 1 2.4-2.1L8 15.5V3z" stroke="#333" stroke-width=".8"/></svg>
       <span class="sp a">✦</span><span class="sp b">✦</span><span class="sp c">✦</span>
       <span class="cap"><svg class="ico" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3.5"/></svg><span>Tải ảnh cưới lên → có ngay danh sách thiệp gợi ý</span></span>
@@ -262,6 +263,13 @@
     }).join('');
     // cuộn qua khỏi đầu trang thì dừng trôi (nhường GPU cho các hàng thẻ + khung video bên dưới)
     const hb = document.getElementById('hb');
+    // cánh hoa đào rơi trên đầu trang (máy tính 28 cánh, điện thoại 14; tắt khi máy bật giảm chuyển động)
+    const pt = document.getElementById('petals');
+    if (pt && !matchMedia('(prefers-reduced-motion:reduce)').matches) {
+      const n = innerWidth < 700 ? 14 : 28, R = (a, b) => a + Math.random() * (b - a), C = ['#f7b6c2', '#f4a3b1', '#fbd3da'];
+      pt.innerHTML = Array.from({ length: n }, (_, i) => { const z = R(14, 28).toFixed(0), d = R(8, 15).toFixed(1);
+        return `<i style="left:${R(0, 100).toFixed(1)}%;--dx:${R(-130, 130).toFixed(0)}px;--r:${R(-300, 300).toFixed(0)}deg;--o:${R(.55, .95).toFixed(2)};animation-duration:${d}s;animation-delay:-${R(0, d).toFixed(1)}s"><svg width="${z}" height="${z}" viewBox="0 0 20 20"><path d="M10 1C14 5 16 10 10 19 4 10 6 5 10 1z" fill="${C[i % 3]}"/></svg></i>`; }).join('');
+    }
     if (hb && 'IntersectionObserver' in window) new IntersectionObserver((es) => es.forEach((e) => hb.classList.toggle('off', !e.isIntersecting))).observe(hb);
 
     // các hàng mẫu cuộn ngang kiểu Netflix

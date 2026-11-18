@@ -49,7 +49,7 @@
     urls.forEach(URL.revokeObjectURL);
     urls = list.slice(0, 3).map(function (f) { return URL.createObjectURL(f); });
     var u = function (i) { return urls[i % urls.length]; };
-    var set = { p0: u(1), p1: u(2), p2: u(0) };
+    var set = { p0: u(1), p1: u(2), p2: u(0), p3: u(3) };
     fan.querySelectorAll('img[data-k]').forEach(function (img) { if (set[img.dataset.k]) img.src = set[img.dataset.k]; });
     fan.classList.add('restart'); void fan.offsetWidth; fan.classList.remove('restart');
     hb.classList.add('busy');

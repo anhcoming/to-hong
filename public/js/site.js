@@ -180,6 +180,7 @@
     sst.textContent += '.lhome{display:none}.uav{display:none;position:relative;flex:none}'
       + '.uav>a,.uav>button{display:grid;place-items:center;width:40px;height:40px;padding:0;border-radius:50%;border:1px solid var(--line,#f0e4e6);background:var(--card,#fff);color:var(--ink,#2b2224);cursor:pointer;font:inherit;font-size:13px;font-weight:800;text-decoration:none}'
       + '.uav>a,.uav>button{border:0!important;background:rgba(214,69,93,.1)!important;color:#d6455d!important}'
+      + '.uav>a.lgin{width:auto;padding:0 16px;border-radius:999px;font-size:13.5px;font-weight:700;white-space:nowrap}'
       + '.uav svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}'
       + '.uav .um{position:absolute;right:0;top:calc(100% + 10px);z-index:60;min-width:230px;padding:8px;border-radius:14px;background:var(--card,#fff);box-shadow:0 0 0 1px var(--line,#f0e4e6),0 20px 50px rgba(120,40,50,.18);display:none}'
       + '.uav.open .um{display:block}.uav .um a{display:flex;align-items:center;gap:10px;padding:10px;border-radius:10px;font-size:14px;color:var(--ink,#2b2224);text-decoration:none}.uav .um a:hover{background:rgba(214,69,93,.08)}'
@@ -187,7 +188,8 @@
     document.head.appendChild(sst);
     // điện thoại: góc trên chỉ còn icon tài khoản (chưa đăng nhập → trang đăng nhập; đã đăng nhập → ảnh đại diện + menu tài khoản)
     var uav = document.createElement('div'); uav.className = 'uav';
-    uav.innerHTML = '<a href="/dang-nhap" aria-label="Đăng nhập"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg></a>';
+    uav.innerHTML = '<a href="/dang-nhap" class="lgin">Đăng nhập</a>'; // chưa đăng nhập: chữ rõ ràng; đã đăng nhập thì drawUav() đổi thành icon tài khoản
+    uav.style.visibility = 'hidden'; // chờ biết đã đăng nhập chưa rồi mới hiện, khỏi nháy chữ "Đăng nhập" với người đã đăng nhập
     var actsBox = document.getElementById('hacts') || document.getElementById('navActs');
     if (actsBox) actsBox.parentNode.insertBefore(uav, actsBox.nextSibling);
     window.drawUav = function (user) {
@@ -220,7 +222,8 @@
     var a = document.getElementById('navActs');
     if (me.user && a) a.innerHTML = '<a class="btn btn-main btn-sm" href="/thiep-cua-toi">Thiệp của tôi</a>';
     if (me.user) { renderMPanel(me.user); if (window.drawSbar) drawSbar(me.user); if (window.drawUav) drawUav(me.user); }
-  }).catch(function () {});
+    var ua = document.querySelector('.uav'); if (ua) ua.style.visibility = '';
+  }).catch(function () { var ua = document.querySelector('.uav'); if (ua) ua.style.visibility = ''; });
 
   // khung 16:9 chứa trang 1280×720 (video, màn LED)
   function fit() {

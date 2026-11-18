@@ -411,11 +411,11 @@ body.drag .drophint{opacity:1}
 /* ảnh: 3 tấm xếp chồng bên trái, lần lượt bay vào khung */
 .fan .fp{position:absolute;z-index:6;width:118px;height:154px;object-fit:cover;object-position:50% 20%;border:5px solid #fff;border-radius:9px;box-shadow:0 14px 32px rgba(0,0,0,.38);animation-timing-function:cubic-bezier(.55,.05,.3,1)}
 .fan .fp0{animation-name:fp0}.fan .fp1{animation-name:fp1}.fan .fp2{animation-name:fp2}
-@keyframes fp0{0%,12%{left:0;top:80px;transform:rotate(-11deg);opacity:1}36%{left:221px;top:88px;transform:rotate(0) scale(.62);opacity:1}42%,94%{left:221px;top:88px;transform:scale(.4);opacity:0}100%{left:0;top:80px;transform:rotate(-11deg);opacity:1}}
-@keyframes fp1{0%,15%{left:40px;top:56px;transform:rotate(7deg);opacity:1}39%{left:221px;top:88px;transform:rotate(0) scale(.62);opacity:1}45%,94%{left:221px;top:88px;transform:scale(.4);opacity:0}100%{left:40px;top:56px;transform:rotate(7deg);opacity:1}}
-@keyframes fp2{0%,18%{left:20px;top:96px;transform:rotate(-2deg);opacity:1}42%{left:221px;top:88px;transform:rotate(0) scale(.62);opacity:1}48%,94%{left:221px;top:88px;transform:scale(.4);opacity:0}100%{left:20px;top:96px;transform:rotate(-2deg);opacity:1}}
+@keyframes fp0{0%,12%{left:0;top:80px;transform:rotate(-11deg);opacity:1}30%{left:221px;top:88px;transform:rotate(0) scale(.62);opacity:1}32%,94%{left:221px;top:88px;transform:scale(.4);opacity:0}100%{left:0;top:80px;transform:rotate(-11deg);opacity:1}}
+@keyframes fp1{0%,15%{left:40px;top:56px;transform:rotate(7deg);opacity:1}33%{left:221px;top:88px;transform:rotate(0) scale(.62);opacity:1}35%,94%{left:221px;top:88px;transform:scale(.4);opacity:0}100%{left:40px;top:56px;transform:rotate(7deg);opacity:1}}
+@keyframes fp2{0%,18%{left:20px;top:96px;transform:rotate(-2deg);opacity:1}36%{left:221px;top:88px;transform:rotate(0) scale(.62);opacity:1}38%,94%{left:221px;top:88px;transform:scale(.4);opacity:0}100%{left:20px;top:96px;transform:rotate(-2deg);opacity:1}}
 .fan .hand{position:absolute;z-index:8;width:34px;height:34px;color:#fff;filter:drop-shadow(0 3px 6px rgba(0,0,0,.5));animation-name:fhand;animation-timing-function:cubic-bezier(.55,.05,.3,1)}
-@keyframes fhand{0%{left:150px;top:260px;opacity:0}7%,12%{left:96px;top:196px;opacity:1}40%{left:300px;top:200px;opacity:1}48%,100%{left:330px;top:240px;opacity:0}}
+@keyframes fhand{0%{left:150px;top:260px;opacity:0}7%,12%{left:96px;top:196px;opacity:1}32%{left:300px;top:200px;opacity:1}37%,100%{left:330px;top:240px;opacity:0}}
 /* khung thiệp rỗng */
 .fan .slot{position:absolute;z-index:2;left:194px;top:14px;width:172px;height:306px;border:2px dashed rgba(214,69,93,.45);border-radius:18px;background:rgba(255,255,255,.62);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;color:#b5485a;font:600 12px var(--sans);animation-name:fslot}
 .fan .slot i{width:42px;height:42px;border-radius:50%;display:grid;place-items:center;border:2px dashed currentColor;font-style:normal;font-size:22px;opacity:.8}
@@ -500,3 +500,86 @@ body.drag .drophint{opacity:1}
 .hnav:not(.up){transform:translate(-50%,26px)}
 .hnav>.wrap{transition:none}
 @media (max-width:600px){.hnav:not(.up){top:14px;transform:translate(-50%,22px)}}
+
+/* điện thoại: đầu trang cân hơn — bớt khoảng trống trên tiêu đề, khung "thiệp của bạn" to hơn (thiệp mẫu hai bên tràn ra mép),
+   nút ngay dưới, cả khối nằm gọn trên thanh 5 nút dưới cùng */
+@media (max-width:700px){
+  .hb{padding:104px 16px 40px}
+  .hb h1{margin:4px auto 0;font-size:30px}
+  .stage{padding:6px 0 58px;margin-top:6px}
+  .fan{flex:none;transform:scale(.74);transform-origin:top center;margin:0 calc((100% - 560px) / 2) -86px}
+  .fan .cap{font-size:18px;bottom:-72px}
+  .hcta{margin-top:14px}
+}
+
+/* máy tính rộng: 4 ảnh cưới kiểu polaroid nằm hai bên khung (lấp chỗ trống), cùng lúc bay vào khung "Thiệp của bạn",
+   rồi thiệp mẫu bung ra như cũ; hết vòng thì ảnh hiện lại chỗ cũ. Điện thoại / màn hẹp giữ kiểu 3 ảnh xếp bên trái. */
+.fan .fp3{display:none}
+@media (min-width:1100px){
+  .fan .fp{width:150px;height:184px;border:8px solid #fff;border-bottom-width:30px;border-radius:4px;box-shadow:0 18px 40px rgba(0,0,0,.2)}
+  .fan .fp3{display:block;animation-name:fp3;object-position:30% 20%}
+  .fan .hand{display:none}
+  @keyframes fp0{0%,14%{left:-250px;top:0;transform:rotate(-8deg);opacity:1}34%{left:205px;top:70px;transform:rotate(0) scale(.55);opacity:1}37%,93%{left:205px;top:70px;transform:scale(.35);opacity:0}100%{left:-250px;top:0;transform:rotate(-8deg);opacity:1}}
+  @keyframes fp1{0%,14%{left:-170px;top:196px;transform:rotate(6deg);opacity:1}34%{left:205px;top:70px;transform:rotate(0) scale(.55);opacity:1}37%,93%{left:205px;top:70px;transform:scale(.35);opacity:0}100%{left:-170px;top:196px;transform:rotate(6deg);opacity:1}}
+  @keyframes fp2{0%,14%{left:660px;top:6px;transform:rotate(7deg);opacity:1}34%{left:205px;top:70px;transform:rotate(0) scale(.55);opacity:1}37%,93%{left:205px;top:70px;transform:scale(.35);opacity:0}100%{left:660px;top:6px;transform:rotate(7deg);opacity:1}}
+  @keyframes fp3{0%,14%{left:580px;top:200px;transform:rotate(-5deg);opacity:1}34%{left:205px;top:70px;transform:rotate(0) scale(.55);opacity:1}37%,93%{left:205px;top:70px;transform:scale(.35);opacity:0}100%{left:580px;top:200px;transform:rotate(-5deg);opacity:1}}
+}
+@media (prefers-reduced-motion:reduce){.fan .fp3{display:none!important}}
+
+/* ảnh tập hợp vào khung "Thiệp của bạn" rồi biến mất → lúc đó dấu ＋ và chữ ẩn đi, thay bằng trái tim đập êm, quầng hồng toả nhẹ
+   (đúng nhịp 7 giây của hoạt hình: ldwin = điện thoại, ldwin2 = máy tính rộng); xong thì thiệp mẫu bung ra */
+.fan .slot>i,.fan .slot>span{animation:ldoff 7s infinite}
+.fan .ldh{position:absolute;left:50%;top:50%;width:64px;height:64px;margin:-32px 0 0 -32px;display:grid;place-items:center;font-style:normal;font-size:38px;line-height:1;color:#d6455d;opacity:0;animation:ldwin 7s ease-in-out infinite}
+.fan .ldh{filter:drop-shadow(0 0 0 rgba(214,69,93,0))}
+/* một nhịp đập êm trong lúc hiện: phồng nhẹ + quầng hồng toả ra rồi tan, không giật */
+@keyframes ldwin{0%,37%{opacity:0;transform:scale(.9);filter:drop-shadow(0 0 0 rgba(214,69,93,0))}39.5%{opacity:1;transform:scale(1)}42%{transform:scale(1.14);filter:drop-shadow(0 0 16px rgba(214,69,93,.5))}44.5%{opacity:1;transform:scale(1);filter:drop-shadow(0 0 2px rgba(214,69,93,.1))}46.5%,100%{opacity:0;transform:scale(.96);filter:drop-shadow(0 0 0 rgba(214,69,93,0))}}
+@keyframes ldoff{0%,36%{opacity:1}38%,52%{opacity:0}54%,100%{opacity:1}}
+/* các lớp trái tim nhạt dần lan ra từ trái tim giữa (như sóng nhịp tim) */
+.fan .ldh::before,.fan .ldh::after{content:"♥";position:absolute;inset:0;display:grid;place-items:center;color:#f08a9a;z-index:-1;opacity:0;animation:ldwave 1.1s ease-out infinite}
+.fan .ldh::after{color:#f7bcc6;animation-delay:.45s}
+@keyframes ldwave{0%{transform:scale(1);opacity:.75}100%{transform:scale(2.1);opacity:0}}
+.hb.off .fan .ldh::before,.hb.off .fan .ldh::after{animation-play-state:paused}
+@media (min-width:1100px){
+  .fan .ldh{animation-name:ldwin2}.fan .slot>i,.fan .slot>span{animation-name:ldoff2}
+  @keyframes ldwin2{0%,35%{opacity:0;transform:scale(.9);filter:drop-shadow(0 0 0 rgba(214,69,93,0))}37.5%{opacity:1;transform:scale(1)}40.5%{transform:scale(1.14);filter:drop-shadow(0 0 16px rgba(214,69,93,.5))}43.5%{opacity:1;transform:scale(1);filter:drop-shadow(0 0 2px rgba(214,69,93,.1))}46%,100%{opacity:0;transform:scale(.96);filter:drop-shadow(0 0 0 rgba(214,69,93,0))}}
+  @keyframes ldoff2{0%,35%{opacity:1}37%,52%{opacity:0}54%,100%{opacity:1}}
+}
+.hb.busy .fan .ldh{display:none}.hb.busy .fan .slot>i,.hb.busy .fan .slot>span{animation:none}
+.hb.busy .fan .slot>i{animation:spin .9s linear infinite}
+.hb.off .fan .ldh{animation-play-state:paused}
+@media (prefers-reduced-motion:reduce){.fan .ldh{display:none}}
+
+/* cánh hoa đào rơi lả tả trên đầu trang (index.html dựng): nằm trên tường thiệp, dưới chữ / nút, không chặn bấm */
+.hb>.petals{position:absolute;inset:0;z-index:1;pointer-events:none;overflow:hidden}
+.petals i{position:absolute;top:-40px;opacity:var(--o);will-change:transform;animation:petal linear infinite}
+.petals svg{display:block}
+@keyframes petal{0%{transform:translate3d(0,0,0) rotate(0)}100%{transform:translate3d(var(--dx),110vh,0) rotate(var(--r))}}
+.hb.off .petals i{animation-play-state:paused}
+@media (prefers-reduced-motion:reduce){.petals{display:none}}
+
+/* điện thoại / màn hẹp (<1100px): cùng kiểu với máy tính — 4 ảnh polaroid nhỏ quanh khung, cùng lúc bay vào, biến mất,
+   tim đập, rồi thiệp bung ra (vị trí ảnh nằm gọn trong phần nhìn thấy của khối hoạt hình) */
+@media (max-width:1099px){
+  .fan .fp{width:110px;height:136px;border:6px solid #fff;border-bottom-width:22px;border-radius:4px;box-shadow:0 14px 30px rgba(0,0,0,.2)}
+  .fan .fp3{display:block;animation-name:fp3;object-position:30% 20%}
+  .fan .hand{display:none}
+  .fan .ldh{animation-name:ldwinm}.fan .slot>i,.fan .slot>span{animation-name:ldoffm}
+  @keyframes fp0{0%,14%{left:24px;top:8px;transform:rotate(-8deg);opacity:1}34%{left:225px;top:100px;transform:rotate(0) scale(.55);opacity:1}37%,93%{left:225px;top:100px;transform:scale(.35);opacity:0}100%{left:24px;top:8px;transform:rotate(-8deg);opacity:1}}
+  @keyframes fp1{0%,14%{left:56px;top:176px;transform:rotate(6deg);opacity:1}34%{left:225px;top:100px;transform:rotate(0) scale(.55);opacity:1}37%,93%{left:225px;top:100px;transform:scale(.35);opacity:0}100%{left:56px;top:176px;transform:rotate(6deg);opacity:1}}
+  @keyframes fp2{0%,14%{left:420px;top:14px;transform:rotate(7deg);opacity:1}34%{left:225px;top:100px;transform:rotate(0) scale(.55);opacity:1}37%,93%{left:225px;top:100px;transform:scale(.35);opacity:0}100%{left:420px;top:14px;transform:rotate(7deg);opacity:1}}
+  @keyframes fp3{0%,14%{left:396px;top:182px;transform:rotate(-5deg);opacity:1}34%{left:225px;top:100px;transform:rotate(0) scale(.55);opacity:1}37%,93%{left:225px;top:100px;transform:scale(.35);opacity:0}100%{left:396px;top:182px;transform:rotate(-5deg);opacity:1}}
+  @keyframes ldwinm{0%,35%{opacity:0;transform:scale(.9);filter:drop-shadow(0 0 0 rgba(214,69,93,0))}37.5%{opacity:1;transform:scale(1)}40.5%{transform:scale(1.14);filter:drop-shadow(0 0 16px rgba(214,69,93,.5))}43.5%{opacity:1;transform:scale(1);filter:drop-shadow(0 0 2px rgba(214,69,93,.1))}46%,100%{opacity:0;transform:scale(.96);filter:drop-shadow(0 0 0 rgba(214,69,93,0))}}
+  @keyframes ldoffm{0%,35%{opacity:1}37%,52%{opacity:0}54%,100%{opacity:1}}
+}
+@media (prefers-reduced-motion:reduce){.fan .fp3{display:none!important}}
+
+/* điện thoại: thanh menu không đổi hình (rộng hết ↔ viên nổi) khi cuộn nữa — đổi độ rộng / bo góc trên màn nhỏ trông khựng.
+   Giữ nguyên dạng thanh rộng hết bề ngang, chỉ trượt lên sát mép trên (transform) khi thanh giá cuộn đi */
+@media (max-width:760px){
+  .hnav,.hnav.up{top:0;width:100%;border-radius:0;border:0;border-bottom:1px solid rgba(214,69,93,.12);background-color:rgba(255,255,255,.92);box-shadow:0 6px 18px rgba(120,40,50,.06)}
+  [data-theme="dark"] .hnav,[data-theme="dark"] .hnav.up{background-color:rgba(18,13,14,.92);border-bottom-color:rgba(255,255,255,.08)}
+  .hnav:not(.up),.hnav.up{top:0}
+  .hnav:not(.up){transform:translate(-50%,36px)}
+  .hnav.up{transform:translate(-50%,0)}
+  .hnav>.wrap,.hnav:not(.up)>.wrap{padding-left:16px;padding-right:8px}
+}
