@@ -659,14 +659,19 @@
       'float h(vec2 p){return fract(sin(dot(p,vec2(127.1,311.7)))*43758.5453);}' +
       'float n(vec2 p){vec2 i=floor(p),f=fract(p);f=f*f*f*(f*(f*6.0-15.0)+10.0);return mix(mix(h(i),h(i+vec2(1.0,0.0)),f.x),mix(h(i+vec2(0.0,1.0)),h(i+vec2(1.0,1.0)),f.x),f.y);}' +
       'float f2(vec2 p){return 0.6*n(p)+0.3*n(p*2.1+3.7)+0.1*n(p*4.3+9.1);}' +
-      'float H(vec2 p){float t=uT;float a=dot(p,vec2(0.3,0.954)),l=dot(p,vec2(0.954,-0.3));' +                 // a: ngang nếp, l: dọc nếp
-      'float m=f2(vec2(l*0.42+t*0.014,a*0.85)),m2=f2(vec2(l*0.28-t*0.01+7.0,a*0.5+3.0));' +                      // nếp uốn lượn chậm dọc theo chiều dài
-      'return 0.6*sin(a*3.3+5.2*m+t*0.09)+0.3*sin(a*6.4+l*0.7+6.0*m2-t*0.065)+0.09*sin(a*13.0+4.0*m+l*1.4+t*0.05);}' +
-      'void main(){vec2 p=(gl_FragCoord.xy-0.5*uRes)/uRes.y*1.2;float e=0.004;float h0=H(p),hx=H(p+vec2(e,0.0)),hy=H(p+vec2(0.0,e));' +
-      'vec3 N=normalize(vec3(-(hx-h0)/e*0.2,-(hy-h0)/e*0.2,1.0));vec3 L=normalize(vec3(-0.25,0.5,0.83));vec3 Hh=normalize(L+vec3(0.0,0.0,1.0));' +
-      'float df=max(dot(N,L),0.0);float sp=pow(max(dot(N,Hh),0.0),60.0);float sp2=pow(max(dot(N,Hh),0.0),9.0);' +
-      'vec3 col=mix(uA,uB,pow(smoothstep(0.35,1.0,df),1.5))+uC*(sp*0.55+sp2*0.22);' +
-      'vec2 q=gl_FragCoord.xy/uRes-0.5;col*=1.0-0.55*dot(q,q);gl_FragColor=vec4(col,1.0);}',
+      // một lớp nếp gấp: u tăng dần ngang nếp; mỗi nếp có mép sáng sắc ở một bên rồi tối dần sang bên kia tới đen (như nếp vải chồng lên nhau),
+      // độ sáng + độ dốc mỗi nếp khác nhau
+      'float fold(float u,float sharp){float s=fract(u),r=h(vec2(floor(u),7.0));return smoothstep(0.0,sharp,s)*pow(1.0-s,0.7+1.6*r)*(0.55+0.65*h(vec2(floor(u),3.0)));}' +
+      'void main(){vec2 p=(gl_FragCoord.xy-0.5*uRes)/uRes.y;float t=uT;' +
+      'float a=dot(p,vec2(0.53,0.848)),l=dot(p,vec2(0.848,-0.53));' +                                              // a: ngang nếp, l: dọc nếp (chéo từ trên-trái xuống dưới-phải)
+      'float m=f2(vec2(l*0.55+t*0.012,a*0.7+1.0)),m2=f2(vec2(l*0.9-t*0.009+7.0,a*1.3+3.0)),m3=f2(vec2(l*0.35+t*0.006+2.0,a*0.4));' +
+      'float u1=a*2.1+2.0*m+0.7*m3+t*0.022,u2=a*4.4+2.4*m2+1.0*m-t*0.017,u3=a*8.5+3.0*m+1.2*m2+t*0.012;' +
+      'float b1=fold(u1,0.16),b2=fold(u2,0.2),b3=fold(u3,0.28);' +
+      'float broad=0.55+0.45*sin(a*1.5+3.0*m3+t*0.03);' +
+      'float v=(b1*1.0+b2*0.6*(0.35+0.65*b1+0.3*broad)+b3*0.22*b1)*(0.6+0.55*broad);' +
+      'float sp=pow(clamp(b1*1.15,0.0,1.0),5.0)*0.6+pow(clamp(b2,0.0,1.0),6.0)*0.3;' +
+      'vec3 col=mix(uA,uB,clamp(v*1.6,0.0,1.0))+uC*sp;' +
+      'vec2 q=gl_FragCoord.xy/uRes-0.5;col*=1.0-0.5*dot(q,q);gl_FragColor=vec4(col,1.0);}',
     prog: function (vs, fs) {
       var gl = this.gl, mk = function (t, src) { var sh = gl.createShader(t); gl.shaderSource(sh, src); gl.compileShader(sh); if (!gl.getShaderParameter(sh, gl.COMPILE_STATUS)) throw new Error(gl.getShaderInfoLog(sh)); return sh; };
       var p = gl.createProgram(); gl.attachShader(p, mk(gl.VERTEX_SHADER, vs)); gl.attachShader(p, mk(gl.FRAGMENT_SHADER, fs)); gl.linkProgram(p);
@@ -888,8 +893,8 @@
       draw: function (dt, t) { if (this.useGl && GLFX.gl) GLFX.draw(dt); else FX.lua.draw.call(FX.lua, dt, t); },
     };
   };
-  FX.satindo = silkFx([[0.035, 0.0, 0.004], [0.5, 0.03, 0.04], [0.6, 0.14, 0.1]]);
-  FX.satinnga = silkFx([[0.62, 0.62, 0.65], [0.9, 0.9, 0.92], [0.12, 0.12, 0.12]]);
+  FX.satindo = silkFx([[0.012, 0.0, 0.0], [0.62, 0.05, 0.035], [0.3, 0.1, 0.07]]);
+  FX.satinnga = silkFx([[0.55, 0.55, 0.58], [0.96, 0.96, 0.97], [0.06, 0.06, 0.06]]);
   FX.saoroi = { mode: 'saoroi', init: FX.dembac.init, draw: FX.dembac.draw, fall: FX.dembac.fall }; // biến thể của Đêm kim tuyến bạc (xem GLFX)
   function isVideo() { return !!(C.videos && C.videos[L.effect]); }
   function setupVideo() {
