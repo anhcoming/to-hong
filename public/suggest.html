@@ -77,15 +77,20 @@ main.wrap{padding-top:112px;padding-bottom:64px;max-width:1120px}
 /* máy tính, đã có ảnh: bố cục "studio" 3 cột vừa một màn — trái: ảnh + tên + ngày; giữa: thiệp lớn; phải: lưới mẫu tự cuộn + nút dùng */
 @media (min-width:761px){
   body.gy-on{overflow:hidden}
-  body.gy-on #nav,body.gy-on #foot,body.gy-on .gy-head,body.gy-on .after{display:none}
+  body.gy-on #foot,body.gy-on .gy-head,body.gy-on .after{display:none}
+  /* tầng trên: menu web như mọi trang, thành dải phẳng sát mép; tầng dưới (.gtop): tiêu đề + 3 bước */
+  body.gy-on #nav{top:0;left:0;right:0;width:auto;transform:none;border-radius:0;border:0;border-bottom:1px solid var(--line);background:var(--card);box-shadow:none;backdrop-filter:none;-webkit-backdrop-filter:none}
   body.gy-on main.wrap{padding:0;max-width:none;margin:0}
-  body.gy-on #msg{position:fixed;left:50%;top:70px;translate:-50% 0;z-index:9;margin:0}
-  body.gy-on #work{display:grid;grid-template-columns:280px minmax(0,1fr) 340px;grid-template-rows:60px auto auto auto auto auto 1fr;height:100vh;
+  body.gy-on #msg{position:fixed;left:50%;top:126px;translate:-50% 0;z-index:9;margin:0}
+  body.gy-on #work{display:grid;grid-template-columns:280px minmax(0,1fr) 340px;grid-template-rows:56px auto auto auto auto auto 1fr;height:calc(100vh - 59px);margin-top:59px;
     background:linear-gradient(to right,var(--card) 280px,transparent 280px,transparent calc(100% - 340px),var(--card) calc(100% - 340px))}
   body.gy-on .gpick{display:contents}
-  .gtop{grid-column:1/-1;grid-row:1;display:flex;align-items:center;gap:18px;padding:0 24px;border-bottom:1px solid var(--line);background:var(--card);z-index:2}
+  .gtop{grid-column:1/-1;grid-row:1;display:flex;align-items:center;gap:18px;padding:0 24px;border-bottom:1px solid var(--line);background:#fffafa;z-index:2}
+  [data-theme="dark"] .gtop{background:var(--bg2)}
+  .gtop h2{margin:0;font:700 16px/1.2 var(--sans);letter-spacing:0;white-space:nowrap}
+  .gtop small{color:var(--muted);font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
   .gtop .logo{font:700 26px/1 var(--script);color:var(--red);text-decoration:none}
-  .steps{display:flex;align-items:center;gap:8px;margin-left:20px;font-size:13px;color:var(--muted)}
+  .steps{display:flex;align-items:center;gap:8px;margin-left:auto;font-size:13px;color:var(--muted);white-space:nowrap}
   .steps span{display:flex;align-items:center;gap:6px}
   .steps span+span::before{content:"›";margin-right:2px;color:var(--line)}
   .steps i{display:grid;place-items:center;width:20px;height:20px;border-radius:50%;background:var(--bg2);font:700 11px/1 var(--sans);font-style:normal}
@@ -99,7 +104,7 @@ main.wrap{padding-top:112px;padding-bottom:64px;max-width:1120px}
   body.gy-on .bar{grid-column:1;grid-row:4;margin:0;padding:16px 20px 0}
   body.gy-on .bar b{display:none}
   body.gy-on .bar button{margin-left:0}
-  body.gy-on .sg-view.big{grid-column:2;grid-row:2/-1;align-self:center;justify-self:center;height:calc(100vh - 100px);width:auto;max-width:calc(100% - 48px);aspect-ratio:375/720}
+  body.gy-on .sg-view.big{grid-column:2;grid-row:2/-1;align-self:center;justify-self:center;height:calc(100vh - 150px);width:auto;max-width:calc(100% - 48px);aspect-ratio:375/720}
   body.gy-on .pside{grid-column:3;grid-row:2/-1;position:static;min-height:0;display:flex;flex-direction:column;gap:0;border-left:1px solid var(--line)}
   body.gy-on .ptitle{display:block;order:0;padding:18px 18px 10px}
   .ptitle b{display:block;font-size:15px}
@@ -170,7 +175,7 @@ main.wrap{padding-top:112px;padding-bottom:64px;max-width:1120px}
   <p id="msg" role="status" hidden></p>
 
   <section id="work" hidden>
-    <div class="gtop"><a class="logo" href="/">Cưới Nha</a><div class="steps"><span class="ok"><i>✓</i>Chọn ảnh</span><span class="on"><i>2</i>Chọn mẫu</span><span><i>3</i>Sửa &amp; gửi</span></div></div>
+    <div class="gtop"><h2>Chọn mẫu thiệp cho ảnh của bạn</h2><small>· Ảnh chỉ nằm trên máy bạn cho tới khi bạn chọn dùng</small><div class="steps"><span class="ok"><i>✓</i>Chọn ảnh</span><span class="on"><i>2</i>Chọn mẫu</span><span><i>3</i>Sửa &amp; gửi</span></div></div>
     <div class="mrow"><button type="button" id="mPh"><i id="mPhI"></i><span id="mPhN"></span></button><button type="button" class="btn btn-main" id="useBtnM">Dùng thiệp này</button></div>
     <p class="sh" id="shPh">Ảnh của bạn</p>
     <div class="phbox" id="phbox">
