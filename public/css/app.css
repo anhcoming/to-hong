@@ -180,21 +180,14 @@ table.tbl{width:100%;border-collapse:collapse;font-size:14px}
   .tb-bottom i{display:grid;place-items:center;width:46px;height:28px;border-radius:999px;font-style:normal}
   .tb-bottom svg{width:21px;height:21px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
   .tb-bottom>a.on{color:var(--primary)}.tb-bottom>a.on i{background:var(--primary-soft)}
-  .tb-bottom .tb-plus i{width:44px;height:44px;margin-top:-18px;border-radius:50%;background:var(--grad);color:#fff;font-size:22px;box-shadow:0 8px 18px rgba(214,69,93,.35)}
   .tb-bottom i.av{width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,#f6d7dc,#e9b7c0);color:#8b1a24;font-size:11px;font-weight:700}
   .tb-menu.up{top:auto;bottom:calc(100% + 10px);right:auto;left:50%;transform:translate(-50%,4px)}
   .tb-dd.open .tb-menu.up{transform:translate(-50%,0)}
   .tb-menu.up.right{left:auto;right:0;transform:translateY(4px)}.tb-dd.open .tb-menu.up.right{transform:none}
   .tb-me{display:none}
 }
-/* điện thoại: thanh trên giống trang chủ / trang giới thiệu — logo · nút chính (Thiệp của tôi / ＋ Tạo mới) · ☰ (máy tính đã có tab + Tạo mới + tài khoản) */
-.tb-mmain,.tb-burger{display:none}
-.tb-burger>button{display:grid;place-items:center;width:40px;height:40px;padding:0;border-radius:50%;border:1px solid var(--line);background:var(--surface);cursor:pointer}
-.tb-burger>button i,.tb-burger>button i::before,.tb-burger>button i::after{display:block;width:16px;height:2px;border-radius:2px;background:var(--ink);position:relative;transition:.2s}
-.tb-burger>button i::before,.tb-burger>button i::after{content:"";position:absolute;left:0}.tb-burger>button i::before{top:-5px}.tb-burger>button i::after{top:5px}
-.tb-burger.open>button i{background:transparent}.tb-burger.open>button i::before{top:0;transform:rotate(45deg)}.tb-burger.open>button i::after{top:0;transform:rotate(-45deg)}
-.tb-burger .tb-menu a{font-weight:600}.tb-burger .tb-menu em{margin-left:6px;padding:1px 7px;border-radius:999px;background:var(--primary);color:#fff;font-size:10.5px;font-style:normal;font-weight:700}
-.tb-burger .tb-menu hr{margin:6px 4px;border:0;border-top:1px solid var(--line)}
+/* điện thoại: thanh trên logo · nút chính (Thiệp của tôi / ＋ Tạo mới) · ảnh đại diện (menu tài khoản); các chức năng ở thanh dưới */
+.tb-mmain{display:none}
 /* nút về trang chủ: chỉ hiện ở điện thoại (máy tính bấm logo / menu tài khoản) */
 .tb-home{display:none;align-items:center;gap:6px;height:34px;padding:0 12px;border-radius:999px;font-size:13px;font-weight:600;color:var(--muted);text-decoration:none;white-space:nowrap}
 .tb-home svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
@@ -204,9 +197,11 @@ table.tbl{width:100%;border-collapse:collapse;font-size:14px}
   body.has-tb-bottom{padding-top:env(safe-area-inset-top)}
   body.has-tb-bottom .topbar.tb{padding:8px 0 4px}
   body.has-tb-bottom .topbar.tb .wrap{height:46px;padding:0 6px 0 16px}
-  body.has-tb-bottom .tb-mmain{display:inline-flex}body.has-tb-bottom .tb-burger{display:block}
+  body.has-tb-bottom .tb-mmain{display:inline-flex}body.has-tb-bottom .tb-me{display:block}
   body.has-tb-bottom .tb-mmain>button{height:auto}
-  .tb-burger .tb-menu,.tb-mmain .tb-menu{position:fixed;left:12px;right:12px;top:62px;min-width:0}
+  .tb-mmain .tb-menu{position:fixed;left:12px;right:12px;top:62px;min-width:0}
+  .tb-me .tb-menu{position:fixed;right:12px;left:auto;top:62px}
+  .tb-bottom i{position:relative}.tb-bottom i em{position:absolute;top:-6px;left:50%;margin-left:5px;padding:0 5px;border-radius:99px;background:#d6455d;color:#fff;font-size:8.5px;font-style:normal;font-weight:700;line-height:14px}
 }
 
 /* thanh tab dưới kiểu "viên thuốc nổi": bo tròn, cách mép, nền trắng mờ; nút ＋ tròn nằm ngang hàng */
@@ -216,10 +211,7 @@ table.tbl{width:100%;border-collapse:collapse;font-size:14px}
   [data-theme="dark"] .tb-bottom{background:rgba(31,25,27,.92)}
   .tb-bottom>a,.tb-bottom>.tb-dd>button{flex:1;gap:2px;font-size:10.5px}
   .tb-bottom i{width:auto;height:24px;border-radius:0;background:none!important}
-  .tb-bottom>.tb-plus{flex:none}
-  .tb-bottom .tb-plus>button{width:auto;font-size:0;gap:0}
-  .tb-bottom .tb-plus i{width:46px;height:46px;margin:0;border-radius:50%;background:var(--grad)!important;color:#fff;font-size:24px;box-shadow:0 6px 16px rgba(214,69,93,.35)}
   .tb-bottom i.av{width:24px;height:24px;background:linear-gradient(135deg,#f6d7dc,#e9b7c0)!important}
 }
 /* mục đang chọn ở thanh tab dưới: icon tô đặc (nét bên trong trắng) */
-@media (max-width:760px){.tb-bottom>a.on svg>*{fill:currentColor}.tb-bottom>a.on svg>*:last-child{fill:none;stroke:#fff}.tb-bottom>a.on[href="/video-cua-toi"] svg>*:last-child{fill:currentColor;stroke:currentColor}}
+@media (max-width:760px){.tb-bottom>a.on svg>*{fill:currentColor}.tb-bottom>a.on svg>*:last-child{fill:none;stroke:#fff}}

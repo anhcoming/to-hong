@@ -355,7 +355,7 @@ window.renderTopbar = async function (active) {
   const me = await fetch('/api/me').then((r) => r.json());
   window.META = meta;
   // Kiểu "đồ của tôi": máy tính = logo · 3 tab Thiệp / Video / Sổ tay · Xem mẫu · ＋ Tạo mới · ảnh đại diện (menu tài khoản);
-  // điện thoại = thanh trên chỉ logo + ảnh đại diện, thanh tab dưới cùng: Thiệp · Video · ＋ · Sổ tay · Tôi
+  // điện thoại = thanh trên logo · nút chính · ảnh đại diện, thanh dưới 5 nút: Thiệp · Báo hỷ · Màn LED · Slide · Sổ tay
   const u = me.user;
   const ini = u ? (String(u.name || u.email || '?').trim().split(/\s+/).map((w) => w[0]).slice(-2).join('') || '?').toUpperCase() : '';
   const TABS = [['/thiep-cua-toi', 'Thiệp', 'cards', '<rect x="3" y="5" width="18" height="14" rx="2.5"/><path d="M3.5 6.5 12 13l8.5-6.5"/>'],
@@ -364,9 +364,6 @@ window.renderTopbar = async function (active) {
   const ic = (d) => `<svg viewBox="0 0 24 24" aria-hidden="true">${d}</svg>`;
   const NEW = `<a href="/mau-thiep"><b>Thiệp cưới</b><small>Chọn mẫu, điền tên là xong</small></a><a href="/slide-cuoi"><b>Slide / video cưới</b><small>Ảnh cưới chiếu TV, tải MP4</small></a><a href="/man-hinh-led-dam-cuoi"><b>Màn hình LED</b><small>Trình chiếu tên đôi tại tiệc</small></a>`;
   const ACCT = u ? `<div class="who"><b>${esc(u.name || '')}</b>${esc(u.email)}</div><a href="/">Trang chủ</a><a href="/mau-thiep">Xem mẫu thiệp</a><a href="#" data-tb-theme>Đổi nền sáng / tối</a><a href="#" id="logoutBtn">Đăng xuất</a>` : '';
-  // menu ☰ (điện thoại): cùng các mục với thanh trên của trang chủ / trang giới thiệu (public/js/site.js → MENU)
-  const MENU = [['/mau-thiep', 'Thiệp cưới'], ['/slide-cuoi', 'Slide cưới'], ['/man-hinh-led-dam-cuoi', 'Màn hình LED'], ['/video-dam-ngo', 'Video dạm ngõ'], ['/video', 'Video báo hỷ <em>Miễn phí</em>'], ['/so-tay-cuoi', 'Sổ tay cưới']]
-    .map(([h, n]) => `<a href="${h}">${n}</a>`).join('');
   const bar = document.createElement('header');
   bar.className = 'topbar tb';
   bar.innerHTML = `<div class="wrap">
@@ -376,7 +373,6 @@ window.renderTopbar = async function (active) {
     ${u ? (active === 'cards'
       ? `<div class="tb-dd tb-mmain"><button type="button" class="btn sm" aria-expanded="false">＋ Tạo mới</button><div class="tb-menu">${NEW}</div></div>`
       : '<a class="btn sm tb-mmain" href="/thiep-cua-toi">Thiệp của tôi</a>') : ''}
-    <div class="tb-dd tb-burger"><button type="button" aria-label="Mở menu" aria-expanded="false"><i></i></button><div class="tb-menu">${MENU}${ACCT ? '<hr>' + ACCT.replace('id="logoutBtn"', 'data-tb-out') : '<a href="/">Trang chủ</a>'}</div></div>
     ${window.themeBtn ? themeBtn() : ''}
     ${u ? `<a class="tb-link" href="/mau-thiep">Xem mẫu</a>
       <div class="tb-dd tb-new"><button type="button" class="tb-newbtn" aria-expanded="false">＋ Tạo mới</button><div class="tb-menu">${NEW}</div></div>
@@ -387,10 +383,14 @@ window.renderTopbar = async function (active) {
   if (u) { // thanh tab dưới cùng (điện thoại) — mọi trang sau đăng nhập, kể cả sổ tay
     const bt = document.createElement('nav');
     bt.className = 'tb-bottom'; bt.setAttribute('aria-label', 'Của tôi');
-    bt.innerHTML = TABS.slice(0, 2).map(([h, n, k, d]) => `<a href="${h}"${k === active ? ' class="on"' : ''}><i>${ic(d)}</i>${n}</a>`).join('')
-      + `<div class="tb-dd tb-plus"><button type="button" aria-label="Tạo mới" aria-expanded="false"><i>＋</i>Tạo mới</button><div class="tb-menu up">${NEW}</div></div>`
-      + TABS.slice(2).map(([h, n, k, d]) => `<a href="${h}"${k === active ? ' class="on"' : ''}><i>${ic(d)}</i>${n}</a>`).join('')
-      + `<div class="tb-dd tb-me2"><button type="button" aria-label="Tài khoản" aria-expanded="false"><i class="av">${esc(ini)}</i>Tôi</button><div class="tb-menu up right">${ACCT.replace('id="logoutBtn"', 'data-tb-out')}</div></div>`;
+    // 5 nút theo các chức năng chính (thay cho menu ☰): Thiệp · Báo hỷ (miễn phí) · Màn LED · Slide · Sổ tay.
+    // Tài khoản ở ảnh đại diện góc trên; Màn LED mở thẳng màn LED của thiệp chính (dashboard đọc ?mo=led).
+    const BT = [['/thiep-cua-toi', 'Thiệp', 'cards', TABS[0][3]],
+      ['/video', 'Báo hỷ', 'baohy', '<path d="M4 10h16v9a1.5 1.5 0 0 1-1.5 1.5h-13A1.5 1.5 0 0 1 4 19z"/><path d="m4 10-.6-3.2 15-3 .6 3.2"/><path d="m8.5 6.2 2 3.3M13.5 5.2l2 3.3"/>', 'Free'],
+      ['/thiep-cua-toi?mo=led', 'Màn LED', 'led', '<rect x="2.5" y="4" width="19" height="12.5" rx="2"/><path d="M8 20.5h8M12 16.5v4"/><path d="m12 7 .9 1.9 2 .3-1.5 1.4.4 2-1.8-1-1.8 1 .4-2-1.5-1.4 2-.3z"/>'],
+      ['/video-cua-toi', 'Slide', 'videos', '<rect x="3" y="4" width="18" height="12" rx="2"/><path d="M12 16v4M8 20h8"/><path d="m10 8 4 2-4 2z"/>'],
+      ['/so-tay', 'Sổ tay', 'planner', TABS[2][3]]];
+    bt.innerHTML = BT.map(([h, n, k, d, tag]) => `<a href="${h}"${k === active ? ' class="on"' : ''}><i>${ic(d)}${tag ? `<em>${tag}</em>` : ''}</i>${n}</a>`).join('');
     document.body.appendChild(bt);
     document.body.classList.add('has-tb-bottom');
   }

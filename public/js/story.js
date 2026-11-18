@@ -628,6 +628,33 @@
   // hộp chọn kiểu: ảnh xem trước từng kiểu (dựng từ ảnh của thiệp) + kiểu đang chọn chạy thử, bấm "Tạo video" để xuất MP4
   window.storyModal = function (cardId) { return storyChooser(api('/api/cards/' + cardId).then(function (r) { return r.card; })); };
   // card: { template, palette, data: { groom, bride, date, events, cover, photos, music }, samplePhotos } hoặc promise trả về như vậy
+  // Màn "đang dựng video" phủ toàn màn hình: vòng quay + % + nhắc đừng tắt màn hình; xin giữ màn sáng (Wake Lock) trong lúc dựng.
+  function busyScreen() {
+    if (!document.getElementById('stBusyCss')) {
+      var st = document.createElement('style'); st.id = 'stBusyCss';
+      st.textContent = '.st-busy{position:fixed;inset:0;z-index:10050;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;padding:24px;background:#1c1216;color:#fff;text-align:center;font-family:inherit}'
+        + '.st-busy .ring{width:64px;height:64px;border-radius:50%;border:5px solid rgba(255,255,255,.15);border-top-color:#ef7d8d;animation:stspin 1s linear infinite}@keyframes stspin{to{transform:rotate(360deg)}}'
+        + '.st-busy b{font-size:40px;font-weight:800;line-height:1}.st-busy .lb{font-size:15px;opacity:.85}'
+        + '.st-busy .bar{width:min(280px,80vw);height:6px;border-radius:99px;background:rgba(255,255,255,.15);overflow:hidden}.st-busy .bar i{display:block;height:100%;width:0;border-radius:99px;background:linear-gradient(90deg,#ef7d8d,#d6455d);transition:width .3s}'
+        + '.st-busy .warn{margin-top:18px;max-width:300px;padding:12px 16px;border-radius:14px;background:rgba(255,255,255,.08);font-size:14px;line-height:1.5}';
+      document.head.appendChild(st);
+    }
+    var el = document.createElement('div'); el.className = 'st-busy'; el.setAttribute('role', 'alert');
+    el.innerHTML = '<div class="ring"></div><b>0%</b><div class="bar"><i></i></div><div class="lb">Đang chuẩn bị…</div>'
+      + '<div class="warn">📱 Đừng tắt màn hình hay chuyển sang ứng dụng khác nhé — video đang được dựng ngay trên máy bạn, khoảng 10–30 giây.</div>';
+    document.body.appendChild(el);
+    var lock = null, gone = false;
+    function getLock() { try { if (navigator.wakeLock && document.visibilityState === 'visible') navigator.wakeLock.request('screen').then(function (l) { if (gone) l.release(); else lock = l; }, function () {}); } catch (e) {} }
+    var onVis = function () { if (!gone && document.visibilityState === 'visible') getLock(); };
+    document.addEventListener('visibilitychange', onVis);
+    getLock();
+    return {
+      set: function (p, label) { var n = Math.round(p * 100); el.querySelector('b').textContent = n + '%'; el.querySelector('.bar i').style.width = n + '%'; if (label) el.querySelector('.lb').textContent = label + '…'; },
+      done: function () { gone = true; document.removeEventListener('visibilitychange', onVis); if (lock) { try { lock.release(); } catch (e) {} } el.remove(); },
+    };
+  }
+  window.storyBusy = busyScreen;
+
   function storyChooser(cardIn, opts) {
     opts = opts || {};
     addCss();
@@ -637,8 +664,7 @@
       + '<div class="st-pv"><canvas id="stPrev" width="270" height="480"></canvas></div>'
       + '<div class="st-list" id="stList">' + STYLE_IDS.map(function (id) { return '<button type="button" class="st-it' + (id === cur ? ' on' : '') + '" data-st="' + id + '"><canvas width="172" height="306"></canvas><b>' + STYLES[id].name + '</b><small>' + STYLES[id].desc + '</small></button>'; }).join('') + '</div>'
       + '<div class="st-tones" id="stTones"></div>'
-      + '<div id="stGoBox"><button class="btn block lg" id="stGo" disabled>Đang tải ảnh…</button></div>'
-      + '<div id="stProg" hidden><div class="st-bar"><i id="stPg"></i></div><p class="muted" id="stTx" style="font-size:13px;margin:6px 0 0">Đang chuẩn bị…</p></div>', function (box, close) {
+      + '<div id="stGoBox"><button class="btn block lg" id="stGo" disabled>Đang tải ảnh…</button></div>', function (box, close) {
       closeIt = close;
       var prev = box.querySelector('#stPrev'), pg = prev.getContext('2d'), t0 = performance.now(), last = 0;
       function play() {
@@ -680,10 +706,10 @@
         var go = box.querySelector('#stGo'); go.disabled = false; go.textContent = 'Tạo video';
         go.onclick = function () {
           busy = true; stop();
-          box.querySelector('#stGoBox').hidden = true; box.querySelector('#stProg').hidden = false; box.querySelector('#stList').style.opacity = '.5';
-          render(card, function (p, label) { var b = box.querySelector('#stPg'), t = box.querySelector('#stTx'); if (b) b.style.width = Math.round(p * 100) + '%'; if (t) t.textContent = label + '… ' + Math.round(p * 100) + '%'; }, cur, curTone)
-            .then(function (res) { close(); showResult(res, card, opts); })
-            .catch(function (e) { close(); toast(e.message || 'Không dựng được video', true); });
+          var bz = busyScreen();
+          render(card, bz.set, cur, curTone)
+            .then(function (res) { bz.done(); close(); showResult(res, card, opts); })
+            .catch(function (e) { bz.done(); close(); toast(e.message || 'Không dựng được video', true); });
         };
         play();
       }).catch(function (e) { close(); toast(e.message || 'Không mở được', true); });
