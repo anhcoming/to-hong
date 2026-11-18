@@ -623,7 +623,7 @@
   // Mọi hạt chuyển động trong shader (card đồ hoạ tính) nên hàng chục nghìn hạt vẫn 60 khung hình/giây. Máy không có WebGL → bản canvas 2D.
   var GLFX = {
     gl: null, cv: null, time: 0, rip: [], heroes: [], sparks: [], nextDrop: 0,
-    VS_PTS: 'attribute vec4 aP;uniform float uT,uAsp,uPx;uniform vec3 uRip[8];uniform vec4 uRp;uniform vec3 uCen;uniform vec2 uSt;uniform vec3 uXf;uniform float uCeil;varying float vA;' +
+    VS_PTS: 'attribute vec4 aP;uniform float uT,uAsp,uPx;uniform vec3 uRip[8];uniform vec4 uRp;uniform vec3 uCen;uniform vec2 uSt;uniform vec3 uXf;uniform float uCeil,uFlat;varying float vA;' +
       'void main(){float seed=aP.z;float tw=pow(0.5+0.5*sin(uT*(1.2+seed*3.7)+seed*61.0),3.0);' +
       'if(aP.w>4.5){gl_Position=vec4(aP.xy,0.0,1.0);float e=aP.y-0.3;float big=step(0.97,fract(seed*29.0));' +
       'gl_PointSize=uPx*(1.6+3.0*fract(seed*7.3)*fract(seed*3.9)+big*2.5);float br=0.72+0.28*(0.5+0.5*sin(uT*0.35+aP.x*2.2+sin(uT*0.21+aP.x*1.3)*1.5));vA=(0.35+0.85*tw)*(0.42+0.55*exp(-max(e,0.0)*2.2)+big*0.35)*smoothstep(-0.24,0.08,e)*smoothstep(0.75,0.3,e)*br;return;}' +
@@ -634,16 +634,16 @@
       'float thick=(fract(seed*91.7)-0.5)*(0.05+0.09*aP.x);vec3 p=vec3(cos(ang)*aP.x,(fl>0.5?-0.95:0.95)+thick,sin(ang)*aP.x*(uCeil>1.01&&fl>0.5?0.5:1.0));float lift=0.0;' +
       'if(fl>0.5){for(int i=0;i<8;i++){float age=uT-uRip[i].z;if(age>0.0&&age<6.0){float d=distance(p.xz,uRip[i].xy);' +
       'float w=exp(-pow((d-age*uRp.x)/uRp.y,2.0))*exp(-age*uRp.z);float w2=exp(-pow((d-age*uRp.x+uRp.y*2.7)/(uRp.y*0.8),2.0))*exp(-age*uRp.z*1.6)*0.55;lift+=(w+w2)*uRp.w;}}}' +
-      'p.y+=lift*0.065;float zc=3.2-p.z;float f=2.1445;gl_Position=vec4(p.x*f/uAsp*zc/zc,p.y*f,0.0,zc);gl_Position.x=p.x*f/uAsp;' +
+      'p.y+=lift*0.065;p.z*=uFlat;float zc=3.2-p.z;float f=2.1445;gl_Position=vec4(p.x*f/uAsp*zc/zc,p.y*f,0.0,zc);gl_Position.x=p.x*f/uAsp;' +
       'float sz=uPx*(2.4+5.0*fract(seed*13.7)*fract(seed*5.1))*2.6/zc*(fl>0.5?1.0:mix(1.0,1.35,step(1.01,uCeil)));gl_PointSize=max(1.0,sz*uSt.x)*(1.0+lift*1.0);' +
       'float far=clamp(1.3-zc*0.09,0.5,1.0);vA=((0.5+1.1*tw)*(1.15+0.35*exp(-aP.x*0.8)+fl*(uCen.x+uCen.y)*exp(-aP.x*uCen.z))*(fl>0.5?1.0:0.8*uCeil)+lift*1.7)*far*smoothstep(0.15,0.7,zc)*(1.0-smoothstep(1.7,3.0,aP.x)*0.92)*uSt.y;}',
-    VS_DROP: 'attribute vec4 aD;attribute float aTail;uniform float uT,uAsp,uPx;varying float vA;' +
+    VS_DROP: 'attribute vec4 aD;attribute float aTail;uniform float uT,uAsp,uPx,uFlat;varying float vA;' +
       'void main(){float f=fract(uT*aD.w+aD.z);float ft=max(f-0.01-0.028*f,0.0);float ff=aTail>0.5?ft:f;' +
-      'float y0=0.95+(fract(aD.z*53.0)-0.5)*0.5;vec3 p=vec3(aD.x,y0-ff*ff*(y0+0.95),aD.y);float zc=3.2-p.z;float k=2.1445;gl_Position=vec4(p.x*k/uAsp,p.y*k,0.0,zc);' +
+      'float y0=0.95+(fract(aD.z*53.0)-0.5)*0.5;vec3 p=vec3(aD.x,y0-ff*ff*(y0+0.95),aD.y*uFlat);float zc=3.2-p.z;float k=2.1445;gl_Position=vec4(p.x*k/uAsp,p.y*k,0.0,zc);' +
       'gl_PointSize=max(1.0,uPx*2.6*2.3/zc);float mid=0.4+0.6*abs(f*f-0.5)*2.0;' +
       'vA=(aTail>0.5?0.0:1.0)*smoothstep(0.0,0.3,f)*(1.0-smoothstep(0.9,1.0,f))*mid*(0.1+0.3*fract(aD.z*17.0))*clamp(1.3-zc*0.12,0.3,1.0);}',
-    VS_DYN: 'attribute vec3 aPos;attribute vec2 aSA;uniform float uAsp,uPx;varying float vA;' +
-      'void main(){float zc=3.2-aPos.z;float k=2.1445;gl_Position=vec4(aPos.x*k/uAsp,aPos.y*k,0.0,zc);gl_PointSize=max(1.0,aSA.x*uPx*2.3/zc);vA=aSA.y;}',
+    VS_DYN: 'attribute vec3 aPos;attribute vec2 aSA;uniform float uAsp,uPx,uFlat;varying float vA;' +
+      'void main(){float zc=3.2-aPos.z*uFlat;float k=2.1445;gl_Position=vec4(aPos.x*k/uAsp,aPos.y*k,0.0,zc);gl_PointSize=max(1.0,aSA.x*uPx*2.3/zc);vA=aSA.y;}',
     FS: 'precision mediump float;varying float vA;uniform vec3 uCol;uniform float uPoint;' +
       'void main(){float a=1.0;if(uPoint>0.5){float d=length(gl_PointCoord-0.5);a=smoothstep(0.5,0.0,d);a*=a;}float v=a*vA;gl_FragColor=vec4(uCol*v,v);}',
     VS_Q: 'attribute vec2 aQ;void main(){gl_Position=vec4(aQ,0.0,1.0);}',
@@ -826,6 +826,7 @@
         gl.useProgram(p);
         gl.uniform1f(gl.getUniformLocation(p, 'uT'), t); gl.uniform1f(gl.getUniformLocation(p, 'uAsp'), asp); gl.uniform1f(gl.getUniformLocation(p, 'uPx'), px);
         gl.uniform3fv(gl.getUniformLocation(p, 'uCol'), rgb); gl.uniform1f(gl.getUniformLocation(p, 'uPoint'), point);
+        gl.uniform1f(gl.getUniformLocation(p, 'uFlat'), self.mode === 'dembac' ? 0.6 : 1); // Đêm kim tuyến bạc: ép dẹt trần + sàn cho bớt cong
       };
       var attr = function (p, name, size, stride, off) { var l = gl.getAttribLocation(p, name); if (l < 0) return; gl.enableVertexAttribArray(l); gl.vertexAttribPointer(l, size, gl.FLOAT, false, stride, off); };
       // Dải ngân hà: cả bầu trời xoay và thu phóng cực chậm (như đang trôi); lớp mây vẽ trước, sao vẽ sau
