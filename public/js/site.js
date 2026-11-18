@@ -157,10 +157,10 @@
   // thay cho menu ☰: chưa đăng nhập thì dẫn tới trang giới thiệu, đã đăng nhập thì tới đồ của mình.
   var SB = [
     ['card', 'Thiệp', 'tpl', '/mau-thiep', '/thiep-cua-toi', '<rect x="3" y="5" width="18" height="14" rx="2.5"/><path d="M3.5 6.5 12 13l8.5-6.5"/>'],
-    ['clap', 'Báo hỷ', 'baohy', '/video', '/video', '<path d="M4 10h16v9a1.5 1.5 0 0 1-1.5 1.5h-13A1.5 1.5 0 0 1 4 19z"/><path d="m4 10-.6-3.2 15-3 .6 3.2"/><path d="m8.5 6.2 2 3.3M13.5 5.2l2 3.3"/>', 'Free'],
+    ['clap', 'Báo hỷ', 'baohy', '/video', '/video', '<path d="M4 10h16v9a1.5 1.5 0 0 1-1.5 1.5h-13A1.5 1.5 0 0 1 4 19z"/><path d="m4 10-.6-3.2 15-3 .6 3.2"/><path d="m8.5 6.2 2 3.3M13.5 5.2l2 3.3"/>', 'Miễn phí'],
     ['led', 'Màn LED', 'led', '/man-hinh-led-dam-cuoi', '/thiep-cua-toi?mo=led', '<rect x="2.5" y="4" width="19" height="12.5" rx="2"/><path d="M8 20.5h8M12 16.5v4"/><path d="m12 7 .9 1.9 2 .3-1.5 1.4.4 2-1.8-1-1.8 1 .4-2-1.5-1.4 2-.3z"/>'],
     ['slide', 'Slide', 'slide', '/slide-cuoi', '/video-cua-toi', '<rect x="3" y="4" width="18" height="12" rx="2"/><path d="M12 16v4M8 20h8"/><path d="m10 8 4 2-4 2z"/>'],
-    ['book', 'Sổ tay', 'planner', '/so-tay-cuoi', '/so-tay', '<path d="M5 4.5A1.5 1.5 0 0 1 6.5 3H19v15H6.5A1.5 1.5 0 0 0 5 19.5z"/><path d="M5 19.5A1.5 1.5 0 0 0 6.5 21H19v-3"/><path d="M9 8h6M9 11.5h4"/>']
+    ['book', 'Sổ tay', 'planner', '/so-tay-cuoi', '/so-tay', '<path d="M5 4.5A1.5 1.5 0 0 1 6.5 3H19v15H6.5A1.5 1.5 0 0 0 5 19.5z"/><path d="M5 19.5A1.5 1.5 0 0 0 6.5 21H19v-3"/><path d="M9 8h6M9 11.5h4"/>', 'Miễn phí']
   ];
   var sbar = null;
   if (page) {
@@ -176,7 +176,7 @@
       + '.sbar i{position:relative;display:grid;place-items:center;height:24px;font-style:normal}'
       + '.sbar svg{width:21px;height:21px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}'
       + '.sbar a.on{color:#d6455d}.sbar a.on svg>*{fill:currentColor}.sbar a.on svg>*:last-child{fill:none;stroke:#fff}'
-      + '.sbar em{position:absolute;top:-6px;left:50%;margin-left:5px;padding:0 5px;border-radius:99px;background:#d6455d;color:#fff;font-size:8.5px;font-style:normal;font-weight:700;line-height:14px}}';
+      + '.sbar em{position:absolute;top:-11px;left:50%;transform:translateX(-50%);white-space:nowrap;padding:0 5px;border-radius:99px;background:#d6455d;color:#fff;font-size:8.5px;font-style:normal;font-weight:700;line-height:14px}}';
     sst.textContent += '.lhome{display:none}.uav{display:none;position:relative;flex:none}'
       + '.uav>a,.uav>button{display:grid;place-items:center;width:40px;height:40px;padding:0;border-radius:50%;border:1px solid var(--line,#f0e4e6);background:var(--card,#fff);color:var(--ink,#2b2224);cursor:pointer;font:inherit;font-size:13px;font-weight:800;text-decoration:none}'
       + '.uav>a,.uav>button{border:0!important;background:rgba(214,69,93,.1)!important;color:#d6455d!important}'

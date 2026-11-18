@@ -203,7 +203,7 @@ table.tbl{width:100%;border-collapse:collapse;font-size:14px}
   body.has-tb-bottom .tb-mmain>button{height:auto}
   .tb-mmain .tb-menu{position:fixed;left:12px;right:12px;top:62px;min-width:0}
   .tb-me .tb-menu{position:fixed;right:12px;left:auto;top:62px}
-  .tb-bottom i{position:relative}.tb-bottom i em{position:absolute;top:-6px;left:50%;margin-left:5px;padding:0 5px;border-radius:99px;background:#d6455d;color:#fff;font-size:8.5px;font-style:normal;font-weight:700;line-height:14px}
+  .tb-bottom i{position:relative}.tb-bottom i em{position:absolute;top:-11px;left:50%;transform:translateX(-50%);white-space:nowrap;padding:0 5px;border-radius:99px;background:#d6455d;color:#fff;font-size:8.5px;font-style:normal;font-weight:700;line-height:14px}
 }
 
 /* thanh tab dưới kiểu "viên thuốc nổi": bo tròn, cách mép, nền trắng mờ; nút ＋ tròn nằm ngang hàng */

@@ -94,8 +94,11 @@ $('#f').onsubmit = async (e) => {
   const fd = Object.fromEntries(new FormData(e.target));
   $('#sub').disabled = true;
   try {
-    await api('/api/auth/' + mode, { method: 'POST', body: fd, allow401: true });
-    location.href = next.startsWith('/') && !next.startsWith('//') ? next : '/thiep-cua-toi';
+    const r = await api('/api/auth/' + mode, { method: 'POST', body: fd, allow401: true });
+    let to = next.startsWith('/') && !next.startsWith('//') ? next : '/thiep-cua-toi';
+    // bản nháp vừa làm đã gộp vào thiệp sẵn có của tài khoản (mỗi tài khoản một thiệp) → mở thiệp đó
+    if (r && r.moved) to = to.replace(/^\/(sua|sua-led|sua-video)\/([\w-]+)/, (m, p, id) => (r.moved.from.includes(id) ? `/${p}/${r.moved.to}` : m));
+    location.href = to;
   } catch (err) {
     $('#err').textContent = err.message;
   } finally {

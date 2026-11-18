@@ -116,13 +116,15 @@ main.wrap{padding-top:112px;padding-bottom:64px;max-width:1120px}
   /* đã có ảnh: trang thành một màn — thanh gọn, thiệp lớn chiếm phần còn lại, dải mẫu + nút ở đáy */
   body.gy-on #nav,body.gy-on #foot,body.gy-on .gy-head,body.gy-on .after{display:none}
   body.gy-on main.wrap{padding:0;max-width:none}
-  body.gy-on #work{display:flex;flex-direction:column;height:100vh;height:100dvh}
+  /* chừa chỗ cho thanh 5 nút dưới cùng (site.js, cao 62px + lề 12px) — không thì dải mẫu bị che */
+  body.gy-on #work{display:flex;flex-direction:column;height:calc(100vh - 86px);height:calc(100dvh - 86px - env(safe-area-inset-bottom))}
+  body.gy-on{padding-bottom:calc(86px + env(safe-area-inset-bottom))!important}
   body.gy-on #msg{margin:8px 14px 0}
   .mrow{display:flex;flex:none;align-items:center;gap:10px;padding:10px 14px 0}
   .mrow{justify-content:space-between}
   .mrow #useBtnM{margin-left:auto;padding:10px 18px;font-size:14px;border:0;border-radius:999px;color:#fff;background:var(--grad);box-shadow:0 8px 20px rgba(214,69,93,.28)}
   .pcta{display:none}
-  .strip{padding-bottom:calc(10px + env(safe-area-inset-bottom))!important}
+  .strip{padding-bottom:10px!important}
   #mPh{display:flex;align-items:center;gap:6px;border:1px solid var(--line);border-radius:999px;background:var(--card);padding:4px 11px 4px 4px;font:600 12.5px var(--sans);color:var(--ink);cursor:pointer}
   #mPh i{display:flex}
   #mPh i b{width:26px;height:26px;border-radius:50%;border:2px solid var(--card);background:#eee center/cover;margin-left:-9px}

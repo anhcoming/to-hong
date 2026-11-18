@@ -116,9 +116,11 @@ const GUEST_DAYS = 30;
 const guestCookie = (v, maxAge) => `gid=${v}; HttpOnly; Path=/; SameSite=Lax; Max-Age=${maxAge}` + (BASE_URL.startsWith('https') ? '; Secure' : '');
 const guestId = (req) => { const g = cookies(req).gid; return /^[a-f0-9]{32}$/.test(g || '') ? g : null; };
 const guestOwns = (ctx, card) => !!(card && card.guestId && !card.userId && ctx.guest && card.guestId === ctx.guest);
+// Trả về { from, to } khi bản nháp của khách được gộp vào thiệp sẵn có của tài khoản (để chuyển link /sua/<nháp> sang thiệp đó).
 function claimGuestCards(req, res, user) {
   const gid = guestId(req);
-  if (!gid) return;
+  if (!gid) return null;
+  let moved = null;
   const mine = db.cards.filter((c) => c.guestId === gid && !c.userId);
   if (mine.length) {
     const w = Wd.ensure(user);
@@ -126,13 +128,33 @@ function claimGuestCards(req, res, user) {
     // sổ tay đã có tên thì giữ nguyên sổ tay
     const src = mine.filter((c) => c.data.groom.name || c.data.bride.name).sort((a, b) => b.updatedAt - a.updatedAt)[0];
     const fresh = !w.couple.groom.name && !w.couple.bride.name;
-    mine.forEach((c) => { c.userId = user.id; c.weddingId = w.id; delete c.guestId; c.updatedAt = Date.now(); });
-    if (fresh && src) Wd.syncFromCard(src, true);
+    const has = userCard(user);
+    if (has) {
+      // tài khoản đã có thiệp: thiệp đó chưa phát hành → chép nội dung + mẫu từ bản nháp vừa làm (giữ trạng thái kích hoạt / Trọn bộ);
+      // đã phát hành → giữ thiệp đang chạy. Bản nháp của khách bỏ đi (mỗi tài khoản một thiệp).
+      const g = mine.sort((a, b) => b.updatedAt - a.updatedAt)[0];
+      if (has.status !== 'published' && (g.data.groom.name || g.data.bride.name || g.data.cover || g.data.photos.some(Boolean) || g.updatedAt > has.updatedAt)) {
+        Object.assign(has, { data: g.data, template: g.template, palette: g.palette, updatedAt: Date.now() });
+      }
+      const drop = new Set(mine.map((c) => c.id));
+      db.cards = db.cards.filter((c) => !drop.has(c.id));
+      if (fresh && has.status !== 'published') Wd.syncFromCard(has, true);
+      moved = { from: drop, to: has.id };
+    } else {
+      const keep = mine.sort((a, b) => b.updatedAt - a.updatedAt)[0];
+      const drop = new Set(mine.filter((c) => c !== keep).map((c) => c.id));
+      if (drop.size) db.cards = db.cards.filter((c) => !drop.has(c.id));
+      Object.assign(keep, { userId: user.id, weddingId: w.id, updatedAt: Date.now() }); delete keep.guestId;
+      if (fresh && src) Wd.syncFromCard(src, true);
+    }
     save();
   }
   const prev = res.getHeader('Set-Cookie');
   res.setHeader('Set-Cookie', [].concat(prev || [], guestCookie('', 0)));
+  return moved;
 }
+// link trang đang dở trỏ tới bản nháp đã gộp → trỏ sang thiệp của tài khoản
+const movedNext = (next, moved) => (moved ? next.replace(/^\/(sua|sua-led|sua-video)\/([\w-]+)/, (m, p, id) => (moved.from.has(id) ? `/${p}/${moved.to}` : m)) : next);
 // Thiệp của mình, hoặc thiệp trong đám cưới mà mình là thành viên (người yêu, bố mẹ cùng sửa).
 // opts.guest: cho phép cả khách chưa đăng nhập đang giữ thiệp nháp này.
 function ownedCard(ctx, id, opts = {}) {
@@ -280,16 +302,16 @@ route('POST', '/api/auth/register', async (req, res, ctx) => {
   const b = await readJson(req);
   const user = auth.createUser(b);
   auth.startSession(res, user.id);
-  claimGuestCards(req, res, user);
-  json(res, 200, { user: auth.publicUser(user) });
+  const moved = claimGuestCards(req, res, user);
+  json(res, 200, { user: auth.publicUser(user), moved: moved ? { from: [...moved.from], to: moved.to } : null });
 });
 route('POST', '/api/auth/login', async (req, res, ctx) => {
   rateLimit('login:' + ctx.ip, 20, 9e5, true);
   const b = await readJson(req);
   const user = auth.verifyLogin(b.email, b.password);
   auth.startSession(res, user.id);
-  claimGuestCards(req, res, user);
-  json(res, 200, { user: auth.publicUser(user) });
+  const moved = claimGuestCards(req, res, user);
+  json(res, 200, { user: auth.publicUser(user), moved: moved ? { from: [...moved.from], to: moved.to } : null });
 });
 route('POST', '/api/auth/logout', async (req, res) => {
   auth.endSession(req, res);
@@ -325,8 +347,8 @@ route('GET', '/auth/google/callback', async (req, res, ctx) => {
     const g = await google.exchange(String(ctx.query.get('code') || ''), GOOGLE_CB);
     const user = auth.googleUser(g);
     auth.startSession(res, user.id, 'google');
-    claimGuestCards(req, res, user);
-    redirect(res, safeNext(next), [].concat(res.getHeader('Set-Cookie'), clear));
+    const moved = claimGuestCards(req, res, user);
+    redirect(res, movedNext(safeNext(next), moved), [].concat(res.getHeader('Set-Cookie'), clear));
   } catch (e) {
     if (e.status === 500 || !e.status) console.error('Google login lỗi:', e);
     fail(e.status && e.status !== 500 ? e.message : 'Không đăng nhập được bằng Google, thử lại sau nhé');
@@ -350,8 +372,8 @@ route('GET', '/auth/facebook/callback', async (req, res, ctx) => {
     const f = await facebook.exchange(String(ctx.query.get('code') || ''), FACEBOOK_CB);
     const user = auth.facebookUser(f);
     auth.startSession(res, user.id, 'facebook');
-    claimGuestCards(req, res, user);
-    redirect(res, safeNext(next), [].concat(res.getHeader('Set-Cookie'), clear));
+    const moved = claimGuestCards(req, res, user);
+    redirect(res, movedNext(safeNext(next), moved), [].concat(res.getHeader('Set-Cookie'), clear));
   } catch (e) {
     if (e.status === 500 || !e.status) console.error('Facebook login lỗi:', e);
     fail(e.status && e.status !== 500 ? e.message : 'Không đăng nhập được bằng Facebook, thử lại sau nhé');
@@ -485,11 +507,20 @@ for (const [path, to, keep] of [['/tao-led', 'sua-led', ['palette', 'effect']], 
   });
 }
 
+// Mỗi tài khoản chỉ MỘT thiệp. Đã có thiệp mà bấm "Dùng mẫu" → đổi mẫu cho thiệp đó (chữ, ảnh giữ nguyên), không tạo thêm.
+const userCard = (user) => db.cards.filter((c) => c.userId === user.id).sort((a, b) => b.updatedAt - a.updatedAt)[0];
 function newCard(user, b = {}) {
-  if (db.cards.filter((c) => c.userId === user.id).length >= 30) throw httpError(400, 'Bạn đã có quá nhiều thiệp');
-  const w = Wd.ensure(user);
   const tpl = templates[b.template] ? b.template : DEFAULT_TEMPLATE;
   const now = Date.now();
+  const has = userCard(user);
+  if (has) {
+    if (b.template && templates[b.template]) {
+      Object.assign(has, { template: tpl, palette: templates[tpl].palettes.find((p) => p.id === b.palette)?.id || templates[tpl].palettes[0].id, updatedAt: now });
+      save();
+    }
+    return has;
+  }
+  const w = Wd.ensure(user);
   const data = cd.defaults();
   // hồ sơ cưới (sổ tay): tên đôi, danh xưng, bố mẹ, ngày cưới; các lễ + tài khoản mừng cưới của thiệp đã lưu trước đó
   if (!Wd.prefill(data, w)) {
@@ -500,7 +531,7 @@ function newCard(user, b = {}) {
   }
   const card = {
     id: rid(12), userId: user.id, weddingId: w.id, slug: uniqueSlug('thiep-' + rid(6)),
-    title: str(b.title, 60) || `Thiệp ${db.cards.filter((c) => c.userId === user.id).length + 1}`,
+    title: str(b.title, 60) || 'Thiệp 1',
     template: tpl, palette: templates[tpl].palettes.find((p) => p.id === b.palette)?.id || templates[tpl].palettes[0].id,
     status: 'draft', paid: false, views: 0, data, createdAt: now, updatedAt: now,
   };
@@ -613,20 +644,9 @@ route('POST', '/api/cards/:id/publish', async (req, res, ctx) => {
 });
 
 route('POST', '/api/cards/:id/duplicate', async (req, res, ctx) => {
-  const src = ownedCard(ctx, ctx.params.id);
-  if (db.cards.filter((c) => c.userId === src.userId).length >= 30) throw httpError(400, 'Bạn đã có quá nhiều thiệp');
-  const now = Date.now();
-  const trialFrom = src.trialFrom || src.publishedAt || undefined;
-  const card = {
-    ...JSON.parse(JSON.stringify(src)), id: rid(12), slug: uniqueSlug(src.slug + '-ban-sao'), title: (src.title + ' (bản sao)').slice(0, 60),
-    status: 'draft', paid: false, paidAt: undefined, combo: undefined, publishedAt: undefined, views: 0, createdAt: now, updatedAt: now, trialFrom,
-  };
-  // màn LED / video của bản sao: giữ ngày tạo của bản gốc → hạn dùng thử không được làm mới bằng cách nhân bản
-  if (card.led) card.led = { ...card.led, paid: false, paidAt: undefined };
-  if (card.video) card.video = { ...card.video, paid: false, paidAt: undefined, mp4: null };
-  db.cards.push(card);
-  save();
-  json(res, 200, { card: cardSummary(card) });
+  ownedCard(ctx, ctx.params.id);
+  // mỗi tài khoản một thiệp: muốn mẫu khác thì đổi mẫu ngay trong trình sửa
+  throw httpError(400, 'Mỗi tài khoản chỉ có một thiệp — muốn mẫu khác thì đổi mẫu ngay trong trình sửa');
 });
 
 route('DELETE', '/api/cards/:id', async (req, res, ctx) => {

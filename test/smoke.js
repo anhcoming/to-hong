@@ -436,10 +436,12 @@ async function call(who, method, url, body) {
   rr = await fetch(base + '/tao-video?mau=polaroid&x=<b>', { redirect: 'manual', headers: { cookie: jar.u } });
   assert.match(rr.headers.get('location'), /^\/sua-video\/[\w-]+\?mau=polaroid$/, 'thẳng trình sửa video, bỏ tham số lạ');
 
-  // nhân bản + xoá
+  // mỗi tài khoản một thiệp: không nhân bản, "Dùng mẫu" khác thì đổi mẫu cho thiệp sẵn có
   r = await call('u', 'POST', `/api/cards/${id}/duplicate`);
-  assert.equal(r.json.card.paid, false);
-  assert.equal((await call('u', 'DELETE', `/api/cards/${r.json.card.id}`)).status, 200);
+  assert.equal(r.status, 400, 'không nhân bản thiệp');
+  r = await call('u', 'POST', '/api/cards', { template: 'songhy' });
+  assert.deepEqual([r.json.card.id, r.json.card.template], [id, 'songhy'], 'Dùng mẫu khác → đổi mẫu thiệp sẵn có, không tạo thiệp thứ hai');
+  assert.equal((await call('u', 'GET', '/api/cards')).json.cards.filter((c) => c.ownerId).length, 1);
 
   console.log('✓ Tất cả kiểm thử đều qua');
   server.close();

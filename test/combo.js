@@ -21,9 +21,19 @@ async function call(who, method, url, body, headers = {}) {
 let txn = 0;
 const pay = (o, content = `MBVCB.88.${o.code}.CT`) => call('sepay', 'POST', '/api/pay/sepay', { id: ++txn, transferType: 'in', transferAmount: o.amount, content }, { authorization: 'Apikey k' });
 const card = async (id) => (await call('u', 'GET', `/api/cards/${id}`)).json.card;
+// mỗi tài khoản chỉ một thiệp (POST /api/cards trả lại thiệp sẵn có) → thiệp thứ hai trở đi chèn thẳng vào kho, như dữ liệu cũ trước khi khoá
+const extraCard = (srcId, slug) => {
+  const D = require('../lib/db').db, src = D.cards.find((c) => c.id === srcId);
+  const n = { ...JSON.parse(JSON.stringify(src)), id: 'x' + Math.random().toString(36).slice(2, 13), slug, status: 'draft', paid: false, views: 0, createdAt: Date.now(), updatedAt: Date.now() - 1e9 };
+  for (const k of ['combo', 'paidAt', 'publishedAt', 'led', 'video', 'trialFrom']) delete n[k];
+  D.cards.push(n);
+  return n.id;
+};
+let firstCard = null;
 async function newCard(slug) {
-  const r = await call('u', 'POST', '/api/cards', { template: 'dodam' });
-  const c = r.json.card;
+  let c = (await call('u', 'POST', '/api/cards', { template: 'dodam' })).json.card;
+  if (firstCard) c = (await call('u', 'GET', `/api/cards/${extraCard(firstCard, slug)}`)).json.card;
+  else firstCard = c.id;
   await call('u', 'PUT', `/api/cards/${c.id}`, { data: { ...c.data, groom: { ...c.data.groom, name: 'An' }, bride: { ...c.data.bride, name: 'Bình' }, date: '2026-12-20' }, slug });
   await call('u', 'POST', `/api/cards/${c.id}/publish`, {});
   return c.id;
@@ -89,10 +99,8 @@ const buyCombo = async (id) => { const o = (await call('u', 'POST', `/api/cards/
   assert.ok(c.combo && c.video.paid, 'nâng cấp → video có sẵn mở luôn');
   assert.ok((await call('u', 'PUT', `/api/cards/${e}`, { led: {} })).json.card.led.paid, 'LED làm sau cũng mở');
 
-  // 3b. nhân bản thiệp Trọn bộ → bản sao là thiệp mới, không kèm Trọn bộ
-  const dup = (await call('u', 'POST', `/api/cards/${e}/duplicate`)).json.card;
-  c = await card(dup.id);
-  assert.ok(!c.paid && !c.combo && !c.led.paid && !c.video.paid, 'bản sao không được Trọn bộ');
+  // 3b. mỗi tài khoản một thiệp: không nhân bản được
+  assert.equal((await call('u', 'POST', `/api/cards/${e}/duplicate`)).status, 400, 'không nhân bản thiệp');
 
   // 3c. lượt Trọn bộ kiểu cũ (trước 18/11/2026) vẫn dùng được
   require('../lib/db').db.users.find((u) => u.email === 'combo@test.vn').credits = { led: 1, video: 0 };
