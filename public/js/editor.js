@@ -864,6 +864,7 @@ function quickStart(forPublish) {
     $('#qsF', box).onsubmit = async (e) => {
       e.preventDefault();
       const v = (id) => ($(id, box) ? $(id, box).value.trim() : '');
+      const before = JSON.parse(JSON.stringify({ groom: d.groom, bride: d.bride })), partyPlace = party && party.place;
       d.groom.name = v('#qsG'); d.bride.name = v('#qsB');
       const old = d.date;
       d.date = v('#qsD');
@@ -873,6 +874,11 @@ function quickStart(forPublish) {
       box.querySelectorAll('[data-pf]').forEach((i) => setP(d, i.dataset.pf, i.value.trim())); // họ tên đầy đủ, danh xưng, số điện thoại, địa chỉ
       box.querySelectorAll('[data-pn]').forEach((i) => { const t = $(`[data-pt="${i.dataset.pn}"]`, box).value, n = i.value.trim(); setP(d, i.dataset.pn, n ? (t ? t + ' ' : '') + n : ''); });
       close();
+      // đổi chữ ngay trên thiệp đang xem — không để thiệp đứng im với tên cũ trong lúc chờ máy chủ và vẽ lại
+      const pk = ['groom.name', 'bride.name'];
+      for (const w of ['groom', 'bride']) for (const k of ['fullName', 'father', 'mother', 'address']) pk.push(`${w}.${k}`);
+      for (const k of pk) if (getP(d, k) !== getP(before, k)) livePatch(k, String(getP(d, k) || '').trim());
+      if (party) { const i = d.events.indexOf(party); if (party.place !== partyPlace) livePatch(`events.${i}.place`, party.place); }
       if (forPublish) { rerender(); renderHeader(); publish(); } else applyLive(); // publish tự lưu trước khi phát hành
     };
   });
