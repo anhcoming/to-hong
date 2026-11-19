@@ -33,14 +33,19 @@ store.onLoad(() => Wd.migrate()); // dữ liệu từ trước khi có sổ tay 
 // Sản phẩm bán: thiệp, màn LED, video dạm ngõ (đều gắn với một thiệp) và combo "Trọn bộ".
 // Trọn bộ = kích hoạt thiệp + cộng vào tài khoản chủ thiệp 1 lượt màn LED và 1 lượt video. Khách nháp bao nhiêu
 // LED / video cũng được, ưng cái nào thì bấm "Dùng lượt Trọn bộ" trên cái đó (POST /api/cards/:id/redeem).
-// Combo cho thiệp đã kích hoạt = nâng cấp, chỉ trả phần chênh (giá combo − giá thiệp).
+// Nâng cấp lên Trọn bộ: phần nào của thiệp đã trả (thiệp / màn LED / video) thì trừ đúng giá lẻ phần đó — khách chỉ trả
+// phần chênh, không bao giờ trả hai lần cho cùng một thứ. Đủ cả ba rồi thì không cần Trọn bộ nữa.
+const PARTS = [['card', (c) => c.paid, () => cardPrice()], ['led', (c) => c.led && c.led.paid, () => config.ledPrice], ['video', (c) => c.video && c.video.paid, () => config.videoPrice]];
+const comboHave = (c) => PARTS.filter(([, paid]) => paid(c)).map(([k]) => k);
+const comboCredit = (c) => (c.combo ? 0 : PARTS.reduce((n, [, paid, price]) => n + (paid(c) ? price() : 0), 0));
+const missingRetail = (c) => PARTS.reduce((n, [, paid, price]) => n + (paid(c) ? 0 : price()), 0);
 const PRODUCTS = {
   card: { name: 'Thiệp cưới online', price: () => cardPrice(), coupons: true, prefix: 'TH', sub: (c) => c },
   led: { name: 'Màn hình LED tiệc cưới', price: () => config.ledPrice, coupons: false, prefix: 'LD', sub: (c) => c.led },
   video: { name: 'Video cưới', price: () => config.videoPrice, coupons: false, prefix: 'VD', sub: (c) => c.video },
   combo: {
     name: 'Trọn bộ ngày cưới', coupons: false, prefix: 'CB',
-    price: (c) => (c && c.paid && !c.combo ? Math.max(0, comboPrice() - cardPrice()) : comboPrice()),
+    price: (c) => (c ? Math.max(0, comboPrice() - comboCredit(c)) : comboPrice()),
     sub: (c) => ({ paid: !!c.combo }),
   },
 };
@@ -224,6 +229,8 @@ function cardSummary(card) {
     cover: card.data.cover || card.data.photos.find(Boolean) || '',
     ...cardState(card),
     namesFrozen: Wd.pastWedding(card),
+    // nâng lên Trọn bộ: giá phần chênh (đã trừ phần đã trả) và giá mua lẻ phần còn thiếu — null khi không cần gợi ý
+    comboUpgrade: !card.combo && comboHave(card).length && comboHave(card).length < 3 ? { amount: PRODUCTS.combo.price(card), retail: missingRetail(card), have: comboHave(card) } : null,
     led: { ...ledLib.state(card.led), url: `${BASE_URL}/led/${card.slug}` },
     video: { ...videoLib.state(card.video), url: `${BASE_URL}/video/${card.slug}`, template: card.video ? card.video.template : null, kind: card.video ? card.video.event.kind : null },
   };
@@ -246,7 +253,8 @@ function wasPrice(o, product) {
   if (o.status !== 'pending') return {};
   const end = promoEnd();
   if (product === 'card' && promoActive() && o.amount + (o.discount || 0) === config.price) return { wasPrice: config.listPrice, promoEndsAt: end };
-  if (product === 'combo' && o.upgrade) return { wasPrice: config.ledPrice + config.videoPrice, promoEndsAt: comboPromo() ? end : null };
+  const oc = db.cards.find((c) => c.id === o.cardId);
+  if (product === 'combo' && o.upgrade) return { wasPrice: oc ? missingRetail(oc) : config.ledPrice + config.videoPrice, promoEndsAt: comboPromo() ? end : null };
   if (product === 'combo' && comboPromo() && o.amount + (o.discount || 0) === config.comboPrice) return { wasPrice: config.comboListPrice, promoEndsAt: end };
   // Trọn bộ không có giá gốc riêng: gạch ngang tổng tiền mua lẻ thiệp + LED + video (giá thật, không phải giá ảo)
   if (product === 'combo') { const le = cardPrice() + config.ledPrice + config.videoPrice; if (le > o.amount + (o.discount || 0)) return { wasPrice: le, retail: true }; }
@@ -260,6 +268,7 @@ function orderView(o) {
     code: o.code, amount: o.amount, coupon: o.coupon || null, status: o.status, claimedAt: o.claimedAt || null,
     createdAt: o.createdAt, paidAt: o.paidAt || null, paidVia: o.paidVia || null, bankNote: o.bankNote || null,
     upgrade: !!o.upgrade, ...wasPrice(o, product),
+    ...(product === 'combo' && card && o.status === 'pending' ? { have: comboHave(card) } : {}),
     qr: qrPay(o.amount, o.code),
     bank: { name: config.payment.bankName, accountNo: config.payment.accountNo, accountName: config.payment.accountName },
     card: card ? { id: card.id, title: card.title, names: [card.data.groom.name, card.data.bride.name].filter(Boolean).join(' & ') } : null,
@@ -825,6 +834,7 @@ route('POST', '/api/cards/:id/order', async (req, res, ctx) => {
   const target = P.sub(card);
   if (!target) throw httpError(400, `Hãy tạo ${P.name.toLowerCase()} trước`);
   if (target.paid) throw httpError(400, `${P.name} này đã được kích hoạt`);
+  if (product === 'combo' && comboHave(card).length === 3) throw httpError(400, 'Thiệp, màn LED và video của bạn đều đã kích hoạt — không cần mua Trọn bộ nữa');
   const isThis = (o) => o.cardId === card.id && (o.product || 'card') === product && o.status === 'pending';
   let order = db.orders.find(isThis);
   if (!order) {
@@ -832,7 +842,7 @@ route('POST', '/api/cards/:id/order', async (req, res, ctx) => {
     db.orders.push(order);
   }
   // combo: giá tuỳ thiệp đã kích hoạt chưa (nâng cấp) → tính lại mỗi lần mở (giữ mã đã áp)
-  if (product === 'combo') order.upgrade = !!card.paid;
+  if (product === 'combo') order.upgrade = comboHave(card).length > 0;
   // mã giảm giá (lib/discounts.js): b.coupon = mã mới ('' = bỏ mã); không gửi thì giữ mã đã áp, mã hết hạn/hết lượt thì tự bỏ
   const code = b.coupon !== undefined ? discounts.norm(b.coupon) : order.coupon || '';
   let d = null;
@@ -946,6 +956,11 @@ route('POST', '/api/pay/sepay', async (req, res, ctx) => {
     result = 'already-paid';
     o.bankNote = `Nhận thêm ${money(amount)} khi đơn đã thanh toán — cần hoàn tiền`;
   } else {
+    // Trọn bộ: khách vừa mua lẻ thêm phần nào sau khi tạo đơn → giá nâng cấp đã giảm, nhận theo giá mới (chỉ hạ, không nâng)
+    if ((o.product || 'card') === 'combo' && !o.coupon) {
+      const oc = db.cards.find((c) => c.id === o.cardId);
+      if (oc) { const now = PRODUCTS.combo.price(oc); if (now < o.amount) { o.amount = now; o.upgrade = comboHave(oc).length > 0; } }
+    }
     // khách chuyển thiếu rồi chuyển bù: cộng các lần chuyển trước của cùng đơn, đủ tiền thì kích hoạt
     const before = db.bankTxns.filter((x) => x.order === o.code && x.result === 'underpaid').reduce((n, x) => n + x.amount, 0);
     const total = before + amount;

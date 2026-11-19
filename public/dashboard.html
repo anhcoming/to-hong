@@ -183,12 +183,12 @@ function stateChip(c) {
   return `<span class="chip warn">Dùng thử · còn ${days} ngày</span>`;
 }
 
-// Thiệp đã kích hoạt lẻ, chưa có LED / video: gợi ý nâng lên Trọn bộ (chỉ trả phần chênh)
+// Đã trả một phần (thiệp / màn LED / video), chưa đủ cả ba: gợi ý nâng lên Trọn bộ — máy chủ tính sẵn phần chênh (c.comboUpgrade)
 function upgradeBar(c) {
-  if (isCombo(c)) return ''; // Trọn bộ: lượt còn lại hiện trên ô Màn LED / Video
-  if (!c.paid || c.led.paid || c.video.paid || !META.comboPrice) return '';
-  const add = Math.max(0, META.comboPrice - META.price), retail = META.ledPrice + META.videoPrice;
-  return `<div class="upbar"><span>✨ Thêm <b>màn LED tiệc cưới + video MP4</b> chỉ <b>${money(add)}</b> <span class="muted">(mua lẻ ${money(retail)})</span></span><button class="btn sm" data-a="combo">Nâng lên Trọn bộ</button></div>`;
+  if (isCombo(c) || !c.comboUpgrade) return ''; // Trọn bộ: lượt còn lại hiện trên ô Màn LED / Video
+  const u = c.comboUpgrade, NAME = { card: 'thiệp cưới', led: 'màn LED tiệc cưới', video: 'video MP4' };
+  const need = Object.keys(NAME).filter((k) => !u.have.includes(k)).map((k) => NAME[k]).join(' + ');
+  return `<div class="upbar"><span>✨ Thêm <b>${need}</b> chỉ <b>${money(u.amount)}</b> <span class="muted">(mua lẻ ${money(u.retail)})</span></span><button class="btn sm" data-a="combo">Nâng lên Trọn bộ</button></div>`;
 }
 
 // Thiệp đã phát hành, chưa kích hoạt: thanh đếm ngược tới lúc link bị khoá (chạy từng giây)

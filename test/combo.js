@@ -175,6 +175,37 @@ const buyCombo = async (id) => { const o = (await call('u', 'POST', `/api/cards/
   assert.equal(loneDb.status, 'cancelled', 'đơn thiệp lẻ đang chờ tự đóng khi Trọn bộ đã trả');
   assert.match(loneDb.note, new RegExp(cb.code));
   assert.equal(db.orders.find((o) => o.code === cb.code).status, 'paid');
+  // nâng cấp gói: phần nào đã trả (thiệp / LED / video) thì trừ đúng giá lẻ phần đó; chuyển khoản tự nâng cấp
+  {
+    const g = await newCard('combo-g');
+    await call('u', 'PUT', `/api/cards/${g}`, { led: {} });
+    assert.equal((await pay((await call('u', 'POST', `/api/cards/${g}/order`, { product: 'led' })).json.order)).json.result, 'paid', 'mua lẻ màn LED');
+    let o = (await call('u', 'POST', `/api/cards/${g}/order`, { product: 'combo' })).json.order;
+    assert.equal(o.amount, comboNow - config.ledPrice, 'đã có LED: Trọn bộ trừ giá LED');
+    assert.ok(o.upgrade && o.have.join() === 'led', 'đơn nâng cấp biết đã có LED');
+    assert.equal(o.wasPrice, config.price + config.videoPrice, 'gạch giá mua lẻ phần còn thiếu (thiệp + video)');
+    assert.equal((await card(g)).comboUpgrade.amount, o.amount, 'trang Thiệp của tôi gợi ý đúng giá nâng cấp');
+    assert.equal((await pay(o)).json.result, 'paid', 'chuyển đúng số tiền nâng cấp → tự kích hoạt');
+    let c = await card(g);
+    assert.ok(c.paid && c.led.paid && c.comboUpgrade === null, 'thiệp mở, LED vẫn mở, hết gợi ý nâng cấp');
+    assert.ok((await call('u', 'PUT', `/api/cards/${g}`, { video: {} })).json.card.video.paid, 'video làm sau tự mở');
+
+    // đơn Trọn bộ tạo lúc chưa có gì (giá đủ), sau đó mua lẻ video → chuyển khoản theo giá mới vẫn nhận và tự nâng cấp
+    const h = await newCard('combo-h');
+    o = (await call('u', 'POST', `/api/cards/${h}/order`, { product: 'combo' })).json.order;
+    assert.equal(o.amount, comboNow);
+    await call('u', 'PUT', `/api/cards/${h}`, { video: {} });
+    await pay((await call('u', 'POST', `/api/cards/${h}/order`, { product: 'video' })).json.order);
+    assert.equal((await pay({ ...o, amount: comboNow - config.videoPrice })).json.result, 'paid', 'đơn cũ nhận giá đã trừ video');
+    c = await card(h);
+    assert.ok(c.paid && c.video.paid, 'Trọn bộ đã kích hoạt');
+
+    // đủ cả ba rồi thì không bán Trọn bộ nữa
+    const k = await newCard('combo-k');
+    await call('u', 'PUT', `/api/cards/${k}`, { led: {}, video: {} });
+    for (const p of ['card', 'led', 'video']) await pay((await call('u', 'POST', `/api/cards/${k}/order`, { product: p })).json.order);
+    assert.equal((await call('u', 'POST', `/api/cards/${k}/order`, { product: 'combo' })).status, 400, 'đủ cả ba: không mua Trọn bộ');
+  }
   console.log('✓ Trọn bộ gắn với thiệp: mở thiệp + LED + video của thiệp đó (có sẵn hay làm sau), thiệp khác không liên quan, nâng cấp trả phần chênh, lượt cũ vẫn dùng được');
   process.exit(0);
 })().catch((e) => { console.error('✗', e); process.exit(1); });
