@@ -185,8 +185,13 @@
       + '.uav>a,.uav>button{display:grid;place-items:center;width:40px;height:40px;padding:0;border-radius:50%;border:1px solid var(--line,#f0e4e6);background:var(--card,#fff);color:var(--ink,#2b2224);cursor:pointer;font:inherit;font-size:13px;font-weight:800;text-decoration:none}'
       + '.uav>a,.uav>button{border:0!important;background:rgba(214,69,93,.1)!important;color:#d6455d!important}'
       + '.uav>a.lgin{width:auto;padding:0 16px;border-radius:999px;font-size:13.5px;font-weight:700;white-space:nowrap}'
+      + '.usplit{display:flex;align-items:stretch;height:36px;border-radius:999px;background:linear-gradient(120deg,#d6455d,#ec6f86);box-shadow:0 8px 20px rgba(214,69,93,.28)}'
+      + '.usplit a{display:flex;align-items:center;padding:0 10px 0 14px;color:#fff;font-size:13px;font-weight:600;text-decoration:none;white-space:nowrap}'
+      + '.usplit button{display:grid;place-items:center;width:30px;padding:0 4px 0 0;border:0;border-left:1px solid rgba(255,255,255,.35);border-radius:0 999px 999px 0;background:none;cursor:pointer}'
+      + '.usplit button::before{content:"";width:6px;height:6px;border-right:1.6px solid #fff;border-bottom:1.6px solid #fff;transform:translateY(-2px) rotate(45deg);transition:transform .2s}.uav.open .usplit button::before{transform:translateY(1px) rotate(225deg)}'
+      + '@media (min-width:761px){.uav.dk{display:block}#navActs:has(~.uav.dk){display:none}.uav.dk .usplit{height:38px}.uav.dk .usplit a{font-size:14px;padding:0 12px 0 16px}}'
       + '.uav svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}'
-      + '.uav .um{position:absolute;right:0;top:calc(100% + 10px);z-index:60;min-width:230px;padding:8px;border-radius:14px;background:var(--card,#fff);box-shadow:0 0 0 1px var(--line,#f0e4e6),0 20px 50px rgba(120,40,50,.18);display:none}'
+      + '.uav .um{position:absolute;right:0;top:calc(100% + 10px);z-index:60;min-width:255px;padding:8px;border-radius:14px;background:var(--card,#fff);box-shadow:0 0 0 1px var(--line,#f0e4e6),0 20px 50px rgba(120,40,50,.18);display:none}'
       + '.uav.open .um{display:block}.uav .um a{display:flex;align-items:center;gap:10px;padding:10px;border-radius:10px;font-size:14px;color:var(--ink,#2b2224);text-decoration:none}.uav .um a:hover{background:rgba(214,69,93,.08)}'
       + '.uav .um svg{flex:none;width:18px;height:18px;color:var(--muted,#8a7d80)}.uav .who{padding:8px 10px 10px;margin-bottom:4px;border-bottom:1px solid var(--line,#f0e4e6);font-size:13px;color:var(--muted,#8a7d80);overflow:hidden;text-overflow:ellipsis}.uav .who b{display:block;color:var(--ink,#2b2224);font-size:14px}';
     document.head.appendChild(sst);
@@ -198,8 +203,9 @@
     if (actsBox) actsBox.parentNode.insertBefore(uav, actsBox.nextSibling);
     window.drawUav = function (user) {
       var esc = function (t) { return String(t || '').replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); };
-      uav.innerHTML = '<button type="button" aria-label="Tài khoản" aria-expanded="false"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg></button><div class="um"><div class="who"><b>' + esc(user.name) + '</b>' + esc(user.email) + '</div>'
-        + '<a href="#" data-theme-toggle><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5z"/></svg>Đổi nền sáng / tối</a><a href="#" data-logout><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 4h3a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-3"/><path d="M10 16l-4-4 4-4M6 12h10"/></svg>Đăng xuất</a></div>'; // Thiệp / Sổ tay đã có ở thanh dưới
+      uav.innerHTML = '<div class="usplit"><a href="/thiep-cua-toi">Thiệp của tôi</a><button type="button" aria-label="Tài khoản" aria-expanded="false"></button></div><div class="um"><div class="who"><b>' + esc(user.name) + '</b>' + esc(user.email) + '</div>' + '<a href="/thiep-cua-toi"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2.5"/><path d="M3.5 6.5 12 13l8.5-6.5"/></svg>Thiệp &amp; màn LED của tôi</a><a href="/video-cua-toi"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="12" rx="2"/><path d="M12 16v4M8 20h8"/><path d="m10 8 4 2-4 2z"/></svg>Slide của tôi</a><a href="/so-tay"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4.5A1.5 1.5 0 0 1 6.5 3H19v15H6.5A1.5 1.5 0 0 0 5 19.5z"/><path d="M5 19.5A1.5 1.5 0 0 0 6.5 21H19v-3"/></svg>Sổ tay của tôi</a>'
+        + '<a href="#" data-theme-toggle><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5z"/></svg>Đổi nền sáng / tối</a><a href="#" data-logout><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 4h3a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-3"/><path d="M10 16l-4-4 4-4M6 12h10"/></svg>Đăng xuất</a></div>'; // nút "Thiệp của tôi ˅" giống trang chủ: chữ → Thiệp của tôi, mũi tên → menu
+      uav.classList.add('in'); if (document.getElementById('navActs')) uav.classList.add('dk'); // trang giới thiệu (không phải trang chủ): máy tính cũng dùng nút này
       var b = uav.querySelector('button');
       b.onclick = function (e) { e.stopPropagation(); var on = !uav.classList.contains('open'); uav.classList.toggle('open', on); b.setAttribute('aria-expanded', on); };
       uav.querySelector('.um').onclick = function (e) {
@@ -213,7 +219,7 @@
     sbar = document.createElement('nav'); sbar.className = 'sbar'; sbar.setAttribute('aria-label', 'Chức năng');
     var drawSbar = function (user) {
       sbar.innerHTML = SB.map(function (b) {
-        return '<a href="' + (user ? b[4] : b[3]) + '"' + (b[2] === page ? ' class="on"' : '') + '><i><svg viewBox="0 0 24 24" aria-hidden="true">' + b[5] + '</svg>' + (b[6] ? '<em>' + b[6] + '</em>' : '') + '</i>' + b[1] + '</a>';
+        return '<a href="' + (user && b[2] === 'planner' ? b[4] : b[3]) + '"' + (b[2] === page ? ' class="on"' : '') + '><i><svg viewBox="0 0 24 24" aria-hidden="true">' + b[5] + '</svg>' + (b[6] ? '<em>' + b[6] + '</em>' : '') + '</i>' + b[1] + '</a>';
       }).join('');
     };
     drawSbar(null);

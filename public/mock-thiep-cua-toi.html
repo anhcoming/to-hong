@@ -1,104 +1,66 @@
 <!doctype html>
-<html lang="vi"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<script src="/js/theme.js"></script>
-<title>Mock: tab Thiệp — tách thiệp của bạn khỏi kho mẫu</title>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&amp;family=Dancing+Script:wght@600;700&amp;display=swap">
-<link rel="stylesheet" href="/css/app.css">
+<html lang="vi"><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Mock — đặt "Thiệp của tôi" ở đâu</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&family=Dancing+Script:wght@700&display=swap">
 <style>
-/* MOCK: tab "Thiệp" sau đăng nhập, dùng đúng thanh trên thật (renderTopbar). Nút A / B / C ở góc dưới để đổi kiểu. */
-.lbl{font-size:12px;font-weight:700;letter-spacing:.06em;color:var(--muted);text-transform:uppercase;margin:0 0 10px}
-.ok{color:#23824f}
+:root{--red:#d6455d;--ink:#1f1a1b;--muted:#7a6e70;--line:#efe3e4;--bg:#fdf8f8}
+*{box-sizing:border-box}
+body{margin:0;background:#efe8e9;font-family:'Be Vietnam Pro',system-ui,sans-serif;color:var(--ink);padding:24px}
+h1.t{font-size:20px;margin:0 0 4px}p.d{margin:0 0 20px;color:var(--muted);font-size:14px;max-width:900px}
+.row{display:flex;gap:26px;flex-wrap:wrap}
+.ph{width:340px;flex:none}
+.ph h2{font-size:14px;margin:0 0 8px}.ph h2 small{display:block;font-weight:400;color:var(--muted);font-size:12.5px;margin-top:2px}
+.scr{height:640px;overflow:hidden;border-radius:28px;background:var(--bg);border:8px solid #1d1718;position:relative}
+.top{margin:10px 10px 0;height:48px;border-radius:999px;background:#fff;box-shadow:0 8px 24px rgba(120,40,50,.1);display:flex;align-items:center;gap:8px;padding:0 6px 0 10px}
+.hm{width:28px;height:28px;border-radius:50%;background:#fbe5e9;display:grid;place-items:center;color:var(--red);font-size:13px}
+.lg{white-space:nowrap;font:700 22px 'Dancing Script',cursive;color:var(--red)}
 .sp{flex:1}
-.bp{display:inline-flex;align-items:center;justify-content:center;gap:6px;height:40px;padding:0 18px;border-radius:999px;background:var(--grad);color:#fff;font-size:14px;font-weight:700;white-space:nowrap;box-shadow:0 8px 18px rgba(214,69,93,.25)}
-.bo{display:inline-flex;align-items:center;justify-content:center;gap:6px;height:40px;padding:0 16px;border-radius:999px;border:1px solid var(--line);background:var(--surface);font-size:14px;font-weight:600;white-space:nowrap}
-.grid{display:grid;grid-template-columns:repeat(6,1fr);gap:16px}
-.tp{display:flex;flex-direction:column;gap:7px;font-size:14px;font-weight:600}
-.tp i{display:block;aspect-ratio:3/4;border-radius:12px;background:#eee top/cover;box-shadow:0 0 0 1px var(--line)}
-.chips{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 16px}.chips span{padding:8px 15px;border-radius:999px;background:var(--surface);box-shadow:0 0 0 1px var(--line);font-size:14px;font-weight:600}.chips .on{background:var(--ink);color:#fff;box-shadow:none}
-h1.pt{margin:0;font-size:32px}.ps{margin:4px 0 18px;color:var(--muted)}
-/* A */
-.hero{display:grid;grid-template-columns:170px 1fr auto;gap:26px;align-items:center;padding:20px;border-radius:24px;background:var(--surface);box-shadow:0 0 0 1px var(--line),0 10px 30px rgba(120,40,50,.07)}
-.hero>i{display:block;aspect-ratio:3/4;border-radius:14px;background:#eee top/cover;box-shadow:0 8px 20px rgba(120,40,50,.15)}
-.hero h3{margin:8px 0 0;font-size:24px}
-.badge{display:inline-flex;align-items:center;gap:5px;padding:3px 10px;border-radius:999px;background:#e9f6ef;color:#23824f;font-size:12px;font-weight:700}
-.stats{display:flex;gap:30px;margin-top:16px}.stats b{display:block;font-size:22px}.stats small{font-size:12.5px;color:var(--muted)}
-.acts{display:flex;flex-direction:column;gap:8px;min-width:190px}
-.link{font-size:13.5px;color:var(--primary);font-weight:600}
-.row{display:flex;align-items:center;gap:12px;margin-top:12px;padding:12px 16px;border-radius:16px;background:var(--surface);box-shadow:0 0 0 1px var(--line);font-size:14px}
-.th{display:flex}.th i{width:30px;height:40px;border-radius:7px;background:#eee top/cover;margin-left:-9px;box-shadow:0 0 0 2px var(--surface)}.th i:first-child{margin-left:0}
-/* B */
-.sub{display:flex;gap:26px;border-bottom:1px solid var(--line);margin:0 0 20px}
-.sub span{padding:0 0 12px;font-size:16px;font-weight:700;color:var(--muted)}.sub .on{color:var(--ink);box-shadow:inset 0 -2.5px var(--primary)}
-.sub em{font-style:normal;font-size:12px;margin-left:6px;padding:1px 8px;border-radius:999px;background:#f1e4e6}
-.list{display:grid;grid-template-columns:repeat(5,1fr);gap:16px}
-.cd{border-radius:18px;background:var(--surface);box-shadow:0 0 0 1px var(--line);overflow:hidden}
-.cd i{display:block;aspect-ratio:4/3.4;background:#eee center 20%/cover}
-.cd div{padding:12px}.cd b{display:block;font-size:14.5px}.cd small{font-size:12.5px;color:var(--muted)}
-.cd .r{display:flex;gap:6px;margin-top:10px;padding:0}.cd .r span{flex:1;height:34px;font-size:13px}
-.cd.main{box-shadow:0 0 0 2px var(--primary)}
-.cd.new{display:grid;place-items:center;border:1.5px dashed #e2cfd3;box-shadow:none;background:none;color:var(--primary);font-weight:700}
-/* C */
-.two{display:grid;grid-template-columns:300px 1fr;gap:28px;align-items:start}
-.side{position:sticky;top:96px;padding:16px;border-radius:22px;background:var(--surface);box-shadow:0 0 0 1px var(--line)}
-.side>i{display:block;aspect-ratio:3/4;border-radius:14px;background:#eee top/cover;margin-bottom:12px}
-.side h3{margin:6px 0 2px;font-size:19px}
-.side .acts{min-width:0;margin-top:14px}
-.side .mini{display:flex;justify-content:space-between;margin-top:14px;padding-top:12px;border-top:1px solid var(--line);font-size:13.5px}
-.two .grid{grid-template-columns:repeat(4,1fr)}
-/* nút đổi kiểu (chỉ có trong mock) */
-.sw{position:fixed;right:20px;bottom:20px;z-index:99;display:flex;gap:4px;padding:5px;border-radius:999px;background:#2a1b1e;box-shadow:0 10px 30px rgba(0,0,0,.25)}
-.sw button{border:0;border-radius:999px;padding:9px 16px;background:none;color:#fff;font:700 14px var(--sans);cursor:pointer}.sw button.on{background:#d6455d}
-.v{display:none}.v.on{display:block}
+.av{width:36px;height:36px;border-radius:50%;background:#fbe5e9;display:grid;place-items:center;color:var(--red);font-size:16px;position:relative}
+.my{height:34px;padding:0 14px;border-radius:999px;background:var(--red);color:#fff;font-size:12.5px;font-weight:700;display:flex;align-items:center;gap:6px;white-space:nowrap}
+.my.soft{background:#fbe5e9;color:var(--red)}
+.body{padding:14px}
+.body h3{margin:0 0 10px;font-size:19px;font-weight:800}
+.tabs{display:flex;gap:16px;border-bottom:1px solid var(--line);font-size:13.5px;font-weight:600;color:var(--muted);margin-bottom:12px}
+.tabs span{padding:8px 0;border-bottom:2.5px solid transparent;margin-bottom:-1px}.tabs span.on{color:var(--ink);border-color:var(--red)}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.grid div{aspect-ratio:3/4.3;border-radius:12px;background:linear-gradient(160deg,#e9d6d0,#c9a49c)}
+.grid div:nth-child(2){background:linear-gradient(160deg,#7c1a24,#b4333f)}.grid div:nth-child(3){background:linear-gradient(160deg,#f3eee6,#d8cbbb)}
+.bot{position:absolute;left:10px;right:10px;bottom:10px;height:56px;border-radius:999px;background:rgba(255,255,255,.95);box-shadow:0 0 0 1px var(--line),0 10px 24px rgba(120,40,50,.15);display:flex;justify-content:space-around;align-items:center;font-size:10px;font-weight:600;color:var(--muted)}
+.bot b{display:flex;flex-direction:column;align-items:center;gap:2px;font-weight:600}.bot b i{font-style:normal;font-size:17px;filter:grayscale(1)}.bot b.on{color:var(--red)}.bot b.on i{filter:none}
+.menu{position:absolute;right:16px;top:66px;width:220px;background:#fff;border-radius:14px;box-shadow:0 0 0 1px var(--line),0 18px 40px rgba(120,40,50,.18);padding:6px;font-size:13.5px;z-index:3}
+.menu div{padding:10px;border-radius:9px}.menu div.hl{background:#fff0f2;color:var(--red);font-weight:700}.menu .who{border-bottom:1px solid var(--line);color:var(--muted);font-size:12px;border-radius:0}
+.dot{position:absolute;top:-2px;right:-2px;width:10px;height:10px;border-radius:50%;background:var(--red);border:2px solid #fff}
+.note{font-size:12.5px;color:var(--muted);margin-top:10px;line-height:1.5}
 </style></head><body>
-<main class="wrap" style="padding-top:28px;padding-bottom:90px">
-
-<section class="v on" data-v="A">
-  <p class="lbl">Thiệp của bạn</p>
-  <div class="hero"><i style="background-image:url(/demo/cover-anhdo-do-do.jpg)"></i>
-    <div><span class="badge">✓ Trọn bộ đã kích hoạt</span><h3>Đức Anh &amp; Phạm Nga</h3><p class="muted" style="margin:4px 0 0;font-size:14px">Mẫu Song Hỷ · Chủ nhật 20/12/2026 · cuoinha.com/t/duc-anh-pham-nga</p>
-      <div class="stats"><div><b>86</b><small>khách đã mời</small></div><div><b>214</b><small>lượt xem</small></div><div><b>41</b><small>xác nhận đến</small></div><div><b>12</b><small>lời chúc</small></div></div></div>
-    <div class="acts"><span class="bp">✎ Sửa thiệp</span><span class="bo">✉ Gửi cho khách</span><span class="bo">Quản lý ›</span></div></div>
-  <div class="row"><span class="th"><i style="background-image:url(/demo/cover-catdan-do-vintage.jpg)"></i><i style="background-image:url(/demo/cover-denlong-hong-phan.jpg)"></i><i style="background-image:url(/demo/cover-cucdai-xanh-reu.jpg)"></i><i style="background-image:url(/demo/cover-bienxanh-trang-cat.jpg)"></i></span><b>4 bản nháp khác</b><span class="muted">· Mẫu Đơn, Hoài Niệm, Rừng Thông, Ngà Ngọc</span><span class="sp"></span><span class="link">Xem ▾</span></div>
-  <div class="row"><span>🎨 Muốn đổi mẫu? Áp mẫu khác lên thiệp này — nội dung, ảnh giữ nguyên.</span><span class="sp"></span><span class="bo">Xem 49 mẫu ›</span></div>
-</section>
-
-<section class="v" data-v="B">
-  <div class="sub"><span class="on">Thiệp của tôi<em>5</em></span><span>Kho mẫu<em>49</em></span></div>
-  <div class="list">
-    <div class="cd main"><i style="background-image:url(/demo/cover-anhdo-do-do.jpg)"></i><div><b>Đức Anh &amp; Phạm Nga</b><small class="ok">✓ Đã kích hoạt · Song Hỷ</small><div class="r"><span class="bp">Sửa</span><span class="bo">Gửi khách</span></div></div></div>
-    <div class="cd"><i style="background-image:url(/demo/cover-catdan-do-vintage.jpg)"></i><div><b>Đức Anh &amp; Phạm Nga</b><small>Bản nháp · Mẫu Đơn</small><div class="r"><span class="bo">Sửa</span><span class="bo">⋯</span></div></div></div>
-    <div class="cd"><i style="background-image:url(/demo/cover-denlong-hong-phan.jpg)"></i><div><b>Đức Anh &amp; Phạm Nga</b><small>Bản nháp · Hoài Niệm</small><div class="r"><span class="bo">Sửa</span><span class="bo">⋯</span></div></div></div>
-    <div class="cd"><i style="background-image:url(/demo/cover-cucdai-xanh-reu.jpg)"></i><div><b>Đức Anh &amp; Phạm Nga</b><small>Bản nháp · Rừng Thông</small><div class="r"><span class="bo">Sửa</span><span class="bo">⋯</span></div></div></div>
-    <div class="cd new">＋ Thiệp mới từ kho mẫu</div>
+<h1 class="t">Thanh dưới = danh sách mẫu · "Thiệp của tôi" đặt ở đâu?</h1>
+<p class="d">Thanh dưới đổi về giống lúc chưa đăng nhập: Thiệp → danh sách mẫu thiệp, Báo hỷ / Màn LED / Slide → danh sách mẫu tương ứng. Đồ của mình (thiệp, màn LED, slide đã làm) gom về một chỗ "Thiệp của tôi" ở thanh trên.</p>
+<div class="row">
+  <div class="ph"><h2>A · Nút "Thiệp của tôi" trên thanh trên<small>Cạnh icon tài khoản, luôn thấy — bấm 1 lần là tới (khuyên dùng)</small></h2>
+    <div class="scr">
+      <div class="top"><span class="hm">⌂</span><span class="lg">Cưới Nha</span><span class="sp"></span><span class="my">💌 Thiệp của tôi</span><span class="av">👤</span></div>
+      <div class="body"><h3>Mẫu thiệp cưới online</h3><div class="tabs"><span class="on">Tất cả</span><span>Truyền thống</span><span>Tối giản</span></div><div class="grid"><div></div><div></div><div></div><div></div></div></div>
+      <div class="bot"><b class="on"><i>✉️</i>Thiệp</b><b><i>🎬</i>Báo hỷ</b><b><i>🖥️</i>Màn LED</b><b><i>▶️</i>Slide</b><b><i>📒</i>Sổ tay</b></div>
+    </div>
+    <p class="note">Giống bản máy tính (đã có nút "Thiệp của tôi" ở thanh trên). Chưa đăng nhập thì chỗ này là "Đăng nhập".</p>
   </div>
-</section>
-
-<section class="v" data-v="C">
-  <div class="two">
-    <div class="side"><p class="lbl">Thiệp của bạn</p><i style="background-image:url(/demo/cover-anhdo-do-do.jpg)"></i><span class="badge">✓ Đã kích hoạt</span><h3>Đức Anh &amp; Phạm Nga</h3><small class="muted">Song Hỷ · 86 khách đã mời</small>
-      <div class="acts"><span class="bp">✎ Sửa thiệp</span><span class="bo">✉ Gửi cho khách</span></div>
-      <div class="mini"><span class="muted">4 bản nháp khác</span><span class="link">Xem ›</span></div></div>
-    <div><h1 class="pt">Mẫu thiệp</h1><p class="ps">49 mẫu · bấm để xem thử, ưng thì áp lên thiệp của bạn</p>
-      <div class="chips"><span class="on">Tất cả</span><span>Truyền thống</span><span>Tối giản</span><span>Hoa &amp; thiên nhiên</span><span>Hoàng gia</span></div>
-      <div class="grid" id="tplC"></div></div>
+  <div class="ph"><h2>B · Trong menu tài khoản<small>Thanh trên gọn nhất, chỉ icon — bấm icon mới thấy "Thiệp của tôi"</small></h2>
+    <div class="scr">
+      <div class="top"><span class="hm">⌂</span><span class="lg">Cưới Nha</span><span class="sp"></span><span class="av">👤<span class="dot"></span></span></div>
+      <div class="menu"><div class="who"><b style="color:var(--ink)">Anh</b> · đang đăng nhập</div><div class="hl">💌 Thiệp của tôi</div><div>🖥️ Màn LED của tôi</div><div>▶️ Slide của tôi</div><div>Đăng xuất</div></div>
+      <div class="body" style="opacity:.5"><h3>Mẫu thiệp cưới online</h3><div class="tabs"><span class="on">Tất cả</span><span>Truyền thống</span><span>Tối giản</span></div><div class="grid"><div></div><div></div><div></div><div></div></div></div>
+      <div class="bot"><b class="on"><i>✉️</i>Thiệp</b><b><i>🎬</i>Báo hỷ</b><b><i>🖥️</i>Màn LED</b><b><i>▶️</i>Slide</b><b><i>📒</i>Sổ tay</b></div>
+    </div>
+    <p class="note">Gọn, nhưng phải bấm 2 lần và người dùng mới khó đoán ra.</p>
   </div>
-</section>
-
-<section class="v" data-v="A" id="aTpl" hidden></section>
-</main>
-<div class="sw" id="sw"><button class="on" data-k="A">A · Thiệp lớn</button><button data-k="B">B · Tab con</button><button data-k="C">C · Cột trái</button></div>
-<script src="/js/common.js"></script>
-<script>
-// MOCK: thanh trên thật của trang Thiệp; ảnh mẫu lấy từ ảnh bìa demo
-renderTopbar('cards').catch(() => {});
-const covers = ['catdan-do-vintage', 'anhdo-xanh-dam', 'denlong-xanh-mint', 'dentrang-den-trang', 'bienxanh-xanh-bien', 'cucdai-vang-cuc', 'catdan-nau-giay', 'dentrang-nau-sepia'];
-const names = ['Mẫu Đơn', 'Song Hỷ', 'Long Phụng', 'Tơ Duyên', 'Thanh Diệp', 'Song Hỷ Đỏ', 'Hoài Niệm', 'Ngà Ngọc'];
-document.getElementById('tplC').innerHTML = covers.map((c, i) => `<div class="tp"><i style="background-image:url(/demo/cover-${c}.jpg)"></i>${names[i]}</div>`).join('');
-document.getElementById('sw').onclick = (e) => {
-  const b = e.target.closest('button'); if (!b) return;
-  document.querySelectorAll('#sw button').forEach((x) => x.classList.toggle('on', x === b));
-  document.querySelectorAll('.v').forEach((v) => v.classList.toggle('on', v.dataset.v === b.dataset.k && !v.hidden));
-  scrollTo(0, 0);
-};
-</script>
+  <div class="ph"><h2>C · Nút nhỏ chỉ icon thiệp<small>Icon 💌 tròn cạnh icon tài khoản — gọn hơn A, vẫn 1 lần bấm</small></h2>
+    <div class="scr">
+      <div class="top"><span class="hm">⌂</span><span class="lg">Cưới Nha</span><span class="sp"></span><span class="av" style="background:var(--red);color:#fff">💌</span><span class="av">👤</span></div>
+      <div class="body"><h3>Mẫu thiệp cưới online</h3><div class="tabs"><span class="on">Tất cả</span><span>Truyền thống</span><span>Tối giản</span></div><div class="grid"><div></div><div></div><div></div><div></div></div></div>
+      <div class="bot"><b class="on"><i>✉️</i>Thiệp</b><b><i>🎬</i>Báo hỷ</b><b><i>🖥️</i>Màn LED</b><b><i>▶️</i>Slide</b><b><i>📒</i>Sổ tay</b></div>
+    </div>
+    <p class="note">Gọn, nhưng icon không chữ dễ bị bỏ qua.</p>
+  </div>
+</div>
 </body></html>

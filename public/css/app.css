@@ -230,3 +230,15 @@ table.tbl{width:100%;border-collapse:collapse;font-size:14px}
 @media (max-width:760px){.tb .logo{display:inline-flex;align-items:center}.lhome{margin-right:8px;display:grid;place-items:center;flex:none;width:28px;height:28px;border-radius:50%;background:var(--primary-soft);color:var(--primary)}.lhome svg{width:15px;height:15px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}}
 
 @media (max-width:760px){body.has-tb-bottom .tb-mmain{display:none}} /* điện thoại: thanh trên chỉ logo · ảnh đại diện (tạo mới ở trang Thiệp) */
+
+/* nút "Thiệp của tôi ˅" (giống trang chủ): bấm chữ → Thiệp của tôi, bấm mũi tên → menu tài khoản; máy tính lẫn điện thoại */
+.tb-split{display:flex;align-items:stretch;height:38px;border-radius:999px;background:var(--grad);box-shadow:0 8px 20px rgba(214,69,93,.28)}
+.tb-mine{display:flex;align-items:center;padding:0 12px 0 16px;border-radius:999px 0 0 999px;color:#fff;font-size:14px;font-weight:600;text-decoration:none;white-space:nowrap}
+.tb-caret{display:grid;place-items:center;width:32px;padding:0 4px 0 0;border:0;border-left:1px solid rgba(255,255,255,.35);border-radius:0 999px 999px 0;background:none;cursor:pointer}
+.tb-caret::before{content:"";width:6px;height:6px;border-right:1.6px solid #fff;border-bottom:1.6px solid #fff;transform:translateY(-2px) rotate(45deg);transition:transform .2s}
+.tb-split.open .tb-caret::before{transform:translateY(1px) rotate(225deg)}
+.tb-mine:hover,.tb-caret:hover{background:rgba(255,255,255,.12)}
+@media (max-width:760px){
+  .topbar .tb-me.tb-split{display:flex;height:36px}
+  .tb-mine{font-size:13px;padding:0 10px 0 14px}
+}

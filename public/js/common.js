@@ -372,7 +372,7 @@ window.renderTopbar = async function (active) {
     [u ? '/so-tay' : '/so-tay-cuoi', 'Sổ tay cưới', 'planner'], ['/video', 'Video báo hỷ', 'baohy']];
   const ic = (d) => `<svg viewBox="0 0 24 24" aria-hidden="true">${d}</svg>`;
   const NEW = `<a href="/mau-thiep"><b>Thiệp cưới</b><small>Chọn mẫu, điền tên là xong</small></a><a href="/slide-cuoi"><b>Slide cưới</b><small>Ảnh cưới chiếu TV, tải MP4</small></a><a href="/man-hinh-led-dam-cuoi"><b>Màn hình LED</b><small>Trình chiếu tên đôi tại tiệc</small></a><a href="/video-dam-ngo"><b>Màn hình dạm ngõ</b><small>Chiếu TV ở lễ dạm ngõ, ăn hỏi</small></a>`;
-  const ACCT = u ? `<div class="who"><b>${esc(u.name || '')}</b>${esc(u.email)}</div><a href="#" data-tb-theme class="ico"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5z"/></svg>Đổi nền sáng / tối</a><a href="#" id="logoutBtn" class="ico"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 4h3a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-3"/><path d="M10 16l-4-4 4-4M6 12h10"/></svg>Đăng xuất</a>` : '';
+  const ACCT = u ? `<div class="who"><b>${esc(u.name || '')}</b>${esc(u.email)}</div><a href="/thiep-cua-toi" class="ico"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2.5"/><path d="M3.5 6.5 12 13l8.5-6.5"/></svg>Thiệp &amp; màn LED của tôi</a><a href="/video-cua-toi" class="ico"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="12" rx="2"/><path d="M12 16v4M8 20h8"/><path d="m10 8 4 2-4 2z"/></svg>Slide của tôi</a><a href="/so-tay" class="ico"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4.5A1.5 1.5 0 0 1 6.5 3H19v15H6.5A1.5 1.5 0 0 0 5 19.5z"/><path d="M5 19.5A1.5 1.5 0 0 0 6.5 21H19v-3"/></svg>Sổ tay của tôi</a><a href="#" data-tb-theme class="ico"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5z"/></svg>Đổi nền sáng / tối</a><a href="#" id="logoutBtn" class="ico"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 4h3a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-3"/><path d="M10 16l-4-4 4-4M6 12h10"/></svg>Đăng xuất</a>` : '';
   const bar = document.createElement('header');
   bar.className = 'topbar tb';
   bar.innerHTML = `<div class="wrap">
@@ -383,8 +383,7 @@ window.renderTopbar = async function (active) {
       ? `<div class="tb-dd tb-mmain"><button type="button" class="btn sm" aria-expanded="false">＋ Tạo mới</button><div class="tb-menu">${NEW}</div></div>`
       : '') : ''}
     ${window.themeBtn ? themeBtn() : ''}
-    ${u ? `<a class="tb-newbtn tb-my${active === 'cards' ? ' on' : ''}" href="/thiep-cua-toi">Thiệp của tôi</a>
-      <div class="tb-dd tb-me"><button type="button" class="tb-av" aria-label="Tài khoản" aria-expanded="false"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg></button><div class="tb-menu">${ACCT}</div></div>`
+    ${u ? `<div class="tb-dd tb-me tb-split"><a class="tb-mine" href="/thiep-cua-toi">Thiệp của tôi</a><button type="button" class="tb-caret" aria-label="Tài khoản" aria-expanded="false"></button><div class="tb-menu">${ACCT}</div></div>`
       : '<a href="/dang-nhap" class="btn sm">Đăng nhập</a>'}
   </div>`;
   document.body.prepend(bar);
@@ -393,10 +392,10 @@ window.renderTopbar = async function (active) {
     bt.className = 'tb-bottom'; bt.setAttribute('aria-label', 'Của tôi');
     // 5 nút theo các chức năng chính (thay cho menu ☰): Thiệp · Báo hỷ (miễn phí) · Màn LED · Slide · Sổ tay.
     // Tài khoản ở ảnh đại diện góc trên; Màn LED mở thẳng màn LED của thiệp chính (dashboard đọc ?mo=led).
-    const BT = [['/thiep-cua-toi', 'Thiệp', 'cards', TABS[0][3]],
+    const BT = [['/mau-thiep', 'Thiệp', 'tpl', TABS[0][3]],
       ['/video', 'Báo hỷ', 'baohy', '<path d="M4 10h16v9a1.5 1.5 0 0 1-1.5 1.5h-13A1.5 1.5 0 0 1 4 19z"/><path d="m4 10-.6-3.2 15-3 .6 3.2"/><path d="m8.5 6.2 2 3.3M13.5 5.2l2 3.3"/>', 'Free'],
-      ['/thiep-cua-toi?mo=led', 'Màn LED', 'led', '<rect x="2.5" y="4" width="19" height="12.5" rx="2"/><path d="M8 20.5h8M12 16.5v4"/><path d="m12 7 .9 1.9 2 .3-1.5 1.4.4 2-1.8-1-1.8 1 .4-2-1.5-1.4 2-.3z"/>'],
-      ['/video-cua-toi', 'Slide', 'videos', '<rect x="3" y="4" width="18" height="12" rx="2"/><path d="M12 16v4M8 20h8"/><path d="m10 8 4 2-4 2z"/>'],
+      ['/man-hinh-led-dam-cuoi', 'Màn LED', 'led', '<rect x="2.5" y="4" width="19" height="12.5" rx="2"/><path d="M8 20.5h8M12 16.5v4"/><path d="m12 7 .9 1.9 2 .3-1.5 1.4.4 2-1.8-1-1.8 1 .4-2-1.5-1.4 2-.3z"/>'],
+      ['/slide-cuoi', 'Slide', 'slide', '<rect x="3" y="4" width="18" height="12" rx="2"/><path d="M12 16v4M8 20h8"/><path d="m10 8 4 2-4 2z"/>'],
       ['/so-tay', 'Sổ tay', 'planner', TABS[2][3], 'Free']];
     bt.innerHTML = BT.map(([h, n, k, d, tag]) => `<a href="${h}"${k === active ? ' class="on"' : ''}><i>${ic(d)}${tag ? `<em>${tag}</em>` : ''}</i>${n}</a>`).join('');
     document.body.appendChild(bt);
