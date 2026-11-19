@@ -152,30 +152,18 @@ async function save() {
 
 // ---------- khách chưa đăng nhập: bấm "Lấy link chiếu" → đăng nhập; xong quay lại đúng màn này (bản nháp về tài khoản) và mở luôn bước kích hoạt ----------
 async function askLogin() {
-  const next = encodeURIComponent(location.pathname + '?xuat=1');
-  openModal(`<h2 style="margin-top:0">Lấy link chiếu màn LED</h2>
-    <p class="muted" style="margin:0 0 16px">Đăng nhập để lưu màn LED vào tài khoản và lấy link gửi kỹ thuật nhà hàng. Mẫu và chữ bạn vừa sửa được giữ nguyên.</p>
-    <div style="display:grid;justify-items:center;gap:10px">
-      ${META.googleLogin ? '<a class="btn" data-go href="/auth/google?next=' + next + '">Tiếp tục với Google</a>' : ''}
-      ${META.facebookLogin ? `<a class="btn ${META.googleLogin ? 'plain' : ''}" data-go href="/auth/facebook?next=${next}">Tiếp tục với Facebook</a>` : ''}
-      ${META.emailSignup ? `<a class="btn ${META.googleLogin || META.facebookLogin ? 'plain' : ''}" data-go href="/dang-nhap?dang-ky=1&next=${next}">Dùng email</a>` : `<a class="muted" style="font-size:13px" data-go href="/dang-nhap?next=${next}">Tôi có tài khoản email từ trước</a>`}
-    </div>`, (box) => {
-    box.addEventListener('click', async (e) => {
-      const a = e.target.closest('[data-go]'); if (!a) return;
-      e.preventDefault();
-      loading.show('Đang lưu màn LED…');
-      // chỉnh sửa chưa lưu phải nằm trên máy chủ trước khi rời trang
-      if (saveTimer) { clearTimeout(saveTimer); saveTimer = null; await save(); }
-      while (saving) await new Promise((ok) => setTimeout(ok, 100));
-      location.href = a.href; // màn chờ giữ tới lúc trang đăng nhập mở
-    });
-  });
+  // chỉnh sửa chưa lưu phải nằm trên máy chủ trước khi mở đăng nhập (đăng nhập xong trang tải lại theo bản trên máy chủ)
+  if (saveTimer) { clearTimeout(saveTimer); saveTimer = null; await save(); }
+  while (saving) await new Promise((ok) => setTimeout(ok, 100));
+  openLogin({ next: location.pathname + '?xuat=1', sub: 'Đăng nhập để lưu màn LED vào tài khoản và lấy link gửi kỹ thuật nhà hàng — mẫu và chữ bạn vừa sửa được giữ nguyên.' });
 }
 
 async function reload() {
   const r = await api(`/api/cards/${CARD_ID}`);
+  const wasPaid = card.led && card.led.paid;
   card = r.card;
   renderHeader();
+  if (card.led.paid && !wasPaid) { renderSide(); reloadPreview(); } // vừa kích hoạt: khung xem trước bỏ dòng "Bản dùng thử", tên cố định
 }
 
 // ---------- sự kiện ----------
