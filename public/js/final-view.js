@@ -52,13 +52,13 @@ body.fv-on #scrub{display:none!important} /* video: thanh phát cũ thay bằng 
 .fv-lab small{display:block;font-size:11px;color:var(--muted);font-variant-numeric:tabular-nums}
 .fv-lab.on b{color:var(--primary)}
 .fv-seg:focus-visible .bar{outline:2px solid var(--primary);outline-offset:2px}
-.fv-play .tm{flex:none;font-size:13px;color:var(--muted);font-variant-numeric:tabular-nums}
+.fv-play .tm{flex:none;min-width:88px;text-align:right;white-space:nowrap;font-size:13px;color:var(--muted);font-variant-numeric:tabular-nums}
 .fv-play .fs{all:unset;cursor:pointer;flex:none;width:38px;height:38px;border-radius:12px;display:grid;place-items:center;background:var(--surface,#fff);box-shadow:0 0 0 1px var(--line),0 6px 14px rgba(60,30,40,.08);font-size:15px}
 .fv-line{display:flex;flex-wrap:wrap;justify-content:center;gap:6px 18px;margin-top:18px;padding-top:14px;border-top:1px dashed color-mix(in srgb,var(--line) 60%,#d9c8cb);color:var(--muted);font-size:13px}
 .fv-line span{display:inline-flex;align-items:center;gap:6px}.fv-line b{color:var(--ink);font-weight:600}
 @media (max-width:600px){
-  .fv-play{column-gap:10px;row-gap:0}.fv-play .pp{width:40px;height:40px}.fv-play .fs{width:34px;height:34px;margin:0}
-  .fv-segs{padding:8px 0}.fv-labs{display:none}.fv-play .tm{padding:0;font-size:12px}
+  .fv-play{column-gap:10px;row-gap:2px}.fv-play .pp{width:40px;height:40px}.fv-play .fs{width:34px;height:34px;margin:0}
+  .fv-segs{padding:8px 0}.fv-labs{height:18px}.fv-lab small{display:none}.fv-lab b{font-size:11px}.fv-play .tm{padding:0;font-size:12px;min-width:74px}
   .fv-line{margin-top:14px;padding-top:12px;gap:6px 14px;font-size:12.5px}
 }
 @media (max-width:980px){
