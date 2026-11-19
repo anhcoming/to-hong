@@ -47,9 +47,12 @@ body.fv-on #scrub{display:none!important} /* video: thanh phát cũ thay bằng 
 .fv-seg:focus-visible .bar{outline:2px solid var(--primary);outline-offset:2px}
 .fv-play .tm{flex:none;padding-top:13px;font-size:13px;color:var(--muted);font-variant-numeric:tabular-nums}
 .fv-play .fs{all:unset;cursor:pointer;flex:none;width:38px;height:38px;margin-top:3px;border-radius:12px;display:grid;place-items:center;background:var(--surface,#fff);box-shadow:0 0 0 1px var(--line),0 6px 14px rgba(60,30,40,.08);font-size:15px}
+.fv-line{display:flex;flex-wrap:wrap;justify-content:center;gap:6px 18px;margin-top:18px;padding-top:14px;border-top:1px dashed color-mix(in srgb,var(--line) 60%,#d9c8cb);color:var(--muted);font-size:13px}
+.fv-line span{display:inline-flex;align-items:center;gap:6px}.fv-line b{color:var(--ink);font-weight:600}
 @media (max-width:600px){
   .fv-play{align-items:center;gap:10px}.fv-play .pp{width:40px;height:40px}.fv-play .fs{width:34px;height:34px;margin:0}
   .fv-segs{gap:3px;padding:0}.fv-seg b,.fv-seg small{display:none}.fv-play .tm{padding:0;font-size:12px}
+  .fv-line{margin-top:14px;padding-top:12px;gap:6px 14px;font-size:12.5px}
 }
 @media (max-width:980px){
   body.fv-on .studio{display:flex;flex-direction:column;overflow:auto}
@@ -110,12 +113,13 @@ body.fv-on #scrub{display:none!important} /* video: thanh phát cũ thay bằng 
       </section>
       <div class="fv-note"><i aria-hidden="true">🔒</i><div>${led ? 'Màn LED' : 'Video'} đã kích hoạt nên đã chốt — tên, ngày, chữ${led ? '' : ', ảnh, nhạc'} giữ nguyên như lúc thanh toán.</div></div>
       ${help ? `<p class="fv-help">Cần sửa gấp? <a href="${esc(help)}" target="_blank" rel="noopener">Nhắn Cưới Nha</a></p>` : ''}`;
-    // dưới khung chiếu: thanh phát chia đoạn theo cảnh (tên + mốc giờ dưới từng đoạn, bấm để tua)
+    // dưới khung chiếu: thanh phát chia đoạn theo cảnh (tên + mốc giờ dưới từng đoạn, bấm để tua) + một dòng thông tin
     const stage = o.stage && document.querySelector(o.stage);
     let bar = document.getElementById('fvb');
     if (stage && !bar) { bar = document.createElement('div'); bar.id = 'fvb'; bar.className = 'fvb'; stage.appendChild(bar); playLoop(bar); }
     if (bar) {
-      bar.innerHTML = `<div class="fv-play"><button type="button" class="pp" data-pl="pp" aria-label="Tạm dừng">❚❚</button><div class="fv-segs" role="group" aria-label="Các cảnh — bấm để tua"></div><span class="tm">0:00 / 0:00</span><button type="button" class="fs" data-pl="fs" title="Xem toàn màn hình" aria-label="Xem toàn màn hình">⛶</button></div>`;
+      bar.innerHTML = `<div class="fv-play"><button type="button" class="pp" data-pl="pp" aria-label="Tạm dừng">❚❚</button><div class="fv-segs" role="group" aria-label="Các cảnh — bấm để tua"></div><span class="tm">0:00 / 0:00</span><button type="button" class="fs" data-pl="fs" title="Xem toàn màn hình" aria-label="Xem toàn màn hình">⛶</button></div>
+        ${(o.facts || []).some((f) => f && f[1]) ? `<div class="fv-line">${o.facts.filter((f) => f && f[1]).map(([ic, tx]) => `<span><i aria-hidden="true" style="font-style:normal">${ic}</i><b>${esc(tx)}</b></span>`).join('')}</div>` : ''}`;
       bar.dataset.key = '';
     }
     // nhãn 🔒 Đã chốt ở dòng nhỏ dưới tên (thay chữ "Đã kích hoạt" / "Đã lưu")

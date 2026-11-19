@@ -583,11 +583,14 @@ function renderHeader() {
   // đã chốt hẳn: bố cục xem chi tiết dùng chung với màn LED (public/js/final-view.js) — thẻ đem đi chiếu / gửi người nhà
   if (vFinal()) {
     const names = [info().chu_re, info().co_dau].filter(Boolean).join(' & ');
+    const ev = video.event || {}, M = META.music || { tracks: [] }, mu = card.data.music || '';
     finalView({ kind: 'video', url: s.url, names, onMp4: exportModal, support: META.support,
       stage: '.studio > .stage', chapters: vChapters(),
       // thanh phát chia đoạn theo cảnh (thay thanh tua cũ): dùng chính khung xem video
       player: () => engine && { pos: () => engine.time(), total: () => engine.duration(), seek: (t) => engine.seek(t), paused: () => engine.paused(), toggle: () => $('#pp').click() },
       onFull: () => $('#fs').click(),
+      facts: [['📅', finalView.date(ev.date || card.data.date)], ['⏰', finalView.time(ev.time || card.data.time)], ['📍', ev.place],
+        ['🎵', !mu || card.data.musicOff ? 'Không nhạc' : ((M.tracks.find((t) => t.file === mu) || {}).name || 'Nhạc của bạn')]],
       guide: `Mời cả nhà xem video ${video.event.kind} ${names}:\n${s.url}\n- Mở trên Smart TV hoặc laptop nối TV, bấm ⛶ để toàn màn hình.` });
   } else finalView.off();
 }
