@@ -141,9 +141,18 @@ function claimGuestCards(req, res, user) {
       // tài khoản đã có thiệp: thiệp đó chưa phát hành → chép nội dung + mẫu từ bản nháp vừa làm (giữ trạng thái kích hoạt / Trọn bộ);
       // đã phát hành → giữ thiệp đang chạy. Bản nháp của khách bỏ đi (mỗi tài khoản một thiệp).
       const g = mine.sort((a, b) => b.updatedAt - a.updatedAt)[0];
-      if (has.status !== 'published' && (g.data.groom.name || g.data.bride.name || g.data.cover || g.data.photos.some(Boolean) || g.updatedAt > has.updatedAt)) {
+      if (g.ledOnly) {
+        // bản nháp chỉ dùng cho màn LED (vào từ /tao-led): không thay cả thiệp, chỉ điền tên đôi, bố mẹ, ngày giờ vừa gõ
+        if (has.status !== 'published') {
+          const put = (o, k, v) => { if (v) o[k] = v; };
+          ['groom', 'bride'].forEach((s) => ['name', 'father', 'mother'].forEach((k) => put(has.data[s], k, g.data[s][k])));
+          put(has.data, 'date', g.data.date); put(has.data, 'time', g.data.time);
+        }
+      } else if (has.status !== 'published' && (g.data.groom.name || g.data.bride.name || g.data.cover || g.data.photos.some(Boolean) || g.updatedAt > has.updatedAt)) {
         Object.assign(has, { data: g.data, template: g.template, palette: g.palette, updatedAt: Date.now() });
       }
+      // màn LED làm lúc chưa đăng nhập: mẫu, chữ, cảnh chuyển sang thiệp của tài khoản (giữ trạng thái kích hoạt, tên đã cố định)
+      if (g.led) { has.led = ledLib.normalize(g.led, has.led || {}); comboUnlock(has, 'led'); has.updatedAt = Date.now(); }
       const drop = new Set(mine.map((c) => c.id));
       db.cards = db.cards.filter((c) => !drop.has(c.id));
       if (fresh && has.status !== 'published') Wd.syncFromCard(has, true);
@@ -152,7 +161,7 @@ function claimGuestCards(req, res, user) {
       const keep = mine.sort((a, b) => b.updatedAt - a.updatedAt)[0];
       const drop = new Set(mine.filter((c) => c !== keep).map((c) => c.id));
       if (drop.size) db.cards = db.cards.filter((c) => !drop.has(c.id));
-      Object.assign(keep, { userId: user.id, weddingId: w.id, updatedAt: Date.now() }); delete keep.guestId;
+      Object.assign(keep, { userId: user.id, weddingId: w.id, updatedAt: Date.now() }); delete keep.guestId; delete keep.ledOnly;
       if (fresh && src) Wd.syncFromCard(src, true);
     }
     save();
@@ -511,6 +520,11 @@ for (const [path, to, keep] of [['/tao-led', 'sua-led', ['palette', 'effect']], 
     const q = new URLSearchParams();
     keep.forEach((k) => { const v = String(ctx.query.get(k) || '').slice(0, 40); if (/^[\w-]+$/.test(v)) q.set(k, v); });
     const qs = q.toString() ? '?' + q : '';
+    if (!ctx.user && to === 'sua-led') { // màn LED: khách chưa đăng nhập sửa + xem trước trên bản nháp; lấy link chiếu mới cần đăng nhập
+      const card = ensureGuestCard(res, ctx, { keepTemplate: true });
+      q.set('tao', '1');
+      return redirect(res, `/${to}/${card.id}?${q}`, res.getHeader('Set-Cookie'));
+    }
     if (!ctx.user) return redirect(res, '/dang-nhap?next=' + encodeURIComponent(path + qs));
     const user = ctx.user, w = Wd.ensure(user);
     const card = db.cards.filter((c) => c.userId === user.id || c.weddingId === w.id).sort((a, b) => b.updatedAt - a.updatedAt)[0]
@@ -555,13 +569,17 @@ function newCard(user, b = {}) {
 
 // Khách chưa đăng nhập bấm "Dùng mẫu": mỗi khách một thiệp nháp; chọn mẫu khác thì đổi mẫu trên chính thiệp đó (giữ chữ đã gõ)
 async function guestCard(req, res, ctx) {
-  const b = await readJson(req);
+  const card = ensureGuestCard(res, ctx, await readJson(req));
+  json(res, 200, { card: cardFull(card) });
+}
+// b.template: đổi mẫu thiệp của bản nháp sẵn có; b.keepTemplate: chỉ lấy bản nháp (mở trình sửa LED), không đổi mẫu thiệp
+function ensureGuestCard(res, ctx, b = {}) {
   const tpl = templates[b.template] ? b.template : DEFAULT_TEMPLATE;
   const palette = templates[tpl].palettes.find((p) => p.id === b.palette)?.id || templates[tpl].palettes[0].id;
   const now = Date.now();
   let gid = ctx.guest;
   let card = gid && db.cards.find((c) => c.guestId === gid && !c.userId);
-  if (card) Object.assign(card, { template: tpl, palette, updatedAt: now });
+  if (card) { if (!b.keepTemplate) { Object.assign(card, { template: tpl, palette, updatedAt: now }); delete card.ledOnly; } }
   else {
     rateLimit('gcard:' + ctx.ip, 12, 36e5, true);
     // dọn thiệp nháp vô chủ đã quá hạn cookie
@@ -577,11 +595,12 @@ async function guestCard(req, res, ctx) {
       id: rid(12), userId: null, guestId: gid, weddingId: null, slug: uniqueSlug('thiep-' + rid(6)), title: 'Thiệp 1',
       template: tpl, palette, status: 'draft', paid: false, views: 0, data, createdAt: now, updatedAt: now,
     };
+    if (b.keepTemplate) card.ledOnly = true; // vào từ màn LED: bấm "Dùng mẫu" thiệp sau đó thì bỏ dấu này
     db.cards.push(card);
   }
   save();
   res.setHeader('Set-Cookie', guestCookie(gid, GUEST_DAYS * 86400));
-  json(res, 200, { card: cardFull(card) });
+  return card;
 }
 
 route('GET', '/api/cards/:id', async (req, res, ctx) => {
@@ -593,7 +612,7 @@ route('PUT', '/api/cards/:id', async (req, res, ctx) => {
   const card = ownedCard(ctx, ctx.params.id, { guest: true });
   const b = await readJson(req);
   if (!ctx.user) {
-    if (b.slug !== undefined || b.led || b.video) needUser(ctx); // đường dẫn riêng, màn LED, video: cần tài khoản
+    if (b.slug !== undefined || b.video) needUser(ctx); // đường dẫn riêng, video: cần tài khoản (màn LED: nháp xem trước được, lấy link chiếu mới cần đăng nhập)
     rateLimit('gsave:' + ctx.ip, 600, 36e5);
     if (b.data) { // khách chưa đăng nhập không tải tệp lên được → không nhận link ảnh / nhạc gửi kèm
       const cur = new Set([card.data.cover, card.data.music, ...card.data.photos].filter(Boolean).map((u) => String(u).split('#')[0]));
@@ -606,6 +625,7 @@ route('PUT', '/api/cards/:id', async (req, res, ctx) => {
     if (b.template !== card.template) card.palette = templates[b.template].palettes[0].id;
     card.template = b.template;
   }
+  if (b.template || b.palette) delete card.ledOnly; // khách đã làm cả thiệp trên bản nháp này
   if (!templates[card.template]) card.template = DEFAULT_TEMPLATE;
   if (b.palette && templates[card.template].palettes.some((p) => p.id === b.palette)) card.palette = b.palette;
   if (b.slug !== undefined && slugify(b.slug) !== card.slug) {
@@ -1187,7 +1207,7 @@ route('GET', '/led/:slug', async (req, res, ctx) => {
     return html(res, 200, ledLib.renderLed(card, led, { demo: true, preview: q.preview === '1' }));
   }
   const card = cardBySlug(slug);
-  const isOwner = canManage(ctx.user, card);
+  const isOwner = canManage(ctx.user, card) || guestOwns(ctx, card);
   if (!card || !card.led) return html(res, 404, renderNotice('Không tìm thấy màn hình LED', 'Đường dẫn có thể đã bị đổi. Hãy hỏi lại cô dâu chú rể nhé.'));
   if (card.blocked && !isOwner) return html(res, 403, BLOCKED_HTML());
   const st = ledLib.state(card.led);

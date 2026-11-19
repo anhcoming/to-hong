@@ -13,7 +13,7 @@ const RATIO_INFO = {
 const getP = (o, p) => p.split('.').reduce((a, k) => (a == null ? a : a[k]), o);
 const setP = (o, p, v) => { const ks = p.split('.'); let a = o; ks.slice(0, -1).forEach((k) => (a = a[k])); a[ks[ks.length - 1]] = v; };
 
-function status(t) { $('#saved').textContent = t; }
+function status(t) { $('#saved').textContent = card && card.guest && t === 'Đã lưu ✓' ? 'Bản nháp trên máy này' : t; }
 // trình sửa kiểu CapCut: cột icon chọn bảng
 let curPanel = 'hieu';
 
@@ -76,7 +76,15 @@ function infoFirst() {
 function renderHeader() {
   const s = card.led;
   $('#ttl').textContent = 'Màn hình LED · ' + ([card.data.groom.name, card.data.bride.name].filter(Boolean).join(' & ') || card.title);
-  backTo($('#back'), '/thiep-cua-toi'); // không có trang trước: về Thiệp của tôi (nơi có danh sách Làm thêm: LED, video…)
+  backTo($('#back'), card.guest ? '/man-hinh-led-dam-cuoi' : '/thiep-cua-toi'); // không có trang trước: về Thiệp của tôi (nơi có danh sách Làm thêm: LED, video…)
+  if (card.guest) {
+    // chưa đăng nhập: sửa + xem trước thoải mái trên bản nháp; lấy link chiếu (xuất bản) mới cần tài khoản
+    $('#chip').innerHTML = '';
+    $('#acts').innerHTML = s.created ? '<button class="btn sm" id="loginBtn">Lấy link chiếu</button>' : '';
+    Object.assign($('#acts').style, { gridTemplateColumns: 'auto', justifyContent: 'center' }); // điện thoại: một nút, rộng vừa chữ, căn giữa
+    const lb = $('#loginBtn'); if (lb) lb.onclick = askLogin;
+    return;
+  }
   $('#chip').innerHTML = !s.created ? '' : s.paid ? '<span class="chip ok">● Đã kích hoạt</span>'
     : '<span class="chip warn">Xem trước · chưa kích hoạt</span>';
   // điện thoại: nhãn ngắn (lớp hide-xs / show-xs) để ba nút vừa một hàng
@@ -136,6 +144,28 @@ async function save() {
     saving = false;
     if (again) { again = false; save(); }
   }
+}
+
+// ---------- khách chưa đăng nhập: bấm "Lấy link chiếu" → đăng nhập; xong quay lại đúng màn này (bản nháp về tài khoản) và mở luôn bước kích hoạt ----------
+function askLogin() {
+  const next = encodeURIComponent(location.pathname + '?xuat=1');
+  openModal(`<h2 style="margin-top:0">Lấy link chiếu màn LED</h2>
+    <p class="muted" style="margin:0 0 16px">Đăng nhập để lưu màn LED vào tài khoản và lấy link gửi kỹ thuật nhà hàng. Mẫu và chữ bạn vừa sửa được giữ nguyên.</p>
+    <div style="display:grid;justify-items:center;gap:10px">
+      ${META.googleLogin ? '<a class="btn" data-go href="/auth/google?next=' + next + '">Tiếp tục với Google</a>' : ''}
+      ${META.facebookLogin ? `<a class="btn ${META.googleLogin ? 'plain' : ''}" data-go href="/auth/facebook?next=${next}">Tiếp tục với Facebook</a>` : ''}
+      ${META.emailSignup ? `<a class="btn ${META.googleLogin || META.facebookLogin ? 'plain' : ''}" data-go href="/dang-nhap?dang-ky=1&next=${next}">Dùng email</a>` : `<a class="muted" style="font-size:13px" data-go href="/dang-nhap?next=${next}">Tôi có tài khoản email từ trước</a>`}
+    </div>`, (box) => {
+    box.addEventListener('click', async (e) => {
+      const a = e.target.closest('[data-go]'); if (!a) return;
+      e.preventDefault();
+      loading.show('Đang lưu màn LED…');
+      // chỉnh sửa chưa lưu phải nằm trên máy chủ trước khi rời trang
+      if (saveTimer) { clearTimeout(saveTimer); saveTimer = null; await save(); }
+      while (saving) await new Promise((ok) => setTimeout(ok, 100));
+      location.href = a.href; // màn chờ giữ tới lúc trang đăng nhập mở
+    });
+  });
 }
 
 async function reload() {
@@ -307,7 +337,18 @@ function start() {
   renderHeader();
   if (card.ledConfig) {
     led = card.ledConfig;
-    return start();
+    // đã có màn LED mà bấm "Dùng mẫu" ở trang giới thiệu (/tao-led?palette=…&effect=…): đổi sang mẫu vừa chọn, chữ giữ nguyên
+    const q = new URLSearchParams(location.search), t = (META.led.templates || []).find((x) => x.palette === q.get('palette') && x.effect === q.get('effect'));
+    if (q.get('palette') || q.get('tao')) history.replaceState(null, '', location.pathname + (q.get('xuat') ? '?xuat=1' : ''));
+    const picked = t && (t.palette !== led.palette || t.effect !== led.effect);
+    if (picked) { led.palette = t.palette; led.effect = t.effect; await save(); } // lưu trước để khung xem trước mở đúng mẫu
+    start();
+    // vừa đăng nhập từ nút "Lấy link chiếu": mở luôn bước kích hoạt để lấy link
+    if (new URLSearchParams(location.search).get('xuat')) {
+      history.replaceState(null, '', location.pathname);
+      const pb = $('#payBtn'); if (pb) pb.click();
+    }
+    return;
   }
   // chưa có màn LED: giới thiệu + bắt đầu dùng thử
   $('#introBox').innerHTML = `<div class="intro panel">

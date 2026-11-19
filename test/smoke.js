@@ -432,7 +432,9 @@ async function call(who, method, url, body, extra = {}) {
   // nút "Tạo màn LED" / "Dùng mẫu" video: chuyển thẳng tới trình sửa, không ghé "Thiệp của tôi"
   let rr = await fetch(base + '/tao-led?palette=dem&effect=sao', { redirect: 'manual' });
   assert.equal(rr.status, 302);
-  assert.equal(rr.headers.get('location'), '/dang-nhap?next=' + encodeURIComponent('/tao-led?palette=dem&effect=sao'), 'chưa đăng nhập → đăng nhập rồi quay lại');
+  assert.match(rr.headers.get('location'), /^\/sua-led\/[\w-]+\?palette=dem&effect=sao&tao=1$/, 'chưa đăng nhập → vẫn vào trình sửa LED (bản nháp), lấy link chiếu mới cần đăng nhập');
+  rr = await fetch(base + '/tao-video?mau=polaroid', { redirect: 'manual' });
+  assert.equal(rr.headers.get('location'), '/dang-nhap?next=' + encodeURIComponent('/tao-video?mau=polaroid'), 'video: chưa đăng nhập → đăng nhập rồi quay lại');
   rr = await fetch(base + '/tao-led?palette=dem&effect=sao', { redirect: 'manual', headers: { cookie: jar.u } });
   assert.match(rr.headers.get('location'), /^\/sua-led\/[\w-]+\?palette=dem&effect=sao&tao=1$/, 'đã đăng nhập → thẳng trình sửa LED');
   rr = await fetch(base + '/tao-video?mau=polaroid&x=<b>', { redirect: 'manual', headers: { cookie: jar.u } });
