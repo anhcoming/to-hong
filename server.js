@@ -535,12 +535,16 @@ for (const [path, to, keep] of [['/tao-led', 'sua-led', ['palette', 'effect']], 
 }
 
 // Mỗi tài khoản chỉ MỘT thiệp. Đã có thiệp mà bấm "Dùng mẫu" → đổi mẫu cho thiệp đó (chữ, ảnh giữ nguyên), không tạo thêm.
+// Đã kích hoạt (thiệp / màn LED / video) thì mẫu chốt luôn — đổi mẫu khác phải làm thiệp khác
+const tplLockedMsg = (card) => `Thiệp đã kích hoạt nên mẫu đã chốt (${(templates[card.template] || {}).name || card.template}). Mỗi thiệp kích hoạt dùng một mẫu, không đổi sang mẫu khác được.`;
 const userCard = (user) => db.cards.filter((c) => c.userId === user.id).sort((a, b) => b.updatedAt - a.updatedAt)[0];
 function newCard(user, b = {}) {
   const tpl = templates[b.template] ? b.template : DEFAULT_TEMPLATE;
   const now = Date.now();
   const has = userCard(user);
   if (has) {
+    // thiệp đã kích hoạt: mẫu đã chốt, không đổi sang mẫu khác
+    if (has.paid && b.template && b.template !== has.template) throw httpError(409, tplLockedMsg(has));
     if (b.template && templates[b.template]) {
       Object.assign(has, { template: tpl, palette: templates[tpl].palettes.find((p) => p.id === b.palette)?.id || templates[tpl].palettes[0].id, updatedAt: now });
       save();
@@ -579,7 +583,7 @@ function ensureGuestCard(res, ctx, b = {}) {
   const now = Date.now();
   let gid = ctx.guest;
   let card = gid && db.cards.find((c) => c.guestId === gid && !c.userId);
-  if (card) { if (!b.keepTemplate) { Object.assign(card, { template: tpl, palette, updatedAt: now }); delete card.ledOnly; } }
+  if (card) { if (!b.keepTemplate && !card.paid) { Object.assign(card, { template: tpl, palette, updatedAt: now }); delete card.ledOnly; } }
   else {
     rateLimit('gcard:' + ctx.ip, 12, 36e5, true);
     // dọn thiệp nháp vô chủ đã quá hạn cookie
@@ -620,6 +624,7 @@ route('PUT', '/api/cards/:id', async (req, res, ctx) => {
       if (!ok(b.data.cover) || !ok(b.data.music) || (Array.isArray(b.data.photos) && !b.data.photos.every(ok))) needUser(ctx);
     }
   }
+  if (card.paid && b.template && b.template !== card.template) throw httpError(409, tplLockedMsg(card)); // đã kích hoạt: mẫu chốt
   if (b.title !== undefined) card.title = str(b.title, 60) || card.title;
   if (b.template && templates[b.template]) {
     if (b.template !== card.template) card.palette = templates[b.template].palettes[0].id;
@@ -661,6 +666,7 @@ route('POST', '/api/cards/:id/draft', async (req, res, ctx) => {
   rateLimit('draft:' + ctx.ip, 3000, 36e5);
   const b = await readJson(req);
   let template = templates[b.template] ? b.template : card.template;
+  if (card.paid) template = card.template; // đã kích hoạt: xem trước cũng chỉ mẫu đã chốt
   if (!templates[template]) template = DEFAULT_TEMPLATE;
   let palette = template !== card.template ? templates[template].palettes[0].id : card.palette;
   if (b.palette && templates[template].palettes.some((p) => p.id === b.palette)) palette = b.palette;

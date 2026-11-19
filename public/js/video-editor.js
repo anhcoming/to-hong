@@ -147,8 +147,9 @@ function renderSide() {
   if (!isAlbum() && video.photoBg) video.photoBg = false;
   let h = '';
   if (curPanel === 'mau') {
-    h = head(isAlbum() ? 'Mẫu slide' : 'Mẫu màn hình dạm ngõ', isAlbum() ? 'Đổi mẫu bất cứ lúc nào — ảnh và chữ của bạn giữ nguyên.' : 'Chọn một mẫu có sẵn — bấm chữ trên video để sửa.') + '<p class="mobhint">Chạm vào chữ hoặc ảnh trên video để sửa ngay.</p>' + `
-      <div class="opts">${META.video.templates.filter((t) => !!t.photos === isAlbum()).map((t) => `<button class="opt ${video.template === t.id ? 'on' : ''}" data-tpl="${t.id}"><i style="background:${SWATCH[t.id] || '#333'};background-image:url('/demo/vposter-${t.id}.jpg')"></i><b>${esc(t.name)}</b><span>${t.photos ? `${t.slots} ảnh` : 'Chữ + ảnh nền'}</span></button>`).join('')}</div>
+    h = head(isAlbum() ? 'Mẫu slide' : 'Mẫu màn hình dạm ngõ', isAlbum() ? (card.video.paid ? 'Ảnh và chữ sửa thoải mái.' : 'Đổi mẫu bất cứ lúc nào — ảnh và chữ của bạn giữ nguyên.') : 'Chọn một mẫu có sẵn — bấm chữ trên video để sửa.') + '<p class="mobhint">Chạm vào chữ hoặc ảnh trên video để sửa ngay.</p>' + `
+      ${card.video.paid ? '<p class="muted" style="font-size:13px;margin:0 0 10px">🔒 Đã kích hoạt nên mẫu đã chốt — mỗi lần kích hoạt dùng một mẫu.</p>' : ''}
+      <div class="opts">${META.video.templates.filter((t) => !!t.photos === isAlbum() && (!card.video.paid || t.id === video.template)).map((t) => `<button class="opt ${video.template === t.id ? 'on' : ''}" data-tpl="${t.id}"><i style="background:${SWATCH[t.id] || '#333'};background-image:url('/demo/vposter-${t.id}.jpg')"></i><b>${esc(t.name)}</b><span>${t.photos ? `${t.slots} ảnh` : 'Chữ + ảnh nền'}</span></button>`).join('')}</div>
       `;
   } else if (curPanel === 'chu') {
     const sub = (t, d) => `<h3 class="psub">${t}${d ? `<small>${d}</small>` : ''}</h3>`;
@@ -984,7 +985,7 @@ function start() {
   if (mau) history.replaceState(null, '', location.pathname);
   if (card.videoConfig) {
     video = card.videoConfig;
-    if (pick && video.template !== pick) { video.template = pick; start(); return schedule(100); }
+    if (pick && video.template !== pick && !card.video.paid) { video.template = pick; start(); return schedule(100); }
     return start();
   }
   if (pick) {

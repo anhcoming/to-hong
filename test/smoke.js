@@ -443,8 +443,15 @@ async function call(who, method, url, body, extra = {}) {
   // mỗi tài khoản một thiệp: không nhân bản, "Dùng mẫu" khác thì đổi mẫu cho thiệp sẵn có
   r = await call('u', 'POST', `/api/cards/${id}/duplicate`);
   assert.equal(r.status, 400, 'không nhân bản thiệp');
-  r = await call('u', 'POST', '/api/cards', { template: 'songhy' });
-  assert.deepEqual([r.json.card.id, r.json.card.template], [id, 'songhy'], 'Dùng mẫu khác → đổi mẫu thiệp sẵn có, không tạo thiệp thứ hai');
+  // thiệp đã kích hoạt: mẫu chốt — "Dùng mẫu" khác / lưu mẫu khác đều bị từ chối, mẫu giữ nguyên
+  const tpl0 = (await call('u', 'GET', `/api/cards/${id}`)).json.card.template;
+  assert.ok((await call('u', 'GET', `/api/cards/${id}`)).json.card.paid, 'thiệp này đã kích hoạt');
+  r = await call('u', 'POST', '/api/cards', { template: tpl0 === 'songhy' ? 'dodam' : 'songhy' });
+  assert.equal(r.status, 409, 'đã kích hoạt: không đổi sang mẫu khác');
+  r = await call('u', 'PUT', `/api/cards/${id}`, { template: tpl0 === 'songhy' ? 'dodam' : 'songhy' });
+  assert.equal(r.status, 409, 'đã kích hoạt: lưu mẫu khác bị từ chối');
+  r = await call('u', 'POST', '/api/cards', { template: tpl0 });
+  assert.deepEqual([r.json.card.id, r.json.card.template], [id, tpl0], 'Dùng đúng mẫu đang có → vẫn là thiệp sẵn có, không tạo thiệp thứ hai');
   assert.equal((await call('u', 'GET', '/api/cards')).json.cards.filter((c) => c.ownerId).length, 1);
 
   console.log('✓ Tất cả kiểm thử đều qua');

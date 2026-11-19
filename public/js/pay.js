@@ -179,7 +179,8 @@ window.openPayModal = async function (cardId, onDone, product = 'card') {
         <button class="btn plain">Áp dụng</button>
       </form>
       <p class="cp-err" id="cpErr" role="alert" hidden></p>
-      <p class="muted" style="font-size:12px;text-align:center;margin:14px 0 0">Thanh toán là bạn đồng ý với <a href="/dieu-khoan" target="_blank" rel="noopener" style="color:inherit;text-decoration:underline">Điều khoản</a> và <a href="/hoan-tien" target="_blank" rel="noopener" style="color:inherit;text-decoration:underline">Chính sách hoàn tiền</a>.</p>`;
+      <p style="font-size:12.5px;text-align:center;margin:14px 0 0;color:var(--ink)">🔒 Kích hoạt là chốt mẫu đang dùng — sau đó không đổi sang mẫu khác được.</p>
+      <p class="muted" style="font-size:12px;text-align:center;margin:6px 0 0">Thanh toán là bạn đồng ý với <a href="/dieu-khoan" target="_blank" rel="noopener" style="color:inherit;text-decoration:underline">Điều khoản</a> và <a href="/hoan-tien" target="_blank" rel="noopener" style="color:inherit;text-decoration:underline">Chính sách hoàn tiền</a>.</p>`;
     modalHead(box); // nút × đứng yên khi cuộn
     $$('[data-sel]', box).forEach((b) => (b.onclick = () => { sel = b.dataset.sel; render(); }));
     $('#cp', box).onsubmit = async (e) => {

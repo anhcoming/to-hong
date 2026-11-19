@@ -39,7 +39,8 @@ function renderSide() {
   }).join('');
   let h = '';
   if (curPanel === 'hieu') h = head('Mẫu màn hình', 'Chọn một mẫu có sẵn. Bấm chữ trên màn để sửa, bật / tắt cảnh ở thanh bên dưới.') + (card.led.names ? `<p class="muted" style="font-size:13px;margin:-4px 0 12px">🔒 Đã kích hoạt: tên <b>${esc(card.led.names.groom)} &amp; ${esc(card.led.names.bride)}</b> cố định trên màn LED. Các chữ khác vẫn sửa thoải mái.</p>` : '') + `<section class="group">
-      <div class="lmau">${(META.led.templates || []).map((t) => `<button class="lm ${led.palette === t.palette && led.effect === t.effect ? 'on' : ''}" data-tpl="${t.id}"><i style="background-image:url('/demo/lposter-${t.palette}-${t.effect}.jpg')"></i><b>${esc(t.name)}</b></button>`).join('')}</div>
+      ${card.led.paid ? '<p class="muted" style="font-size:13px;margin:0 0 10px">🔒 Màn LED đã kích hoạt nên mẫu đã chốt — mỗi lần kích hoạt dùng một mẫu.</p>' : ''}
+      <div class="lmau">${(META.led.templates || []).filter((t) => !card.led.paid || (led.palette === t.palette && led.effect === t.effect)).map((t) => `<button class="lm ${led.palette === t.palette && led.effect === t.effect ? 'on' : ''}" data-tpl="${t.id}"><i style="background-image:url('/demo/lposter-${t.palette}-${t.effect}.jpg')"></i><b>${esc(t.name)}</b></button>`).join('')}</div>
       <label class="check" style="margin-top:14px"><input type="checkbox" data-l="hy" ${led.hy ? 'checked' : ''}>Chữ 囍 trên cảnh tên đôi</label>
     </section>`;
   else if (curPanel === 'chu') h = head('Nội dung', 'Tên, ngày, bố mẹ dùng chung với thiệp. Chọn các cảnh sẽ lần lượt hiện trên màn.') + `<section class="group">
@@ -339,7 +340,7 @@ function start() {
     // đã có màn LED mà bấm "Dùng mẫu" ở trang giới thiệu (/tao-led?palette=…&effect=…): đổi sang mẫu vừa chọn, chữ giữ nguyên
     const q = new URLSearchParams(location.search), t = (META.led.templates || []).find((x) => x.palette === q.get('palette') && x.effect === q.get('effect'));
     if (q.get('palette') || q.get('tao')) history.replaceState(null, '', location.pathname + (q.get('xuat') ? '?xuat=1' : ''));
-    const picked = t && (t.palette !== led.palette || t.effect !== led.effect);
+    const picked = t && !card.led.paid && (t.palette !== led.palette || t.effect !== led.effect); // đã kích hoạt: mẫu chốt, không đổi
     if (picked) { led.palette = t.palette; led.effect = t.effect; await save(); } // lưu trước để khung xem trước mở đúng mẫu
     start();
     // vừa đăng nhập từ nút "Lấy link chiếu": mở luôn bước kích hoạt để lấy link
