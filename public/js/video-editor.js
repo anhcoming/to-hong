@@ -10,7 +10,7 @@ function info() {
   const d = card.data, fx = card.video && card.video.names; // đã kích hoạt: tên đôi cố định lúc kích hoạt
   return { chu_re: fx ? fx.groom : d.groom.name, co_dau: fx ? fx.bride : d.bride.name, bo_me_trai: fam(d.groom), bo_me_gai: fam(d.bride) };
 }
-function status(t) { $('#saved').textContent = t; const sb = $('#subl'); if (sb) sb.classList.toggle('ok', /Đã lưu|Đã khôi phục/.test(t)); }
+function status(t) { if (t === 'Đã lưu ✓' && card && card.video && card.video.final) t = 'Đã chốt'; $('#saved').textContent = t; const sb = $('#subl'); if (sb) sb.classList.toggle('ok', /Đã lưu|Đã khôi phục/.test(t)); }
 // trình sửa kiểu CapCut: cột icon chọn bảng (curPanel), dòng thời gian chọn cảnh (selClip), hoàn tác / làm lại (hist)
 let curPanel = 'mau', selClip = -1, clips = [];
 let hist = [], hIdx = -1, histMute = false;
@@ -523,6 +523,7 @@ function exportModal() {
   });
 }
 function renderExport() {
+  if (!$('#exportBox')) return; // bảng xuất đang không mở (vd. vừa kích hoạt xong, reload gọi tới)
   const s = card.video;
   const total = Math.round(engine ? engine.duration() : video.scenes.length * video.seconds);
   $('#exportBox').innerHTML = `<label class="field"><span>Độ dài</span><select id="loops" class="input">
@@ -536,6 +537,8 @@ function renderExport() {
 
 function renderHeader() {
   const s = card.video;
+  // đã chốt hẳn (trả tiền là chốt): ẩn mọi chỗ chỉnh — cột Mẫu / Nhạc, bảng bên, thanh cảnh; chỉ còn xem, chia sẻ, tải MP4
+  const lay = $('#layout'); if (lay) lay.classList.toggle('final', vFinal());
   $('#ttl').textContent = video.event.kind + ' · ' + ([card.data.groom.name, card.data.bride.name].filter(Boolean).join(' & ') || card.title);
   backTo($('#back'), '/sua/' + CARD_ID);
   if (!s || !s.created) return;
@@ -894,7 +897,7 @@ function bind() {
   let hovPt = null, hovRaf = 0;
   const hideHov = () => { hov.hidden = true; hovPt = null; cancelAnimationFrame(hovRaf); $('#cv').style.cursor = ''; };
   const placeHov = () => {
-    if (!hovPt || !engine || $('#noteEd') || document.querySelector('.modal')) { hov.hidden = true; return; }
+    if (!hovPt || !engine || vFinal() || $('#noteEd') || document.querySelector('.modal')) { hov.hidden = true; return; } // đã chốt: không khung sửa khi rê chuột
     const c = $('#cv'), r = c.getBoundingClientRect(), k = r.width / c.width, [x, y] = hovPt;
     const box = (b) => Object.assign(hov.style, { left: r.left + b.l * k + 'px', top: r.top + b.t * k + 'px', width: (b.r - b.l) * k + 'px', height: (b.b - b.t) * k + 'px' });
     const nt = engine.noteAt(x, y), tx = !nt && engine.textAt(x, y), p = !nt && !tx && engine.photoAt(x, y);
@@ -912,6 +915,7 @@ function bind() {
   hov.addEventListener('mouseleave', (e) => { if (e.relatedTarget !== $('#cv')) hideHov(); });
   hov.addEventListener('mousemove', (e) => { if (e.target.closest('button')) return; hovPt = cvPt(e); placeHov(); });
   const editAt = (e) => { // bấm thẳng vào chữ / ảnh trên video
+    if (vFinal()) return; // đã chốt: chỉ xem
     const [x, y] = cvPt(e), c = $('#cv'), r = c.getBoundingClientRect(), k = r.width / c.width;
     const h = engine.noteAt(x, y); if (h) { hideHov(); return noteEditor(h, r, k); }
     const tx = engine.textAt(x, y); if (tx) { hideHov(); return lineEditor(tx, r, k); }
