@@ -13,7 +13,7 @@ const RATIO_INFO = {
 const getP = (o, p) => p.split('.').reduce((a, k) => (a == null ? a : a[k]), o);
 const setP = (o, p, v) => { const ks = p.split('.'); let a = o; ks.slice(0, -1).forEach((k) => (a = a[k])); a[ks[ks.length - 1]] = v; };
 
-function status(t) { $('#saved').textContent = card && card.guest && t === 'Đã lưu ✓' ? 'Bản nháp trên máy này' : card && card.led && card.led.final && t === 'Đã lưu ✓' ? 'Đã chốt' : t; }
+function status(t) { $('#saved').textContent = card && card.guest && t === 'Đã lưu ✓' ? '' : card && card.led && card.led.final && t === 'Đã lưu ✓' ? 'Đã chốt' : t; }
 // trình sửa kiểu CapCut: cột icon chọn bảng
 let curPanel = 'chu'; // mặc định bảng Nội dung (ô nhập), bảng Mẫu màn hình ở tab bên cạnh
 
@@ -100,7 +100,7 @@ function renderHeader() {
   backTo($('#back'), card.guest ? '/man-hinh-led-dam-cuoi' : '/thiep-cua-toi'); // không có trang trước: về Thiệp của tôi (nơi có danh sách Làm thêm: LED, video…)
   if (card.guest) {
     // chưa đăng nhập: sửa + xem trước thoải mái trên bản nháp; lấy link chiếu (xuất bản) mới cần tài khoản
-    $('#chip').innerHTML = '';
+    $('#chip').innerHTML = '<span class="dtag">Bản nháp</span>'; // chưa đăng nhập: bản nháp trên máy này
     $('#acts').innerHTML = s.created ? '<button class="btn sm" id="loginBtn">Lấy link chiếu</button>' : '';
     Object.assign($('#acts').style, { gridTemplateColumns: 'auto', justifyContent: 'center' }); // điện thoại: một nút, rộng vừa chữ, căn giữa
     const lb = $('#loginBtn'); if (lb) lb.onclick = askLogin;
