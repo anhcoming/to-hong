@@ -19,7 +19,6 @@ const cd = require('./lib/carddata');
 const { renderCard, renderNotice, templates, templateList, groups: templateGroups, DEFAULT_TEMPLATE } = require('./lib/render');
 const banks = require('./lib/banks');
 const ledLib = require('./lib/led');
-const nameLock = require('./lib/namelock');
 const videoLib = require('./lib/video');
 const musicLib = require('./lib/music');
 const { execFile } = require('child_process');
@@ -603,12 +602,7 @@ route('PUT', '/api/cards/:id', async (req, res, ctx) => {
     card.oldSlugs = [...(card.oldSlugs || []).filter((x) => x !== s), card.slug].slice(-5); // link đã gửi vẫn mở được
     card.slug = s;
   }
-  if (b.data) {
-    const nd = cd.normalize(b.data);
-    const bad = nameLock.problem(card, nd); // đã kích hoạt: tên / ngày cưới chỉ sửa lỗi gõ nhỏ
-    if (bad) throw httpError(409, bad);
-    card.data = nd; nameLock.commit(card); Wd.syncFromCard(card);
-  }
+  if (b.data) { card.data = cd.normalize(b.data); Wd.syncFromCard(card); }
   if (b.data && b.slug === undefined && card.userId) autoSlug(card); // thiệp nháp của khách chưa đăng nhập: giữ nguyên
   if (b.led) { card.led = ledLib.normalize(b.led, card.led); comboUnlock(card, 'led'); } // tạo màn LED (chưa kích hoạt: chỉ xem trước; thiệp Trọn bộ: kích hoạt luôn)
   if (b.video) { card.video = videoLib.normalize(b.video, card.video); comboUnlock(card, 'video'); }

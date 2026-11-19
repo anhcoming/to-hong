@@ -329,10 +329,7 @@ async function call(who, method, url, body, extra = {}) {
   assert.equal(r.json.wedding.budgetTotal, 300000000);
   assert.equal(r.json.stats.actual, 115000000);
   r = await call('u', 'GET', `/api/cards/${id}`);
-  assert.equal(r.json.card.data.groom.name, 'Tuấn <script>', 'thiệp đã kích hoạt: sổ tay đổi hẳn tên thì thiệp giữ tên đã chốt');
-  await call('u', 'PUT', '/api/wedding', { couple: { groom: { name: 'Tuấn <scripts>' } } });
-  r = await call('u', 'GET', `/api/cards/${id}`);
-  assert.equal(r.json.card.data.groom.name, 'Tuấn <scripts>', 'sửa lỗi gõ nhỏ ở sổ tay → thiệp đổi theo');
+  assert.equal(r.json.card.data.groom.name, 'Tuấn Anh', 'sửa ở sổ tay → thiệp đổi theo');
   r = await call('u', 'PUT', `/api/guests/${hung.id}`, { gift: '2.000.000', group: 'Đồng nghiệp' });
   assert.equal(r.json.guest.gift, 2000000);
   r = await call('u', 'GET', '/api/wedding/guests.csv');
@@ -343,7 +340,7 @@ async function call(who, method, url, body, extra = {}) {
   await call('p', 'POST', '/api/auth/register', { email: 'nguoiyeu@test.vn', password: '123456' });
   assert.equal((await call('p', 'GET', `/api/cards/${id}`)).status, 404, 'chưa tham gia thì không xem được thiệp');
   r = await call('p', 'GET', `/api/join/${code}`);
-  assert.match(r.json.names, /Tuấn <scripts>/);
+  assert.match(r.json.names, /Tuấn Anh/);
   assert.equal((await call('p', 'POST', `/api/join/${code}`)).status, 200);
   r = await call('p', 'GET', '/api/wedding');
   assert.equal(r.json.members.length, 2);

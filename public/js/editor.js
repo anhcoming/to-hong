@@ -75,7 +75,7 @@ const panes = {
 
   date: () => `
     <section class="group panel"><h3>Cô dâu chú rể</h3>
-      <div class="grid2">${f('groom.name', 'Tên chú rể', { ph: 'Gia Huy', max: 40 })}${f('bride.name', 'Tên cô dâu', { ph: 'Bảo Ngọc', max: 40 })}</div>${nameNote()}
+      <div class="grid2">${f('groom.name', 'Tên chú rể', { ph: 'Gia Huy', max: 40 })}${f('bride.name', 'Tên cô dâu', { ph: 'Bảo Ngọc', max: 40 })}</div>
       <button class="btn soft block" id="famOpen" type="button">+ Họ tên đầy đủ, bố mẹ, địa chỉ hai nhà</button>
       <div id="fam" hidden>${person('groom', 'Nhà trai')}${person('bride', 'Nhà gái')}</div>
     </section>
@@ -285,7 +285,7 @@ function stInfo() {
     ${f(`${who}.fullName`, 'Họ và tên đầy đủ', { ph: who === 'groom' ? 'Trần Gia Huy' : 'Lê Bảo Ngọc', max: 80 })}
     <div class="grid2">${f(`${who}.father`, 'Bố', { ph: 'Ông Trần Quang Hải', max: 80 })}${f(`${who}.mother`, 'Mẹ', { ph: 'Bà Nguyễn Thị Lan', max: 80 })}</div>
     ${f(`${who}.address`, 'Địa chỉ nhà ' + (who === 'groom' ? 'trai' : 'gái'), { ph: 'Phường…, Tỉnh/Thành phố…', max: 160 })}`;
-  return `<div class="grid2">${f('groom.name', 'Tên chú rể', { ph: 'Gia Huy', max: 40 })}${f('bride.name', 'Tên cô dâu', { ph: 'Bảo Ngọc', max: 40 })}</div>${nameNote()}
+  return `<div class="grid2">${f('groom.name', 'Tên chú rể', { ph: 'Gia Huy', max: 40 })}${f('bride.name', 'Tên cô dâu', { ph: 'Bảo Ngọc', max: 40 })}</div>
     <div class="grid2">${rk('groom')}${rk('bride')}</div>
     ${fam('groom', 'Nhà trai')}${fam('bride', 'Nhà gái')}
     ${card.guest ? '' : '<p class="muted" style="font-size:12.5px;margin:4px 0 0">✓ Lưu vào hồ sơ cưới — thiệp, màn LED, video tạo sau tự điền sẵn.</p>'}`;
@@ -503,9 +503,6 @@ async function pushDraft() {
   })());
   return my;
 }
-// đã kích hoạt (thiệp / màn LED / video): tên và ngày cưới chỉ sửa lỗi gõ nhỏ — máy chủ kiểm (lib/namelock.js)
-const nameNote = () => (card.paid || (card.led && card.led.paid) || (card.video && card.video.paid)
-  ? '<p class="muted" style="font-size:12.5px;margin:6px 0 0">🔒 Đã kích hoạt: tên cô dâu chú rể chỉ sửa được lỗi gõ nhỏ (dấu, 1–2 chữ cái), ngày cưới dời được trong 90 ngày. Cần đổi hẳn, bạn nhắn hỗ trợ nhé.</p>' : '');
 // lưu thật
 async function commit() {
   if (saving) { pending = true; return; }

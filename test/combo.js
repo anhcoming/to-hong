@@ -136,31 +136,6 @@ const buyCombo = async (id) => { const o = (await call('u', 'POST', `/api/cards/
   assert.equal(loneDb.status, 'cancelled', 'đơn thiệp lẻ đang chờ tự đóng khi Trọn bộ đã trả');
   assert.match(loneDb.note, new RegExp(cb.code));
   assert.equal(db.orders.find((o) => o.code === cb.code).status, 'paid');
-  // đã kích hoạt: tên / ngày cưới chỉ sửa lỗi gõ nhỏ — không đổi sang đám cưới khác được (lib/namelock.js)
-  {
-    const put = async (patch) => { const c = await card(a); const d = { ...c.data, ...patch(c.data) }; return call('u', 'PUT', `/api/cards/${a}`, { data: d }); };
-    const nm = (g, b) => (d) => ({ groom: { ...d.groom, name: g ?? d.groom.name }, bride: { ...d.bride, name: b ?? d.bride.name } });
-    assert.equal((await put(nm('Ân'))).status, 200, 'thêm dấu được');
-    assert.equal((await put(nm('Anh'))).status, 200, 'sửa 1 chữ cái được');
-    let x = await put(nm('Bảo'));
-    assert.equal(x.status, 409, 'đổi hẳn tên chú rể bị chặn');
-    assert.match(x.json.error || x.text, /lỗi gõ nhỏ/);
-    assert.equal((await put(nm(null, 'Minh Thư'))).status, 409, 'đổi hẳn tên cô dâu bị chặn');
-    assert.equal((await put(nm(null, ''))).status, 409, 'xoá tên bị chặn');
-    assert.equal((await put(nm('Ann'))).status, 200, 'so với tên lúc chốt (An), không trôi dần');
-    assert.equal((await put(nm('Anna'))).status, 409, 'sửa nhỏ nhiều lần cũng không trôi sang tên khác');
-    assert.equal((await put(() => ({ date: '2027-01-10' }))).status, 200, 'dời ngày trong 90 ngày được');
-    assert.equal((await put(() => ({ date: '2027-08-01' }))).status, 409, 'dời ngày quá xa bị chặn');
-    // sổ tay cưới đổi tên → thiệp đã kích hoạt giữ nguyên tên
-    const Wd = require('../lib/wedding'), cdb = require('../lib/db').db.cards.find((c) => c.id === a);
-    const w = Wd.get(cdb.weddingId);
-    if (w) { Wd.update(w, { couple: { groom: { name: 'Khác Hẳn' } } }); assert.notEqual(cdb.data.groom.name, 'Khác Hẳn', 'sổ tay không đổi được tên thiệp đã kích hoạt'); }
-    // quản trị mở khoá: lần lưu tới nhận tên mới rồi chốt lại
-    cdb.lockOpen = true;
-    assert.equal((await put(nm('Quang', 'Hà'))).status, 200, 'mở khoá rồi đổi hẳn tên được');
-    assert.equal(cdb.lock.groom, 'Quang', 'chốt lại theo tên mới');
-    assert.equal((await put(nm('An'))).status, 409, 'sau đó lại khoá');
-  }
   console.log('✓ Trọn bộ gắn với thiệp: mở thiệp + LED + video của thiệp đó (có sẵn hay làm sau), thiệp khác không liên quan, nâng cấp trả phần chênh, lượt cũ vẫn dùng được');
   process.exit(0);
 })().catch((e) => { console.error('✗', e); process.exit(1); });

@@ -497,14 +497,10 @@ function cardDrawer(c) {
         ${sw('led', 'Màn hình LED', c.led || {}, c.led && c.led.created)}
         ${sw('video', 'Video cưới', c.video || {}, c.video && c.video.created)}
       </div><p style="margin:8px 0 0;font-size:12px;color:var(--muted)">Dùng khi tặng khách, nhận tiền mặt hoặc đã hoàn tiền. Mọi thao tác ghi vào nhật ký.</p></div>
-      ${c.nameLock ? `<div class="sec"><h4>Tên đã chốt</h4><p style="margin:0 0 8px;font-size:13px">${c.nameLock === 'open' ? 'Đã mở khoá — lần lưu tới của khách nhận tên mới rồi chốt lại.' : `${esc(c.nameLock)} <span class="muted">· khách chỉ sửa được lỗi gõ nhỏ</span>`}</p>${c.nameLock === 'open' ? '' : '<button class="btn sm soft" id="unlockNames" type="button">Mở khoá đổi tên</button>'}</div>` : ''}
     </div>
     <div class="df"><button class="btn plain" id="cblock" ${c.blocked ? '' : 'style="color:var(--danger)"'}>${c.blocked ? 'Khôi phục thiệp' : 'Gỡ thiệp vi phạm'}</button></div>`,
   (box) => {
     $('#cblock', box).onclick = () => blockCard(c);
-    const un = $('#unlockNames', box);
-    if (un) un.onclick = () => ask({ title: 'Mở khoá đổi tên?', text: `Thiệp <b>${esc(c.names || c.title)}</b>: lần lưu tới của khách được đổi hẳn tên / ngày cưới, sau đó chốt lại theo tên mới. Chỉ dùng khi đã xác nhận đúng là cùng đám cưới.`, ok: 'Mở khoá',
-      run: async () => { await api(`/api/admin/cards/${c.id}/unlock-names`, { method: 'POST' }); toast('Đã mở khoá đổi tên'); closeDrawer(); refresh(); } });
     $('#csw', box).onclick = (e) => {
       const b = e.target.closest('[data-p]'); if (!b || b.disabled) return;
       const on = !b.classList.contains('on'), name = b.closest('.tgl').firstChild.firstChild.textContent;
