@@ -141,10 +141,11 @@ const eq = (a, b, msg) => { assert.deepEqual(a, b, msg); n++; };
   ok([403, 404].includes((await call('b', 'DELETE', `/api/cards/${id}`)).status), 'B không xoá được thiệp của A');
   // trang chiếu: tên buổi lễ có thẻ HTML phải được escape
   const slug = (await call('a', 'GET', `/api/cards/${id}`)).json.card.slug;
-  r = await call('anon', 'GET', `/video/${slug}`);
-  eq(r.status, 200, 'trang chiếu video công khai');
-  ok(!r.text.includes('<b>Lễ</b>'), 'tên buổi lễ phải được escape trong trang chiếu');
-  ok(r.text.includes('"photos":["/demo/longphung-1.jpg","/demo/longphung-2.jpg"]'), 'trang chiếu chỉ gửi ảnh thật, bỏ ô trống');
+  // chưa kích hoạt: không có hạn dùng thử — link chiếu TV khoá với mọi người, chủ thiệp thấy nút kích hoạt
+  eq((await call('anon', 'GET', `/video/${slug}`)).status, 403, 'video chưa kích hoạt: khách không mở link chiếu được');
+  r = await call('a', 'GET', `/video/${slug}`);
+  ok(r.status === 403 && r.text.includes('Kích hoạt video'), 'video chưa kích hoạt: chủ thiệp cũng không chiếu được, có nút kích hoạt');
+  ok(!('trialEndsAt' in (await call('a', 'GET', `/api/cards/${id}`)).json.card.video), 'video không có hạn dùng thử');
   // ?mau= từ trang Video cưới: trình sửa video phải mở được
   eq((await call('a', 'GET', `/sua-video/${id}?mau=dienanh`)).status, 200, 'mở trình sửa video kèm mẫu');
 
@@ -164,6 +165,11 @@ const eq = (a, b, msg) => { assert.deepEqual(a, b, msg); n++; };
   r = await call('a', 'POST', `/api/cards/${id}/order`, { product: 'video' });
   const oid = (await call('qt', 'GET', '/api/admin/overview')).json.orders.find((o) => o.code === r.json.order.code).id;
   await call('qt', 'POST', `/api/admin/orders/${oid}/confirm`);
+  r = await call('anon', 'GET', `/video/${slug}`);
+  eq(r.status, 200, 'kích hoạt xong: trang chiếu video công khai');
+  ok(!r.text.includes('Bản dùng thử') && r.text.includes('"trial":false'), 'trang chiếu không có dòng dùng thử');
+  ok(!r.text.includes('<b>Lễ</b>'), 'tên buổi lễ phải được escape trong trang chiếu');
+  ok(r.text.includes('"photos":["/demo/longphung-1.jpg","/demo/longphung-2.jpg"]'), 'trang chiếu chỉ gửi ảnh thật, bỏ ô trống');
   eq((await raw('a', `/api/cards/${id}/video/saved-file`, Buffer.alloc(3000), 'video/mp4')).status, 400, 'file không phải MP4 bị từ chối');
   eq((await raw('a', `/api/cards/${id}/video/saved-file`, mp4, 'video/webm')).status, 415, 'sai định dạng bị từ chối');
   r = await raw('a', `/api/cards/${id}/video/saved-file`, mp4, 'video/mp4');

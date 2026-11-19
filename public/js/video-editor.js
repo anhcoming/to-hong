@@ -537,20 +537,20 @@ function renderHeader() {
   $('#ttl').textContent = video.event.kind + ' · ' + ([card.data.groom.name, card.data.bride.name].filter(Boolean).join(' & ') || card.title);
   backTo($('#back'), '/sua/' + CARD_ID);
   if (!s || !s.created) return;
-  // tình trạng dùng thử: dòng chữ nhỏ cạnh "Đã lưu" (không chiếm chỗ trên thanh)
-  const days = Math.max(0, Math.ceil((s.trialEndsAt - Date.now()) / 864e5));
+  // tình trạng: dòng chữ nhỏ cạnh "Đã lưu" (không chiếm chỗ trên thanh)
   const chip = $('#chip');
-  chip.className = s.paid ? 'ok' : s.expired ? 'red' : 'warn';
-  chip.textContent = s.paid ? '· đã kích hoạt' : s.expired ? '· hết hạn dùng thử' : `· dùng thử còn ${days} ngày`;
+  chip.className = s.paid ? 'ok' : 'warn';
+  chip.textContent = s.paid ? '· đã kích hoạt' : '· xem trước · chưa kích hoạt';
+  if (engOpts) engOpts.trial = !s.paid; // khung xem trước: dòng "Bản dùng thử" vẽ thẳng lên hình cho tới khi kích hoạt
   // một nút đỏ duy nhất: Kích hoạt (chưa trả) / Tải MP4 (đã trả); chép link + tải MP4 gom vào menu Chia sẻ
   const credit = !s.paid && card.credits && card.credits.video > 0;
   const main = s.paid ? '<button class="btn sm" id="goExport">⬇ Tải MP4</button>'
     : credit ? '<button class="btn sm" id="payBtn">🎁 Dùng lượt Trọn bộ</button>'
     : `<button class="btn sm" id="payBtn">Kích hoạt<span class="xl">&nbsp;· ${money(META.videoPrice)}</span></button>`;
-  $('#acts').innerHTML = `<a class="btn sm ghost" target="_blank" href="${esc(s.url)}" title="Mở trình chiếu toàn màn hình">▷<span class="xl">&nbsp;Xem trước</span></a>
+  $('#acts').innerHTML = `${s.paid ? `<a class="btn sm ghost" target="_blank" href="${esc(s.url)}" title="Mở trình chiếu toàn màn hình">▷<span class="xl">&nbsp;Trình chiếu</span></a>` : ''}
     <span class="shr"><button class="btn sm soft" id="shrBtn" aria-haspopup="menu" aria-expanded="false">Chia sẻ ▾</button>
       <span class="shr-m" id="shrM" role="menu" hidden>
-        <button role="menuitem" id="cpLink"><i>🔗</i><span>Chép link chiếu TV<small>Mở trên Smart TV, máy chiếu, máy tính nối TV</small></span></button>
+        <button role="menuitem" id="cpLink"><i>🔗</i><span>Chép link chiếu TV<small>${s.paid ? 'Mở trên Smart TV, máy chiếu, máy tính nối TV' : 'Cần kích hoạt'}</small></span></button>
         <button role="menuitem" id="goExportM"><i>⬇</i><span>Tải video MP4<small>${s.paid ? 'Full HD · chép vào USB cắm TV' : 'Full HD · cần kích hoạt'}</small></span></button>
       </span></span>
     ${main}`;
@@ -558,7 +558,8 @@ function renderHeader() {
   const close = () => { m.hidden = true; sb.setAttribute('aria-expanded', 'false'); };
   sb.onclick = (e) => { e.stopPropagation(); m.hidden = !m.hidden; sb.setAttribute('aria-expanded', String(!m.hidden)); };
   if (!renderHeader.bound) { renderHeader.bound = true; document.addEventListener('click', (e) => { const mm = $('#shrM'); if (mm && !mm.hidden && !e.target.closest('.shr')) { mm.hidden = true; $('#shrBtn').setAttribute('aria-expanded', 'false'); } }); document.addEventListener('keydown', (e) => { if (e.key === 'Escape') { const mm = $('#shrM'); if (mm) mm.hidden = true; } }); }
-  $('#cpLink').onclick = () => { close(); copyText(s.url, 'Đã chép link — mở trên Smart TV hoặc máy tính nối TV'); };
+  // chưa kích hoạt: link chiếu TV chưa mở được → mời kích hoạt luôn
+  $('#cpLink').onclick = () => { close(); if (!s.paid) return openPayModal(CARD_ID, reload, 'video'); copyText(s.url, 'Đã chép link — mở trên Smart TV hoặc máy tính nối TV'); };
   const goX = () => { close(); exportModal(); };
   $('#goExportM').onclick = goX;
   const ge = $('#goExport'); if (ge) ge.onclick = goX;
@@ -946,11 +947,13 @@ function bind() {
   })();
 }
 
+let engOpts = null; // tuỳ chọn của khung xem trước (giữ để bật / tắt dòng "Bản dùng thử" khi kích hoạt)
 function clipAt(t) { let k = 0; clips.forEach((c, i) => { if (t >= c.t0) k = i; }); return k; }
 function start() {
   $('#introBox').innerHTML = '';
   $('#layout').hidden = false;
-  engine = VideoEngine.create($('#cv'), { photo: card.data.cover || card.data.photos.find(Boolean) || '', photos: slidePhotos(), trial: false });
+  engOpts = { photo: card.data.cover || card.data.photos.find(Boolean) || '', photos: slidePhotos(), trial: !(card.video && card.video.paid), brand: META.brand };
+  engine = VideoEngine.create($('#cv'), engOpts);
   curPanel = 'mau';
   renderSide();
   renderHeader();
@@ -994,7 +997,7 @@ function start() {
     <p style="font-size:44px;margin:0">🎬</p>
     <h2 style="font-family:var(--serif);margin:8px 0">Video cưới chiếu TV</h2>
     <p class="muted">Chọn mẫu, chèn ảnh cưới và lời chào — video tự dựng chuyển cảnh, ngày âm lịch. Dùng cho dạm ngõ, ăn hỏi, vu quy, thành hôn.</p>
-    <p class="muted" style="font-size:14px">Xem & trình chiếu miễn phí ${META.trialDays} ngày · Kích hoạt ${money(META.videoPrice)} để tải MP4 Full HD, bỏ dòng "Bản dùng thử".</p>
+    <p class="muted" style="font-size:14px">Làm và xem trước miễn phí · Kích hoạt ${money(META.videoPrice)} để chiếu TV bằng link và tải MP4 Full HD, không có dòng "Bản dùng thử".</p>
     <button class="btn lg" id="startBtn">Tạo video từ thiệp này</button>
     <p style="margin:14px 0 0"><a href="/slide-cuoi">Xem các mẫu video</a></p>
   </div>`;

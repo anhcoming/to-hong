@@ -340,8 +340,7 @@ document.addEventListener('click', (e) => { if (!e.target.closest('details.more'
 
 // danh sách video cưới: mỗi đám cưới (thiệp) một video
 function videoChip(v) {
-  return v.paid ? '<span class="chip ok">● Đã kích hoạt</span>' : v.expired ? '<span class="chip red">Hết hạn dùng thử</span>'
-    : `<span class="chip warn">Dùng thử · còn ${Math.max(0, Math.ceil((v.trialEndsAt - Date.now()) / 864e5))} ngày</span>`;
+  return v.paid ? '<span class="chip ok">● Đã kích hoạt</span>' : '<span class="chip warn">Xem trước · chưa kích hoạt</span>';
 }
 function loadVideos(cards, el) {
   const vids = cards.filter((c) => c.video.created);

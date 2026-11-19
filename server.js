@@ -1169,7 +1169,7 @@ route('GET', '/led/:slug', async (req, res, ctx) => {
   // chưa kích hoạt: không có trình chiếu thật — chỉ xem trước trong trình sửa
   if (st.locked && !preview) {
     return html(res, 403, isOwner
-      ? renderNotice('Màn hình LED chưa kích hoạt', 'Bạn vẫn xem trước và sửa màn LED trong trình sửa. Kích hoạt một lần để trình chiếu ở tiệc cưới, không còn dòng "Bản dùng thử".', { href: `/sua-led/${card.slug}`, text: 'Kích hoạt màn LED' })
+      ? renderNotice('Màn hình LED chưa kích hoạt', 'Bạn vẫn xem trước và sửa màn LED trong trình sửa. Kích hoạt một lần để trình chiếu ở tiệc cưới, không còn dòng "Bản dùng thử".', { href: `/sua-led/${card.id}`, text: 'Kích hoạt màn LED' })
       : renderNotice('Màn hình LED chưa sẵn sàng', 'Chủ thiệp chưa kích hoạt màn LED này.'));
   }
   html(res, 200, ledLib.renderLed(card, card.led, { preview, trial: !st.paid }));
@@ -1216,8 +1216,13 @@ route('GET', '/video/:slug', async (req, res, ctx) => {
   if (!card || !card.video) return html(res, 404, renderNotice('Không tìm thấy video', 'Đường dẫn có thể đã bị đổi.'));
   if (card.blocked && !isOwner) return html(res, 403, BLOCKED_HTML());
   const st = videoLib.state(card.video);
-  if (st.expired && !isOwner) return html(res, 403, renderNotice('Video đang tạm khoá', 'Thời gian dùng thử đã hết. Chủ thiệp cần kích hoạt để tiếp tục trình chiếu.'));
-  html(res, 200, videoLib.renderVideo(card, card.video, { preview: isOwner && ctx.query.get('preview') === '1', trial: !st.paid }));
+  // chưa kích hoạt: không có link chiếu TV — chỉ xem trước trong trình sửa
+  if (st.locked) {
+    return html(res, 403, isOwner
+      ? renderNotice('Video chưa kích hoạt', 'Bạn vẫn xem trước và sửa video trong trình sửa. Kích hoạt một lần để chiếu TV bằng link và tải MP4 Full HD, không còn dòng "Bản dùng thử".', { href: `/sua-video/${card.id}`, text: 'Kích hoạt video' })
+      : renderNotice('Video chưa sẵn sàng', 'Chủ thiệp chưa kích hoạt video này.'));
+  }
+  html(res, 200, videoLib.renderVideo(card, card.video, { preview: isOwner && ctx.query.get('preview') === '1', trial: false }));
 });
 
 route('POST', '/api/cards/:id/video/reset', async (req, res, ctx) => {

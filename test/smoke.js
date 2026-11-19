@@ -210,10 +210,7 @@ async function call(who, method, url, body, extra = {}) {
   assert.equal(r.json.card.videoConfig.template, 'dao');
   assert.equal(r.json.card.video.paid, false);
   assert.equal(r.json.card.video.mp4, null, 'không tự gán file MP4 qua API sửa');
-  r = await call('anon', 'GET', '/video/tuan-lan');
-  assert.equal(r.status, 200);
-  assert.ok(!r.text.includes('Tuấn <script>'), 'tên trong video phải được escape');
-  assert.match(r.text, /"trial":true/);
+  assert.equal((await call('anon', 'GET', '/video/tuan-lan')).status, 403, 'video chưa kích hoạt: link chiếu khoá');
   assert.equal((await call('u', 'POST', `/api/cards/${id}/video/export`)).status, 402, 'chưa kích hoạt thì không xuất MP4');
   r = await call('u', 'POST', `/api/cards/${id}/order`, { product: 'video' });
   assert.equal(r.json.order.amount, 99000);
@@ -246,6 +243,10 @@ async function call(who, method, url, body, extra = {}) {
   r = await call('u', 'GET', `/api/cards/${id}`);
   assert.equal(r.json.card.video.paid, true);
   assert.equal(r.json.card.led.paid, true, 'kích hoạt video không ảnh hưởng màn LED');
+  r = await call('anon', 'GET', '/video/tuan-lan');
+  assert.equal(r.status, 200, 'kích hoạt xong: link chiếu mở được');
+  assert.ok(!r.text.includes('Tuấn <script>'), 'tên trong video phải được escape');
+  assert.match(r.text, /"trial":false/);
   r = await call('u', 'POST', `/api/cards/${id}/video/reset`);
   assert.equal(r.json.card.videoConfig.scenes[0].lines[0].text, '{le}');
   assert.equal(r.json.card.videoConfig.template, 'dao', 'khôi phục chữ giữ nguyên mẫu');
