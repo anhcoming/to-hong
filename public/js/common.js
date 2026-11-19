@@ -192,8 +192,10 @@ window.backTo = function (a, fallback) {
     // ?mo=… (nút thanh dưới chuyển thẳng sang trình sửa bằng location.replace): trang trước đã bị thay trong lịch sử,
     // lùi lại sẽ quá một bước → đi theo href mặc định
     if (!ref.startsWith(location.origin + '/') || ref === location.href || ref.includes('/dang-nhap') || /[?&]mo=/.test(ref) || history.length < 2) return;
+    // đi thẳng về trang trước, không dùng history.back(): khung xem trước trong trang (iframe) mỗi lần tải lại cũng thêm một mục
+    // lịch sử → lùi lại chỉ lùi khung xem trước, bấm ← như không có tác dụng
     e.preventDefault();
-    history.back();
+    location.href = ref;
   };
 };
 // onClose(): gọi khi cửa sổ đóng (bấm ×, bấm ra ngoài, Esc hoặc close() từ trong)
