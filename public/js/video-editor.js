@@ -535,6 +535,17 @@ function renderExport() {
     <p class="muted" style="font-size:12px;margin:10px 0 0">Video dựng ngay trên máy bạn — nên dùng Chrome, Edge hoặc Safari bản mới.</p>`;
 }
 
+// các cảnh của video đã chốt (dưới khung chiếu): thẻ chữ lấy dòng đầu, chuỗi ảnh gộp thành "Ảnh cưới"
+function vChapters() {
+  if (!engine) return [];
+  const out = [];
+  engine.timeline().forEach((c) => {
+    if (c.kind === 'shot') { const l = out[out.length - 1]; if (l && l.shots) { l.shots++; l.name = `Ảnh cưới · ${l.shots}`; } else out.push({ t: c.t0, shots: 1, name: 'Ảnh cưới' }); return; }
+    const tx = ((video.scenes[c.scene] || {}).lines || []).map((l) => fill(l.text)).filter(Boolean)[0];
+    out.push({ t: c.t0, name: tx || `Cảnh ${c.scene + 1}` });
+  });
+  return out;
+}
 function renderHeader() {
   const s = card.video;
   // đã chốt hẳn (trả tiền là chốt): ẩn mọi chỗ chỉnh — cột Mẫu / Nhạc, bảng bên, thanh cảnh; chỉ còn xem, chia sẻ, tải MP4
@@ -572,7 +583,13 @@ function renderHeader() {
   // đã chốt hẳn: bố cục xem chi tiết dùng chung với màn LED (public/js/final-view.js) — thẻ đem đi chiếu / gửi người nhà
   if (vFinal()) {
     const names = [info().chu_re, info().co_dau].filter(Boolean).join(' & ');
+    const ev = video.event || {}, M = META.music || { tracks: [] }, mu = card.data.music || '';
+    const nShot = (engine ? engine.timeline() : []).filter((c) => c.kind === 'shot').length;
     finalView({ kind: 'video', url: s.url, names, onMp4: exportModal, support: META.support,
+      stage: '.studio > .stage', chapters: vChapters(), onSeek: (t) => engine.seek(t),
+      facts: [['📅', finalView.date(ev.date || card.data.date)], ['⏰', finalView.time(ev.time || card.data.time)], ['📍', ev.place],
+        ['🎞', `${video.scenes.length + (nShot ? 1 : 0)} cảnh · ${Math.round(engine ? engine.duration() : 0)} giây`],
+        ['🎵', !mu || card.data.musicOff ? 'Không nhạc' : ((M.tracks.find((t) => t.file === mu) || {}).name || 'Nhạc của bạn')]],
       guide: `Mời cả nhà xem video ${video.event.kind} ${names}:\n${s.url}\n- Mở trên Smart TV hoặc laptop nối TV, bấm ⛶ để toàn màn hình.` });
   } else finalView.off();
 }
@@ -966,6 +983,7 @@ function bind() {
     const D = engine.duration(), t = engine.time();
     if (!dragging) seekEl.value = Math.round(t / D * 1000);
     $('#tm').textContent = `${fmt(t)} / ${fmt(D)}`;
+    if (vFinal()) finalView.at(t); // đã chốt: tô cảnh đang chiếu dưới khung
     const k = clipAt(t), pl = $('#tls .clip.play');
     if (!pl || +pl.dataset.clip !== k) { if (pl) pl.classList.remove('play'); const nb = $(`#tls [data-clip="${k}"]`); if (nb) { nb.classList.add('play'); if (!engine.paused()) nb.scrollIntoView({ block: 'nearest', inline: 'nearest' }); } }
     requestAnimationFrame(tick);
@@ -984,7 +1002,7 @@ function start() {
   renderHeader();
   bind();
   refresh();
-  engine.photosReady().then(renderTl); // ảnh tải xong mới biết chia cảnh
+  engine.photosReady().then(() => { renderTl(); if (vFinal()) renderHeader(); }); // ảnh tải xong mới biết chia cảnh (đã chốt: vẽ lại danh sách cảnh)
   engine.play();
   snap();
   status('Đã lưu ✓');

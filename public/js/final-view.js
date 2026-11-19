@@ -31,10 +31,21 @@ body.fv-on .studio>.stagewrap{grid-template-rows:auto;align-content:center}
 .fv-note i{font-style:normal;font-size:18px;line-height:1}
 .fv-help{margin:16px 0 0;text-align:center;font-size:12.5px;color:var(--muted)}.fv-help a{color:var(--primary);font-weight:600;text-decoration:none}
 [data-theme="dark"] .fv-note{background:#1f3329;color:#bfe3cf}[data-theme="dark"] .fv-lock{background:#1f3329;color:#9fd8b8}
+.fvb{width:100%;max-width:980px;display:grid;gap:10px;margin:2px auto 0}
+.fv-ch{display:flex;justify-content:safe center;gap:8px;overflow-x:auto;padding:2px;scrollbar-width:none}.fv-ch::-webkit-scrollbar{display:none}
+.fv-ch button{all:unset;cursor:pointer;flex:none;display:flex;flex-direction:column;gap:1px;padding:8px 14px;border-radius:14px;background:var(--surface,#fff);box-shadow:0 0 0 1px var(--line);font-size:13px;font-weight:600;color:var(--ink);max-width:200px}
+.fv-ch button small{font-weight:500;font-size:11.5px;color:var(--muted);font-variant-numeric:tabular-nums}
+.fv-ch button b{font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.fv-ch button.on{background:var(--primary);color:#fff;box-shadow:none}.fv-ch button.on small{color:rgba(255,255,255,.8)}
+.fv-ch button:focus-visible{outline:2px solid var(--primary);outline-offset:2px}
+.fv-facts{display:flex;flex-wrap:wrap;justify-content:center;gap:8px}
+.fv-facts span{display:inline-flex;align-items:center;gap:6px;padding:6px 12px;border-radius:999px;background:var(--surface,#fff);box-shadow:0 0 0 1px var(--line);font-size:12.5px;color:var(--ink)}
+.fv-facts i{font-style:normal}
 @media (max-width:980px){
   body.fv-on .studio{display:flex;flex-direction:column;overflow:auto}
   .fv{order:5;border-left:0;overflow:visible;padding:4px 12px 28px;background:none}
 }`;
+  const mmss = (t) => `${Math.floor(t / 60)}:${String(Math.floor(t % 60)).padStart(2, '0')}`;
   const esc = (t) => String(t == null ? '' : t).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
   let o = {};
   function el() {
@@ -89,15 +100,42 @@ body.fv-on .studio>.stagewrap{grid-template-rows:auto;align-content:center}
       </section>
       <div class="fv-note"><i aria-hidden="true">🔒</i><div>${led ? 'Màn LED' : 'Video'} đã kích hoạt nên đã chốt — tên, ngày, chữ${led ? '' : ', ảnh, nhạc'} giữ nguyên như lúc thanh toán.</div></div>
       ${help ? `<p class="fv-help">Cần sửa gấp? <a href="${esc(help)}" target="_blank" rel="noopener">Nhắn Cưới Nha</a></p>` : ''}`;
+    // dưới khung chiếu: các cảnh (bấm để nhảy tới) + hàng thông tin — đỡ trống, xem nhanh video / màn LED có gì
+    const stage = o.stage && document.querySelector(o.stage);
+    let bar = document.getElementById('fvb');
+    if (stage && !bar) { bar = document.createElement('div'); bar.id = 'fvb'; bar.className = 'fvb'; stage.appendChild(bar); bar.addEventListener('click', (e) => { const c = e.target.closest('[data-t]'); if (c && o.onSeek) { o.onSeek(+c.dataset.t); window.finalView.at(+c.dataset.t); } }); }
+    if (bar) {
+      const ch = (o.chapters || []).filter((c) => c && c.name);
+      bar.innerHTML = (ch.length > 1 ? `<div class="fv-ch" role="list" aria-label="Các cảnh">${ch.map((c) => `<button type="button" role="listitem" data-t="${c.t}"><small>${mmss(c.t)}</small><b>${esc(c.name)}</b></button>`).join('')}</div>` : '')
+        + ((o.facts || []).length ? `<div class="fv-facts">${o.facts.filter((f) => f && f[1]).map(([ic, tx]) => `<span><i aria-hidden="true">${ic}</i>${esc(tx)}</span>`).join('')}</div>` : '');
+      lastOn = -1;
+    }
     // nhãn 🔒 Đã chốt ở dòng nhỏ dưới tên (thay chữ "Đã kích hoạt" / "Đã lưu")
     const sv = document.getElementById('saved');
     if (sv && !document.querySelector('.fv-lock')) sv.insertAdjacentHTML('afterend', '<span class="fv-lock">🔒 Đã chốt</span>');
     window.dispatchEvent(new Event('resize')); // khung xem đổi cỡ theo bố cục mới
   };
+  // cảnh đang chiếu (trình sửa gọi theo thời gian phát)
+  let lastOn = -1;
+  window.finalView.at = function (t) {
+    const bs = document.querySelectorAll('#fvb [data-t]'); if (!bs.length) return;
+    let k = 0; bs.forEach((b, i) => { if (t >= +b.dataset.t - 0.05) k = i; });
+    if (k === lastOn) return; lastOn = k;
+    bs.forEach((b, i) => b.classList.toggle('on', i === k));
+    const b = bs[k], box = b.parentElement; if (box) box.scrollTo({ left: b.offsetLeft - box.clientWidth / 2 + b.offsetWidth / 2, behavior: 'smooth' });
+  };
+  // ngày dạng "Chủ Nhật, 14/02/2027"
+  const WD = ['Chủ Nhật', 'Thứ Hai', 'Thứ Ba', 'Thứ Tư', 'Thứ Năm', 'Thứ Sáu', 'Thứ Bảy'];
+  window.finalView.date = function (iso) {
+    const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(iso || ''); if (!m) return '';
+    return `${WD[new Date(Date.UTC(+m[1], +m[2] - 1, +m[3])).getUTCDay()]}, ${m[3]}/${m[2]}/${m[1]}`;
+  };
+  window.finalView.time = function (hm) { const m = /^(\d{2}):(\d{2})$/.exec(hm || ''); return m ? `${+m[1]} giờ${m[2] !== '00' ? ' ' + m[2] : ''}` : ''; };
   window.finalView.off = function () {
     if (!document.body.classList.contains('fv-on')) return;
     document.body.classList.remove('fv-on');
     const b = document.getElementById('fv'); if (b) b.remove();
+    const fb = document.getElementById('fvb'); if (fb) fb.remove();
     const l = document.querySelector('.fv-lock'); if (l) l.remove();
     window.dispatchEvent(new Event('resize'));
   };

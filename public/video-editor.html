@@ -216,6 +216,7 @@ body{height:100vh;display:flex;flex-direction:column;overflow:hidden;background:
 .scrub #pp{flex:none;width:38px;height:38px;border:0;border-radius:50%;background:var(--primary);color:#fff;font-size:13px;cursor:pointer;box-shadow:0 4px 12px rgba(214,69,93,.35)}
 .scrub .track{position:relative;flex:1;min-width:0;height:22px;display:flex;align-items:center}
 .scrub input{width:100%;margin:0;accent-color:var(--primary);cursor:pointer}
+.scrub input[type=range]:focus{outline:none}.scrub input[type=range]:focus-visible{outline:2px solid var(--primary-soft);outline-offset:3px;border-radius:9px} /* bỏ viền vàng của trình duyệt sau khi bấm tua */
 .scrub .marks{position:absolute;left:0;right:0;top:50%;height:0;pointer-events:none}
 .scrub .marks i{position:absolute;top:-8px;width:2px;height:16px;border-radius:2px;background:rgba(127,127,127,.45)}
 .scrub #tm{flex:none;min-width:84px;text-align:right;font-variant-numeric:tabular-nums}
