@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="vi"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<script src="/js/theme.js"></script>
+<title>Mock: món đã kích hoạt ở Thiệp của tôi</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&amp;display=swap">
+<link rel="stylesheet" href="/css/app.css">
+<style>
+/* MOCK: trang "Thiệp của tôi" khi thiệp đã có màn LED + slide kích hoạt. Nút A–E góc dưới để đổi kiểu. */
+body{padding-bottom:90px}
+.v{display:none}.v.on{display:block}
+.ok{color:var(--ok);font-weight:600}
+.lbl{margin:0 0 10px;font-size:11.5px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;color:var(--muted)}
+.pnl{border-radius:20px;background:var(--surface);box-shadow:0 0 0 1px var(--line),0 8px 24px rgba(120,40,50,.06)}
+.b1{display:inline-flex;align-items:center;justify-content:center;gap:6px;height:38px;padding:0 16px;border-radius:999px;background:var(--grad);color:#fff;font-size:14px;font-weight:700;white-space:nowrap}
+.b2{display:inline-flex;align-items:center;justify-content:center;gap:6px;height:38px;padding:0 16px;border-radius:999px;background:var(--primary-soft);color:var(--primary);font-size:14px;font-weight:700;white-space:nowrap}
+.b3{display:inline-flex;align-items:center;height:38px;padding:0 14px;border-radius:999px;box-shadow:inset 0 0 0 1px var(--line);font-size:14px;font-weight:600;white-space:nowrap}
+.sm{height:32px;padding:0 12px;font-size:13px}
+.lay{display:grid;grid-template-columns:minmax(0,1fr) 330px;gap:20px;align-items:start;margin-top:26px}
+@media (max-width:900px){.lay{grid-template-columns:1fr}}
+/* thẻ thiệp chính */
+.hero{display:grid;grid-template-columns:230px 1fr;overflow:hidden}
+.hero>i{display:block;min-height:250px;background:#eee top/cover}
+.hero .in{padding:20px 22px;display:flex;flex-direction:column;gap:10px}
+.hero h2{margin:0;font-size:26px}.hero .sub{color:var(--muted);font-size:14px}
+.kp{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}.kp div{padding:8px 10px;border-radius:12px;background:var(--bg)}.kp b{display:block;font-size:19px}.kp span{font-size:12px;color:var(--muted)}
+.row{display:flex;gap:8px;flex-wrap:wrap}
+@media (max-width:620px){.hero{grid-template-columns:1fr}.hero>i{min-height:200px}.kp{grid-template-columns:repeat(2,1fr)}}
+/* cột gợi ý */
+.sug{padding:6px}.sug h4{margin:0;padding:10px 12px 4px;font-size:11.5px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;color:var(--muted)}
+.sr{display:flex;align-items:center;gap:12px;padding:12px;font-size:15px;font-weight:600}.sr+.sr{border-top:1px solid var(--line)}
+.sr small{display:block;font-size:12.5px;font-weight:500;color:var(--muted)}.sr .sp{flex:1}.sr em{font-style:normal;padding:2px 9px;border-radius:999px;background:#d6455d;color:#fff;font-size:11px;font-weight:700}
+.ico{flex:none;width:20px;height:20px;fill:none;stroke:var(--primary);stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+/* A: lưới thẻ lớn */
+.ga{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:14px;margin-top:20px}
+.ta{overflow:hidden}.ta i{display:block;aspect-ratio:16/9;background:#1a1416 center/cover}.ta>div{padding:12px 14px 14px}.ta b{display:block;font-size:16px}
+/* B: hàng ngang gọn */
+.rb{display:flex;align-items:center;gap:14px;padding:12px;margin-top:12px}
+.rb i{flex:none;width:150px;aspect-ratio:16/9;border-radius:12px;background:#1a1416 center/cover}
+.rb .t{flex:1;min-width:0}.rb b{display:block;font-size:16px}
+@media (max-width:620px){.rb{flex-wrap:wrap}.rb i{width:100%}}
+/* C: tab trong thẻ */
+.tabs{display:flex;gap:4px;padding:6px;border-bottom:1px solid var(--line)}
+.tabs span{padding:9px 16px;border-radius:999px;font-size:14px;font-weight:700;color:var(--muted)}.tabs .on{background:var(--ink);color:#fff}
+.tc{display:grid;grid-template-columns:1.2fr 1fr;gap:20px;padding:20px}
+.tc i{display:block;aspect-ratio:16/9;border-radius:14px;background:#1a1416 center/cover}
+@media (max-width:620px){.tc{grid-template-columns:1fr}}
+/* D: bộ ngày cưới — ba thẻ ngang hàng */
+.gd{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:6px}
+.td{overflow:hidden;display:flex;flex-direction:column}.td i{display:block;aspect-ratio:4/3;background:#1a1416 center/cover}
+.td>div{padding:12px 14px 14px;display:flex;flex-direction:column;gap:4px;flex:1}.td b{font-size:16px}.td .row{margin-top:auto;padding-top:8px}
+.td.add{display:grid;place-items:center;text-align:center;border:1.5px dashed #e2cfd3;box-shadow:none;background:none;color:var(--primary);font-weight:700;padding:20px}
+@media (max-width:760px){.gd{grid-template-columns:1fr 1fr}}
+/* E: cột phải chia "Của bạn" / "Thêm" */
+.mine{padding:6px}.mi{display:flex;align-items:center;gap:12px;padding:10px 12px}.mi+.mi{border-top:1px solid var(--line)}
+.mi i{flex:none;width:76px;aspect-ratio:16/9;border-radius:9px;background:#1a1416 center/cover}.mi .t{flex:1;min-width:0;font-weight:700}.mi small{display:block;font-size:12.5px}
+.sw{position:fixed;right:20px;bottom:20px;z-index:99;display:flex;gap:4px;padding:5px;border-radius:999px;background:#2a1b1e;box-shadow:0 10px 30px rgba(0,0,0,.25)}
+.sw button{border:0;border-radius:999px;padding:9px 14px;background:none;color:#fff;font:700 13px var(--sans);cursor:pointer}.sw button.on{background:#d6455d}
+</style></head><body>
+<main class="wrap" id="m"></main>
+<div class="sw" id="sw"><button class="on" data-k="A">A · Lưới thẻ</button><button data-k="B">B · Hàng ngang</button><button data-k="C">C · Tab</button><button data-k="D">D · Bộ ngày cưới</button><button data-k="E">E · Cột phải</button></div>
+<script src="/js/common.js"></script>
+<script>
+renderTopbar('cards').catch(() => {});
+const COVER = '/demo/cover-songhy-do.jpg', LED = '/demo/lposter-lam-saoroi.jpg', SLIDE = '/demo/vposter-album.jpg';
+const I = { led: '<svg class="ico" viewBox="0 0 24 24"><rect x="2.5" y="4" width="19" height="12.5" rx="2"/><path d="M8 20.5h8M12 16.5v4"/></svg>', clap: '<svg class="ico" viewBox="0 0 24 24"><path d="M4 10h16v9a1.5 1.5 0 0 1-1.5 1.5h-13A1.5 1.5 0 0 1 4 19z"/><path d="m4 10-.6-3.2 15-3 .6 3.2"/></svg>', vid: '<svg class="ico" viewBox="0 0 24 24"><rect x="3" y="6" width="13" height="12" rx="2.5"/><path d="m16 10.5 5-3v9l-5-3"/></svg>' };
+const hero = `<article class="hero pnl"><i style="background-image:url(${COVER})"></i><div class="in"><h2>Gia Huy &amp; Bảo Ngọc</h2><div class="sub">20/12/2026 · Song Hỷ · <span class="ok">● Trọn bộ đã kích hoạt</span></div>
+  <div class="kp"><div><b>214</b><span>lượt xem</span></div><div><b>86</b><span>khách mời</span></div><div><b>41</b><span>sẽ đến</span></div><div><b>12</b><span>lời chúc</span></div></div>
+  <div class="row"><span class="b1">Sửa thiệp</span><span class="b2">Gửi link</span><span class="b3">Mở thiệp</span></div></div></article>`;
+const sug = `<div class="sug pnl"><h4>Làm thêm cho thiệp này</h4><div class="sr">${I.clap}<span class="sp">Video báo hỷ TikTok<small>Khoe ngày cưới lên TikTok</small></span><em>Free</em></div><div class="sr">${I.vid}<span class="sp">Video dạm ngõ<small>Chiếu buổi dạm ngõ, ăn hỏi</small></span>›</div></div>`;
+const acts = `<div class="row" style="margin-top:10px"><span class="b1 sm">▶ Trình chiếu</span><span class="b2 sm">Sửa</span><span class="b3 sm">⬇ MP4</span></div>`;
+const V = {
+  A: `<div class="lay"><div>${hero}<p class="lbl" style="margin-top:22px">Đã kích hoạt</p><div class="ga" style="margin-top:0">
+      <div class="ta pnl"><i style="background-image:url(${LED})"></i><div><b>Màn hình LED</b><span class="ok" style="font-size:13px">● Đã kích hoạt · Sao rơi</span>${acts}</div></div>
+      <div class="ta pnl"><i style="background-image:url(${SLIDE})"></i><div><b>Slide cưới</b><span class="ok" style="font-size:13px">● Đã kích hoạt · 24 ảnh</span>${acts}</div></div></div></div>${sug}</div>`,
+  B: `<div class="lay"><div>${hero}<p class="lbl" style="margin-top:22px">Đã kích hoạt</p>
+      <div class="rb pnl" style="margin-top:0"><i style="background-image:url(${LED})"></i><div class="t"><b>Màn hình LED</b><span class="ok" style="font-size:13px">● Đã kích hoạt</span><div class="muted" style="font-size:13px">Sao rơi · Màn ngang 16:9</div></div>${acts.replace('margin-top:10px', '')}</div>
+      <div class="rb pnl"><i style="background-image:url(${SLIDE})"></i><div class="t"><b>Slide cưới</b><span class="ok" style="font-size:13px">● Đã kích hoạt</span><div class="muted" style="font-size:13px">Album · 24 ảnh · 3 phút</div></div>${acts.replace('margin-top:10px', '')}</div></div>${sug}</div>`,
+  C: `<div class="lay"><div class="pnl" style="overflow:hidden"><div class="tabs"><span>💌 Thiệp</span><span class="on">🖥 Màn LED</span><span>🎞 Slide</span></div>
+      <div class="tc"><i style="background-image:url(${LED})"></i><div><h2 style="margin:0 0 4px">Màn hình LED</h2><div class="ok" style="font-size:14px">● Đã kích hoạt</div><p class="muted" style="font-size:14px">Mẫu Sao rơi · Màn ngang 16:9 · 5 cảnh · 8 giây/cảnh</p>${acts}<p class="muted" style="font-size:12.5px;margin-top:14px">Bấm tab Thiệp / Slide để xem món khác — mỗi tab là một món đã có.</p></div></div></div>${sug}</div>`,
+  D: `<div style="margin-top:26px"><p class="lbl">Bộ ngày cưới của bạn</p><div class="gd">
+      <div class="td pnl"><i style="background-image:url(${COVER});background-position:top"></i><div><b>Thiệp cưới</b><span class="ok" style="font-size:13px">● Đã kích hoạt · 214 lượt xem</span><div class="row"><span class="b1 sm">Sửa</span><span class="b2 sm">Gửi link</span></div></div></div>
+      <div class="td pnl"><i style="background-image:url(${LED})"></i><div><b>Màn hình LED</b><span class="ok" style="font-size:13px">● Đã kích hoạt</span><div class="row"><span class="b1 sm">▶ Trình chiếu</span><span class="b2 sm">Sửa</span></div></div></div>
+      <div class="td pnl"><i style="background-image:url(${SLIDE})"></i><div><b>Slide cưới</b><span class="ok" style="font-size:13px">● Đã kích hoạt</span><div class="row"><span class="b1 sm">▶ Trình chiếu</span><span class="b2 sm">Sửa</span></div></div></div></div>
+      <p class="lbl" style="margin-top:26px">Làm thêm</p><div class="gd"><div class="td pnl add">${I.clap}<br>Video báo hỷ TikTok · Free</div><div class="td pnl add">${I.vid}<br>Video dạm ngõ</div></div></div>`,
+  E: `<div class="lay"><div>${hero}</div><div style="display:grid;gap:14px"><div class="mine pnl"><h4 class="lbl" style="padding:10px 12px 0;margin:0">Của bạn</h4>
+      <div class="mi"><i style="background-image:url(${LED})"></i><span class="t">Màn hình LED<small class="ok">● Đã kích hoạt</small></span><span class="b1 sm">▶</span></div>
+      <div class="mi"><i style="background-image:url(${SLIDE})"></i><span class="t">Slide cưới<small class="ok">● Đã kích hoạt</small></span><span class="b1 sm">▶</span></div></div>${sug}</div></div>`,
+};
+const m = document.getElementById('m');
+const show = (k) => { m.innerHTML = V[k]; document.querySelectorAll('#sw button').forEach((b) => b.classList.toggle('on', b.dataset.k === k)); };
+document.getElementById('sw').onclick = (e) => { const b = e.target.closest('button'); if (b) show(b.dataset.k); };
+show('A');
+</script>
+</body></html>
