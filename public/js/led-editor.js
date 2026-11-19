@@ -63,7 +63,7 @@ function renderSide() {
         <div class="grid2">${f('groom.father', 'Bố chú rể', 'parents', 'Ông …')}${f('bride.father', 'Bố cô dâu', 'parents', 'Ông …')}${f('groom.mother', 'Mẹ chú rể', 'parents', 'Bà …')}${f('bride.mother', 'Mẹ cô dâu', 'parents', 'Bà …')}</div>
         <p class="clab">Lời cảm ơn</p>
         <label class="field"><textarea data-l="message" data-sc="msg" maxlength="200" rows="3">${esc(led.message)}</textarea></label>
-        <p class="muted" style="font-size:12px;margin:4px 0 0">Tên, ngày, bố mẹ dùng chung với thiệp. Bật / tắt cảnh ở thanh dưới màn.</p>
+        <p class="muted" style="font-size:12px;margin:4px 0 0">Tên, ngày, bố mẹ dùng chung với thiệp. Ô nào để trống thì cảnh đó tự ẩn.</p>
       </section>`;
   }
   else if (curPanel === 'anh') h = head('Ảnh cưới', 'Ảnh hiện ở cảnh "Ảnh cưới" trên màn LED (dùng chung ảnh bìa của thiệp).') + `<section class="group">
@@ -207,6 +207,8 @@ async function askLogin() {
 }
 
 let sceneKeys = [];
+// đánh dấu chữ vừa đổi trên màn (viền hồng sáng lên rồi tắt dần)
+function markText(key) { const fr = $('#frame') && $('#frame').contentWindow; if (fr) setTimeout(() => fr.postMessage({ type: 'led-mark', key }, location.origin), 60); }
 function showScene(k) {
   const fr = $('#frame') && $('#frame').contentWindow, i = sceneKeys.indexOf(k); if (!fr || i < 0) return;
   fr.postMessage({ type: 'led-pause', paused: true }, location.origin);
@@ -321,10 +323,12 @@ function bind() {
     }
   });
   // bấm vào ô nhập → màn chuyển tới cảnh có chữ đó và đứng yên
-  side.addEventListener('focusin', (e) => { const k = e.target.dataset && e.target.dataset.sc; if (k) showScene(k); });
+  side.addEventListener('focusin', (e) => { const k = e.target.dataset && e.target.dataset.sc; if (k) { showScene(k); setTimeout(() => markText(e.target.dataset.d || 'led.' + e.target.dataset.l), 250); } });
   // gõ vào ô của cảnh chưa có (vd. bố mẹ còn trống → cảnh chưa hiện): cảnh vừa xuất hiện thì chuyển tới luôn
   let scT = null;
-  side.addEventListener('input', (e) => { const k = e.target.dataset && e.target.dataset.sc; if (!k) return; clearTimeout(scT); scT = setTimeout(() => showScene(k), 300); });
+  side.addEventListener('input', (e) => { const k = e.target.dataset && e.target.dataset.sc; if (!k) return; clearTimeout(scT); scT = setTimeout(() => { showScene(k); markText(e.target.dataset.d || 'led.' + e.target.dataset.l); }, 300); });
+  // rời khỏi ô nhập (không sang ô khác): màn chạy tiếp các cảnh
+  side.addEventListener('focusout', () => setTimeout(() => { const a = document.activeElement; if (!(a && a.closest && a.closest('#side [data-sc]'))) { const fr = $('#frame').contentWindow; if (fr) fr.postMessage({ type: 'led-pause', paused: false }, location.origin); } }, 0));
   // ảnh cưới: hiện ngay ảnh trong máy (ô nhỏ + màn xem trước), tải lên + lưu ngầm, không che màn hình
   side.addEventListener('change', async (e) => {
     if (e.target.id !== 'coverIn' || !e.target.files[0]) return;
@@ -431,7 +435,7 @@ function editPop(key, rect) {
     const v = inp.value;
     if (isLed) led[lk] = v.slice(0, lk === 'kicker' ? 40 : 200);
     else { setP(card.data, key, v); dataDirty = true; if (/\.name$/.test(key)) renderHeader(); }
-    pushPreview(); schedule(700);
+    pushPreview(); schedule(700); markText(key);
     const sf = $(`#side [data-d="${key}"], #side [data-l="${lk}"]`); if (sf && sf !== inp) sf.value = v; // ô bên bảng Nội dung đổi theo
   });
   const close = () => { p.remove(); document.removeEventListener('mousedown', out, true); };

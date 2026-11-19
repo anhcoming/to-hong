@@ -1347,11 +1347,21 @@
         C.bride = fx ? Object.assign({}, e.data.card.bride, { name: fx.bride }) : e.data.card.bride;
         if (e.data.card.photo !== undefined) C.photo = e.data.card.photo;
       }
+      // đang sửa (màn đứng yên): chữ mới hiện ngay, không mờ đi rồi hiện dần mỗi lần gõ
+      var de = document.documentElement, inst = paused && !de.classList.contains('still');
+      if (inst) de.classList.add('still');
       apply(e.data.led);
+      if (inst) requestAnimationFrame(function () { requestAnimationFrame(function () { de.classList.remove('still'); }); });
       if (szBar && szEl) szShow();
     }
     if (e.data.type === 'led-goto') { if (szBar) { szBar.hidden = true; szEl = null; } show(e.data.index); restartTimer(); }
     if (e.data.type === 'led-pause' && !!e.data.paused !== paused) togglePause();
+    // trình sửa báo vừa đổi ô nào: chữ đó trên màn sáng viền hồng một lúc cho dễ thấy chỗ vừa đổi
+    if (e.data.type === 'led-mark') {
+      var sel = e.data.key === 'date' || e.data.key === 'time' ? (e.data.key === 'date' ? '.slide.on .bigdate, .slide.on .wd, .slide.on .lunar' : '.slide.on .time') : '.slide.on [data-e="' + String(e.data.key).replace(/"/g, '') + '"]';
+      var els = document.querySelectorAll(sel);
+      Array.prototype.forEach.call(els, function (el) { el.classList.remove('marked'); void el.offsetWidth; el.classList.add('marked'); clearTimeout(el._mk); el._mk = setTimeout(function () { el.classList.remove('marked'); }, 1600); });
+    }
   });
 
   // khung xem trước của trình sửa: cho /led/led-export.js (nạp khi bấm Tải MP4) đọc trạng thái và tự vẽ từng khung hình
