@@ -44,6 +44,21 @@
   .strip button{flex:0 0 42%;scroll-snap-align:start}
   .tv .nm{left:14px;bottom:12px;font-size:12px}
 }
+/* điện thoại: gọn — màn xem thử căn giữa viền mỏng, dải mẫu nhỏ hơn, nút vừa tay, bớt khoảng trống */
+@media (max-width:600px){
+  .lp{padding:86px 0 20px}
+  .lp h1{font-size:26px}
+  .lp .tv{width:100%;margin:18px 0 0;padding:4px;border-radius:12px;box-shadow:0 14px 30px rgba(120,40,50,.18)}
+  .lp .tv iframe{border-radius:9px}
+  .tv .nm{display:none}
+  .tv .fs{right:10px;top:10px;width:30px;height:30px}
+  .strip{margin:14px -20px 0;padding:4px 20px 8px;scroll-padding:0 20px} /* thẻ đầu thẳng hàng với khung xem */
+  .strip button{flex:0 0 34%;border-radius:10px}
+  .strip span{padding:5px 6px 6px;font-size:11px}
+  .lp-cta{margin-top:16px}
+  .lp-cta .btn-lg{padding:12px 24px;font-size:15px}
+  .lp + .block{padding-top:44px}
+}
 /* Bộ sưu tập mẫu */
 .gal{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:22px}
 .gc{display:flex;flex-direction:column;border-radius:20px;overflow:hidden;background:var(--card);border:1px solid var(--line);box-shadow:0 14px 34px rgba(120,40,50,.07);transition:transform .25s,box-shadow .25s}
