@@ -117,7 +117,7 @@ function fitScreen() {
   const box = $('#stagewrap').getBoundingClientRect();
   // điện thoại: khung xem trước theo bề ngang, cao tối đa ~1/3 màn hình (phần tuỳ chỉnh bên dưới cuộn riêng)
   const phone = matchMedia('(max-width:900px)').matches;
-  const maxW = phone ? innerWidth - 22 : box.width - 48, maxH = phone ? innerHeight * (h > w ? 0.42 : 0.34) : box.height - (ledFinal() ? 110 : 160); // chừa thanh khung màn (đã chốt: ẩn) + thanh cảnh
+  const maxW = phone ? innerWidth - 22 : box.width - 48, maxH = phone ? innerHeight * (h > w ? 0.42 : 0.34) : box.height - (ledFinal() ? 48 : 160); // chừa thanh khung màn + thanh cảnh (đã chốt: ẩn cả hai)
   const s = Math.min(maxW / w, maxH / h);
   $('#screen').style.width = Math.round(w * s) + 'px';
   $('#screen').style.height = Math.round(h * s) + 'px';
