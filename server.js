@@ -269,16 +269,21 @@ function wasPrice(o, product) {
   if (product === 'combo') { const le = cardPrice() + config.ledPrice + config.videoPrice; if (le > o.amount + (o.discount || 0)) return { wasPrice: le, retail: true }; }
   return {};
 }
+// Tiền khách đã chuyển cho đơn đang chờ mà chưa đủ (các lần chuyển thiếu, SePay ghi 'underpaid'): chuyển nốt phần còn lại là kích hoạt
+const receivedFor = (o) => (o.status === 'pending' ? db.bankTxns.filter((x) => x.order === o.code && x.result === 'underpaid').reduce((n, x) => n + x.amount, 0) : 0);
 function orderView(o) {
   const card = db.cards.find((c) => c.id === o.cardId);
   const product = o.product || 'card';
+  const received = receivedFor(o), due = Math.max(0, o.amount - received);
   return {
     product, productName: product === 'video' && card ? videoLib.videoName(card.video) : PRODUCTS[product].name,
     code: o.code, amount: o.amount, coupon: o.coupon || null, status: o.status, claimedAt: o.claimedAt || null,
     createdAt: o.createdAt, paidAt: o.paidAt || null, paidVia: o.paidVia || null, bankNote: o.bankNote || null,
     upgrade: !!o.upgrade, ...wasPrice(o, product),
     ...(product === 'combo' && card && o.status === 'pending' ? { have: comboHave(card) } : {}),
-    qr: qrPay(o.amount, o.code),
+    // đã chuyển thiếu: báo khách số đã nhận + còn thiếu, mã QR theo phần còn thiếu (cùng nội dung chuyển khoản)
+    ...(received ? { received, due } : {}),
+    qr: qrPay(received ? due : o.amount, o.code),
     bank: { name: config.payment.bankName, accountNo: config.payment.accountNo, accountName: config.payment.accountName },
     card: card ? { id: card.id, title: card.title, names: [card.data.groom.name, card.data.bride.name].filter(Boolean).join(' & ') } : null,
   };
@@ -885,6 +890,8 @@ route('POST', '/api/cards/:id/order', async (req, res, ctx) => {
   if (!d && !order.coupon) { const now = P.price(card); if (now < order.amount) order.amount = now; }
   // mã giảm hết 100% → không cần chuyển khoản, kích hoạt luôn
   if (order.amount <= 0 && d) markPaid(order, 'coupon');
+  // đã chuyển thiếu trước đó mà giá đơn nay hạ (đổi giá, áp mã) xuống còn ≤ số đã nhận → đủ tiền, kích hoạt luôn
+  else if (order.status === 'pending' && receivedFor(order) > 0 && receivedFor(order) >= order.amount) markPaid(order, 'sepay');
   save();
   json(res, 200, { order: orderView(order) });
 });

@@ -45,6 +45,8 @@ const PAY_CSS = `<style>
 .pay-cp{font-size:14px;text-transform:uppercase}.pay-cp.bad{border-color:#c0392b;box-shadow:0 0 0 3px rgba(192,57,43,.12)}
 .cp-err{margin:0 0 10px 4px;font-size:13px;color:#c0392b}
 .cp-err:not([hidden])+p{margin-top:4px}.pay-cp::placeholder{text-transform:none;font-size:14px}
+.pay-short{display:grid;gap:4px;margin:14px 0 0;padding:12px 14px;border-radius:14px;background:#fff6e0;color:#6b4e00;font-size:13.5px;line-height:1.5;text-align:left}
+.pay-short>b{font-size:15px;color:#8a5a00}
 .pay-pill{display:inline-block;margin-top:4px;background:var(--ok-soft,#e6f3ec);color:var(--ok,#2f7d5b);font-size:11px;font-weight:700;padding:2px 8px;border-radius:999px}
 </style>`;
 
@@ -70,8 +72,11 @@ window.openPayModal = async function (cardId, onDone, product = 'card') {
     } else orders[product] = (await post(product)).order;
   } catch (e) { return toast(e.message, true); }
   let sel = orders.combo && product === 'card' ? 'combo' : product;
+  // đã chuyển thiếu cho một đơn: mở thẳng đơn đó (chuyển nốt phần còn thiếu), không cho đổi gói giữa chừng
+  const part = Object.values(orders).find((x) => x.received);
+  if (part) sel = part.product;
   const data = { get order() { return orders[sel]; }, set order(o) { orders[o.product] = o; } };
-  const picker = !!(product !== 'combo' && orders[product] && orders.combo);
+  let picker = !part && !!(product !== 'combo' && orders[product] && orders.combo);
   // tên các phần của Trọn bộ: đã có / còn thiếu (đơn nâng cấp)
   const PART = { card: 'thiệp', led: 'màn LED', video: 'slide / màn hình dạm ngõ' };
   const partsOf = (o) => { const have = o.have || []; return { have: have.map((k) => PART[k]).join(', '), need: Object.keys(PART).filter((k) => !have.includes(k)).map((k) => PART[k]).join(' + ') }; };
@@ -80,7 +85,7 @@ window.openPayModal = async function (cardId, onDone, product = 'card') {
   let timer = null, tick = null, ov = null, box = null, closeModal = null;
   const QR_LIFE = 5 * 60e3; // mã QR hiệu lực 5 phút (đủ để mở app ngân hàng, đăng nhập, xác thực) — hết thì bấm tạo mã mới
   let qrUntil = Date.now() + QR_LIFE, qrTick = null;
-  let waitStart = Object.values(orders).some((o) => o.claimedAt) ? Date.now() : 0; // đã báo chuyển từ trước → mở lại là vào màn chờ luôn
+  let waitStart = Object.values(orders).some((o) => o.claimedAt && !o.received) ? Date.now() : 0; // chuyển thiếu: mở màn mã QR có ô báo thiếu, không mở màn chờ // đã báo chuyển từ trước → mở lại là vào màn chờ luôn
   const SLOW = 120e3;
 
   const closeAll = () => {
@@ -118,7 +123,8 @@ window.openPayModal = async function (cardId, onDone, product = 'card') {
         <div class="ring" aria-hidden="true"></div>
         <h2>Đang chờ thanh toán…</h2>
         <p class="muted" style="margin:0">Ngân hàng báo tiền về là ${esc(lcFirst(o.productName))} tự kích hoạt — thường chỉ vài giây. Đừng tắt trang này nhé.</p>
-        <div class="amt">${money(o.amount)}</div>
+        ${o.received ? `<p class="muted" style="margin:10px 0 0">Đã nhận ${money(o.received)}, đang chờ phần còn thiếu</p>` : ''}
+        <div class="amt">${money(o.received ? o.due : o.amount)}</div>
         <div class="meta"><span>Nội dung <b style="color:var(--ink)">${esc(o.code)}</b></span><span id="payClock">0:00</span></div>
         ${slow ? `<p class="slow">Hơi lâu rồi — có thể ngân hàng đang chậm. Bạn có thể đóng trang, Cưới Nha sẽ kiểm tra và kích hoạt giúp trong ít phút.</p>` : ''}
         <button class="btn block plain" id="payBack">← Xem lại mã QR</button>
@@ -162,7 +168,8 @@ window.openPayModal = async function (cardId, onDone, product = 'card') {
         ${until}${p === 'combo' && (o.upgrade || o.retail) && o.wasPrice ? ` <span class="chip ok">Rẻ hơn mua lẻ ${money(o.wasPrice - o.amount)}</span>` : ''}
         ${o.coupon ? `<span class="chip ok">Đã áp mã ${esc(o.coupon)}</span>` : ''}
       </div>`;
-    box.innerHTML = `${PAY_CSS}<button class="modal-x" aria-label="Đóng">×</button>${head}
+    const short = o.received ? `<div class="pay-short" role="alert"><b>Đã nhận ${money(o.received)} · còn thiếu ${money(o.due)}</b><span>Quét mã bên dưới để chuyển nốt ${money(o.due)}, giữ nguyên nội dung <b>${esc(o.code)}</b>. Đủ tiền là tự kích hoạt.</span></div>` : '';
+    box.innerHTML = `${PAY_CSS}<button class="modal-x" aria-label="Đóng">×</button>${head}${short}
       <div class="qrcard">
         <div class="qrbox${Date.now() >= qrUntil ? ' exp' : ''}" id="qrBox"><img src="${esc(o.qr)}" alt="Mã QR chuyển khoản"><span class="scan" aria-hidden="true"></span>
           <div class="qx" id="qrX"><b>Mã QR đã hết hạn</b><button type="button" class="btn sm" id="qrNew">↻ Tạo mã mới</button></div></div>
@@ -171,10 +178,11 @@ window.openPayModal = async function (cardId, onDone, product = 'card') {
           <div><span>Ngân hàng</span><b>${esc(o.bank.name)}</b></div>
           <div><span>Số tài khoản</span><b>${esc(o.bank.accountNo)}</b></div>
           <div><span>Chủ tài khoản</span><b>${esc(o.bank.accountName)}</b></div>
+          ${o.received ? `<div><span>Số tiền chuyển nốt</span><b>${money(o.due)}</b></div>` : ''}
           <div><span>Nội dung</span><b class="code">${esc(o.code)}</b></div>
         </div>
       </div>
-      <form id="cp" style="display:flex;gap:8px;margin-bottom:4px">
+      <form id="cp" style="display:${o.received ? 'none' : 'flex'};gap:8px;margin-bottom:4px">
         <input class="input pay-cp" name="c" placeholder="Mã giảm giá (nếu có)" value="${esc(o.coupon || '')}" aria-describedby="cpErr">
         <button class="btn plain">Áp dụng</button>
       </form>
@@ -231,6 +239,15 @@ window.openPayModal = async function (cardId, onDone, product = 'card') {
         try {
           const r = await api(`/api/orders/${x.code}`);
           if (r.order.status === 'paid') { data.order = r.order; sel = r.order.product; return paid(); }
+          // ngân hàng báo chuyển thiếu: hiện ngay số đã nhận, số còn thiếu và mã QR cho phần còn lại
+          if ((r.order.received || 0) !== (x.received || 0)) {
+            orders[r.order.product] = r.order; sel = r.order.product; picker = false;
+            if (ov) { clearInterval(tick); ov.remove(); ov = null; } // đang ở màn chờ → về màn mã QR
+            qrUntil = Date.now() + QR_LIFE;
+            render();
+            toast(`Đã nhận ${money(r.order.received)} — còn thiếu ${money(r.order.due)}`, true);
+            return;
+          }
         } catch {}
       }
     }, 3000);
