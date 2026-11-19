@@ -135,10 +135,10 @@ body{height:100vh;height:100dvh;display:flex;flex-direction:column;overflow:hidd
 .mnow{flex:none;font-size:12px;font-weight:700;color:var(--primary);white-space:nowrap}
 .cover-box .photo{width:110px;flex:none}
 .tplnow{margin:0 0 10px;font-size:14px}
-.tgchips{display:flex;gap:6px;overflow-x:auto;margin:0 -4px 12px;padding:2px 4px;scrollbar-width:none}
+.tgchips{display:flex;gap:0 18px;overflow-x:auto;margin:0 0 12px;scrollbar-width:none;border-bottom:1px solid var(--line)}
 .tgchips::-webkit-scrollbar{display:none}
-.tgchips button{flex:none;border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:999px;padding:6px 12px;font:inherit;font-size:13px;cursor:pointer}
-.tgchips button.on{border-color:var(--primary);background:var(--primary-soft);color:var(--primary);font-weight:600}
+.tgchips button{flex:none;padding:8px 0;margin-bottom:-1px;border:0;border-bottom:2.5px solid transparent;border-radius:0;background:none;color:var(--muted);font:inherit;font-size:13px;font-weight:600;cursor:pointer;white-space:nowrap}.tgchips button:hover{color:var(--ink)}
+.tgchips button.on{color:var(--ink);border-bottom-color:var(--primary)}
 .tplpick{display:grid;grid-template-columns:repeat(auto-fill,minmax(96px,1fr));gap:10px}
 .tplpick button{position:relative;display:flex;flex-direction:column;gap:6px;border:0;background:none;padding:0;text-align:left;cursor:pointer;color:var(--ink);font:inherit;min-width:0}
 .tplpick img{width:100%;aspect-ratio:3/4;object-fit:cover;object-position:top;border-radius:10px;border:2px solid var(--line);background:var(--bg2,#eee);display:block}

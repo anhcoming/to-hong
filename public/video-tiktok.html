@@ -26,9 +26,10 @@
 .vhead h1 em{font-family:var(--script);font-style:normal;color:var(--red);font-weight:700}
 .vhead p{margin:0 auto;max-width:620px;color:var(--muted)}
 .free{display:inline-flex;align-items:center;gap:8px;padding:6px 14px;border-radius:999px;background:var(--card);border:1px solid var(--line);font-weight:700;font-size:14px;color:var(--red)}
-.vchips{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin:24px 0 6px}
-.vchips button{height:36px;padding:0 16px;border-radius:999px;border:1px solid var(--line);background:var(--card);color:var(--ink);font:600 14px/1 inherit;font-family:inherit;cursor:pointer}
-.vchips button.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+.vchips{display:flex;gap:0 22px;justify-content:center;overflow-x:auto;scrollbar-width:none;margin:24px 0 6px;border-bottom:1px solid var(--line)}.vchips::-webkit-scrollbar{display:none}
+@media (max-width:600px){.vchips{justify-content:flex-start;margin-left:-16px;margin-right:-16px;padding:0 16px;gap:0 18px}}
+.vchips button{flex:none;padding:10px 0 10px;margin-bottom:-1px;border:0;border-bottom:2.5px solid transparent;border-radius:0;background:none;color:var(--muted);font:inherit;font-size:14px;font-weight:600;cursor:pointer;white-space:nowrap}.vchips button:hover{color:var(--ink)}
+.vchips button.on{color:var(--ink);border-bottom-color:var(--red)}
 .tgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:20px;padding:18px 0 40px}
 .tc{display:flex;flex-direction:column;border-radius:18px;background:var(--card);border:1px solid var(--line);overflow:hidden;box-shadow:0 12px 30px rgba(120,40,50,.07);cursor:pointer;transition:transform .2s,box-shadow .2s}
 .tc:hover{transform:translateY(-4px);box-shadow:0 20px 40px rgba(120,40,50,.14)}

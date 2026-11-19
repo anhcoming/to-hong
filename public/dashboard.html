@@ -119,9 +119,9 @@
 @media (max-width:760px){.mine{margin:8px 0 0}.mrows{grid-template-columns:minmax(0,1fr)}.mrow .xl{display:none}}
 .tpls .th{display:flex;align-items:baseline;justify-content:space-between;gap:10px;margin:0 0 10px}
 .tpls h3{font-size:18px;margin:0}.tpls .th span{font-size:13px;color:var(--muted)}
-.fchips{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;margin:0 0 14px;padding-bottom:2px}.fchips::-webkit-scrollbar{display:none}
-.fchips button{flex:none;padding:7px 14px;border-radius:999px;border:1px solid var(--line);background:var(--surface);color:var(--ink);font:inherit;font-size:13.5px;font-weight:600;cursor:pointer}
-.fchips button[aria-pressed="true"]{background:var(--ink);border-color:var(--ink);color:var(--surface)}
+.fchips{display:flex;gap:0 22px;overflow-x:auto;scrollbar-width:none;margin:0 0 16px;border-bottom:1px solid var(--line)}.fchips::-webkit-scrollbar{display:none}
+.fchips button{flex:none;padding:10px 0 10px;margin-bottom:-1px;border:0;border-bottom:2.5px solid transparent;border-radius:0;background:none;color:var(--muted);font:inherit;font-size:14px;font-weight:600;cursor:pointer;white-space:nowrap}.fchips button:hover{color:var(--ink)}
+.fchips button[aria-pressed="true"]{color:var(--ink);border-bottom-color:var(--primary,#d6455d)}
 .tgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:20px 16px}
 .tgrid a{text-decoration:none;color:var(--ink);font-size:13.5px;font-weight:600;min-width:0}
 .tgrid i{display:block;aspect-ratio:3/4;border-radius:12px;background:#eee center top/cover;border:1px solid var(--line);margin-bottom:6px;position:relative;transition:transform .15s}
@@ -129,7 +129,7 @@
 .tgrid i em{position:absolute;top:6px;left:6px;padding:1px 7px;border-radius:999px;background:var(--primary);color:#fff;font-size:10.5px;font-style:normal;font-weight:700}
 @media (max-width:760px){
   .tgrid{grid-template-columns:repeat(2,minmax(0,1fr));gap:14px 10px}
-  .fchips{margin:0 -16px 12px;padding:0 16px 2px}
+  .fchips{margin:0 -16px 12px;padding:0 16px;gap:0 18px}
 }
 .others h3{font-size:15px;margin:0 0 4px}.others .hint{font-size:13px;color:var(--muted);margin:0 0 10px}
 .row{display:flex;align-items:center;gap:12px;padding:10px 12px}
