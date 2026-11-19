@@ -174,7 +174,13 @@
   <span>Đang mở mẫu thiệp…</span>
 </div>
 <style>#creating[hidden]{display:none!important}@keyframes crSpin{to{transform:rotate(360deg)}}</style>
-<script>if (/[?&]tao=/.test(location.search)) { document.querySelector('main.wrap').hidden = true; document.getElementById('creating').hidden = false; }</script>
+<script>
+// chỉ ghé qua để chuyển trang (Dùng mẫu, nút Màn LED ở thanh dưới, tạo LED / video): hiện vòng xoay ngay, không loé trang "Thiệp của tôi" trống
+if (/[?&](tao|tao-led|tao-video|mo)=/.test(location.search)) {
+  document.querySelector('main.wrap').hidden = true; document.getElementById('creating').hidden = false;
+  if (!/[?&]tao=/.test(location.search)) document.querySelector('#creating span:last-child').textContent = 'Đang mở…';
+} else if (location.pathname !== '/video-cua-toi') document.querySelector('main.wrap .head').hidden = true; // Thiệp của tôi mở thẳng màn quản lý thiệp: không loé tiêu đề "Thiệp của tôi" (chỉ hiện khi chưa có thiệp)
+</script>
 <script src="/js/common.js"></script>
 <script src="/js/pay.js"></script>
 <script src="/js/story.js" defer></script>
@@ -245,7 +251,7 @@ async function load() {
     const rest = cards.filter((c) => c !== main);
     el.innerHTML = `<div class="dash">${heroCard(main)}</div>` + (rest.length ? `<div class="mine"><h4>Thiệp khác</h4><div class="mrows">${rest.map(mineRow).join('')}</div></div>` : '');
   } else { // chưa có thiệp: mời chọn mẫu (kho mẫu ở /mau-thiep)
-    $('#mine').innerHTML = '';
+    $('#mine').innerHTML = ''; document.querySelector('.head').hidden = false;
     $('#pageTitle').textContent = 'Thiệp của tôi';
     $('#pageSub').textContent = 'Bạn chưa có thiệp nào';
     el.innerHTML = `<div class="panel" style="padding:36px 20px;text-align:center"><p style="font-size:40px;margin:0">💌</p>
@@ -443,7 +449,7 @@ window.newCard = function () {
   }
   const q = new URLSearchParams(location.search);
   if (q.get('tao')) return create(q.get('tao'), q.get('mau')).catch((e) => { // không tạo được → về lại trang Thiệp của tôi, báo lỗi
-    history.replaceState(null, '', location.pathname); $('#creating').hidden = true; document.querySelector('main.wrap').hidden = false;
+    history.replaceState(null, '', location.pathname); $('#creating').hidden = true; document.querySelector('main.wrap').hidden = false; document.querySelector('.head').hidden = true;
     toast(e.message, true); load().catch((er) => toast(er.message, true));
   });
   const want = q.get('tao-led') ? 'sua-led' : q.get('tao-video') ? 'sua-video' : null;
