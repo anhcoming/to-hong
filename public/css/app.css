@@ -204,12 +204,12 @@ table.tbl{width:100%;border-collapse:collapse;font-size:14px}
 /* điện thoại (có thanh tab dưới): thanh trên mảnh — logo + "Trang chủ" */
 @media (max-width:760px){
   body.has-tb-bottom{padding-top:env(safe-area-inset-top)}
-  body.has-tb-bottom .topbar.tb{padding:8px 0 4px}
+  body.has-tb-bottom .topbar.tb{padding:10px 12px 6px} /* viên thanh trên cách hai mép màn hình, như thanh dưới */
   body.has-tb-bottom .topbar.tb .wrap{height:46px;padding:0 6px 0 16px}
   body.has-tb-bottom .tb-mmain{display:inline-flex}body.has-tb-bottom .tb-me{display:block}
   body.has-tb-bottom .tb-mmain>button{height:auto}
-  .tb-mmain .tb-menu{position:fixed;left:12px;right:12px;top:62px;min-width:0}
-  .tb-me .tb-menu{position:fixed;right:12px;left:auto;top:62px}
+  .tb-mmain .tb-menu{position:fixed;left:12px;right:12px;top:66px;min-width:0}
+  .tb-me .tb-menu{position:fixed;right:12px;left:auto;top:66px}
   .tb-bottom i{position:relative}.tb-bottom i em{position:absolute;top:-11px;left:50%;transform:translateX(-50%);white-space:nowrap;padding:0 5px;border-radius:99px;background:#d6455d;color:#fff;font-size:8.5px;font-style:normal;font-weight:700;line-height:14px}
 }
 
