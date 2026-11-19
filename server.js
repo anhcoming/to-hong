@@ -28,7 +28,7 @@ const Gs = require('./lib/guests');
 const stats = require('./lib/stats');
 const discounts = require('./lib/discounts');
 
-store.onLoad(() => Wd.migrate()); // dữ liệu từ trước khi có sổ tay cưới → gắn vào đám cưới
+store.onLoad(() => { Wd.migrate(); db.cards.forEach((c) => fixNames(c, false)); }); // fixNames: mở lại tên lỡ bị khoá trống (kích hoạt lúc chưa nhập tên) // dữ liệu từ trước khi có sổ tay cưới → gắn vào đám cưới
 
 // Sản phẩm bán: thiệp, màn LED, slide cưới / màn hình dạm ngõ (sản phẩm "video", đều gắn với một thiệp) và combo "Trọn bộ".
 // Trọn bộ = kích hoạt thiệp + cộng vào tài khoản chủ thiệp 1 lượt màn LED và 1 lượt video. Khách nháp bao nhiêu
@@ -640,7 +640,7 @@ route('PUT', '/api/cards/:id', async (req, res, ctx) => {
     card.oldSlugs = [...(card.oldSlugs || []).filter((x) => x !== s), card.slug].slice(-5); // link đã gửi vẫn mở được
     card.slug = s;
   }
-  if (b.data) { fixNames(card); card.data = Wd.keepFrozen(card, cd.normalize(b.data)); Wd.syncFromCard(card); } // đã qua ngày cưới: tên đôi + ngày cưới giữ nguyên // màn LED kích hoạt từ trước: cố định tên trước khi đổi
+  if (b.data) { fixNames(card, false); card.data = Wd.keepFrozen(card, cd.normalize(b.data)); Wd.syncFromCard(card); } // đã qua ngày cưới: tên đôi + ngày cưới giữ nguyên // màn LED kích hoạt từ trước: cố định tên trước khi đổi
   if (b.data && b.slug === undefined && card.userId) autoSlug(card); // thiệp nháp của khách chưa đăng nhập: giữ nguyên
   if (b.led) { card.led = ledLib.normalize(b.led, card.led); comboUnlock(card, 'led'); } // tạo màn LED (chưa kích hoạt: chỉ xem trước; thiệp Trọn bộ: kích hoạt luôn)
   if (b.video) {
@@ -1225,6 +1225,7 @@ route('GET', '/led/:slug', async (req, res, ctx) => {
       ? renderNotice('Màn hình LED chưa kích hoạt', 'Bạn vẫn xem trước và sửa màn LED trong trình sửa. Kích hoạt một lần để trình chiếu ở tiệc cưới, không còn dòng "Bản dùng thử".', { href: `/sua-led/${card.id}`, text: 'Kích hoạt màn LED' })
       : renderNotice('Màn hình LED chưa sẵn sàng', 'Chủ thiệp chưa kích hoạt màn LED này.'));
   }
+  if (!preview && !(card.led.names && card.led.names.groom && card.led.names.bride)) { fixNames(card); if (card.led.names) save(); } // lần đầu chiếu thật: khoá tên đôi (kích hoạt lúc chưa đủ tên)
   html(res, 200, ledLib.renderLed(card, card.led, { preview, trial: !st.paid }));
 });
 
@@ -1275,6 +1276,8 @@ route('GET', '/video/:slug', async (req, res, ctx) => {
       ? renderNotice('Video chưa kích hoạt', 'Bạn vẫn xem trước và sửa video trong trình sửa. Kích hoạt một lần để chiếu TV bằng link và tải MP4 Full HD, không còn dòng "Bản dùng thử".', { href: `/sua-video/${card.id}`, text: 'Kích hoạt video' })
       : renderNotice('Video chưa sẵn sàng', 'Chủ thiệp chưa kích hoạt video này.'));
   }
+  const inEditor = isOwner && ctx.query.get('preview') === '1' && req.headers['sec-fetch-dest'] !== 'document'; // khung xem trước của trình sửa (mở thẳng một tab thì tính là chiếu thật)
+  if (!inEditor && !(card.video.names && card.video.names.groom && card.video.names.bride)) { fixNames(card); if (card.video.names) save(); } // lần đầu chiếu thật: khoá tên đôi
   html(res, 200, videoLib.renderVideo(card, card.video, { preview: isOwner && ctx.query.get('preview') === '1', trial: false }));
 });
 
@@ -1304,6 +1307,7 @@ route('POST', '/api/cards/:id/video/export', async (req, res, ctx) => {
   const card = ownedCard(ctx, ctx.params.id);
   if (!card.video) throw httpError(400, 'Hãy tạo video trước');
   if (!card.video.paid) throw httpError(402, 'Kích hoạt video để tải bản MP4 Full HD');
+  fixNames(card); // xuất MP4: khoá tên đôi (kích hoạt lúc chưa đủ tên)
   rateLimit('export:' + card.userId, 10, 36e5);
   if (exporting >= 2) throw httpError(503, 'Máy chủ đang bận xuất video khác, thử lại sau 1 phút nhé');
   const type = String(req.headers['content-type'] || '').split(';')[0].trim();
@@ -1389,6 +1393,7 @@ route('POST', '/api/cards/:id/video/saved', async (req, res, ctx) => {
   if (!BLOB_HOST.test(url || '') || !url.includes(`/videos/${card.id}`)) throw httpError(400, 'Đường dẫn video không hợp lệ');
   const old = card.video.mp4;
   card.video.mp4 = url;
+  fixNames(card); // đã xuất MP4: khoá tên đôi (kích hoạt lúc chưa đủ tên)
   save();
   if (old !== url) await dropOldMp4(old);
   json(res, 200, { url });
