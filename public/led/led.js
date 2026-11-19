@@ -1320,11 +1320,10 @@
       if (t && L.names && /^(groom|bride)\.name$/.test(t.getAttribute('data-e'))) t = null; // đã kích hoạt: tên đôi cố định, không sửa
       // bấm ngày / giờ → ô chọn ngày giờ; thứ, âm lịch chỉ chỉnh cỡ chữ
       if (!t) { if (e.target.closest('.bigdate, .time')) { if (!paused) togglePause(); try { window.parent.postMessage({ type: 'led-date' }, location.origin); } catch (er) { /* bỏ qua */ } } return; }
-      if (editing === t) return;
-      if (!paused) togglePause(); // dừng cảnh trong lúc gõ
-      editing = t; try { t.contentEditable = 'plaintext-only'; } catch (er) { t.contentEditable = 'true'; } if (t.contentEditable !== 'plaintext-only') t.contentEditable = 'true';
-      t.focus();
-      var r = document.createRange(); r.selectNodeContents(t); var s = window.getSelection(); s.removeAllRanges(); s.addRange(r);
+      if (!paused) togglePause(); // dừng cảnh trong lúc sửa
+      // không gõ thẳng lên chữ (dễ lệch, cảnh tự chạy): báo trình sửa mở hộp nhập ngay cạnh dòng chữ này
+      var rc = t.getBoundingClientRect();
+      try { window.parent.postMessage({ type: 'led-edit', key: t.getAttribute('data-e'), rect: { left: rc.left, top: rc.top, width: rc.width, height: rc.height } }, location.origin); } catch (er) { /* bỏ qua */ }
     });
     slidesEl.addEventListener('input', function (e) {
       var t = e.target.closest('[data-e]'); if (!t) return;

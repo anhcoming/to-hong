@@ -1,0 +1,196 @@
+<!doctype html>
+<html lang="vi"><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Mock — sửa chữ màn LED dễ hơn</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Ephesis&family=Cormorant+Garamond:wght@500;600&family=Be+Vietnam+Pro:wght@400;500;600;700&display=swap">
+<style>
+:root{--red:#d6455d;--ink:#1f1a1b;--muted:#6f6668;--line:#efe3e4;--bg:#faf6f6}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);font-family:'Be Vietnam Pro',system-ui,sans-serif;color:var(--ink)}
+.top{display:flex;gap:8px;align-items:center;padding:14px 20px;background:#fff;border-bottom:1px solid var(--line);position:sticky;top:0;z-index:5}
+.top b{margin-right:10px}
+.top button{border:1px solid var(--line);background:#fff;border-radius:999px;padding:8px 16px;font:600 14px inherit;cursor:pointer}
+.top button.on{background:var(--red);border-color:var(--red);color:#fff}
+.top small{color:var(--muted);margin-left:auto;font-size:13px}
+.v{display:none}.v.on{display:grid}
+/* màn xem trước giả lập */
+.scr{position:relative;aspect-ratio:16/9;border-radius:12px;overflow:hidden;background:#05070f url('/demo/lposter-bac-dembac.jpg') center/cover;container-type:inline-size;box-shadow:0 18px 40px rgba(40,10,20,.18)}
+.scr{background:radial-gradient(ellipse 90% 60% at 50% 100%,rgba(190,205,255,.18),transparent 60%),radial-gradient(ellipse 80% 50% at 50% 0%,rgba(190,205,255,.12),transparent 60%),#05070f}
+.scr.instant .sc{transition:none}
+.sc{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;color:#fff;opacity:0;transition:opacity .5s}
+.sc.on{opacity:1}
+.mono{font:400 9cqw/1 'Ephesis';text-shadow:0 0 2cqw rgba(200,215,255,.5)}
+.kick{font:600 2.2cqw/1 'Cormorant Garamond';letter-spacing:.3em;text-transform:uppercase;margin:.6cqw 0 1.2cqw}
+.nm{font:400 6.2cqw/1.1 'Ephesis';text-shadow:0 0 2cqw rgba(200,215,255,.45)}
+.nm .amp{font-size:.55em;margin:0 .3em}
+.dt{font:600 6cqw/1 'Cormorant Garamond';letter-spacing:.06em}
+.sub{font:500 2cqw/1.4 'Cormorant Garamond';opacity:.85;margin-top:1cqw}
+.msg{font:500 2.6cqw/1.45 'Cormorant Garamond';max-width:70cqw;font-style:italic}
+.fam{display:flex;gap:10cqw;font:500 2.1cqw/1.6 'Cormorant Garamond'}.fam b{display:block;font-size:1.5cqw;letter-spacing:.3em;text-transform:uppercase;opacity:.7;margin-bottom:.6cqw}
+.rib{position:absolute;top:2.6cqw;right:-6cqw;transform:rotate(38deg);width:26cqw;padding:.7cqw 0;text-align:center;background:linear-gradient(90deg,#c8364f,#ef7d8d);color:#fff;font:700 .95cqw/1 'Be Vietnam Pro';letter-spacing:.3em;text-transform:uppercase;z-index:3}
+.ph{color:rgba(255,255,255,.45)}
+/* thanh cảnh */
+.chips{display:flex;gap:8px;flex-wrap:wrap}
+.chip{display:flex;align-items:center;gap:8px;border:1.5px solid var(--line);background:#fff;border-radius:12px;padding:9px 14px;font:600 14px inherit;cursor:pointer;color:var(--ink)}
+.chip.on{border-color:var(--red);background:#fff1f3;color:var(--red)}
+.chip .ok{width:18px;height:18px;border-radius:50%;display:grid;place-items:center;font-size:11px;background:#e7f4ed;color:#2f7d5b}
+.chip .ok.no{background:#fdecef;color:var(--red)}
+.chip.off{opacity:.5;text-decoration:line-through}
+/* ô nhập */
+label.f{display:block;margin:0 0 12px}
+label.f span{display:block;font-size:13px;font-weight:600;color:var(--muted);margin-bottom:5px}
+label.f input,label.f textarea{width:100%;border:1.5px solid var(--line);border-radius:10px;padding:10px 12px;font:500 15px inherit;background:#fff;color:var(--ink)}
+label.f input:focus,label.f textarea:focus{outline:none;border-color:var(--red);box-shadow:0 0 0 3px rgba(214,69,93,.12)}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.panel{background:#fff;border:1px solid var(--line);border-radius:16px;padding:18px}
+.panel h3{margin:0 0 4px;font-size:17px}.panel p.h{margin:0 0 14px;color:var(--muted);font-size:13px}
+.tg{display:flex;align-items:center;justify-content:space-between;font-size:13px;color:var(--muted);margin-bottom:12px}
+.sw{width:38px;height:22px;border-radius:99px;background:#2f7d5b;position:relative;border:0;cursor:pointer}.sw::after{content:"";position:absolute;top:3px;right:3px;width:16px;height:16px;border-radius:50%;background:#fff}
+.sw.off{background:#cfc4c6}.sw.off::after{right:auto;left:3px}
+.play{display:inline-flex;align-items:center;gap:6px;border:0;background:var(--red);color:#fff;border-radius:999px;padding:9px 16px;font:600 14px inherit;cursor:pointer}
+.note{font-size:12.5px;color:var(--muted);margin:8px 0 0}
+.lab{font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--red);margin:0 0 6px}
+
+/* ===== A: bảng nhập bên trái ===== */
+#va{grid-template-columns:380px 1fr;gap:22px;padding:22px}
+#va .chips{margin-top:14px}
+/* ===== B: chọn cảnh → ô sửa ngay dưới màn ===== */
+#vb{grid-template-columns:1fr;gap:16px;padding:22px;max-width:1040px;margin:0 auto}
+#vb .ed{display:grid;grid-template-columns:1fr auto;gap:16px;align-items:start}
+/* ===== C: bấm chữ trên màn → hộp nhập nổi ===== */
+#vc{grid-template-columns:1fr;gap:16px;padding:22px;max-width:1040px;margin:0 auto}
+#vc [data-k]{cursor:pointer;border-radius:8px;outline:1.5px dashed rgba(255,255,255,.0);outline-offset:.6cqw;transition:outline-color .2s}
+#vc .scr:hover [data-k]{outline-color:rgba(255,255,255,.35)}
+#vc [data-k]:hover{outline-color:#ef7d8d!important}
+.pop{position:absolute;z-index:6;background:#fff;border-radius:14px;padding:14px;box-shadow:0 18px 40px rgba(0,0,0,.35);width:300px;color:var(--ink)}
+.pop .row{display:flex;gap:8px;margin-top:10px;justify-content:flex-end}
+.pop button{border:0;border-radius:999px;padding:8px 16px;font:600 14px inherit;cursor:pointer;background:var(--red);color:#fff}
+.hint{position:absolute;left:1.6cqw;bottom:1.6cqw;z-index:4;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.22);color:#fff;border-radius:999px;padding:.5cqw 1.1cqw;font:600 1.2cqw/1 'Be Vietnam Pro'}
+@media (max-width:900px){#va{grid-template-columns:1fr}}
+</style></head><body>
+<div class="top"><b>Sửa chữ màn LED</b>
+  <button data-v="a" class="on">A · Bảng nhập bên trái</button><button data-v="b">B · Chọn cảnh, sửa ngay dưới màn</button><button data-v="c">C · Bấm chữ trên màn → hộp nhập</button>
+  <small>Gõ thử vào các ô — màn đổi ngay</small></div>
+
+<!-- A -->
+<section class="v on" id="va">
+  <div class="panel">
+    <h3>Nội dung trên màn</h3><p class="h">Điền vào ô — màn bên phải đổi ngay. Bấm vào ô nào, màn tự chuyển tới cảnh có chữ đó và đứng yên.</p>
+    <p class="lab">Tên đôi</p>
+    <div class="g2"><label class="f"><span>Chú rể</span><input data-in="groom" placeholder="Gia Huy"></label><label class="f"><span>Cô dâu</span><input data-in="bride" placeholder="Bảo Ngọc"></label></div>
+    <label class="f"><span>Dòng tiêu đề</span><input data-in="kicker" value="Lễ Thành Hôn"></label>
+    <p class="lab">Ngày giờ</p>
+    <div class="g2"><label class="f"><span>Ngày cưới</span><input type="date" data-in="date" value="2026-12-20"></label><label class="f"><span>Giờ</span><input type="time" data-in="time" value="18:00"></label></div>
+    <p class="lab">Bố mẹ hai bên</p>
+    <div class="g2"><label class="f"><span>Nhà trai</span><input data-in="pg" placeholder="Ông Trần Quang Hải – Bà Nguyễn Thị Lan"></label><label class="f"><span>Nhà gái</span><input data-in="pb" placeholder="Ông Lê Văn Minh – Bà Phạm Thị Hoa"></label></div>
+    <p class="lab">Lời cảm ơn</p>
+    <label class="f"><textarea data-in="msg" rows="3">Trân trọng cảm ơn quý khách đã đến chung vui cùng gia đình chúng tôi</textarea></label>
+  </div>
+  <div>
+    <div class="scr" data-scr></div>
+    <div class="chips" data-chips></div>
+    <p class="note">Bấm một cảnh để xem · ✓ xanh = cảnh đã đủ chữ · gạch ngang = cảnh đang tắt (bấm giữ để bật / tắt)</p>
+  </div>
+</section>
+
+<!-- B -->
+<section class="v" id="vb">
+  <div class="scr" data-scr></div>
+  <div class="chips" data-chips></div>
+  <div class="panel ed"><div data-edit></div><div style="display:grid;gap:10px;justify-items:end"><button class="play" data-play>▶ Xem cả vòng</button><div class="tg">Hiện cảnh này&nbsp;<button class="sw" data-sw aria-label="Bật tắt cảnh"></button></div></div></div>
+</section>
+
+<!-- C -->
+<section class="v" id="vc">
+  <div class="scr" data-scr><span class="hint">✎ Bấm vào chữ trên màn để sửa</span></div>
+  <div class="chips" data-chips></div>
+  <p class="note">Rê chuột lên màn: chữ sửa được có viền gạch. Bấm vào → hộp nhập nổi ngay đó (gõ bình thường như ô nhập, không gõ thẳng lên chữ). Đang sửa thì màn đứng yên.</p>
+</section>
+
+<script>
+(function () {
+  var D = { groom: '', bride: '', kicker: 'Lễ Thành Hôn', date: '2026-12-20', time: '18:00', pg: '', pb: '', msg: 'Trân trọng cảm ơn quý khách đã đến chung vui cùng gia đình chúng tôi' };
+  var SC = [['names', 'Tên đôi'], ['date', 'Ngày cưới'], ['parents', 'Bố mẹ'], ['msg', 'Lời cảm ơn']];
+  var OFF = {}, cur = 0, playing = false;
+  var FIELDS = { names: [['groom', 'Chú rể', 'Gia Huy'], ['bride', 'Cô dâu', 'Bảo Ngọc'], ['kicker', 'Dòng tiêu đề', '']], date: [['date', 'Ngày cưới', '', 'date'], ['time', 'Giờ', '', 'time']], parents: [['pg', 'Bố mẹ nhà trai', 'Ông … – Bà …'], ['pb', 'Bố mẹ nhà gái', 'Ông … – Bà …']], msg: [['msg', 'Lời cảm ơn', '', 'area']] };
+  var KEY2SC = { groom: 0, bride: 0, kicker: 0, date: 1, time: 1, pg: 2, pb: 2, msg: 3 };
+  var esc = function (s) { return String(s || '').replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); };
+  var ini = function (n) { var w = String(n || '').trim().split(/\s+/).pop() || ''; return w.charAt(0).toUpperCase(); };
+  var ph = function (v, p) { return v ? esc(v) : '<span class="ph">' + p + '</span>'; };
+  var WD = ['Chủ Nhật', 'Thứ Hai', 'Thứ Ba', 'Thứ Tư', 'Thứ Năm', 'Thứ Sáu', 'Thứ Bảy'];
+  function scenes() {
+    var d = D.date ? new Date(D.date + 'T00:00') : null;
+    return [
+      '<div class="sc s0"><div class="mono">' + (ini(D.groom) || 'G') + ' ' + (ini(D.bride) || 'B') + '</div><div class="kick" data-k="kicker">' + esc(D.kicker) + '</div><div class="nm"><span data-k="groom">' + ph(D.groom, 'Chú rể') + '</span><span class="amp">&amp;</span><span data-k="bride">' + ph(D.bride, 'Cô dâu') + '</span></div></div>',
+      '<div class="sc s1"><div class="kick">' + (d ? WD[d.getDay()] : '') + '</div><div class="dt" data-k="date">' + (d ? String(d.getDate()).padStart(2, '0') + ' · ' + (d.getMonth() + 1) + ' · ' + d.getFullYear() : '<span class="ph">Ngày cưới</span>') + '</div><div class="sub" data-k="time">Vào lúc ' + esc(D.time) + '</div></div>',
+      '<div class="sc s2"><div class="fam"><div><b>Nhà trai</b><span data-k="pg">' + ph(D.pg, 'Ông … – Bà …') + '</span></div><div><b>Nhà gái</b><span data-k="pb">' + ph(D.pb, 'Ông … – Bà …') + '</span></div></div></div>',
+      '<div class="sc s3"><div class="msg" data-k="msg">' + esc(D.msg) + '</div><div class="nm" style="font-size:4cqw;margin-top:2cqw">' + ph(D.groom, 'Chú rể') + ' <span class="amp">&amp;</span> ' + ph(D.bride, 'Cô dâu') + '</div></div>'
+    ];
+  }
+  var filled = function (i) { return [D.groom && D.bride, D.date, D.pg && D.pb, D.msg][i]; };
+  function draw() {
+    document.querySelectorAll('[data-scr]').forEach(function (s) {
+      var keep = s.querySelector('.hint'), pop = s.querySelector('.pop');
+      s.innerHTML = scenes().join('') + '<div class="rib">Bản dùng thử</div>';
+      if (keep) s.appendChild(keep); if (pop) s.appendChild(pop);
+      s.querySelectorAll('.sc')[cur].classList.add('on');
+    });
+    document.querySelectorAll('[data-chips]').forEach(function (c) {
+      c.innerHTML = SC.map(function (x, i) { return '<button class="chip' + (i === cur ? ' on' : '') + (OFF[i] ? ' off' : '') + '" data-i="' + i + '"><span class="ok' + (filled(i) ? '' : ' no') + '">' + (filled(i) ? '✓' : '!') + '</span>' + x[1] + '</button>'; }).join('');
+    });
+    var sw = document.querySelector('[data-sw]'); if (sw) sw.classList.toggle('off', !!OFF[cur]);
+  }
+  // B: ô sửa của đúng cảnh đang chọn
+  function drawEdit() {
+    var box = document.querySelector('[data-edit]');
+    box.innerHTML = '<p class="lab">Cảnh ' + (cur + 1) + ' · ' + SC[cur][1] + '</p>' + '<div class="g2">' + FIELDS[SC[cur][0]].map(function (f) {
+      var v = esc(D[f[0]]);
+      var input = f[3] === 'area' ? '<textarea data-in="' + f[0] + '" rows="3">' + v + '</textarea>' : '<input ' + (f[3] ? 'type="' + f[3] + '" ' : '') + 'data-in="' + f[0] + '" value="' + v + '" placeholder="' + f[2] + '">';
+      return '<label class="f"' + (f[3] === 'area' ? ' style="grid-column:1/-1"' : '') + '><span>' + f[1] + '</span>' + input + '</label>';
+    }).join('') + '</div><p class="note">Màn đứng yên ở cảnh này trong lúc sửa. Bấm ▶ để xem lại cả vòng.</p>';
+  }
+  function go(i) { cur = i; stop(); draw(); if (view === 'b') drawEdit(); }
+  var timer = null;
+  function stop() { playing = false; clearInterval(timer); var p = document.querySelector('[data-play]'); if (p) p.textContent = '▶ Xem cả vòng'; }
+  function play() { playing = true; var p = document.querySelector('[data-play]'); if (p) p.textContent = '❚❚ Dừng'; timer = setInterval(function () { var n = cur; do { n = (n + 1) % SC.length; } while (OFF[n] && n !== cur); cur = n; draw(); if (view === 'b') drawEdit(); }, 2600); }
+  document.addEventListener('input', function (e) {
+    var k = e.target.getAttribute('data-in'); if (!k) return;
+    D[k] = e.target.value;
+    document.querySelectorAll('[data-in="' + k + '"]').forEach(function (x) { if (x !== e.target) x.value = e.target.value; });
+    var a = document.activeElement; document.querySelectorAll('[data-scr]').forEach(function (x) { x.classList.add('instant'); }); draw(); requestAnimationFrame(function () { document.querySelectorAll('[data-scr]').forEach(function (x) { x.classList.remove('instant'); }); }); if (a) a.focus();
+  });
+  document.addEventListener('focusin', function (e) { var k = e.target.getAttribute && e.target.getAttribute('data-in'); if (k && view === 'a' && KEY2SC[k] !== cur) { cur = KEY2SC[k]; stop(); draw(); } });
+  document.addEventListener('click', function (e) {
+    var c = e.target.closest('.chip'); if (c) return go(+c.dataset.i);
+    if (e.target.closest('[data-play]')) return playing ? stop() : play();
+    if (e.target.closest('[data-sw]')) { OFF[cur] = !OFF[cur]; return draw(); }
+    // C: bấm chữ trên màn → hộp nhập nổi
+    var t = view === 'c' && e.target.closest('#vc [data-k]');
+    var old = document.querySelector('#vc .pop');
+    if (t) {
+      stop(); if (old) old.remove();
+      var k = t.getAttribute('data-k'), scr = t.closest('.scr'), r = t.getBoundingClientRect(), sr = scr.getBoundingClientRect();
+      var lbl = { groom: 'Tên chú rể', bride: 'Tên cô dâu', kicker: 'Dòng tiêu đề', date: 'Ngày cưới', time: 'Giờ', pg: 'Bố mẹ nhà trai', pb: 'Bố mẹ nhà gái', msg: 'Lời cảm ơn' }[k];
+      var typ = k === 'date' ? 'date' : k === 'time' ? 'time' : 'text';
+      var pop = document.createElement('div'); pop.className = 'pop';
+      pop.innerHTML = '<label class="f" style="margin:0"><span>' + lbl + '</span>' + (k === 'msg' ? '<textarea data-in="msg" rows="3">' + esc(D.msg) + '</textarea>' : '<input type="' + typ + '" data-in="' + k + '" value="' + esc(D[k]) + '">') + '</label><div class="row"><button data-done>Xong</button></div>';
+      pop.style.left = Math.max(8, Math.min(sr.width - 308, r.left - sr.left + r.width / 2 - 150)) + 'px';
+      pop.style.top = Math.min(sr.height - 150, r.bottom - sr.top + 10) + 'px';
+      scr.appendChild(pop); var inp = pop.querySelector('input,textarea'); inp.focus(); if (inp.select) inp.select();
+      return;
+    }
+    if (old && (e.target.closest('[data-done]') || !e.target.closest('.pop'))) old.remove();
+  });
+  document.addEventListener('keydown', function (e) { if (e.key === 'Enter' && e.target.closest && e.target.closest('.pop') && e.target.tagName === 'INPUT') { var p = document.querySelector('.pop'); if (p) p.remove(); } });
+  var view = 'a';
+  document.querySelectorAll('.top [data-v]').forEach(function (b) { b.onclick = function () {
+    view = b.dataset.v; stop();
+    document.querySelectorAll('.top [data-v]').forEach(function (x) { x.classList.toggle('on', x === b); });
+    document.querySelectorAll('.v').forEach(function (v) { v.classList.toggle('on', v.id === 'v' + view); });
+    draw(); if (view === 'b') drawEdit();
+  }; });
+  draw();
+})();
+</script>
+</body></html>
