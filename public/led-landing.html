@@ -8,7 +8,7 @@
 <meta name="description" content="Màn hình LED tiệc cưới với các mẫu kim tuyến bạc, sao rơi, sao băng, tuyết rơi, ngân hà, lụa satin: tên cô dâu chú rể, ngày cưới kèm âm lịch, bố mẹ hai bên, lời cảm ơn. Chọn mẫu, sửa chữ, gửi link cho nhà hàng là chiếu. Xem trước miễn phí.">
 <meta property="og:title" content="Màn hình LED đám cưới — chọn mẫu, gửi link là chiếu">
 <meta property="og:description" content="Tên hai bạn toả sáng trên màn tiệc: kim tuyến bạc, sao rơi, tuyết rơi, ngân hà, lụa satin. Xem trước miễn phí.">
-<meta name="theme-color" content="#05070f">
+<meta name="theme-color" content="#fffafa">
 <meta property="og:image" content="https://cuoinha.com/demo/lposter-bac-dembac.jpg">
 <meta property="og:url" content="https://cuoinha.com/man-hinh-led-dam-cuoi">
 <meta property="og:type" content="website">
@@ -19,36 +19,22 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&amp;family=Dancing+Script:wght@600;700&amp;display=swap">
 <link rel="stylesheet" href="/css/site.css">
 <style>
-/* Phần đầu tối như rạp chiếu: màn xem thử lớn + dải mẫu bấm để đổi */
-.lhero{position:relative;padding:118px 0 64px;color:#eef1fb;background:radial-gradient(1100px 520px at 50% -8%,#1c2746 0%,rgba(10,14,28,0) 70%),linear-gradient(#070a15,#05070f 70%,#090c18);overflow:hidden}
-.lhero::after{content:"";position:absolute;left:0;right:0;bottom:0;height:90px;background:linear-gradient(rgba(5,7,15,0),var(--bg));pointer-events:none}
-.lhero .wrap{position:relative;z-index:1}
-.lhero-top{display:flex;align-items:flex-end;justify-content:space-between;gap:28px;flex-wrap:wrap;max-width:1080px;margin:0 auto}
-.lhero .eyebrow{color:#c9d3f0;border-color:rgba(201,211,240,.25);background:rgba(255,255,255,.04)}
-.lhero h1{font-family:var(--serif);font-weight:800;letter-spacing:-.02em;font-size:clamp(32px,4.4vw,52px);line-height:1.08;margin:14px 0 10px;color:#fff}
-.lhero h1 em{font-family:var(--script);font-style:normal;font-weight:700;font-size:1.12em;letter-spacing:0;background:linear-gradient(120deg,#ffffff,#c7d4ff 60%,#ffd9e0);-webkit-background-clip:text;background-clip:text;color:transparent}
-.lhero .sub{color:#aeb7d3;font-size:17px;max-width:520px;margin:0}
-.lhero-cta{display:flex;gap:10px;flex-wrap:wrap}
-.lhero .btn-ghost{background:rgba(255,255,255,.06);color:#fff;border-color:rgba(255,255,255,.18);box-shadow:none}
-.lhero .btn-ghost:hover{background:rgba(255,255,255,.12)}
-.screen{position:relative;max-width:1080px;margin:30px auto 0;aspect-ratio:16/9;border-radius:16px;padding:8px;background:linear-gradient(#22283a,#0d1019);box-shadow:0 0 0 1px rgba(255,255,255,.06),0 40px 90px rgba(0,0,0,.55),0 0 120px rgba(120,150,255,.12)}
-.screen iframe{width:100%;height:100%;border:0;border-radius:10px;display:block;background:#000}
-.screen .nm{position:absolute;left:24px;bottom:22px;z-index:2;padding:6px 14px;border-radius:999px;background:rgba(5,7,15,.6);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);border:1px solid rgba(255,255,255,.14);font-size:13px;font-weight:600;color:#fff;pointer-events:none}
-.strip{display:grid;grid-template-columns:repeat(7,1fr);gap:12px;max-width:1080px;margin:18px auto 0}
-.strip button{all:unset;cursor:pointer;display:block;border-radius:12px;overflow:hidden;background:#0d1019;outline:2px solid transparent;outline-offset:2px;transition:outline-color .2s,transform .2s}
+/* Phần đầu: cùng kiểu các trang khác (nền sáng theo giao diện) — màn xem thử + dải mẫu bấm để đổi */
+.phero .tv{position:relative;max-width:1000px}
+.tv .nm{position:absolute;left:24px;bottom:22px;z-index:2;padding:6px 14px;border-radius:999px;background:rgba(5,7,15,.55);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);border:1px solid rgba(255,255,255,.14);font-size:13px;font-weight:600;color:#fff;pointer-events:none}
+.strip{display:grid;grid-template-columns:repeat(7,1fr);gap:12px;max-width:1000px;margin:20px auto 0}
+.strip button{all:unset;cursor:pointer;display:block;border-radius:12px;overflow:hidden;background:var(--card);border:1px solid var(--line);outline:2px solid transparent;outline-offset:2px;transition:outline-color .2s,transform .2s}
 .strip button:hover{transform:translateY(-2px)}
-.strip button.on{outline-color:#e6ebff}
+.strip button.on{outline-color:var(--red)}
 .strip button:focus-visible{outline-color:var(--red)}
-.strip img{display:block;width:100%;aspect-ratio:16/9;object-fit:cover}
-.strip span{display:block;padding:7px 8px 8px;font-size:12px;font-weight:600;color:#cfd6ee;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.strip button.on span{color:#fff}
+.strip img{display:block;width:100%;aspect-ratio:16/9;object-fit:cover;background:#05070f}
+.strip span{display:block;padding:7px 8px 8px;font-size:12px;font-weight:600;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-align:center}
+.strip button.on span{color:var(--ink)}
 @media (max-width:900px){
-  .lhero{padding:104px 0 48px}
-  .lhero-cta .btn-lg{padding:12px 18px;font-size:15px}
-  .strip{display:flex;overflow-x:auto;scroll-snap-type:x mandatory;gap:10px;padding:2px 2px 8px;margin-left:-16px;margin-right:-16px;padding-left:16px;padding-right:16px;scrollbar-width:none}
+  .strip{display:flex;overflow-x:auto;scroll-snap-type:x mandatory;gap:10px;padding:4px 16px 8px;margin-left:-16px;margin-right:-16px;scrollbar-width:none}
   .strip::-webkit-scrollbar{display:none}
   .strip button{flex:0 0 42%;scroll-snap-align:start}
-  .screen{border-radius:12px;padding:5px}.screen iframe{border-radius:8px}.screen .nm{left:14px;bottom:12px;font-size:12px}
+  .tv .nm{left:14px;bottom:12px;font-size:12px}
 }
 /* Bộ sưu tập mẫu */
 .gal{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:22px}
@@ -78,16 +64,12 @@
 <body data-page="led">
 <header id="nav"></header>
 
-<section class="lhero"><div class="wrap">
-  <div class="lhero-top">
-    <div>
-      <span class="eyebrow">Màn hình LED tiệc cưới</span>
-      <h1>Tên hai bạn <em>toả sáng</em> trên màn tiệc</h1>
-      <p class="sub">Chọn mẫu, sửa chữ ngay trên màn, gửi link cho nhà hàng là chiếu suốt buổi tiệc.</p>
-    </div>
-    <div class="lhero-cta"><a class="btn btn-main btn-lg" id="use" href="/tao-led?palette=bac&amp;effect=dembac">Dùng mẫu này →</a><a class="btn btn-ghost btn-lg" id="full" href="/led/demo?palette=bac&amp;effect=dembac" target="_blank" rel="noopener">⛶ Toàn màn hình</a></div>
-  </div>
-  <div class="screen"><iframe id="demo" src="/led/demo?preview=1&amp;palette=bac&amp;effect=dembac" title="Màn hình LED mẫu" allow="autoplay"></iframe><span class="nm" id="nm">Đêm kim tuyến bạc</span></div>
+<section class="phero"><div class="wrap center">
+  <span class="eyebrow">Màn hình LED tiệc cưới</span>
+  <h1>Tên hai bạn <em>toả sáng</em> trên màn tiệc</h1>
+  <p class="sub">Chọn mẫu, sửa chữ ngay trên màn, gửi link cho nhà hàng là chiếu suốt buổi tiệc.</p>
+  <div class="cta"><a class="btn btn-main btn-lg" id="use" href="/tao-led?palette=bac&amp;effect=dembac">Dùng mẫu này →</a><a class="btn btn-ghost btn-lg" id="full" href="/led/demo?palette=bac&amp;effect=dembac" target="_blank" rel="noopener">⛶ Toàn màn hình</a></div>
+  <div class="tv rv in"><iframe id="demo" src="/led/demo?preview=1&amp;palette=bac&amp;effect=dembac" title="Màn hình LED mẫu"></iframe><span class="nm" id="nm">Đêm kim tuyến bạc</span></div>
   <div class="strip" id="strip" role="tablist" aria-label="Chọn mẫu màn LED"></div>
 </div></section>
 
@@ -166,7 +148,7 @@
     $('#use').href = '/tao-led?' + q(t);
     $('#nm').textContent = t[2];
     document.querySelectorAll('#strip button').forEach(function (b) { var on = +b.dataset.i === i; b.classList.toggle('on', on); b.setAttribute('aria-selected', on); });
-    if (scroll) $('.screen').scrollIntoView({ behavior: 'smooth', block: 'center' });
+    if (scroll) $('.tv').scrollIntoView({ behavior: 'smooth', block: 'center' });
   }
   $('#strip').addEventListener('click', function (e) { var b = e.target.closest('button[data-i]'); if (b) show(+b.dataset.i); });
   $('#gal').addEventListener('click', function (e) { var b = e.target.closest('.pic[data-i]'); if (b) show(+b.dataset.i, true); });
