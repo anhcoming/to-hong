@@ -1,0 +1,184 @@
+<!doctype html>
+<html lang="vi"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Mock · video đã chốt (điện thoại)</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&family=Dancing+Script:wght@600;700&display=swap">
+<style>
+:root{--red:#d6455d;--grad:linear-gradient(135deg,#e2586f,#c93a55);--ink:#2b2224;--muted:#8a7d80;--line:#efe4e6;--bg:#fcf7f6;--soft:#fdecef;--ok:#2f7d5b;--oksoft:#e6f3ec}
+*{box-sizing:border-box}
+body{margin:0;padding:28px 20px 60px;background:#ece6e4;font:14px/1.45 'Be Vietnam Pro',sans-serif;color:var(--ink)}
+header.top{max-width:1240px;margin:0 auto 22px}
+header.top h1{margin:0 0 6px;font-size:22px}
+header.top p{margin:0;color:var(--muted);max-width:860px}
+.row{display:flex;gap:28px;justify-content:center;flex-wrap:wrap;max-width:1240px;margin:0 auto}
+.col{width:375px}
+.col>h2{margin:0 0 4px;font-size:16px}
+.col>p{margin:0 0 12px;color:var(--muted);font-size:13px;min-height:58px}
+.phone{width:375px;height:812px;overflow:auto;border-radius:34px;background:var(--bg);box-shadow:0 0 0 10px #1f1a1b,0 24px 60px rgba(0,0,0,.25);position:relative;scrollbar-width:none}
+.phone::-webkit-scrollbar{display:none}
+
+/* thanh trên: dòng 1 ← tên đầy đủ + trạng thái; dòng 2 nút (không cắt chữ) */
+.bar{position:sticky;top:0;z-index:5;background:#fff;border-bottom:1px solid var(--line);padding:10px 12px 10px}
+.bar .r1{display:flex;align-items:center;gap:6px}
+.bar .back{width:34px;height:34px;border:0;border-radius:10px;background:none;font-size:20px;color:var(--ink);flex:none}
+.bar .tt{min-width:0}
+.bar .tt b{display:block;font-size:16px;line-height:1.25}
+.bar .tt small{display:flex;align-items:center;gap:6px;color:var(--muted);font-size:12px}
+.lock{display:inline-flex;align-items:center;gap:4px;padding:2px 8px;border-radius:999px;background:var(--oksoft);color:var(--ok);font-weight:700;font-size:11.5px}
+.bar .r2{display:flex;justify-content:center;gap:8px;margin-top:10px}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;height:38px;padding:0 16px;border-radius:999px;border:1px solid var(--line);background:#fff;font:600 13.5px 'Be Vietnam Pro';color:var(--ink);white-space:nowrap;text-decoration:none}
+.btn.main{border:0;background:var(--grad);color:#fff;box-shadow:0 6px 16px rgba(214,69,93,.25)}
+.btn.soft{border:0;background:var(--soft);color:var(--red)}
+.btn.sm{height:32px;padding:0 12px;font-size:12.5px}
+
+/* khung video */
+.stage{padding:12px 12px 4px}
+.vid{position:relative;aspect-ratio:16/9;border-radius:14px;overflow:hidden;background:#e9e1d6 url('/demo/vposter-polaroid.jpg') center/cover;box-shadow:0 10px 26px rgba(80,40,30,.18)}
+.scrub{display:flex;align-items:center;gap:10px;padding:10px 2px 6px}
+.pp{width:40px;height:40px;border-radius:50%;border:0;background:var(--red);color:#fff;font-size:13px;flex:none;box-shadow:0 6px 14px rgba(214,69,93,.3)}
+.trk{flex:1;height:6px;border-radius:9px;background:#e6dcdd;position:relative}
+.trk i{position:absolute;left:0;top:0;bottom:0;width:62%;border-radius:9px;background:var(--red)}
+.trk b{position:absolute;left:62%;top:50%;width:16px;height:16px;margin:-8px 0 0 -8px;border-radius:50%;background:var(--red);box-shadow:0 0 0 3px #fff}
+.tm{font-size:12.5px;color:var(--muted);font-variant-numeric:tabular-nums}
+.fs{width:34px;height:34px;border-radius:10px;border:1px solid var(--line);background:#fff;font-size:14px}
+
+.sec{margin:14px 12px 0;padding:14px;border-radius:18px;background:#fff;box-shadow:0 0 0 1px var(--line)}
+.sec h3{margin:0 0 10px;font-size:14.5px;display:flex;align-items:center;gap:8px}
+.sec h3 small{margin-left:auto;font-weight:500;color:var(--muted);font-size:12px}
+.muted{color:var(--muted)}
+
+/* A: danh sách cảnh để nhảy tới */
+.scenes{display:grid;gap:8px}
+.sc{display:flex;align-items:center;gap:10px;padding:6px;border-radius:12px;border:1px solid transparent}
+.sc.on{border-color:var(--red);background:var(--soft)}
+.sc .th{width:74px;aspect-ratio:16/9;border-radius:8px;flex:none;background:#e9e1d6 url('/demo/vposter-polaroid.jpg') center/cover}
+.sc .th.p1{background-image:url('/demo/longphung-1.jpg')}.sc .th.p2{background-image:url('/demo/longphung-2.jpg')}
+.sc b{display:block;font-size:13.5px}.sc span{font-size:12px;color:var(--muted)}
+.sc em{margin-left:auto;font-style:normal;font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums}
+.facts{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.facts div{padding:10px 12px;border-radius:12px;background:var(--bg)}
+.facts small{display:block;color:var(--muted);font-size:11.5px}.facts b{font-size:13.5px}
+.note{display:flex;gap:10px;align-items:flex-start;padding:12px 14px;margin:14px 12px 0;border-radius:16px;background:var(--oksoft);color:#24563f;font-size:13px}
+.note i{font-style:normal;font-size:18px;line-height:1}
+.help{margin:16px 12px 24px;text-align:center;font-size:12.5px;color:var(--muted)}
+.help a{color:var(--red);font-weight:600;text-decoration:none}
+
+/* B: thẻ hành động */
+.acts{display:grid;gap:10px}
+.act{display:flex;gap:12px;align-items:center;padding:12px;border-radius:16px;background:#fff;box-shadow:0 0 0 1px var(--line)}
+.act .ic{width:44px;height:44px;border-radius:12px;display:grid;place-items:center;font-size:21px;flex:none;background:var(--soft)}
+.act b{display:block;font-size:14px}.act span{display:block;font-size:12px;color:var(--muted)}
+.act .btn{margin-left:auto}
+.link{display:flex;align-items:center;gap:8px;margin-top:10px;padding:8px 8px 8px 12px;border-radius:12px;background:var(--bg);font-size:12.5px}
+.link code{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font:500 12.5px 'Be Vietnam Pro'}
+.share{display:flex;justify-content:center;gap:16px;margin-top:4px}
+.share div{display:flex;flex-direction:column;align-items:center;gap:5px;font-size:11.5px;color:var(--muted)}
+.share i{width:48px;height:48px;border-radius:50%;display:grid;place-items:center;font-style:normal;font-size:20px;color:#fff}
+
+/* C: đếm ngược + việc ngày lễ */
+.hero{margin:14px 12px 0;padding:16px;border-radius:20px;background:linear-gradient(135deg,#fff4f4,#fdecef);box-shadow:0 0 0 1px #f6dde1;text-align:center}
+.hero .k{font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--red);font-weight:700}
+.hero .n{font:700 30px/1.2 'Dancing Script',cursive;margin:4px 0 2px}
+.cd{display:flex;justify-content:center;gap:10px;margin-top:10px}
+.cd div{min-width:62px;padding:8px 6px;border-radius:12px;background:#fff;box-shadow:0 0 0 1px var(--line)}
+.cd b{display:block;font-size:20px;font-variant-numeric:tabular-nums}.cd small{font-size:11px;color:var(--muted)}
+.chips{display:flex;gap:8px;overflow-x:auto;padding:2px 12px 2px;margin:12px 0 0;scrollbar-width:none}
+.chips::-webkit-scrollbar{display:none}
+.chips span{flex:none;padding:8px 12px;border-radius:999px;background:#fff;box-shadow:0 0 0 1px var(--line);font-size:12.5px;font-weight:600}
+.chips span.on{background:var(--ink);color:#fff;box-shadow:none}
+.todo{list-style:none;margin:0;padding:0;display:grid;gap:10px}
+.todo li{display:flex;gap:10px;align-items:flex-start;font-size:13px}
+.todo li i{width:22px;height:22px;border-radius:50%;flex:none;display:grid;place-items:center;font-style:normal;font-size:12px;font-weight:700;background:var(--soft);color:var(--red)}
+.todo li.done i{background:var(--oksoft);color:var(--ok)}
+.todo li .btn{margin-top:6px}
+</style></head><body>
+<header class="top">
+  <h1>Video đã chốt — lấp chỗ trống bên dưới khung video (điện thoại)</h1>
+  <p>Cả ba phương án sửa luôn thanh trên: tên đầy đủ không bị cắt, có nhãn 🔒 Đã chốt, nút xếp hàng dưới, rộng vừa chữ và căn giữa. Phần dưới video chỉ có thứ để <b>xem / dùng</b>, không có chỗ sửa.</p>
+</header>
+<div class="row">
+
+<!-- ===== A ===== -->
+<div class="col">
+  <h2>A · Mục lục cảnh + thông tin</h2>
+  <p>Bấm cảnh để nhảy tới (thay cho thanh cảnh đã ẩn). Dưới là tóm tắt video và lời nhắn đã chốt.</p>
+  <div class="phone">
+    <div class="bar">
+      <div class="r1"><button class="back">←</button><div class="tt"><b>Lễ Dạm Ngõ · Minh &amp; Hoa</b><small>Polaroid · 16:9 <span class="lock">🔒 Đã chốt</span></small></div></div>
+      <div class="r2"><a class="btn sm">▷ Trình chiếu</a><a class="btn sm soft">Chia sẻ ▾</a><a class="btn sm main">⬇ Tải MP4</a></div>
+    </div>
+    <div class="stage"><div class="vid"></div>
+      <div class="scrub"><button class="pp">❚❚</button><div class="trk"><i></i><b></b></div><span class="tm">0:28 / 0:45</span><button class="fs">⛶</button></div></div>
+    <div class="sec"><h3>Các cảnh <small>5 cảnh · 45 giây</small></h3>
+      <div class="scenes">
+        <div class="sc"><i class="th"></i><div><b>Mở đầu</b><span>Lễ Dạm Ngõ · 14/02/2027</span></div><em>0:00</em></div>
+        <div class="sc"><i class="th p1"></i><div><b>Tên đôi</b><span>Minh &amp; Hoa</span></div><em>0:08</em></div>
+        <div class="sc"><i class="th p2"></i><div><b>Ảnh cưới</b><span>8 ảnh polaroid</span></div><em>0:17</em></div>
+        <div class="sc on"><i class="th"></i><div><b>Lời cảm ơn</b><span>Gia đình hai họ xin chân thành…</span></div><em>0:28</em></div>
+        <div class="sc"><i class="th p1"></i><div><b>Kết</b><span>Hẹn gặp ở lễ</span></div><em>0:38</em></div>
+      </div>
+    </div>
+    <div class="sec"><h3>Thông tin video</h3>
+      <div class="facts"><div><small>Ngày lễ</small><b>CN, 14/02/2027</b></div><div><small>Giờ</small><b>9 giờ sáng</b></div><div><small>Nhạc nền</small><b>Ngày đầu tiên</b></div><div><small>Bản MP4</small><b>Full HD · ~16 MB</b></div></div>
+    </div>
+    <div class="note"><i>🔒</i><div>Video đã kích hoạt nên đã chốt: tên, chữ, ảnh, nhạc giữ nguyên như lúc thanh toán.</div></div>
+    <p class="help">Cần sửa gấp? <a>Nhắn Cưới Nha</a></p>
+  </div>
+</div>
+
+<!-- ===== B ===== -->
+<div class="col">
+  <h2>B · Gửi đi là chính</h2>
+  <p>Video xong rồi thì việc còn lại là đem chiếu: mỗi cách dùng một thẻ, có link chép nhanh và nút gửi Zalo / Facebook.</p>
+  <div class="phone">
+    <div class="bar">
+      <div class="r1"><button class="back">←</button><div class="tt"><b>Lễ Dạm Ngõ · Minh &amp; Hoa</b><small>Polaroid · 16:9 <span class="lock">🔒 Đã chốt</span></small></div></div>
+    </div>
+    <div class="stage"><div class="vid"></div>
+      <div class="scrub"><button class="pp">❚❚</button><div class="trk"><i></i><b></b></div><span class="tm">0:28 / 0:45</span><button class="fs">⛶</button></div></div>
+    <div class="sec"><h3>Đem đi chiếu</h3>
+      <div class="acts">
+        <div class="act"><div class="ic">📺</div><div><b>Chiếu trên TV</b><span>Mở link bằng trình duyệt của TV / laptop</span></div><a class="btn sm">Mở</a></div>
+        <div class="act"><div class="ic">💾</div><div><b>Tải MP4 Full HD</b><span>Chép USB cắm TV, không cần mạng</span></div><a class="btn sm main">Tải</a></div>
+      </div>
+      <div class="link"><code>cuoinha.com/video/minh-hoa</code><a class="btn sm soft">Chép link</a></div>
+    </div>
+    <div class="sec"><h3>Gửi cho người nhà</h3>
+      <div class="share">
+        <div><i style="background:#0068ff">Z</i>Zalo</div>
+        <div><i style="background:#1877f2">f</i>Facebook</div>
+        <div><i style="background:#2b2224">⧉</i>Chép link</div>
+        <div><i style="background:#d6455d">⬇</i>Lưu MP4</div>
+      </div>
+    </div>
+    <div class="note"><i>🔒</i><div>Đã chốt — tên, chữ, ảnh, nhạc giữ nguyên như lúc thanh toán.</div></div>
+    <p class="help">Cần sửa gấp? <a>Nhắn Cưới Nha</a></p>
+  </div>
+</div>
+
+<!-- ===== C ===== -->
+<div class="col">
+  <h2>C · Đếm ngược tới ngày lễ</h2>
+  <p>Khiến trang có cảm giác "sắp tới rồi": đếm ngược, thanh cảnh dạng chip để nhảy, và việc cần làm ngày lễ (tick dần).</p>
+  <div class="phone">
+    <div class="bar">
+      <div class="r1"><button class="back">←</button><div class="tt"><b>Lễ Dạm Ngõ · Minh &amp; Hoa</b><small>Polaroid · 16:9 <span class="lock">🔒 Đã chốt</span></small></div></div>
+      <div class="r2"><a class="btn sm">▷ Trình chiếu</a><a class="btn sm soft">Chia sẻ ▾</a><a class="btn sm main">⬇ Tải MP4</a></div>
+    </div>
+    <div class="stage"><div class="vid"></div>
+      <div class="scrub"><button class="pp">❚❚</button><div class="trk"><i></i><b></b></div><span class="tm">0:28 / 0:45</span><button class="fs">⛶</button></div></div>
+    <div class="chips"><span>Mở đầu</span><span>Tên đôi</span><span>Ảnh cưới</span><span class="on">Lời cảm ơn</span><span>Kết</span></div>
+    <div class="hero"><div class="k">Lễ Dạm Ngõ</div><div class="n">Minh &amp; Hoa</div><div class="muted" style="font-size:12.5px">Chủ Nhật, 14/02/2027 · 9 giờ sáng</div>
+      <div class="cd"><div><b>87</b><small>ngày</small></div><div><b>06</b><small>giờ</small></div><div><b>52</b><small>phút</small></div></div></div>
+    <div class="sec"><h3>Ngày lễ cần làm</h3>
+      <ul class="todo">
+        <li class="done"><i>✓</i><div><b>Video đã chốt</b><br><span class="muted">Đã kích hoạt 19/11/2026</span></div></li>
+        <li><i>2</i><div><b>Tải MP4 vào USB</b><br><span class="muted">Phòng khi nhà không có mạng</span><br><a class="btn sm main">⬇ Tải MP4</a></div></li>
+        <li><i>3</i><div><b>Gửi link cho người phụ trách TV</b><br><span class="muted">Mở bằng Chrome, bấm F để toàn màn hình</span><br><a class="btn sm soft">Chép link + hướng dẫn</a></div></li>
+      </ul>
+    </div>
+    <p class="help">Cần sửa gấp? <a>Nhắn Cưới Nha</a></p>
+  </div>
+</div>
+
+</div>
+</body></html>

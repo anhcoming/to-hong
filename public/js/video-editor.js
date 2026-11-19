@@ -569,6 +569,12 @@ function renderHeader() {
   $('#goExportM').onclick = goX;
   const ge = $('#goExport'); if (ge) ge.onclick = goX;
   const pb = $('#payBtn'); if (pb) pb.onclick = () => openPayModal(CARD_ID, reload, 'video');
+  // đã chốt hẳn: bố cục xem chi tiết dùng chung với màn LED (public/js/final-view.js) — thẻ đem đi chiếu / gửi người nhà
+  if (vFinal()) {
+    const names = [info().chu_re, info().co_dau].filter(Boolean).join(' & ');
+    finalView({ kind: 'video', url: s.url, names, onMp4: exportModal, support: META.support,
+      guide: `Mời cả nhà xem video ${video.event.kind} ${names}:\n${s.url}\n- Mở trên Smart TV hoặc laptop nối TV, bấm ⛶ để toàn màn hình.` });
+  } else finalView.off();
 }
 
 function renderJump() {
