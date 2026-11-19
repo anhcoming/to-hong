@@ -134,6 +134,21 @@ const buyCombo = async (id) => { const o = (await call('u', 'POST', `/api/cards/
     assert.ok(lr.text.includes('"name":"An"') && lr.text.includes('"name":"Bình"') && !lr.text.includes('Quang'), 'màn LED giữ tên lúc kích hoạt');
     assert.ok(lr.text.includes('Cảm ơn cả nhà'), 'chữ khác trên màn LED vẫn sửa được');
   }
+  // đã qua ngày cưới: tên gọi cô dâu chú rể + ngày cưới trên thiệp cố định, các chữ khác vẫn sửa được
+  {
+    const raw = require('../lib/db').db.cards.find((c) => c.id === f);
+    raw.data.date = new Date(Date.now() + 7 * 3600e3 - 864e5).toISOString().slice(0, 10); // hôm qua (giờ VN)
+    const c = await card(f);
+    assert.ok(c.namesFrozen, 'trình sửa biết đã qua ngày cưới');
+    const was = { g: c.data.groom.name, b: c.data.bride.name, d: c.data.date };
+    const r2 = await call('u', 'PUT', `/api/cards/${f}`, { data: { ...c.data, date: '2027-05-05', groom: { ...c.data.groom, name: 'Người Khác', father: 'Ông Mới' }, bride: { ...c.data.bride, name: 'Cô Khác' } } });
+    assert.equal(r2.status, 200);
+    const d2 = r2.json.card.data;
+    assert.deepEqual([d2.groom.name, d2.bride.name, d2.date], [was.g, was.b, was.d], 'tên đôi + ngày cưới giữ nguyên');
+    assert.equal(d2.groom.father, 'Ông Mới', 'chữ khác vẫn sửa được');
+    const Wd = require('../lib/wedding'), w = Wd.get(raw.weddingId);
+    if (w) { Wd.update(w, { couple: { groom: { name: 'Sổ Tay Đổi' } }, date: '2027-06-06' }); assert.deepEqual([raw.data.groom.name, raw.data.date], [was.g, was.d], 'sổ tay không đổi được tên / ngày thiệp đã qua lễ'); }
+  }
 
   // đã tạo đơn thiệp lẻ (chưa trả) rồi trả đơn Trọn bộ → đơn thiệp lẻ tự đóng, không còn nằm ở "Cần xử lý"
   const { db } = require('../lib/db');

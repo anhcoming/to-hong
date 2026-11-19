@@ -7,9 +7,13 @@ const getP = (o, p) => p.split('.').reduce((a, k) => (a == null ? a : a[k]), o);
 const setP = (o, p, v) => { const ks = p.split('.'); let a = o; ks.slice(0, -1).forEach((k) => (a = a[k])); a[ks[ks.length - 1]] = v; };
 
 // ---------- dựng ô nhập ----------
+// đã qua ngày cưới: tên gọi cô dâu chú rể + ngày cưới cố định (máy chủ cũng giữ nguyên — lib/wedding.js)
+const FROZEN = /^(groom\.name|bride\.name|date)$/;
+const frozenKey = (k) => !!(card && card.namesFrozen && FROZEN.test(k));
 function f(k, label, o = {}) {
   const v = getP(card.data, k) ?? '';
-  const attrs = `data-k="${k}" ${o.ph ? `placeholder="${esc(o.ph)}"` : ''} ${o.max ? `maxlength="${o.max}"` : ''}`;
+  if (frozenKey(k)) o = { ...o, hint: '🔒 Đã qua ngày cưới nên cố định, không sửa được' };
+  const attrs = `data-k="${k}" ${o.ph ? `placeholder="${esc(o.ph)}"` : ''} ${o.max ? `maxlength="${o.max}"` : ''}${frozenKey(k) ? ' disabled' : ''}`;
   const input = o.type === 'textarea'
     ? `<textarea ${attrs} rows="${o.rows || 3}">${esc(v)}</textarea>`
     : `<input type="${o.type || 'text'}" ${attrs} value="${esc(v)}">`;
@@ -516,13 +520,19 @@ async function commit() {
   try {
     const r = await api(`/api/cards/${CARD_ID}`, { method: 'PUT', body: { data: card.data, title: card.title, template: card.template, palette: card.palette }, quiet: true });
     Object.assign(card, { ...r.card, data: card.data });
+    let kept = false;
+    if (r.card.namesFrozen) { // đã qua ngày cưới: máy chủ giữ nguyên tên đôi + ngày cưới → trình sửa theo máy chủ
+      const sd = r.card.data, ch = card.data.groom.name !== sd.groom.name || card.data.bride.name !== sd.bride.name || card.data.date !== sd.date;
+      card.data.groom.name = sd.groom.name; card.data.bride.name = sd.bride.name; card.data.date = sd.date;
+      if (ch) { kept = true; refreshPreview(); }
+    }
     savedData = JSON.stringify(card.data);
     liveOnly = null; hasDraft = false;
     unbusy(); setDirty(false);
     if (hadDraft) refreshPreview();
     renderHeader();
     shareSoon();
-    toast('Đã lưu thiệp');
+    toast(kept ? 'Đã lưu — đã qua ngày cưới nên tên cô dâu chú rể và ngày cưới giữ nguyên' : 'Đã lưu thiệp', kept);
   } catch (e) {
     unbusy(); setDirty(true);
     status('Lưu thất bại');
@@ -1816,6 +1826,7 @@ window.addEventListener('message', (e) => {
 });
 // hộp sửa một ô chữ trên thiệp: gõ tới đâu thiệp đổi tới đó; Enter (ô một dòng) / Xong để đóng
 function textModal(key) {
+  if (frozenKey(key)) return toast('Đã qua ngày cưới nên tên cô dâu chú rể và ngày cưới cố định, không sửa được', true);
   const cur = getP(card.data, key) || '', long = LONG_FIELDS.test(key);
   const type = /(^|\.)date$/.test(key) ? 'date' : /(^|\.)time$/.test(key) ? 'time' : 'text';
   cardFocus(key);

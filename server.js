@@ -222,6 +222,7 @@ function cardSummary(card) {
     date: card.data.date,
     cover: card.data.cover || card.data.photos.find(Boolean) || '',
     ...cardState(card),
+    namesFrozen: Wd.pastWedding(card),
     led: { ...ledLib.state(card.led), url: `${BASE_URL}/led/${card.slug}` },
     video: { ...videoLib.state(card.video), url: `${BASE_URL}/video/${card.slug}`, template: card.video ? card.video.template : null, kind: card.video ? card.video.event.kind : null },
   };
@@ -604,7 +605,7 @@ route('PUT', '/api/cards/:id', async (req, res, ctx) => {
     card.oldSlugs = [...(card.oldSlugs || []).filter((x) => x !== s), card.slug].slice(-5); // link đã gửi vẫn mở được
     card.slug = s;
   }
-  if (b.data) { ledLib.fixNames(card); card.data = cd.normalize(b.data); Wd.syncFromCard(card); } // màn LED kích hoạt từ trước: cố định tên trước khi đổi
+  if (b.data) { ledLib.fixNames(card); card.data = Wd.keepFrozen(card, cd.normalize(b.data)); Wd.syncFromCard(card); } // đã qua ngày cưới: tên đôi + ngày cưới giữ nguyên // màn LED kích hoạt từ trước: cố định tên trước khi đổi
   if (b.data && b.slug === undefined && card.userId) autoSlug(card); // thiệp nháp của khách chưa đăng nhập: giữ nguyên
   if (b.led) { card.led = ledLib.normalize(b.led, card.led); comboUnlock(card, 'led'); } // tạo màn LED (chưa kích hoạt: chỉ xem trước; thiệp Trọn bộ: kích hoạt luôn)
   if (b.video) { card.video = videoLib.normalize(b.video, card.video); comboUnlock(card, 'video'); }
