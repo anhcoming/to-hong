@@ -259,10 +259,8 @@ async function exportLedMp4(loops) {
     const url = URL.createObjectURL(r.blob);
     const a = document.createElement('a'); a.href = url; a.download = mp4Name(); document.body.appendChild(a); a.click(); a.remove();
     closeModal();
-    const mins = r.seconds >= 90 ? Math.round(r.seconds / 60) + ' phút' : Math.round(r.seconds) + ' giây';
-    openModal(`<h2 style="margin-top:0">🎬 Đã tải MP4 về máy</h2><p class="muted">${r.width}×${r.height} · ${mins} · ${(r.blob.size / 1e6).toFixed(1)} MB. Chép vào USB để cắm màn LED / TV.</p>
-      <video src="${url}" controls loop style="width:100%;border-radius:10px;background:#000;margin:8px 0 14px"></video>
-      <div style="display:flex;justify-content:center"><a class="btn" href="${url}" download="${esc(mp4Name())}">⬇ Tải lại về máy</a></div>`);
+    toast(`Đã tải MP4 về máy (${(r.blob.size / 1e6).toFixed(1)} MB) — chép vào USB để cắm màn LED / TV`); // chỉ báo, không mở popup
+    setTimeout(() => URL.revokeObjectURL(url), 60000);
   } catch (e) {
     if (closeModal) closeModal();
     toast(e.message || 'Dựng video lỗi', true);

@@ -688,21 +688,16 @@ async function exportMp4(loopsArg) {
       loops, music: card.data.music,
       onProgress: (p, label) => { $('#pg').style.width = Math.round(p * 100) + '%'; $('#pgText').textContent = `${label}… ${Math.round(p * 100)}%`; },
     });
-    const local = saveToDevice(blob);
+    saveToDevice(blob);
     closeModal();
     const mb = (blob.size / 1e6).toFixed(1);
-    openModal(`<h2>🎬 Video đã tải về máy</h2><p class="muted">MP4 Full HD 1920×1080 · ${mb} MB${card.data.music ? (music ? ' · có nhạc nền' : ' · <b>không có nhạc</b> (trình duyệt này chưa ghép được nhạc — mở bằng Chrome nếu muốn có nhạc)') : ''}. Chép vào USB để cắm TV, hoặc gửi cho người thân.</p>
-      <video src="${local}" controls style="width:100%;border-radius:10px;background:#000;margin:8px 0 14px"></video>
-      <a class="btn block lg" href="${local}" download="${esc(fileName())}">⬇ Tải lại về máy</a>
-      <p class="muted" id="copyMsg" style="font-size:13px;margin:10px 0 0">Đang lưu một bản sao để tải lại từ máy khác…</p>`);
-    try {
-      const url = await saveCopy(blob);
-      card.video.mp4 = url;
-      const m = $('#copyMsg'); if (m) m.textContent = '✓ Đã lưu bản sao — mở "Video của tôi" ở máy khác là tải lại được.';
+    // tải xong chỉ báo một dòng, không mở popup
+    toast(card.data.music && !music ? `Đã tải MP4 về máy (${mb} MB) — không có nhạc: trình duyệt này chưa ghép được nhạc, mở bằng Chrome nếu muốn có nhạc` : `Đã tải MP4 về máy (${mb} MB)`);
+    try { // lưu một bản sao lên kho để máy khác tải lại (chạy ngầm)
+      card.video.mp4 = await saveCopy(blob);
       renderExport();
     } catch (e) {
       console.warn('Lưu bản sao thất bại:', e);
-      const m = $('#copyMsg'); if (m) m.textContent = 'Chưa lưu được bản sao lên kho (video trên máy bạn vẫn dùng bình thường). Máy khác muốn có file thì bấm xuất lại.';
     }
   } catch (e) {
     if (closeModal) closeModal();
