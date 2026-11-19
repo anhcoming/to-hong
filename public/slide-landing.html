@@ -33,6 +33,12 @@
 .vt h3{margin:0;font-size:17px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .vt .body .btn{flex:none}
 .vt .tag.soft{background:rgba(0,0,0,.55)}
+.thead{margin:0 0 18px}.thead h1{margin:0;font-family:var(--serif);font-weight:800;letter-spacing:-.02em;font-size:32px;line-height:1.2}.thead p{margin:4px 0 0;color:var(--muted);font-size:15px} /* tiêu đề gọn như trang Mẫu thiệp */
+.slp{padding:110px 0 60px}.slp h2.h2{font-size:22px;margin:30px 0 4px}.slp h2.h2 small{font-size:14px!important}
+@media (max-width:600px){
+  .thead{margin:0 0 6px}.thead h1{font-size:22px}.thead p{display:none} /* điện thoại: tiêu đề một dòng */
+  .slp{padding:86px 0 40px}.slp h2.h2{font-size:18px;margin:22px 0 8px!important}.slp h2.h2 small{display:none} /* điện thoại: tên nhóm một dòng */
+}
 .steps3{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;max-width:900px;margin:0 auto}
 .steps3 div{padding:22px;border-radius:18px;background:var(--card);border:1px solid var(--line);text-align:center}
 .steps3 b{display:grid;place-items:center;width:42px;height:42px;margin:0 auto 10px;border-radius:50%;background:var(--red);color:#fff;font-size:18px}
@@ -46,13 +52,11 @@
 <body data-page="slide">
 <header id="nav"></header>
 
-<section class="phero"><div class="wrap center">
-  <span class="eyebrow">Video ảnh cưới</span>
-  <h1>Slide ảnh cưới <em>kể chuyện hai bạn</em></h1>
-  <p class="sub">Thả ảnh cưới, tự xếp thành video chiếu màn LED, TV khi khách vào tiệc.</p>
-  <h2 class="h2" style="margin:34px 0 6px;text-align:left">Nền buổi lễ <small style="font-size:15px;color:var(--muted);font-weight:500">· khoảng 2 phút, chiếu lặp suốt tiệc</small></h2>
+<section class="slp"><div class="wrap">
+  <div class="thead"><h1>Mẫu slide cưới</h1><p>Thả ảnh cưới, tự xếp thành video chiếu màn LED, TV khi khách vào tiệc</p></div>
+  <h2 class="h2" style="margin-top:0;text-align:left">Nền buổi lễ <small style="font-size:15px;color:var(--muted);font-weight:500">· khoảng 2 phút, chiếu lặp suốt tiệc</small></h2>
   <div class="vgal" id="vgal" aria-live="polite"></div>
-  <h2 class="h2" style="margin:40px 0 6px;text-align:left">Phim kể chuyện <small style="font-size:15px;color:var(--muted);font-weight:500">· ngắn, nhiều hiệu ứng chuyển cảnh</small></h2>
+  <h2 class="h2" style="text-align:left">Phim kể chuyện <small style="font-size:15px;color:var(--muted);font-weight:500">· ngắn, nhiều hiệu ứng chuyển cảnh</small></h2>
   <div class="vgal" id="vgal2"></div>
 </div></section>
 

@@ -26,10 +26,13 @@
 .vhead h1 em{font-family:var(--script);font-style:normal;color:var(--red);font-weight:700}
 .vhead p{margin:0 auto;max-width:620px;color:var(--muted)}
 .free{display:inline-flex;align-items:center;gap:8px;padding:6px 14px;border-radius:999px;background:var(--card);border:1px solid var(--line);font-weight:700;font-size:14px;color:var(--red)}
-.vchips{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin:24px 0 6px}
+.thead{margin:0 0 18px}.thead h1{margin:0;font-family:var(--serif);font-weight:800;letter-spacing:-.02em;font-size:32px;line-height:1.2}.thead p{margin:4px 0 0;color:var(--muted);font-size:15px} /* tiêu đề gọn như trang Mẫu thiệp */
+.vchips{display:flex;gap:8px;flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;margin:0 0 18px}.vchips::-webkit-scrollbar{display:none} /* một hàng, thiếu chỗ thì vuốt ngang */
+.vchips button{flex:none}
 .vchips button{height:36px;padding:0 16px;border-radius:999px;border:1px solid var(--line);background:var(--card);color:var(--ink);font:600 14px/1 inherit;font-family:inherit;cursor:pointer}
 .vchips button.on{background:var(--ink);color:#fff;border-color:var(--ink)}
 @media (max-width:600px){ /* điện thoại: thanh gạch chân cuộn ngang */
+  .thead{margin:0 0 6px}.thead h1{font-size:22px}.thead p{display:none} /* điện thoại: tiêu đề một dòng */
   .vchips{flex-wrap:nowrap;justify-content:flex-start;overflow-x:auto;scrollbar-width:none;gap:0 18px;margin-left:-16px;margin-right:-16px;padding:0 16px;border-bottom:1px solid var(--line)}.vchips::-webkit-scrollbar{display:none}
   .vchips button{flex:none;height:auto;padding:10px 0;margin-bottom:-1px;border:0;border-bottom:2.5px solid transparent;border-radius:0;background:none;color:var(--muted);font-size:14px;font-weight:600;font-family:inherit;line-height:1.2}
   .vchips button.on{background:none;color:var(--ink);border-bottom-color:var(--red)}
@@ -99,8 +102,8 @@
 <body data-page="baohy">
 <header id="nav"></header>
 
-<section class="block" style="padding-top:84px"><div class="wrap">
-  <h1 style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)">Mẫu video báo hỷ đăng TikTok miễn phí</h1>
+<section class="block" style="padding-top:110px"><div class="wrap">
+  <div class="thead"><h1>Video báo hỷ TikTok</h1><p>Miễn phí · bấm mẫu để xem thử, ưng thì bấm Dùng mẫu</p></div>
   <div class="vchips" id="chips"></div>
   <div class="tgrid" id="grid" aria-label="Mẫu video báo hỷ"></div>
 </div></section>
