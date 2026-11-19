@@ -377,7 +377,7 @@ function bind() {
       scKey = key;
       list.innerHTML = SC.map(([k, sk, name]) => { const on = !!led.slides[sk], i = m.keys.indexOf(k);
         return `<button class="sc${on ? '' : ' off'}" data-i="${i}" data-sk="${sk}" title="${on ? (i < 0 ? 'Chưa có nội dung để hiện cảnh này' : 'Xem cảnh này') : 'Đang ẩn — bấm để hiện'}"><span>${name}</span><em></em><b data-tg="${sk}" title="${on ? 'Ẩn cảnh này' : 'Hiện cảnh này'}">${on ? '✕' : '＋'}</b></button>`; }).join('')
-        + `<label class="scspd" title="Mỗi cảnh hiện bao lâu">⏱<input type="range" data-spd min="4" max="30" step="1" value="${led.seconds}"><output>${led.seconds}s</output></label>`;
+        + `<label class="scspd" title="Mỗi cảnh hiện bao lâu rồi chuyển sang cảnh tiếp theo"><span>Mỗi cảnh</span><input type="range" data-spd min="4" max="30" step="1" value="${led.seconds}"><output>${led.seconds} giây</output></label>`;
     }
     list.querySelectorAll('.sc').forEach((b) => {
       const on = +b.dataset.i === m.index && !b.classList.contains('off'), em = b.querySelector('em');
@@ -390,7 +390,7 @@ function bind() {
   window.addEventListener('message', (e) => { if (e.origin === location.origin && e.data && e.data.type === 'led-scene') drawScenes(e.data); });
   $('#scenes').addEventListener('input', (e) => {
     if (e.target.dataset.spd === undefined) return;
-    led.seconds = +e.target.value; e.target.nextElementSibling.textContent = led.seconds + 's';
+    led.seconds = +e.target.value; e.target.nextElementSibling.textContent = led.seconds + ' giây';
     pushPreview(); schedule(500);
   });
   $('#scenes').addEventListener('click', (e) => {
