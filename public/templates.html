@@ -24,12 +24,14 @@
    bộ lọc ghi lên URL để gửi link được. Điện thoại: ô tìm tràn hàng, chip cuộn ngang. */
 .sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
 main.wrap{padding-top:104px}
-.thead{margin:0 0 18px}.thead h1{margin:0;font-family:var(--serif);font-weight:800;letter-spacing:-.02em;font-size:32px;line-height:1.2}.thead p{margin:4px 0 0;color:var(--muted);font-size:15px} /* không có phần giới thiệu: nội dung nằm ngay dưới thanh menu nổi */
+.thead{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;margin:0 0 18px} /* tiêu đề trái, ô tìm phải */.thead h1{margin:0;font-family:var(--serif);font-weight:800;letter-spacing:-.02em;font-size:32px;line-height:1.2}.thead p{margin:4px 0 0;color:var(--muted);font-size:15px} /* không có phần giới thiệu: nội dung nằm ngay dưới thanh menu nổi */
 .side{display:flex;flex-wrap:wrap;align-items:center;gap:10px 8px;margin:0 0 14px;padding-bottom:16px;border-bottom:1px solid var(--line)}
 .srch{display:flex;flex:none;align-items:center;gap:8px;width:210px;height:40px;padding:0 12px;border:1px solid var(--line);border-radius:999px;background:var(--card)}
 .srch:focus-within{border-color:#f2b6bf}
 .srch input{flex:1;min-width:0;border:0;outline:0;font:14px var(--sans);background:none;color:var(--ink)}
-.flist{display:flex;flex-wrap:wrap;gap:8px}
+.flist{display:flex;flex-wrap:nowrap;gap:8px;overflow-x:auto;scrollbar-width:none;min-width:0;max-width:100%}.flist::-webkit-scrollbar{display:none} /* một hàng, thiếu chỗ thì vuốt ngang */
+.flist button{flex:none}
+.side .flist{flex:1 1 100%}
 .flist button{display:inline-flex;align-items:center;gap:7px;height:40px;padding:0 14px;border:1px solid var(--line);border-radius:999px;background:var(--card);font:500 14px var(--sans);color:var(--ink);cursor:pointer;white-space:nowrap}
 .flist button:hover{border-color:#f2b6bf}
 .flist button[aria-pressed="true"]{border-color:var(--red);background:#fff0f2;color:var(--red);font-weight:600}
@@ -108,10 +110,9 @@ main.wrap{padding-top:104px}
 
 
 <main class="wrap">
-  <div class="thead"><h1>Mẫu thiệp cưới online</h1><p>Bấm vào mẫu để xem trước, ưng thì bấm Dùng mẫu</p></div>
+  <div class="thead"><div><h1>Mẫu thiệp cưới online</h1><p>Bấm vào mẫu để xem trước, ưng thì bấm Dùng mẫu</p></div><label class="srch"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#6f6668" stroke-width="2.2" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg><input id="q" type="search" placeholder="Tìm mẫu…" aria-label="Tìm mẫu theo tên"></label></div>
   <p class="chon" id="chon"><b>Chọn một mẫu để tạo thiệp mới</b> — bấm vào mẫu để xem trước, rồi bấm <b>Dùng mẫu</b>.</p>
   <div class="side" id="side" role="search" aria-label="Bộ lọc mẫu">
-    <label class="srch"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#6f6668" stroke-width="2.2" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg><input id="q" type="search" placeholder="Tìm mẫu…" aria-label="Tìm mẫu theo tên"></label>
     <div class="flist" id="fStyle"></div>
   </div>
   <div class="meta"><span id="shown"></span><div class="crumbs" id="crumbs"><span id="crumbList"></span><button class="clear" id="clear" hidden>Xoá bộ lọc</button></div></div>
