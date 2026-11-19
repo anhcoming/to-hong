@@ -123,18 +123,20 @@ function renderHeader() {
     const tp = (META.led.templates || []).find((t) => t.palette === led.palette && t.effect === led.effect);
     finalView({ kind: 'led', url: s.url, names, onMp4: mp4Dialog, support: META.support, stage: '#stagewrap',
       // thanh phát (phát / dừng, tua, thời gian, toàn màn hình) — khung xem trước tự chạy, thanh cảnh đã ẩn
-      player: () => {
-        const w = $('#frame').contentWindow, p = w && w.__ledApi && w.__ledApi.play; if (!p) return null;
-        const NAME = { names: 'Tên đôi', date: 'Ngày cưới', countdown: 'Đếm ngược', parents: 'Bố mẹ', msg: 'Lời cảm ơn', message: 'Lời cảm ơn', photo: 'Ảnh cưới' };
-        return { ...p, chapters: () => p.keys().map((k, i) => ({ name: NAME[k] || 'Cảnh ' + (i + 1), t: i * p.seconds() })) };
-      },
-      onFull: () => { const f = $('#frame'); if (f.requestFullscreen) f.requestFullscreen().catch(() => window.open(s.url, '_blank')); else window.open(s.url, '_blank'); },
+      player: ledPlayer, onFull: ledFull,
       facts: [['📅', finalView.date(card.data.date)], ['⏰', finalView.time(card.data.time)], ['✨', tp ? tp.name : ''],
         ['🖥', (RATIO_INFO[led.ratio] || [led.ratio])[0]], ['⏱', `Mỗi cảnh ${led.seconds} giây`]], // số cảnh / độ dài: xem trên thanh phát (cảnh chưa có nội dung tự bỏ qua)
       guide: `Nhờ anh/chị bật màn hình LED cho tiệc cưới ${names}:\n${s.url}\n- Mở bằng Chrome/Edge, bấm phím F (hoặc nháy đúp) để toàn màn hình.\n- Tỉ lệ đã chọn: ${led ? led.ratio : ''}.` });
   } else finalView.off();
 }
 
+// thanh phát dưới khung xem (cả lúc đang sửa lẫn đã chốt): phát / dừng, tua theo cảnh, thời gian, toàn màn hình
+function ledPlayer() {
+  const w = $('#frame').contentWindow, p = w && w.__ledApi && w.__ledApi.play; if (!p) return null;
+  const NAME = { names: 'Tên đôi', date: 'Ngày cưới', countdown: 'Đếm ngược', parents: 'Bố mẹ', msg: 'Lời cảm ơn', message: 'Lời cảm ơn', photo: 'Ảnh cưới' };
+  return { ...p, chapters: () => p.keys().map((k, i) => ({ name: NAME[k] || 'Cảnh ' + (i + 1), t: i * p.seconds() })) };
+}
+function ledFull() { const f = $('#frame'); if (f.requestFullscreen) f.requestFullscreen().catch(() => {}); }
 function fitScreen() {
   const [w, h] = led.ratio.split(':').map(Number);
   const wrap = $('#stagewrap'), box = wrap.getBoundingClientRect(), cs = getComputedStyle(wrap);
@@ -472,6 +474,7 @@ function start() {
   renderSide();
   renderHeader();
   bind();
+  finalView.player({ stage: '#stagewrap', player: ledPlayer, onFull: ledFull });
   fitScreen();
   reloadPreview();
   status('Đã lưu ✓');

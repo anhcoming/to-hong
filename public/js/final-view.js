@@ -168,6 +168,19 @@ body.fv-on #scrub{display:none!important} /* video: thanh phát cũ thay bằng 
     };
     requestAnimationFrame(tick);
   }
+  // chỉ gắn thanh phát (phát / dừng, thanh chia đoạn theo cảnh để tua, thời gian, toàn màn hình) dưới khung xem — dùng cả lúc
+  // màn LED chưa chốt (đang sửa). finalView() gọi sau dùng lại đúng thanh này.
+  window.finalView.player = function (opts) {
+    o = Object.assign({}, o, opts);
+    if (!document.getElementById('fvCss')) { const s = document.createElement('style'); s.id = 'fvCss'; s.textContent = CSS; document.head.appendChild(s); }
+    const stage = o.stage && document.querySelector(o.stage);
+    if (!stage || document.getElementById('fvb')) return;
+    const bar = document.createElement('div'); bar.id = 'fvb'; bar.className = 'fvb';
+    bar.innerHTML = `<div class="fv-play"><button type="button" class="pp" data-pl="pp" aria-label="Tạm dừng">❚❚</button><div class="fv-segs" role="group" aria-label="Các cảnh — bấm để tua"></div><span class="tm">0:00 / 0:00</span><button type="button" class="fs" data-pl="fs" title="Xem toàn màn hình" aria-label="Xem toàn màn hình">⛶</button></div>`;
+    bar.dataset.key = '';
+    stage.appendChild(bar); playLoop(bar);
+    window.dispatchEvent(new Event('resize'));
+  };
   window.finalView.at = function () {}; // (cũ) trình sửa video gọi theo thời gian phát — thanh chia đoạn tự theo dõi
   // ngày dạng "Chủ Nhật, 14/02/2027"
   const WD = ['Chủ Nhật', 'Thứ Hai', 'Thứ Ba', 'Thứ Tư', 'Thứ Năm', 'Thứ Sáu', 'Thứ Bảy'];
