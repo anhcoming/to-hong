@@ -114,6 +114,19 @@ const buyCombo = async (id) => { const o = (await call('u', 'POST', `/api/cards/
   await call('u', 'PUT', `/api/cards/${f}`, { led: {} });
   r = await call('u', 'POST', `/api/cards/${f}/order`, { product: 'led' });
   assert.equal(r.json.order.amount, config.ledPrice);
+  // LED dùng thử: chiếu được (có dòng "Bản dùng thử") trước ngày cưới; tới ngày cưới mà chưa kích hoạt → khoá, kể cả chủ thiệp
+  assert.ok((await call('x', 'GET', '/led/combo-f')).text.includes('Bản dùng thử'), 'LED dùng thử có dòng dùng thử');
+  const fc = require('../lib/db').db.cards.find((c) => c.id === f);
+  fc.data.date = new Date(Date.now() + 7 * 3600e3).toISOString().slice(0, 10);
+  let lr = await call('u', 'GET', '/led/combo-f');
+  assert.ok(lr.status === 403 && lr.text.includes('Kích hoạt màn LED'), 'tới ngày cưới: chủ thiệp không chiếu bản dùng thử được, có nút kích hoạt');
+  assert.equal((await call('x', 'GET', '/led/combo-f')).status, 403, 'tới ngày cưới: khách cũng không mở được');
+  lr = await call('u', 'GET', '/led/combo-f?preview=1');
+  assert.ok(lr.status === 200 && lr.text.includes('"locked":true'), 'khung xem trước trong trình sửa vẫn mở, có lớp khoá');
+  assert.ok((await card(f)).led.weddingDay, 'trình sửa biết đã tới ngày cưới');
+  await pay(r.json.order);
+  lr = await call('x', 'GET', '/led/combo-f');
+  assert.ok(lr.status === 200 && !lr.text.includes('Bản dùng thử'), 'kích hoạt xong: chiếu được, hết dòng dùng thử');
 
   // đã tạo đơn thiệp lẻ (chưa trả) rồi trả đơn Trọn bộ → đơn thiệp lẻ tự đóng, không còn nằm ở "Cần xử lý"
   const { db } = require('../lib/db');

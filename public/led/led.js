@@ -1226,9 +1226,25 @@
       if (w.textContent !== WM) w.textContent = WM;
       // chỉ sửa khi thật sự bị ẩn (tránh tự kích hoạt lại bộ theo dõi thay đổi)
       var cs = getComputedStyle(w), r = w.getBoundingClientRect();
-      if (w.hidden || cs.display === 'none' || cs.visibility !== 'visible' || +cs.opacity < 0.4 || r.width < 20 || r.height < 5) {
+      // bị che bởi phần tử khác / chữ trong suốt / bộ lọc làm mờ đều tính là bị ẩn
+      var hit = r.width > 0 ? document.elementFromPoint(r.left + r.width * 0.7, r.top + r.height / 2) : null;
+      var covered = !!hit && !w.contains(hit) && !(hit.closest && hit.closest('#ctl,#back'));
+      if (w.hidden || cs.display === 'none' || cs.visibility !== 'visible' || +cs.opacity < 0.4 || r.width < 20 || r.height < 5
+        || (cs.filter && cs.filter !== 'none') || /rgba\(.*,\s*0(\.0*)?\)$|transparent/.test(cs.color) || covered
+        || r.right < 0 || r.bottom < 0 || r.left > innerWidth || r.top > innerHeight) {
         w.hidden = false;
-        w.style.cssText = 'display:block!important;visibility:visible!important;opacity:.45!important;transform:none!important;z-index:50!important;clip-path:none!important;font-size:24px!important;right:60px!important;bottom:52px!important;left:auto!important;top:auto!important;position:absolute!important';
+        if (w.parentNode !== stage || w !== stage.lastElementChild) stage.appendChild(w);
+        w.style.cssText = 'display:flex!important;visibility:visible!important;opacity:.6!important;transform:none!important;filter:none!important;color:#fff!important;z-index:2147483647!important;clip-path:none!important;pointer-events:auto!important;right:60px!important;bottom:52px!important;left:auto!important;top:auto!important;position:absolute!important';
+      }
+      // đã khoá (hết hạn dùng thử / tới ngày cưới): khung xem trước phủ thêm lớp "cần kích hoạt" giữa màn
+      if (C.locked) {
+        var k = stage.querySelector(':scope > .wm-lock');
+        if (!k) { k = document.createElement('div'); k.className = 'wm-lock'; stage.appendChild(k); }
+        var KT = 'Cần kích hoạt để trình chiếu';
+        if (k.textContent !== KT) k.textContent = KT;
+        var ks = getComputedStyle(k);
+        if (k.hidden || ks.display === 'none' || ks.visibility !== 'visible' || +ks.opacity < 0.5 || (ks.filter && ks.filter !== 'none'))
+          k.style.cssText = 'display:grid!important;visibility:visible!important;opacity:1!important;filter:none!important;transform:none!important;z-index:2147483646!important';
       }
     };
     keepWm();

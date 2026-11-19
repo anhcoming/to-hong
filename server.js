@@ -220,7 +220,7 @@ function cardSummary(card) {
     date: card.data.date,
     cover: card.data.cover || card.data.photos.find(Boolean) || '',
     ...cardState(card),
-    led: { ...ledLib.state(card.led), url: `${BASE_URL}/led/${card.slug}` },
+    led: { ...ledLib.state(card.led, card.data.date), url: `${BASE_URL}/led/${card.slug}` },
     video: { ...videoLib.state(card.video), url: `${BASE_URL}/video/${card.slug}`, template: card.video ? card.video.template : null, kind: card.video ? card.video.event.kind : null },
   };
 }
@@ -1163,9 +1163,17 @@ route('GET', '/led/:slug', async (req, res, ctx) => {
   const isOwner = canManage(ctx.user, card);
   if (!card || !card.led) return html(res, 404, renderNotice('Không tìm thấy màn hình LED', 'Đường dẫn có thể đã bị đổi. Hãy hỏi lại cô dâu chú rể nhé.'));
   if (card.blocked && !isOwner) return html(res, 403, BLOCKED_HTML());
-  const st = ledLib.state(card.led);
-  if (st.expired && !isOwner) return html(res, 403, renderNotice('Màn hình LED đang tạm khoá', 'Thời gian dùng thử đã hết. Chủ thiệp cần kích hoạt để tiếp tục trình chiếu.'));
-  html(res, 200, ledLib.renderLed(card, card.led, { preview: isOwner && ctx.query.get('preview') === '1', trial: !st.paid }));
+  const st = ledLib.state(card.led, card.data.date);
+  const preview = isOwner && ctx.query.get('preview') === '1';
+  // chưa kích hoạt mà đã hết hạn dùng thử / tới ngày cưới: khoá trình chiếu với mọi người, kể cả chủ thiệp.
+  // Khung xem trước trong trình sửa vẫn mở (để sửa chữ, chọn mẫu) nhưng phủ lớp "cần kích hoạt" lên giữa màn.
+  if (st.locked && !preview) {
+    const why = st.weddingDay ? 'Bản dùng thử chỉ để xem trước — đã tới ngày cưới nên cần kích hoạt để trình chiếu.' : 'Thời gian dùng thử đã hết.';
+    return html(res, 403, isOwner
+      ? renderNotice('Màn hình LED cần kích hoạt', why + ' Kích hoạt một lần là chiếu được mãi, không còn dòng "Bản dùng thử".', { href: `/sua-led/${card.slug}`, text: 'Kích hoạt màn LED' })
+      : renderNotice('Màn hình LED đang tạm khoá', why + ' Chủ thiệp cần kích hoạt để tiếp tục trình chiếu.'));
+  }
+  html(res, 200, ledLib.renderLed(card, card.led, { preview, trial: !st.paid, locked: st.locked }));
 });
 
 // mẫu album xem thử với một bộ ảnh cưới đầy đủ
