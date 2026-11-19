@@ -58,6 +58,11 @@
   .lp-cta{margin-top:16px}
   .lp-cta .btn-lg{padding:12px 24px;font-size:15px}
   .lp + .block{padding-top:44px}
+  .gal{grid-template-columns:1fr 1fr!important;gap:10px}
+  .gc{border-radius:14px}
+  .gc .bd{flex-direction:column;align-items:stretch;gap:8px;padding:8px 8px 10px}
+  .gc h3{font-size:13px;text-align:center}
+  .gc .pic::after{display:none}
 }
 /* Bộ sưu tập mẫu */
 .gal{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:22px}
@@ -67,8 +72,9 @@
 .gc .pic img{width:100%;height:100%;object-fit:cover;display:block}
 .gc .pic::after{content:"▶ Xem thử";position:absolute;inset:auto 12px 12px auto;padding:5px 12px;border-radius:999px;background:rgba(5,7,15,.6);color:#fff;font:600 12px var(--sans);opacity:0;transition:opacity .2s}
 .gc:hover .pic::after{opacity:1}
-.gc .bd{display:flex;flex-direction:column;gap:6px;padding:16px 18px 18px;flex:1}
-.gc h3{margin:0;font-size:18px}
+.gc .bd{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:12px 14px;flex:1}
+.gc .bd .btn{flex:none}
+.gc h3{margin:0;font-size:16px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .gc p{margin:0;color:var(--muted);font-size:14px;flex:1}
 .gc .row{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:8px}
 .gc .new{font-size:11px;font-weight:700;color:var(--red);letter-spacing:.06em;text-transform:uppercase}
@@ -95,7 +101,7 @@
 </div></section>
 
 <section class="block"><div class="wrap">
-  <div class="head center rv"><div class="center"><span class="eyebrow">Bộ sưu tập</span><h2 class="h2">Mẫu màn LED <em>mới nhất</em></h2><p class="lead">Hiệu ứng chạy thật trên màn, không phải ảnh tĩnh. Chữ thanh mảnh, chữ lồng tên hai bạn — trang nhã trên mọi sảnh tiệc.</p></div></div>
+  <div class="head center rv"><div class="center"><h2 class="h2">Tất cả <em>mẫu</em></h2></div></div>
   <div class="gal" id="gal"></div>
 </div></section>
 
@@ -158,7 +164,7 @@
   }).join('');
   $('#gal').innerHTML = T.map(function (t, i) {
     return '<article class="gc rv"><button class="pic" data-i="' + i + '" aria-label="Xem thử mẫu ' + t[2] + '"><img src="' + img(t) + '" alt="Màn hình LED đám cưới mẫu ' + t[2] + '" loading="lazy"></button>' +
-      '<div class="bd"><span class="new">Mẫu mới</span><h3>' + t[2] + '</h3><p>' + t[3] + '</p><div class="row"><a class="btn btn-ghost btn-sm" href="/led/demo?' + q(t) + '" target="_blank" rel="noopener">⛶ Toàn màn hình</a><a class="btn btn-main btn-sm" href="/tao-led?' + q(t) + '">Dùng mẫu</a></div></div></article>';
+      '<div class="bd"><h3>' + t[2] + '</h3><a class="btn btn-main btn-sm" href="/tao-led?' + q(t) + '">Dùng mẫu</a></div></article>';
   }).join('');
   if (window.IntersectionObserver) { var io = new IntersectionObserver(function (es) { es.forEach(function (e) { if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); } }); }); document.querySelectorAll('#gal .rv').forEach(function (el) { io.observe(el); }); }
   else document.querySelectorAll('#gal .rv').forEach(function (el) { el.classList.add('in'); });
