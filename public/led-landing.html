@@ -21,7 +21,10 @@
 <style>
 /* Trang chỉ còn danh sách mẫu: bấm mẫu → lớp xem mẫu (site.js tplView) chạy thật, xem xong mới bấm "Dùng mẫu này" */
 .lp{padding:110px 0 70px}
-.lp h1{margin:0 0 6px}.lp h1 em{white-space:nowrap}
+/* tiêu đề gọn kiểu trang Mẫu thiệp: chữ đậm căn trái + một dòng nhỏ */
+.lhead{max-width:1080px;margin:0 auto}
+.lhead h1{margin:0;font-family:var(--serif);font-weight:800;letter-spacing:-.02em;font-size:30px;line-height:1.2}
+.lhead p{margin:4px 0 0;color:var(--muted);font-size:15px}
 .lgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:20px;max-width:1080px;margin:30px auto 0;text-align:left}
 .lcard{all:unset;position:relative;cursor:pointer;display:flex;flex-direction:column;border-radius:18px;overflow:hidden;background:var(--card);border:1px solid var(--line);box-shadow:0 12px 30px rgba(120,40,50,.07);transition:transform .25s,box-shadow .25s}
 .lcard:hover{transform:translateY(-4px);box-shadow:0 22px 44px rgba(120,40,50,.14)}
@@ -31,9 +34,9 @@
 .lcard .pic::after{content:"▶";position:absolute;z-index:1;left:50%;top:50%;width:46px;height:46px;margin:-23px 0 0 -23px;border-radius:50%;display:grid;place-items:center;background:rgba(5,7,15,.55);color:#fff;font-size:15px;opacity:0;transition:opacity .2s}
 .lcard:hover .pic::after{opacity:1}
 .lcard b{position:absolute;left:0;right:0;bottom:0;display:block;padding:34px 16px 12px;background:linear-gradient(rgba(0,0,0,0),rgba(0,0,0,.62));color:#fff;font-size:18px;font-weight:800;text-align:left;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-shadow:0 1px 6px rgba(0,0,0,.35)} /* tên mẫu đè lên góc dưới ảnh, như thẻ mẫu thiệp */
-@media (max-width:900px){.lp{padding:96px 0 50px}.lp h1{font-size:30px}}
+@media (max-width:900px){.lp{padding:96px 0 50px}}
 @media (max-width:600px){
-  .lp{padding:86px 0 40px}.lp h1{font-size:26px}
+  .lp{padding:86px 0 40px}.lhead h1{font-size:24px}.lhead p{font-size:13.5px}
   .lgrid{grid-template-columns:1fr;gap:14px;margin-top:18px} /* điện thoại: mỗi mẫu một hàng cho to */
   .lcard{border-radius:12px}
   .lcard b{padding:30px 14px 11px;font-size:17px}
@@ -44,8 +47,8 @@
 <body data-page="led">
 <header id="nav"></header>
 
-<section class="phero lp"><div class="wrap center">
-  <h1>Màn hình LED <em>tiệc cưới</em></h1>
+<section class="lp"><div class="wrap">
+  <div class="lhead"><h1>Mẫu màn hình LED</h1><p>7 mẫu · bấm để xem thử, ưng thì bấm Dùng mẫu</p></div>
   <div class="lgrid" id="lgrid" aria-label="Mẫu màn LED — bấm để xem"></div>
 </div></section>
 
