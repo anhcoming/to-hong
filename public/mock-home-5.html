@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="vi"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Mock trang chủ 5 khu</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&family=Dancing+Script:wght@700&display=swap">
+<style>
+*{box-sizing:border-box}body{margin:0;padding:20px;background:#e9e6e7;font-family:'Be Vietnam Pro',sans-serif;color:#2b2224}
+.row{display:flex;gap:28px;justify-content:center;flex-wrap:wrap}
+.it{width:375px}.it h3{margin:0 0 4px;font-size:15px}.it p.d{margin:0 0 8px;color:#6d6164;font-size:12.5px;min-height:34px}
+.ph{height:780px;border-radius:28px;background:#fdf7f7;box-shadow:0 10px 30px rgba(0,0,0,.12);overflow-y:auto}.ph::-webkit-scrollbar{display:none}
+.hero{height:120px;margin:0 0 8px;display:grid;place-items:center;background:linear-gradient(#fff,#fdf0f2);color:#b9a7ab;font-size:12px;border-bottom:1px dashed #ead6da}
+img{display:block}
+.more{font-size:13px;font-weight:700;color:#d6455d;white-space:nowrap}
+.tag{display:inline-block;padding:2px 8px;border-radius:99px;background:#d6455d;color:#fff;font-size:10.5px;font-weight:700;vertical-align:middle;margin-left:6px}
+/* ---------- A: mỗi khu = tiêu đề + 1 câu + 1 hàng / 1 khối hình + nút ---------- */
+.a .sec{padding:22px 0 8px}
+.a .hd{display:flex;align-items:flex-end;justify-content:space-between;gap:10px;padding:0 16px}
+.a .hd h2{margin:0;font-size:20px;font-weight:800}.a .hd p{margin:3px 0 0;font-size:13px;color:#8a7d80}
+.a .sl{display:flex;gap:10px;overflow-x:auto;padding:12px 16px 4px}.a .sl::-webkit-scrollbar{display:none}
+.a .sl img{flex:none;width:118px;aspect-ratio:9/16;object-fit:cover;object-position:top;border-radius:12px;box-shadow:0 6px 16px rgba(120,40,50,.12)}
+.a .wide{margin:12px 16px 0;border-radius:16px;overflow:hidden;position:relative;box-shadow:0 8px 20px rgba(120,40,50,.14)}
+.a .wide img{width:100%;aspect-ratio:16/9;object-fit:cover}
+.a .wide span{position:absolute;left:12px;bottom:10px;color:#fff;font-weight:700;font-size:14px;text-shadow:0 2px 8px rgba(0,0,0,.5)}
+.a .two{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:10px 16px 0}.a .two img{width:100%;aspect-ratio:16/9;object-fit:cover;border-radius:12px}
+.a .note{margin:12px 16px 0;padding:14px;border-radius:16px;background:#fff;box-shadow:0 0 0 1px #f0e4e6}
+.a .note li{list-style:none;display:flex;align-items:center;gap:8px;padding:6px 0;font-size:13.5px;border-bottom:1px solid #f6eef0}.a .note li:last-child{border:0}
+.a .note i{width:18px;height:18px;border-radius:5px;border:1.8px solid #e3c7cd;font-style:normal;display:grid;place-items:center;font-size:12px;color:#fff}.a .note i.ok{background:#d6455d;border-color:#d6455d}
+.a .note small{margin-left:auto;color:#a39497;font-size:11.5px}
+.a .cta{display:block;margin:12px 16px 0;padding:11px;border-radius:999px;background:#fff;box-shadow:0 0 0 1px #f0d6db;text-align:center;font-weight:700;font-size:14px;color:#d6455d}
+/* ---------- B: mỗi khu = 1 tấm thẻ lớn (ảnh + chữ + nút), xếp dọc ---------- */
+.b .card{margin:14px 16px;border-radius:22px;overflow:hidden;background:#fff;box-shadow:0 10px 26px rgba(120,40,50,.1)}
+.b .vis{position:relative;height:190px;overflow:hidden;background:#2b2224}
+.b .vis .fan{position:absolute;inset:0;display:flex;justify-content:center;align-items:flex-end;gap:0;padding-top:18px}
+.b .vis .fan img{width:96px;aspect-ratio:9/16;object-fit:cover;object-position:top;border-radius:10px;box-shadow:0 10px 24px rgba(0,0,0,.3);margin:0 -14px}
+.b .vis .fan img:nth-child(1){transform:rotate(-10deg) translateY(16px)}.b .vis .fan img:nth-child(3){transform:rotate(10deg) translateY(16px)}.b .vis .fan img:nth-child(2){position:relative;z-index:2;width:110px}
+.b .vis>img{width:100%;height:100%;object-fit:cover}
+.b .txt{padding:14px 16px 16px}.b .txt h2{margin:0;font-size:19px;font-weight:800}.b .txt p{margin:4px 0 12px;font-size:13px;color:#8a7d80}
+.b .act{display:flex;align-items:center;justify-content:space-between}
+.b .btn{padding:10px 18px;border-radius:999px;background:linear-gradient(135deg,#d6455d,#ef7d8d);color:#fff;font-weight:700;font-size:13.5px}
+.b .price{font-size:13px;color:#2b2224;font-weight:700}.b .price small{font-weight:500;color:#8a7d80}
+.b .plan{padding:16px;background:linear-gradient(135deg,#fff3f5,#fde3e7)}
+.b .plan li{list-style:none;display:flex;align-items:center;gap:8px;padding:5px 0;font-size:13px}
+.b .plan i{width:16px;height:16px;border-radius:4px;border:1.6px solid #e3c7cd;font-style:normal;display:grid;place-items:center;font-size:11px;color:#fff}.b .plan i.ok{background:#d6455d;border-color:#d6455d}
+</style></head><body>
+<div class="row" id="row"></div>
+<script>
+fetch('/api/meta').then(r => r.json()).then(m => {
+  const T = m.templates || [];
+  const hot = T.filter(t => t.badge === 'Hot'), top = [...hot, ...T.filter(t => !hot.includes(t))];
+  const cov = t => `/demo/cover-${t.id}-${t.palettes[0].id}.jpg`;
+  const S = ['phongbi-hong', 'dienanh', 'polaroid-nau', 'toigian-xanh', 'songhy-do'];
+  const notes = `<li><i class="ok">✓</i>Chốt ngày cưới<small>12 tháng trước</small></li><li><i class="ok">✓</i>Đặt nhà hàng<small>9 tháng</small></li><li><i></i>Chụp ảnh cưới<small>6 tháng</small></li><li><i></i>Gửi thiệp mời<small>1 tháng</small></li>`;
+  const A = `<div class="a"><div class="hero">( đầu trang giữ nguyên: Thả ảnh cưới vào… / Thử ngay trong 5s )</div>
+    <div class="sec"><div class="hd"><div><h2>Thiệp cưới online</h2><p>Mỗi khách một tên riêng · 99k</p></div><a class="more">${T.length} mẫu ›</a></div><div class="sl">${top.slice(0, 8).map(t => `<img src="${cov(t)}">`).join('')}</div></div>
+    <div class="sec"><div class="hd"><div><h2>Video báo hỷ TikTok<span class="tag">Miễn phí</span></h2><p>Ảnh cưới thành video 20 giây</p></div><a class="more">Xem ›</a></div><div class="sl">${S.map(id => `<img src="/demo/story/${id}.jpg">`).join('')}</div></div>
+    <div class="sec"><div class="hd"><div><h2>Slide ảnh cưới</h2><p>Chiếu TV / màn LED suốt tiệc</p></div><a class="more">Xem ›</a></div><div class="wide"><img src="/demo/vposter-polaroid.jpg" onerror="this.src='/demo/vposter-album.jpg'"><span>Polaroid · 2 phút</span></div><div class="two"><img src="/demo/vposter-dienanh.jpg"><img src="/demo/vposter-baocuoi.jpg"></div></div>
+    <div class="sec"><div class="hd"><div><h2>Màn hình LED</h2><p>Tên hai bạn trên màn sảnh tiệc</p></div><a class="more">Xem ›</a></div><div class="wide"><img src="/demo/lposter-do-sao.jpg"><span>Trời sao</span></div><div class="two"><img src="/demo/lposter-dem-phaohoa.jpg"><img src="/demo/lposter-den-remphale.jpg"></div></div>
+    <div class="sec"><div class="hd"><div><h2>Sổ tay cưới<span class="tag">Miễn phí</span></h2><p>Việc cần làm, khách mời, chi tiêu</p></div><a class="more">Mở ›</a></div><ul class="note">${notes}</ul><a class="cta">Bắt đầu sổ tay</a></div>
+    <div style="height:30px"></div></div>`;
+  const B = `<div class="b"><div class="hero">( đầu trang giữ nguyên )</div>
+    <div class="card"><div class="vis" style="background:linear-gradient(135deg,#7a1f2e,#c93a53)"><div class="fan">${top.slice(0, 3).map(t => `<img src="${cov(t)}">`).join('')}</div></div><div class="txt"><h2>Thiệp cưới online</h2><p>${T.length} mẫu · mỗi khách mời một tên riêng, gửi qua Zalo</p><div class="act"><span class="price">99k <small>· dùng thử 7 ngày</small></span><span class="btn">Xem mẫu</span></div></div></div>
+    <div class="card"><div class="vis" style="background:linear-gradient(135deg,#2b2224,#5a3a42)"><div class="fan">${S.slice(0, 3).map(id => `<img src="/demo/story/${id}.jpg">`).join('')}</div></div><div class="txt"><h2>Video báo hỷ TikTok<span class="tag">Miễn phí</span></h2><p>Thả ảnh cưới, có ngay video 20 giây kèm nhạc</p><div class="act"><span class="price">0đ</span><span class="btn">Tạo video</span></div></div></div>
+    <div class="card"><div class="vis"><img src="/demo/vposter-dienanh.jpg"></div><div class="txt"><h2>Slide ảnh cưới</h2><p>Video ảnh cưới chiếu TV, màn LED suốt tiệc</p><div class="act"><span class="price">Xem thử miễn phí</span><span class="btn">Xem mẫu</span></div></div></div>
+    <div class="card"><div class="vis"><img src="/demo/lposter-do-sao.jpg"></div><div class="txt"><h2>Màn hình LED</h2><p>Tên hai bạn, ngày cưới trên màn sảnh — gửi link là chiếu</p><div class="act"><span class="price">Xem thử miễn phí</span><span class="btn">Tạo màn LED</span></div></div></div>
+    <div class="card"><ul class="plan">${notes}</ul><div class="txt"><h2>Sổ tay cưới<span class="tag">Miễn phí</span></h2><p>Việc cần làm theo phong tục, khách mời, chi tiêu</p><div class="act"><span class="price">0đ</span><span class="btn">Mở sổ tay</span></div></div></div>
+    <div style="height:30px"></div></div>`;
+  const V = [
+    ['A · Mỗi khu một hàng gọn', '5 khu nối nhau: tiêu đề + 1 câu + 1 hàng ảnh (thiệp, báo hỷ) hoặc 1 ảnh lớn + 2 ảnh nhỏ (slide, LED), sổ tay là danh sách việc. Bỏ hết các hàng "Mới ra mắt", theo phong cách, "Tất cả".', A],
+    ['B · Mỗi khu một tấm thẻ', '5 tấm thẻ lớn xếp dọc, mỗi thẻ: ảnh minh hoạ + tên + 1 câu + giá + 1 nút. Gọn nhất, nhìn như danh sách sản phẩm.', B]
+  ];
+  document.getElementById('row').innerHTML = V.map(v => `<div class="it"><h3>${v[0]}</h3><p class="d">${v[1]}</p><div class="ph">${v[2]}</div></div>`).join('');
+});
+</script></body></html>

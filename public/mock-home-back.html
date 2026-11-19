@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="vi"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Mock về trang chủ</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&family=Dancing+Script:wght@700&display=swap">
+<style>
+*{box-sizing:border-box}body{margin:0;background:#e9e6e7;font-family:'Be Vietnam Pro',sans-serif;color:#2b2224;padding:20px}
+.row{display:grid;grid-template-columns:repeat(4,330px);gap:22px;justify-content:center}
+h3.t{margin:0 0 4px;text-align:center;font-size:15px}p.d{margin:0 0 8px;text-align:center;font-size:12px;color:#7a6d70;min-height:32px}
+.ph{height:600px;border-radius:30px;overflow:hidden;background:#fdf7f7;box-shadow:0 10px 30px rgba(0,0,0,.12);position:relative}
+svg{display:block;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.top{display:flex;align-items:center;gap:8px;margin:10px;padding:8px 8px 8px 14px;border-radius:999px;background:#fff;box-shadow:0 4px 14px rgba(120,40,50,.08)}
+.lg{white-space:nowrap;font-family:'Dancing Script';font-size:24px;color:#c93a53;margin-right:auto;display:flex;align-items:center;gap:6px}
+.new{white-space:nowrap;padding:8px 12px;border-radius:999px;background:linear-gradient(135deg,#c93a53,#ef7d8d);color:#fff;font-weight:700;font-size:13px}
+.ic{width:38px;height:38px;border-radius:50%;background:#fff0f2;color:#d6455d;display:grid;place-items:center;flex:none}
+.ic.o{background:#fff;border:1px solid #eadfe1;color:#2b2224}
+h1{margin:6px 16px 10px;font-size:20px}
+.card{margin:0 12px;height:230px;border-radius:20px;background:#fff url(/demo/story/dienanh.jpg) center 30%/cover}
+.tb{position:absolute;left:8px;right:8px;bottom:10px;border-radius:22px;background:#fff;box-shadow:0 6px 24px rgba(0,0,0,.1);display:flex;align-items:center;font-size:10.5px;color:#7a6d70;padding:8px 4px}
+.tb span{flex:1 1 0;display:flex;flex-direction:column;align-items:center;gap:4px;white-space:nowrap}.tb span.on{color:#c93a53;font-weight:700}
+.menu{position:absolute;right:12px;top:66px;width:230px;padding:8px;border-radius:14px;background:#fff;box-shadow:0 0 0 1px #f0e4e6,0 20px 50px rgba(120,40,50,.18);font-size:14px}
+.menu .who{padding:8px 10px 10px;border-bottom:1px solid #f0e4e6;margin-bottom:4px;font-size:13px;color:#8a7d80}.menu .who b{display:block;color:#2b2224;font-size:14px}
+.menu a{display:flex;align-items:center;gap:10px;padding:10px}.menu a svg{color:#8a7d80}.menu a.hl{background:#fff0f2;border-radius:10px}
+.back{display:flex;align-items:center;gap:4px;margin:4px 16px 0;font-size:13px;color:#8a7d80;font-weight:600}
+.lg .h{width:26px;height:26px;border-radius:50%;background:#fff0f2;color:#d6455d;display:grid;place-items:center}
+</style></head><body>
+<div class="row" id="row"></div>
+<script>
+var I={home:'<path d="M4 11 12 4l8 7v8.5a1.5 1.5 0 0 1-1.5 1.5H15v-6H9v6H5.5A1.5 1.5 0 0 1 4 19.5z"/>',user:'<circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/>',card:'<rect x="3" y="5" width="18" height="14" rx="2.5"/><path d="M3.5 6.5 12 13l8.5-6.5"/>',clap:'<path d="M4 10h16v9a1.5 1.5 0 0 1-1.5 1.5h-13A1.5 1.5 0 0 1 4 19z"/><path d="m4 10-.6-3.2 15-3 .6 3.2"/>',led:'<rect x="2.5" y="4" width="19" height="12.5" rx="2"/><path d="M8 20.5h8M12 16.5v4"/>',slide:'<rect x="3" y="4" width="18" height="12" rx="2"/><path d="M12 16v4M8 20h8"/><path d="m10 8 4 2-4 2z"/>',book:'<path d="M5 4.5A1.5 1.5 0 0 1 6.5 3H19v15H6.5A1.5 1.5 0 0 0 5 19.5z"/><path d="M5 19.5A1.5 1.5 0 0 0 6.5 21H19v-3"/>',moon:'<path d="M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5z"/>',out:'<path d="M15 4h3a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-3"/><path d="M10 16l-4-4 4-4M6 12h10"/>',left:'<path d="m15 6-6 6 6 6"/>'};
+var s=function(k,w){return '<svg width="'+(w||20)+'" height="'+(w||20)+'" viewBox="0 0 24 24">'+I[k]+'</svg>'};
+var it=function(k,n,on){return '<span'+(on?' class="on"':'')+'>'+s(k,21)+n+'</span>'};
+var tb5='<div class="tb">'+it('card','Thiệp',1)+it('clap','Báo hỷ')+it('led','Màn LED')+it('slide','Slide')+it('book','Sổ tay')+'</div>';
+var topB=function(left,right){return '<div class="top"><span class="lg">'+left+'</span>'+right+'</div>'};
+var V={
+ 'A · Dòng "Trang chủ" trong menu tài khoản':['Bấm icon người → dòng đầu là Trang chủ. Thanh dưới giữ 5 nút.',
+   topB('Cưới Nha ♥','<span class="new">＋ Tạo mới</span><span class="ic">'+s('user')+'</span>')+'<h1>Thiệp của tôi</h1><div class="card"></div><div class="menu"><div class="who"><b>Đức Anh Vũ</b>anhcoming@gmail.com</div><a class="hl">'+s('home',18)+'Trang chủ</a><a>'+s('moon',18)+'Đổi nền sáng / tối</a><a>'+s('out',18)+'Đăng xuất</a></div>'+tb5],
+ 'B · Nút ngôi nhà trên thanh trên':['Thêm nút tròn hình ngôi nhà cạnh icon người. Luôn thấy, bấm một lần là về.',
+   topB('Cưới Nha ♥','<span class="new">＋ Tạo mới</span><span class="ic o">'+s('home')+'</span><span class="ic">'+s('user')+'</span>')+'<h1>Thiệp của tôi</h1><div class="card"></div>'+tb5],
+ 'C · Ngôi nhà ngay trước logo':['Icon ngôi nhà nhỏ dính vào logo, gợi ý bấm logo là về trang chủ.',
+   topB('<span class="h">'+s('home',15)+'</span>Cưới Nha ♥','<span class="new">＋ Tạo mới</span><span class="ic">'+s('user')+'</span>')+'<h1>Thiệp của tôi</h1><div class="card"></div>'+tb5],
+ 'D · "Trang chủ" thay "Slide" ở thanh dưới':['Trang chủ thành nút đầu tiên của thanh dưới; Slide chuyển vào danh sách "Làm thêm" ở trang Thiệp.',
+   topB('Cưới Nha ♥','<span class="new">＋ Tạo mới</span><span class="ic">'+s('user')+'</span>')+'<h1>Thiệp của tôi</h1><div class="card"></div><div class="tb">'+it('home','Trang chủ')+it('card','Thiệp',1)+it('clap','Báo hỷ')+it('led','Màn LED')+it('book','Sổ tay')+'</div>']
+};
+document.getElementById('row').innerHTML=Object.keys(V).map(k=>'<div><h3 class="t">'+k+'</h3><p class="d">'+V[k][0]+'</p><div class="ph">'+V[k][1]+'</div></div>').join('');
+</script></body></html>

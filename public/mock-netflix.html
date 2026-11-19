@@ -1,0 +1,224 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Mock trang chủ · kiểu Netflix</title>
+<link rel="icon" href="/favicon.svg">
+<meta name="theme-color" content="#0f0b0c">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800;900&amp;family=Dancing+Script:wght@600;700&amp;display=swap">
+<style>
+/* Mock trang chủ kiểu Netflix: billboard một mẫu nổi bật đổi dần, bên dưới là các hàng mẫu cuộn ngang (Top 5, Mới, theo phong cách), thẻ phóng to khi rê chuột. */
+:root{--bg:#0f0b0c;--ink:#f5ece6;--muted:#b3a5a0;--acc:#e50914;--rose:#f0687b;--sans:'Be Vietnam Pro',system-ui,sans-serif;--script:'Dancing Script',cursive}
+*,*::before,*::after{box-sizing:border-box}
+html{overflow-x:hidden}
+body{margin:0;background:var(--bg);color:var(--ink);font:400 16px/1.5 var(--sans);-webkit-font-smoothing:antialiased;overflow-x:hidden}
+a{color:inherit;text-decoration:none}
+img{display:block}
+
+/* thanh trên: trong suốt trên billboard, đặc dần khi cuộn */
+/* thanh menu nổi: viên thuốc tối trong suốt, mờ nền phía sau, viền sáng mảnh */
+.nav{position:fixed;top:14px;left:4vw;right:4vw;z-index:50;display:flex;align-items:center;gap:28px;height:58px;padding:0 10px 0 24px;border-radius:999px;background:rgba(18,13,14,.42);border:1px solid rgba(255,255,255,.14);box-shadow:0 10px 30px rgba(0,0,0,.25),inset 0 1px 0 rgba(255,255,255,.06);-webkit-backdrop-filter:blur(18px) saturate(1.5);backdrop-filter:blur(18px) saturate(1.5);transition:background .3s,border-color .3s}
+.nav.solid{background:rgba(18,13,14,.72);border-color:rgba(255,255,255,.1)}
+.logo{display:flex;align-items:center;gap:8px;font:900 22px var(--sans);letter-spacing:-.02em;color:var(--rose)}
+.logo svg{width:28px}
+.nav .links{display:flex;gap:20px;font-size:14px;color:#e5dcd8}
+.nav .links a:hover,.nav .links a.on{color:#fff;font-weight:600}
+.nav .right{margin-left:auto;display:flex;align-items:center;gap:14px}
+.nav .btn{padding:9px 18px;border-radius:999px;background:var(--rose);color:#fff;font-weight:700;font-size:14px}
+@media (max-width:800px){.nav .links{display:none}}
+
+/* billboard */
+.bb{position:relative;height:88vh;min-height:560px;overflow:hidden}
+.bb .wall{position:absolute;inset:-4% -2%;display:grid;grid-template-columns:repeat(6,1fr);gap:14px;padding:0 14px;transform:rotate(-4deg);
+  -webkit-mask:linear-gradient(180deg,transparent,#000 12%,#000 82%,transparent);
+  mask:linear-gradient(180deg,transparent,#000 12%,#000 82%,transparent)}
+.bb .col{display:flex;flex-direction:column;gap:14px;animation:up 50s linear infinite}
+.bb .col:nth-child(even){animation-name:down;animation-duration:60s}
+.bb .col img{width:100%;aspect-ratio:9/16;object-fit:cover;object-position:top;border-radius:12px;opacity:.9}
+@keyframes up{to{transform:translateY(-50%)}}
+@keyframes down{from{transform:translateY(-50%)}to{transform:translateY(0)}}
+/* màn hẹp hơn: không đủ chỗ cạnh cột chữ thì về lại giữa tường thiệp */
+
+.bb::after{content:"";position:absolute;inset:0;pointer-events:none;background:linear-gradient(90deg,rgba(15,11,12,.97) 0%,rgba(15,11,12,.9) 30%,rgba(15,11,12,.45) 58%,rgba(15,11,12,.15) 80%),linear-gradient(0deg,var(--bg) 0%,transparent 26%)}
+.bb-in{position:absolute;z-index:2;left:6vw;top:52%;transform:translateY(-50%);max-width:620px}
+.bb-row .ctrl{max-width:480px}
+.bb .kick{display:flex;align-items:center;gap:8px;font-size:13px;font-weight:800;letter-spacing:.25em;color:var(--rose)}
+.bb .kick b{display:grid;place-items:center;width:26px;height:26px;border-radius:4px;background:var(--acc);color:#fff;font-size:11px;letter-spacing:0}
+.bb h1{margin:10px 0 2px;font:700 clamp(56px,8vw,104px)/1 var(--script);color:#fff;text-shadow:0 4px 30px rgba(0,0,0,.5)}
+.bb h1.bh{font:900 clamp(36px,4.2vw,58px)/1.05 var(--sans);letter-spacing:-.03em}
+.bb .lead{margin:6px 0 24px;font-size:16px;max-width:460px}
+.bb h1.bh em{display:block;margin-top:0;font:700 1.08em/1.1 var(--script);font-style:normal;color:var(--rose);letter-spacing:0}
+.bb .meta{display:flex;align-items:center;gap:12px;margin-bottom:14px;font-size:14px;color:#d8ccc7}
+.bb .meta .m{color:#46d369;font-weight:700}
+.bb .meta .box{padding:0 6px;border:1px solid #8a7c78;font-size:12px}
+.bb p{margin:0 0 22px;font-size:17px;color:#e5dcd8;text-shadow:0 2px 10px rgba(0,0,0,.6)}
+.bb .acts{display:flex;gap:12px;flex-wrap:wrap}
+.b{display:inline-flex;align-items:center;gap:10px;padding:12px 26px;border-radius:6px;font:700 17px var(--sans);border:0;cursor:pointer;transition:opacity .2s}
+.b:hover{opacity:.8}
+.b-play{background:#fff;color:#111}
+.b-more{background:rgba(109,109,110,.7);color:#fff}
+.bb .rate{position:absolute;z-index:4;right:0;bottom:16vh;display:flex;align-items:center;gap:12px;padding:6px 40px 6px 14px;border-left:3px solid #dcdcdc;background:rgba(51,51,51,.6);font-size:15px}
+.bb .to{margin:-12px 0 20px;font-size:15px;color:#d8ccc7}
+.bb .to b{font:700 24px var(--script);color:#fff}
+
+/* các hàng mẫu */
+.rows{position:relative;z-index:3;margin-top:-6vh;padding-bottom:60px}
+.row{margin-bottom:3.2vw}
+.row h2{margin:0 0 10px;padding:0 4vw;font-size:clamp(17px,1.5vw,22px);font-weight:700;color:#e5e5e5}
+.row h2 a{margin-left:10px;font-size:13px;font-weight:600;color:var(--rose);opacity:0;transition:.3s}
+.row:hover h2 a{opacity:1}
+.track{position:relative}
+.slider{display:flex;gap:16px;overflow-x:auto;overflow-y:hidden;overscroll-behavior-x:contain;scroll-behavior:smooth;scrollbar-width:none;padding:16px 4vw 44px;margin-bottom:-26px} /* chừa chỗ cho thẻ nhấc lên + bóng, không cho cuộn dọc */
+.slider::-webkit-scrollbar{display:none}
+.arrow{position:absolute;top:0;bottom:0;z-index:5;width:4vw;border:0;background:rgba(15,11,12,.6);color:#fff;font-size:34px;cursor:pointer;opacity:0;transition:opacity .2s}
+.track:hover .arrow{opacity:1}
+.arrow.l{left:0}.arrow.r{right:0}
+/* thẻ mẫu: rê chuột chỉ nhấc nhẹ + đổ bóng; tên và nút hiện trên mép dưới ảnh, không tràn ra ngoài */
+.card{position:relative;flex:none;width:clamp(140px,13vw,200px)}
+.card .pic{position:relative;display:block;border-radius:8px;overflow:hidden;background:#222;transition:transform .25s,box-shadow .25s}
+.card .pic>a{display:block}
+.card img{width:100%;aspect-ratio:9/16;object-fit:cover;object-position:top}
+.card .tag{position:absolute;top:0;left:8px;z-index:2;padding:6px 6px 8px;background:var(--acc);color:#fff;font:800 10px/1.05 var(--sans);text-align:center;border-radius:0 0 3px 3px}
+.card .new{position:absolute;left:50%;bottom:0;z-index:1;transform:translateX(-50%);padding:3px 8px;background:var(--acc);color:#fff;font-size:11px;font-weight:700;border-radius:3px 3px 0 0;white-space:nowrap;transition:opacity .2s}
+.card .info{position:absolute;left:0;right:0;bottom:0;z-index:2;display:flex;align-items:center;gap:8px;padding:28px 10px 10px;background:linear-gradient(0deg,rgba(10,7,8,.85),transparent);opacity:0;transform:translateY(8px);transition:.25s;pointer-events:none}
+.card .info b{flex:1;min-width:0;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.card .info .use{flex:none;padding:6px 12px;border-radius:999px;background:#fff;color:#111;font-size:12px;font-weight:700}
+.card .info .use:hover{background:#ffe3ea}
+.card:hover .pic{transform:translateY(-6px);box-shadow:0 18px 40px rgba(0,0,0,.55)}
+.card:hover .info{opacity:1;transform:none;pointer-events:auto}
+.card:hover .new{opacity:0}
+/* rê chuột: thiệp chạy thật thay ảnh bìa và tự trượt xuống (kiểu xem trước của Netflix) */
+.card .live{position:absolute;left:0;top:0;width:390px;border:0;pointer-events:none;transform-origin:0 0;opacity:0;transition:opacity .4s;background:#fff}
+.card .live.on{opacity:1}
+/* top 4: thẻ cùng cỡ, số xếp hạng viền rỗng nấp sau góc dưới bên trái */
+.top .slider{gap:20px}
+.top .card{width:clamp(190px,15.5vw,250px);padding-left:clamp(48px,4.2vw,70px)}
+.top .num{position:absolute;left:0;bottom:-6px;z-index:0;font:900 clamp(110px,9.5vw,160px)/.8 var(--sans);color:var(--bg);-webkit-text-stroke:3px #5c5254;letter-spacing:-.06em}
+.top .pic{z-index:1}
+.wide .card{width:clamp(240px,26vw,380px)}
+.wide .pic{aspect-ratio:16/9}
+.wide iframe{position:absolute;left:0;top:0;width:1280px;height:720px;border:0;pointer-events:none;transform-origin:0 0}
+.wide .pic>img{height:100%;aspect-ratio:auto}
+.wide .lbl{position:absolute;left:12px;bottom:10px;z-index:2;font:800 18px var(--sans);text-shadow:0 2px 10px rgba(0,0,0,.8)}
+.wide .lbl small{display:block;font-weight:500;font-size:12px;color:#e0d6d2}
+footer{padding:40px 4vw 60px;color:#808080;font-size:13px}
+@media (max-width:700px){
+  .nav{gap:12px;top:10px;left:12px;right:12px;height:52px;padding:0 8px 0 16px}.nav .right>a:first-child{display:none}.logo,.nav .btn{white-space:nowrap}
+  .bb .meta{flex-wrap:wrap;gap:4px 10px;font-size:13px}
+  .bb-in{left:16px;right:16px}
+  .bb{height:78vh}
+  .bb .wall{grid-template-columns:repeat(3,1fr);opacity:.6}
+  .bb .wall .col:nth-child(n+4){display:none}
+  .bb-in{top:auto;transform:none}
+  .bb::after{background:linear-gradient(0deg,var(--bg) 18%,rgba(15,11,12,.75) 50%,rgba(15,11,12,.2))}
+  .bb-in{bottom:9vh;right:4vw}
+  .bb .rate{display:none}
+  .rows{margin-top:0}
+}
+</style>
+</head>
+<body>
+<header class="nav" id="nav">
+  <a class="logo" href="#"><svg viewBox="0 0 32 32" fill="none"><path d="M16 27C6.5 20 3 15 3 10.5 3 6.9 5.8 4 9.4 4c2.6 0 4.6 1.4 6.6 3.9C18 5.4 20 4 22.6 4 26.2 4 29 6.9 29 10.5 29 15 25.5 20 16 27z" stroke="currentColor" stroke-width="2.4"/></svg>CƯỚI NHA</a>
+  <nav class="links"><a class="on" href="#">Trang chủ</a><a href="/mau-thiep">Mẫu thiệp</a><a href="/video-dam-ngo">Video dạm ngõ</a><a href="/man-hinh-led-dam-cuoi">Màn hình LED</a><a href="/so-tay-cuoi">Sổ tay cưới</a></nav>
+  <div class="right"><a href="/dang-nhap" style="font-size:14px">Đăng nhập</a><a class="btn" href="/mau-thiep">Tạo thiệp</a></div>
+</header>
+
+<section class="bb" id="bb">
+  <div class="wall" id="wall" aria-hidden="true"></div>
+  <div class="bb-in">
+    <div class="kick"><b>CN</b>THIỆP CƯỚI ONLINE</div>
+    <h1 class="bh">Gửi lời mời cưới<em>có tên từng khách</em></h1>
+    <p class="lead">Mỗi khách một tấm thiệp mang tên riêng — có nhạc, bản đồ, hộp mừng cưới.</p>
+    <div class="bb-row"><div class="ctrl">
+    <div class="acts"><a class="b b-play" href="/mau-thiep">▶ Xem các mẫu</a><a class="b b-more" href="/mau-thiep">＋ Tạo thiệp miễn phí</a></div>
+    </div>
+    </div>
+  </div>
+  <div class="rate">♥ 129k · dùng thử 7 ngày</div>
+</section>
+
+<main class="rows" id="rows"></main>
+<footer>© 2026 Cưới Nha · Mock thử bố cục kiểu Netflix — chưa phải trang thật.</footer>
+
+<script>
+const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const cover = (id, pal) => `/demo/cover-${id}-${pal}.jpg`;
+
+addEventListener('scroll', () => document.getElementById('nav').classList.toggle('solid', scrollY > 60), { passive: true });
+
+fetch('/api/meta').then((r) => r.json()).then(({ templates: T, templateGroups: G = [] }) => {
+  const gname = (t) => (G.find((g) => g.id === t.group) || {}).name || '';
+  // billboard: các mẫu Hot lần lượt, 8 giây đổi một lần
+  const hot = T.filter((t) => t.badge === 'Hot');
+  const feat = [...hot, ...T.filter((t) => !hot.includes(t))].slice(0, 5); // top 5: mẫu Hot trước, thiếu thì lấy thêm mẫu kế tiếp
+  // tường thiệp trượt: mỗi cột 6 bìa liên tiếp, lệch điểm bắt đầu để các cột cạnh nhau không trùng
+  const all = T.flatMap((t) => t.palettes.map((p) => cover(t.id, p.id)));
+  document.getElementById('wall').innerHTML = [0, 1, 2, 3, 4, 5].map((c) => { const list = Array.from({ length: 6 }, (_, j) => all[(c * 5 + j * 3) % all.length]); return `<div class="col">${[...list, ...list].map((u) => `<img src="${u}" alt="" loading="lazy">`).join('')}</div>`; }).join('');
+
+  // các hàng mẫu
+  const card = (t, extra = '') => `<div class="card" data-tpl="${t.id}" data-pal="${t.palettes[0].id}">${extra}<div class="pic"><a href="/demo/${t.id}" aria-label="Xem thử ${esc(t.name)}"><img src="${cover(t.id, t.palettes[0].id)}" alt="${esc(t.name)}" loading="lazy"></a>${t.badge === 'Hot' && !extra ? '<span class="tag">TOP<br>10</span>' : ''}${t.badge === 'Mới' ? '<span class="new">Mới ra mắt</span>' : ''}
+    <div class="info"><b>${esc(t.name)}</b><a class="use" href="/thiep-cua-toi?tao=${t.id}&mau=${t.palettes[0].id}">Dùng mẫu</a></div></div></div>`;
+  const row = (title, list, cls = '', more = '/mau-thiep') => list.length ? `<section class="row ${cls}"><h2>${title}<a href="${more}">Xem tất cả ›</a></h2>
+    <div class="track"><button class="arrow l" aria-label="Trước">‹</button><div class="slider">${list.join('')}</div><button class="arrow r" aria-label="Sau">›</button></div></section>` : '';
+  const used = G.filter((g) => T.some((t) => t.group === g.id));
+  document.getElementById('rows').innerHTML =
+    row('Top 5 mẫu được chọn nhiều nhất tuần này', feat.map((t, i) => card(t, `<span class="num">${i + 1}</span>`)), 'top')
+    + row('Mới ra mắt', T.filter((t) => t.badge === 'Mới').map((t) => card(t)), '', '/mau-thiep?nhan=M%E1%BB%9Bi')
+    + row('Không chỉ là thiệp', [
+      `<div class="card"><a class="pic" href="/video-dam-ngo"><iframe src="/video/demo?preview=1&amp;template=sen" loading="lazy" tabindex="-1" title="Video dạm ngõ"></iframe><span class="lbl">Video dạm ngõ<small>Chiếu TV, MP4 Full HD · 69k</small></span></a></div>`,
+      `<div class="card"><a class="pic" href="/man-hinh-led-dam-cuoi"><iframe src="/led/demo?preview=1&amp;effect=domdom&amp;palette=do" loading="lazy" tabindex="-1" title="Màn LED"></iframe><span class="lbl">Màn hình LED<small>Sảnh tiệc cưới · 29k</small></span></a></div>`,
+      `<div class="card"><a class="pic" href="/so-tay-cuoi"><img src="/demo/longphung-5.jpg" alt=""><span class="lbl">Sổ tay cưới<small>Miễn phí · cả nhà cùng dùng</small></span></a></div>`,
+    ], 'wide', '/video-dam-ngo')
+    + used.map((g) => row(g.name, T.filter((t) => t.group === g.id).map((t) => card(t)), '', `/mau-thiep?phong-cach=${g.id}`)).join('')
+    + row('Tất cả mẫu thiệp', T.map((t) => card(t)));
+  // khung LED/video 1280×720 thu nhỏ vừa thẻ 16:9
+  const fit = () => document.querySelectorAll('.wide .pic').forEach((p) => { const f = p.querySelector('iframe'); if (f) f.style.transform = `scale(${p.clientWidth / 1280})`; });
+  fit(); addEventListener('resize', fit);
+  // xem trước khi rê chuột: sau 0,3 giây nạp trang thiệp thật (bỏ màn mở thiệp) vào thẻ, hiện dần rồi cuộn chậm xuống
+  if (matchMedia('(hover:hover)').matches) {
+    let cur = null;
+    const stop = () => { if (!cur) return; clearTimeout(cur.t); cancelAnimationFrame(cur.raf); if (cur.f) cur.f.remove(); cur = null; };
+    document.getElementById('rows').addEventListener('mouseover', (e) => {
+      const c = e.target.closest('.card[data-tpl]');
+      if (!c || (cur && cur.c === c)) return;
+      stop();
+      const st = cur = { c };
+      st.t = setTimeout(() => {
+        const pic = c.querySelector('.pic'), s = pic.clientWidth / 390;
+        const f = document.createElement('iframe');
+        f.className = 'live'; f.tabIndex = -1; f.title = 'Xem trước';
+        f.style.height = pic.clientHeight / s + 'px'; f.style.transform = `scale(${s})`;
+        f.src = `/demo/${c.dataset.tpl}?palette=${c.dataset.pal}&preview=1`;
+        pic.querySelector('a').after(f); st.f = f;
+        f.onload = () => {
+          if (cur !== st) return;
+          setTimeout(() => f.classList.add('on'), 150);
+          let y = 0, last = 0;
+          const w = f.contentWindow; try { w.document.documentElement.style.scrollbarWidth = 'none'; } catch (e) {}
+          const step = (now) => {
+            if (cur !== st) return;
+            if (last && now - last < 100) { y += (now - last) * 0.09; w.scrollTo({ top: y, behavior: 'instant' }); } // trang thiệp đặt cuộn mượt: phải cuộn tức thời từng bước
+            last = now;
+            // hết trang thì quay lại đầu
+            if (y > w.document.documentElement.scrollHeight - w.innerHeight) y = 0;
+            st.raf = requestAnimationFrame(step);
+          };
+          setTimeout(() => { if (cur === st) st.raf = requestAnimationFrame(step); }, 900);
+        };
+      }, 300);
+    });
+    document.getElementById('rows').addEventListener('mouseout', (e) => {
+      if (cur && !cur.c.contains(e.relatedTarget)) stop();
+    });
+  }
+  document.getElementById('rows').addEventListener('click', (e) => {
+    const a = e.target.closest('.arrow'); if (!a) return;
+    const s = a.parentNode.querySelector('.slider'); s.scrollBy({ left: (a.classList.contains('l') ? -1 : 1) * s.clientWidth * 0.8 });
+  });
+});
+</script>
+</body>
+</html>

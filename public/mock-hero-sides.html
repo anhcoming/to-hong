@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="vi"><head><meta charset="utf-8"><title>Mock hai bên đầu trang</title>
+<style>
+body{margin:0;background:#e9e6e7;font-family:system-ui,sans-serif;padding:16px}
+.it{margin:0 auto 22px;width:1280px}
+.it h3{margin:0 0 6px;font-size:17px}.it p{margin:0 0 8px;color:#6d6164;font-size:13px}
+iframe{display:block;width:1280px;height:720px;border:0;border-radius:14px;box-shadow:0 10px 30px rgba(0,0,0,.12);background:#fff}
+</style></head><body>
+<div id="list"></div>
+<script>
+// mỗi mẫu = trang chủ thật trong khung 1280×720 + một ít CSS/HTML chèn thêm
+var FEAT = [['✉️','Mỗi khách một tên riêng'],['💌','Gửi qua Zalo, Messenger'],['✅','Khách xác nhận dự tiệc'],['📍','Bản đồ chỉ đường'],['🎵','Nhạc nền cưới'],['🎁','Mừng cưới qua mã QR']];
+var V = [
+ ['Hiện tại', 'Để so sánh.', '', ''],
+ ['A · Bức tường thiệp rõ hơn', 'Bớt lớp phủ trắng và độ nhoè: thiệp mẫu hai bên hiện rõ, chỉ giữa sáng để đọc chữ.',
+  '.hb .wall{opacity:.85!important;filter:blur(1px) saturate(.95)!important}.hb::after{background:radial-gradient(ellipse 34% 58% at 50% 52%,rgba(255,255,255,.93),rgba(255,255,255,.55) 70%,rgba(255,255,255,.15)),linear-gradient(180deg,var(--bg) 0%,transparent 12%),linear-gradient(0deg,var(--bg) 0%,transparent 18%)!important}', ''],
+ ['B · Tính năng nổi hai bên', 'Sáu thẻ nhỏ trôi nhẹ hai bên, nói thiệp có gì: tên từng khách, gửi Zalo, xác nhận dự tiệc, bản đồ, nhạc, mừng cưới QR.',
+  '.ft{position:absolute;z-index:2;display:flex;align-items:center;gap:10px;padding:12px 18px;border-radius:16px;background:rgba(255,255,255,.92);box-shadow:0 14px 34px rgba(120,40,50,.14);font:600 15px "Be Vietnam Pro",sans-serif;color:#2b2224;animation:flt 6s ease-in-out infinite}.ft span{font-size:20px}@keyframes flt{50%{transform:translateY(-8px)}}',
+  FEAT.map(function (f, i) { var L = i < 3, pos = [[150, 330], [90, 470], [170, 610], [150, 330], [90, 470], [170, 610]][i]; return '<div class="ft" style="top:' + pos[1] + 'px;' + (L ? 'left:' + pos[0] : 'right:' + pos[0]) + 'px;animation-delay:' + (i * .7) + 's"><span>' + f[0] + '</span>' + f[1] + '</div>'; }).join('')],
+ ['C · Ảnh cưới polaroid hai bên', 'Vài tấm ảnh cưới kiểu polaroid nghiêng nhẹ hai bên — hợp với câu "thả ảnh cưới vào".',
+  '.pol{position:absolute;z-index:2;padding:10px 10px 34px;background:#fff;box-shadow:0 18px 40px rgba(0,0,0,.18);border-radius:4px}.pol img{display:block;width:170px;height:210px;object-fit:cover}.pol i{position:absolute;left:0;right:0;bottom:8px;text-align:center;font:700 18px "Dancing Script",cursive;color:#c93a53;font-style:normal}',
+  '<div class="pol" style="left:120px;top:300px;transform:rotate(-8deg)"><img src="/demo/hero-1.jpg"><i>Ngày chung đôi</i></div><div class="pol" style="left:250px;top:560px;transform:rotate(6deg)"><img src="/demo/hero-2.jpg" style="width:140px;height:170px"><i>♥</i></div><div class="pol" style="right:120px;top:320px;transform:rotate(7deg)"><img src="/demo/hero-3.jpg"><i>Mãi bên nhau</i></div><div class="pol" style="right:260px;top:580px;transform:rotate(-5deg)"><img src="/demo/hero-1.jpg" style="width:140px;height:170px;object-position:30% 20%"><i>♥</i></div>']
+];
+document.getElementById('list').innerHTML = V.map(function (v, i) { return '<div class="it"><h3>' + v[0] + '</h3><p>' + v[1] + '</p><iframe id="f' + i + '" src="/?mock=' + i + '"></iframe></div>'; }).join('');
+V.forEach(function (v, i) {
+  var f = document.getElementById('f' + i);
+  f.onload = function () {
+    var d = f.contentDocument; if (!d) return;
+    var st = d.createElement('style'); st.textContent = '.hb>.kick,.hb>h1,.hb>.stage,.hb>.hcta{animation:none!important}.hb>.ft,.hb>.pol{position:absolute!important}' + v[2]; d.head.appendChild(st);
+    if (v[3]) { var hb = d.querySelector('.hb'); var box = d.createElement('div'); box.innerHTML = v[3]; while (box.firstChild) hb.appendChild(box.firstChild); }
+  };
+});
+</script></body></html>

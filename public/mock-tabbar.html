@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="vi"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Mock thanh dưới</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&family=Dancing+Script:wght@700&display=swap">
+<style>
+*{box-sizing:border-box}body{margin:0;background:#e9e6e7;font-family:'Be Vietnam Pro',sans-serif;color:#2b2224;padding:20px}
+.row{display:grid;grid-template-columns:repeat(4,340px);gap:24px;justify-content:center}
+h3.t{margin:0 0 4px;text-align:center;font-size:15px}p.d{margin:0 0 8px;text-align:center;font-size:12px;color:#7a6d70;min-height:32px}
+.ph{height:700px;border-radius:30px;overflow:hidden;background:#fdf7f7;box-shadow:0 10px 30px rgba(0,0,0,.12);position:relative}
+.top{display:flex;align-items:center;gap:8px;margin:10px;padding:8px 8px 8px 16px;border-radius:999px;background:#fff;box-shadow:0 4px 14px rgba(120,40,50,.08)}
+.top .lg{font-family:'Dancing Script';font-size:24px;color:#c93a53;margin-right:auto}
+.top .new{padding:8px 14px;border-radius:999px;background:linear-gradient(135deg,#c93a53,#ef7d8d);color:#fff;font-weight:700;font-size:13px}
+.top .av{width:34px;height:34px;border-radius:50%;background:#f6d8dd;color:#8a2236;display:grid;place-items:center;font-weight:800;font-size:12px}
+h1{margin:6px 16px 10px;font-size:20px}
+.card{margin:0 12px;height:300px;border-radius:20px;background:#fff url(/demo/story/dienanh.jpg) center 30%/cover;opacity:.9}
+.ghost{margin:12px;height:120px;border-radius:18px;background:#fff}
+svg{display:block;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.tb{position:absolute;left:8px;right:8px;bottom:10px;border-radius:22px;background:#fff;box-shadow:0 6px 24px rgba(0,0,0,.1);display:flex;align-items:center;font-size:10.5px;color:#7a6d70;padding:8px 4px}
+.tb span{flex:1 1 0;min-width:0;display:flex;flex-direction:column;align-items:center;gap:4px;position:relative;text-align:center;line-height:1.15;white-space:nowrap}
+.tb span.on{color:#c93a53;font-weight:700}
+.tb em{position:absolute;top:-7px;left:50%;margin-left:4px;padding:0 5px;border-radius:99px;background:#d6455d;color:#fff;font-size:8.5px;font-style:normal;font-weight:700;line-height:14px}
+/* B cuộn ngang */
+.tb.sc{overflow:hidden;justify-content:flex-start}.tb.sc span{flex:none;width:64px}
+.tb.sc::after{content:"";position:absolute;right:0;top:0;bottom:0;width:40px;border-radius:0 22px 22px 0;background:linear-gradient(90deg,transparent,#fff)}
+/* D sheet */
+.sheet{position:absolute;left:8px;right:8px;bottom:84px;border-radius:20px;background:#fff;box-shadow:0 10px 40px rgba(0,0,0,.18);padding:10px;display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+.sheet a{display:flex;flex-direction:column;align-items:center;gap:6px;padding:12px 4px;border-radius:14px;background:#fff7f8;font-size:12px;font-weight:600;text-align:center}
+.sheet a svg{color:#d6455d}
+.dim{position:absolute;inset:0;background:rgba(20,10,14,.4)}
+</style></head><body>
+<div class="row" id="row"></div>
+<script>
+var I={card:'<rect x="3" y="5" width="18" height="14" rx="2.5"/><path d="M3.5 6.5 12 13l8.5-6.5"/>',clap:'<path d="M4 10h16v9a1.5 1.5 0 0 1-1.5 1.5h-13A1.5 1.5 0 0 1 4 19z"/><path d="m4 10-.6-3.2 15-3 .6 3.2"/><path d="m8.5 6.2 2 3.3M13.5 5.2l2 3.3"/>',slide:'<rect x="3" y="4" width="18" height="12" rx="2"/><path d="M12 16v4M8 20h8"/><path d="m10 8 4 2-4 2z"/>',led:'<rect x="2.5" y="4" width="19" height="12.5" rx="2"/><path d="M8 20.5h8M12 16.5v4"/><path d="m12 7 .9 1.9 2 .3-1.5 1.4.4 2-1.8-1-1.8 1 .4-2-1.5-1.4 2-.3z"/>',video:'<rect x="3" y="6" width="13" height="12" rx="2.5"/><path d="m16 10.5 5-3v9l-5-3"/>',book:'<path d="M5 4.5A1.5 1.5 0 0 1 6.5 3H19v15H6.5A1.5 1.5 0 0 0 5 19.5z"/><path d="M5 19.5A1.5 1.5 0 0 0 6.5 21H19v-3"/><path d="M9 8h6M9 11.5h4"/>',user:'<circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/>',dots:'<circle cx="5" cy="12" r="1.2"/><circle cx="12" cy="12" r="1.2"/><circle cx="19" cy="12" r="1.2"/>'};
+var s=function(k){return '<svg width="22" height="22" viewBox="0 0 24 24">'+I[k]+'</svg>'};
+var it=function(k,n,on,f){return '<span'+(on?' class="on"':'')+'>'+(f?'<em>Free</em>':'')+s(k)+n+'</span>'};
+var page=function(bar,extra){return '<div class="top"><span class="lg">Cưới Nha ♥</span><span class="new">＋ Tạo mới</span><span class="av">AV</span></div><h1>Thiệp của tôi</h1><div class="card"></div><div class="ghost"></div>'+(extra||'')+bar};
+var V={
+ 'A · 5 nút chính':['Thiệp · Video báo hỷ · Màn LED · Slide · Sổ tay. Tài khoản lên avatar góc trên, Video dạm ngõ vào trang Thiệp.',
+   page('<div class="tb">'+it('card','Thiệp',1)+it('clap','Báo hỷ',0,1)+it('led','Màn LED')+it('slide','Slide')+it('book','Sổ tay')+'</div>')],
+ 'B · Đủ 6 nút, cuộn ngang':['Đủ cả 6 mục như menu, vuốt ngang để xem hết. Tài khoản lên avatar góc trên.',
+   page('<div class="tb sc">'+it('card','Thiệp',1)+it('clap','Báo hỷ',0,1)+it('slide','Slide')+it('led','Màn LED')+it('video','Dạm ngõ')+it('book','Sổ tay')+'</div>')],
+ 'C · 6 nút chen một hàng':['Cả 6 mục cùng hiện, chữ nhỏ hơn. Tài khoản lên avatar góc trên.',
+   page('<div class="tb" style="font-size:9.5px">'+it('card','Thiệp',1)+it('clap','Báo hỷ',0,1)+it('slide','Slide')+it('led','LED')+it('video','Dạm ngõ')+it('book','Sổ tay')+'</div>')],
+ 'D · 4 nút + "Thêm"':['Thiệp · Báo hỷ · Màn LED · Sổ tay · Thêm. Bấm Thêm mở ô nhỏ: Slide, Dạm ngõ, Tài khoản.',
+   page('<div class="tb">'+it('card','Thiệp',1)+it('clap','Báo hỷ',0,1)+it('led','Màn LED')+it('book','Sổ tay')+'<span class="on">'+s('dots')+'Thêm</span></div>','<div class="dim"></div><div class="sheet"><a>'+s('slide')+'Slide cưới</a><a>'+s('video')+'Video dạm ngõ</a><a>'+s('user')+'Tài khoản</a></div>')]
+};
+document.getElementById('row').innerHTML=Object.keys(V).map(k=>'<div><h3 class="t">'+k+'</h3><p class="d">'+V[k][0]+'</p><div class="ph">'+V[k][1]+'</div></div>').join('');
+</script></body></html>

@@ -1,0 +1,93 @@
+<!doctype html>
+<html lang="vi"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Mock: chi tiết việc (điện thoại)</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&amp;display=swap">
+<link rel="stylesheet" href="/css/app.css">
+<style>
+/* MOCK: 3 kiểu popup chi tiết một việc trong sổ tay (điện thoại, trượt từ dưới lên) */
+body{padding:24px;background:#f3eeee}
+h1{margin:0;font-size:22px}
+.grid{display:flex;flex-wrap:wrap;gap:26px;margin-top:18px}
+.col{width:340px}.col h2{margin:0 0 4px;font-size:16px}.col>p{margin:0 0 10px;font-size:12.5px;color:var(--muted);min-height:34px}
+.ph{position:relative;height:660px;border-radius:32px;background:rgba(40,25,28,.45);box-shadow:0 0 0 8px #fff,0 0 0 9px var(--line),0 20px 40px rgba(120,40,50,.12);overflow:hidden}
+.sh{position:absolute;left:0;right:0;bottom:0;background:#fff;border-radius:24px 24px 0 0;padding:10px 18px 18px;font-size:14px}
+.sh::before{content:'';display:block;width:40px;height:4px;border-radius:9px;background:#e6d6d9;margin:0 auto 12px}
+.x{width:32px;height:32px;border-radius:50%;background:#f4eef0;display:grid;place-items:center;color:var(--muted);flex:none;font-size:16px}
+h3{margin:0;font-size:18px;line-height:1.3}
+.ck{width:26px;height:26px;border-radius:50%;box-shadow:inset 0 0 0 2px #d9c3c7;flex:none;display:grid;place-items:center;color:#fff;font-size:14px}
+.ck.on{background:#2f9e6b;box-shadow:none}
+.sub{display:flex;align-items:center;gap:10px;padding:9px 0;border-top:1px solid var(--line)}
+.sub .ck{width:20px;height:20px;border-radius:6px}.sub.d span{text-decoration:line-through;color:var(--muted)}
+.add{display:flex;align-items:center;gap:10px;padding:9px 0;border-top:1px solid var(--line);color:var(--muted)}
+.add b{width:20px;height:20px;display:grid;place-items:center;color:var(--primary);font-size:18px;font-weight:500}
+.lbl{font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin:16px 0 6px;display:flex;justify-content:space-between}
+.note{min-height:58px;padding:10px 12px;border-radius:12px;border:1px dashed #e2cfd3;color:var(--muted);font-size:13.5px}
+.pri{display:flex;align-items:center;justify-content:center;gap:6px;height:46px;border-radius:999px;background:var(--grad);color:#fff;font-weight:700;flex:1}
+.pri.ok{background:#e9f6ef;color:#23824f}
+.more{width:46px;height:46px;border-radius:50%;border:1px solid var(--line);display:grid;place-items:center;font-size:18px;color:var(--ink);flex:none}
+.foot{display:flex;gap:10px;margin-top:16px}
+/* A: chip */
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:12px}
+.chips span{display:inline-flex;align-items:center;gap:5px;height:30px;padding:0 11px;border-radius:999px;background:#f7f1f2;font-size:12.5px;font-weight:600}
+.chips .g{background:#e9f6ef;color:#23824f}.chips .m{color:var(--muted);background:none;box-shadow:inset 0 0 0 1px dashed}
+.chips .m{box-shadow:none;border:1px dashed #e2cfd3}
+/* B: hàng có icon */
+.seg{display:flex;padding:3px;border-radius:999px;background:#f4eef0;margin-top:14px}
+.seg span{flex:1;text-align:center;padding:8px 0;border-radius:999px;font-size:13px;font-weight:700;color:var(--muted)}
+.seg .on{background:#fff;color:#23824f;box-shadow:0 1px 4px rgba(0,0,0,.08)}
+.rows{margin-top:12px;border-radius:14px;box-shadow:0 0 0 1px var(--line)}
+.r{display:flex;align-items:center;gap:12px;padding:11px 12px;border-top:1px solid var(--line);font-size:13.5px}.r:first-child{border-top:0}
+.r i{width:30px;height:30px;border-radius:9px;background:var(--primary-soft);display:grid;place-items:center;font-style:normal;flex:none;font-size:14px}
+.r span{flex:1;color:var(--muted)}.r b{font-weight:600}.r b.m{color:var(--primary)}
+.r::after{content:'›';color:#c9b3b7;font-size:18px}
+/* C */
+.done-bar{display:flex;align-items:center;gap:12px;padding:12px 14px;border-radius:14px;background:#e9f6ef;color:#23824f;font-weight:700;margin-top:14px}
+.sw{margin-left:auto;width:44px;height:26px;border-radius:99px;background:#2f9e6b;position:relative}.sw::after{content:'';position:absolute;right:3px;top:3px;width:20px;height:20px;border-radius:50%;background:#fff}
+.meta{font-size:12.5px;color:var(--muted);margin-top:6px;line-height:1.6}.meta b{color:var(--ink);font-weight:600}.meta a{color:var(--primary);font-weight:600}
+</style></head><body>
+<h1>Chi tiết việc (điện thoại) — chọn 1 kiểu</h1>
+<p class="muted" style="margin:4px 0 0">Trượt từ dưới lên. Nút ✕ không còn đè lên ô đánh dấu xong. Gõ việc nhỏ / ghi chú ngay tại chỗ, không cần bấm Sửa.</p>
+<div class="grid">
+
+<div class="col"><h2>A · Chip + một nút chính</h2><p>Tên việc có ô tròn đánh dấu xong bên trái. Hạn, lễ, nhóm, người làm là chip bấm để đổi. Nút ⋯ chứa Sửa / Xoá.</p>
+<div class="ph"><div class="sh">
+  <div style="display:flex;gap:12px;align-items:flex-start"><span class="ck on">✓</span><h3 style="flex:1">Chọn người đại diện nhà trai thưa chuyện</h3><span class="x">✕</span></div>
+  <div class="chips"><span class="g">✓ Đã xong</span><span>🤝 Lễ dạm ngõ</span><span>Lễ nghi</span><span class="m">👤 Giao cho ai?</span></div>
+  <div class="lbl">Việc nhỏ <span>0/0</span></div>
+  <div class="add"><b>＋</b>Thêm việc nhỏ…</div>
+  <div class="lbl">Ghi chú</div>
+  <div class="note">Gõ ghi chú: nhà cung cấp, số điện thoại…</div>
+  <div class="foot"><span class="pri ok">↺ Đánh dấu chưa xong</span><span class="more">⋯</span></div>
+</div></div></div>
+
+<div class="col"><h2>B · Danh sách hàng</h2><p>Trạng thái là công tắc 2 nấc ở đầu. Thông tin thành các hàng có icon, bấm vào hàng nào sửa hàng đó. Xoá là chữ nhỏ cuối cùng.</p>
+<div class="ph"><div class="sh">
+  <div style="display:flex;gap:12px;align-items:flex-start"><h3 style="flex:1">Chọn người đại diện nhà trai thưa chuyện</h3><span class="x">✕</span></div>
+  <div class="seg"><span>Chưa làm</span><span class="on">✓ Đã xong</span></div>
+  <div class="rows">
+    <div class="r"><i>📅</i><span>Hạn chót</span><b>Trước 10/10</b></div>
+    <div class="r"><i>🤝</i><span>Thuộc lễ</span><b>Lễ dạm ngõ</b></div>
+    <div class="r"><i>🏷</i><span>Nhóm việc</span><b>Lễ nghi</b></div>
+    <div class="r"><i>👤</i><span>Người làm</span><b class="m">Giao việc</b></div>
+  </div>
+  <div class="lbl">Việc nhỏ <span>0/0</span></div>
+  <div class="add"><b>＋</b>Thêm việc nhỏ…</div>
+  <div class="note" style="margin-top:12px">📝 Thêm ghi chú…</div>
+  <p style="text-align:center;margin:14px 0 0;font-size:13px;color:#c0392b;font-weight:600">Xoá việc này</p>
+</div></div></div>
+
+<div class="col"><h2>C · Gọn nhất</h2><p>Thông tin gom thành 1–2 dòng chữ nhỏ dưới tên. Thanh xanh "Đã xong" có công tắc. Việc nhỏ và ghi chú gõ thẳng.</p>
+<div class="ph"><div class="sh">
+  <div style="display:flex;gap:12px;align-items:flex-start"><h3 style="flex:1">Chọn người đại diện nhà trai thưa chuyện</h3><span class="x">✕</span></div>
+  <p class="meta">🤝 <b>Lễ dạm ngõ</b> · Lễ nghi · Hạn <b>trước 10/10</b><br>👤 Chưa giao · <a>Giao việc</a></p>
+  <div class="done-bar">✓ Đã xong<span class="sw"></span></div>
+  <div class="lbl">Việc nhỏ <span>0/0</span></div>
+  <div class="sub"><span class="ck"></span><span>Hỏi bác cả bên nội</span></div>
+  <div class="add"><b>＋</b>Thêm việc nhỏ…</div>
+  <div class="lbl">Ghi chú</div>
+  <div class="note">Gõ ghi chú…</div>
+  <div class="foot" style="justify-content:space-between;color:var(--muted);font-size:13px;font-weight:600"><span>✎ Đổi tên, hạn, lễ</span><span style="color:#c0392b">Xoá</span></div>
+</div></div></div>
+
+</div>
+</body></html>

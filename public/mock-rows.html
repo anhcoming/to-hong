@@ -1,0 +1,126 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Mock hàng video + màn LED</title>
+<link rel="icon" href="/favicon.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&amp;family=Dancing+Script:wght@600;700&amp;display=swap">
+<link rel="stylesheet" href="/css/home.css">
+<style>
+/* Trang mock: các cách trình bày hàng "video cưới" + "màn hình LED" thay cho số 1–5 lặp ba hàng liền. Chuyển bằng thanh dưới cùng.
+   Hàng thiệp phía trên giữ nguyên số 1–5 ở mọi phương án (để so trong ngữ cảnh). */
+body{padding:28px 0 120px}
+.note{max-width:1140px;margin:0 auto 8px;padding:0 var(--edge);color:var(--muted);font-size:14px}
+.note b{color:var(--ink)}
+.mockbar{position:fixed;left:50%;bottom:16px;z-index:100;transform:translateX(-50%);display:flex;gap:6px;max-width:calc(100% - 24px);overflow-x:auto;scrollbar-width:none;padding:6px;border-radius:999px;background:rgba(25,18,20,.92);box-shadow:0 10px 30px rgba(0,0,0,.3)}
+.mockbar button{flex:none;border:0;background:transparent;color:#eee;border-radius:999px;padding:9px 16px;font:600 13px var(--sans);cursor:pointer}
+.mockbar button.on{background:#fff;color:#111}
+
+/* ---- B. Ruy băng: hàng thường, không số; thẻ đầu gắn ruy băng "Chọn nhiều nhất" ---- */
+.plain .slider{gap:16px}
+
+/* ---- C. Một lớn + bốn nhỏ ---- */
+section.feat-sec{padding-top:26px;padding-bottom:10px;padding-left:max(20px,calc((100vw - 1140px) / 2));padding-right:max(20px,calc((100vw - 1140px) / 2));max-width:none}
+.feat-sec h2{display:flex;align-items:baseline;justify-content:space-between;gap:12px;margin:0 0 16px;font:800 clamp(20px,2.2vw,26px)/1.2 var(--sans)}
+.feat-sec h2 a{font-size:14px;font-weight:600;color:var(--acc);white-space:nowrap}
+.fgrid{display:grid;grid-template-columns:1.55fr 1fr 1fr;gap:16px}
+.fgrid .ncard{width:auto;padding:0}
+.fgrid .ncard:first-child{grid-row:span 2}
+.fgrid .ncard:first-child .pic{height:100%;aspect-ratio:auto;min-height:100%}
+.fgrid .ncard:first-child .lbl{font-size:26px;left:20px;bottom:18px}
+.fgrid .ncard:first-child .lbl small{font-size:14px}
+.fgrid .ncard .pic{aspect-ratio:16/9;background:#2a1517}
+.fgrid .pill{position:absolute;left:14px;top:14px;z-index:2;padding:5px 12px;border-radius:999px;background:var(--acc);color:#fff;font:700 12px var(--sans)}
+@media(max-width:760px){.fgrid{grid-template-columns:1fr 1fr}.fgrid .ncard:first-child{grid-column:span 2;grid-row:auto}.fgrid .ncard:first-child .pic{aspect-ratio:16/9;height:auto}}
+
+/* ---- D. Gộp một khối, chuyển tab ---- */
+.tabs-sec .tabs{display:inline-flex;gap:4px;padding:4px;margin-left:14px;border-radius:999px;background:var(--soft);border:1px solid var(--line);vertical-align:middle}
+.tabs-sec .tabs button{border:0;background:transparent;border-radius:999px;padding:7px 16px;font:600 14px var(--sans);color:var(--muted);cursor:pointer}
+.tabs-sec .tabs button.on{background:var(--acc);color:#fff}
+.tabs-sec h2{flex-wrap:wrap;row-gap:10px}
+.tabs-sec h2 .ttl{display:flex;align-items:center;flex-wrap:wrap;gap:8px 0}
+
+/* ---- E. Số nhỏ trong góc thẻ ---- */
+.chip .rank{position:absolute;left:10px;top:10px;z-index:2;min-width:30px;height:30px;padding:0 9px;display:grid;place-items:center;border-radius:10px;background:rgba(15,10,11,.72);backdrop-filter:blur(6px);color:#fff;font:800 14px var(--sans)}
+.chip .ncard:first-child .rank{background:var(--acc)}
+</style>
+</head>
+<body>
+<p class="note"><b id="vname"></b> — <span id="vdesc"></span></p>
+<div id="mau"></div>
+<div class="mockbar" id="bar"></div>
+
+<script>
+const esc = (s) => String(s == null ? '' : s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const cover = (t, p) => `/demo/cover-${t}-${p}.jpg`;
+const OPTS = [
+  ['now', 'A · Hiện tại', 'Ba hàng liền đều có số 1–5 viền rỗng.'],
+  ['plain', 'B · Ruy băng', 'Chỉ hàng thiệp giữ số. Video và LED là hàng thường, thẻ đầu gắn ruy băng "Chọn nhiều nhất". Nhẹ nhất, ít đổi code nhất.'],
+  ['feat', 'C · Một lớn, bốn nhỏ', 'Mỗi loại một khối: mẫu đứng đầu chiếm ô lớn, bốn mẫu còn lại xếp lưới 2×2. Khác hẳn nhịp hàng cuộn ngang, không cần cuộn.'],
+  ['tabs', 'D · Gộp, chuyển tab', 'Video và LED gộp một khối "Chiếu ở tiệc cưới", bấm tab để đổi. Trang ngắn đi một hàng.'],
+  ['chip', 'E · Số nhỏ trong thẻ', 'Vẫn xếp hạng nhưng số thu về ô nhỏ ở góc thẻ, thẻ không còn bị đẩy lệch để nhường chỗ cho số lớn.'],
+];
+fetch('/api/meta').then((r) => r.json()).then((M) => {
+  const T = M.templates, V = (M.video && M.video.templates) || [], L = M.led;
+  const hot = T.filter((t) => t.badge === 'Hot');
+  const top = [...hot, ...T.filter((t) => !hot.includes(t))].slice(0, 5);
+  const TOP_VIDEO = ['polaroid', 'phimcu', 'dienanh', 'songhy', 'traitim'];
+  const vids = TOP_VIDEO.map((id) => V.find((t) => t.id === id)).filter(Boolean).map((t) => ({
+    name: t.name, sub: `${t.photos ? t.slots + ' ảnh' : 'Mẫu chữ'} · chiếu TV, tải MP4`, img: `/demo/vposter-${t.id}.jpg`, href: `/video/demo?template=${t.id}`, one: false }));
+  const leds = [['do', 'sao'], ['dem', 'sao'], ['hong', 'hoa'], ['ngoc', 'domdom'], ['kem', 'lua']].map(([p, e]) => ({
+    name: L.palettes.find((x) => x.id === p).name, sub: L.effects.find((x) => x.id === e).name, img: `/demo/lposter-${p}-${e}.jpg`, href: `/led/demo?palette=${p}&effect=${e}`, one: true }));
+
+  const tcard = (t, i) => `<div class="ncard"><span class="num">${i + 1}</span><div class="pic"><a href="/demo/${t.id}"><img src="${cover(t.id, t.palettes[0].id)}" alt="${esc(t.name)}" loading="lazy"></a>
+    <div class="info"><b>${esc(t.name)}</b><a class="use" href="#">Dùng mẫu</a></div></div></div>`;
+  // extra: phần gắn thêm vào thẻ (số lớn, ruy băng, ô số nhỏ…)
+  const wcard = (x, extra = '', inPic = '') => `<div class="ncard">${extra}<div class="pic"><a href="${x.href}"><img src="${x.img}" alt="${esc(x.name)}" loading="lazy"></a>${inPic}<span class="lbl${x.one ? ' one' : ''}">${esc(x.name)}<small>${esc(x.sub)}</small></span>
+    <div class="info"><b>${esc(x.name)}</b><a class="use" href="#">Dùng mẫu</a></div></div></div>`;
+  const row = (title, list, cls, more, moreText = 'Xem tất cả') => `<section class="nrow ${cls}"><h2>${title}<a href="${more}">${moreText} ›</a></h2>
+    <div class="track"><button class="arrow l" type="button" aria-label="Trước">‹</button><div class="slider">${list.join('')}</div><button class="arrow r" type="button" aria-label="Sau">›</button></div></section>`;
+  const ribbon = `<span class="tag hot" style="width:auto;padding-right:18px"><svg viewBox="0 0 100 26" preserveAspectRatio="none" aria-hidden="true"><path d="M0 0h88l12 13-12 13H0z"/></svg>Chọn nhiều nhất</span>`;
+  const cards = row('Top 5 mẫu thiệp được chọn nhiều nhất tuần này', top.map(tcard), 'top', '/mau-thiep');
+
+  const R = {
+    now: () => row('Top 5 mẫu video cưới', vids.map((x, i) => wcard(x, `<span class="num">${i + 1}</span>`)), 'top wide', '/video-cuoi')
+      + row('Top 5 màn hình LED tiệc cưới', leds.map((x, i) => wcard(x, `<span class="num">${i + 1}</span>`)), 'top wide', '#', 'Tạo màn LED'),
+    plain: () => row('Video cưới được chọn nhiều', vids.map((x, i) => wcard(x, i ? '' : ribbon)), 'wide plain', '/video-cuoi')
+      + row('Màn hình LED tiệc cưới', leds.map((x, i) => wcard(x, i ? '' : ribbon)), 'wide plain', '#', 'Tạo màn LED'),
+    feat: () => [['Video cưới chiếu TV', vids, '/video-cuoi', 'Xem tất cả'], ['Màn hình LED tiệc cưới', leds, '#', 'Tạo màn LED']].map(([t, list, more, mt]) =>
+      `<section class="feat-sec"><h2>${t}<a href="${more}">${mt} ›</a></h2><div class="fgrid wide">${list.map((x, i) => wcard(x, '', i ? '' : '<span class="pill">Chọn nhiều nhất</span>')).join('')}</div></section>`).join(''),
+    tabs: () => `<section class="nrow wide plain tabs-sec"><h2><span class="ttl">Chiếu ở tiệc cưới<span class="tabs"><button class="on" data-tab="v">Video cưới</button><button data-tab="l">Màn hình LED</button></span></span><a href="/video-cuoi" id="tabMore">Xem tất cả ›</a></h2>
+      <div class="track"><button class="arrow l" type="button">‹</button><div class="slider" id="tabSlider">${vids.map((x) => wcard(x)).join('')}</div><button class="arrow r" type="button">›</button></div></section>`,
+    chip: () => row('Top 5 mẫu video cưới', vids.map((x, i) => wcard(x, '', `<span class="rank">${i + 1}</span>`)), 'wide plain chip', '/video-cuoi')
+      + row('Top 5 màn hình LED tiệc cưới', leds.map((x, i) => wcard(x, '', `<span class="rank">${i + 1}</span>`)), 'wide plain chip', '#', 'Tạo màn LED'),
+  };
+
+  const box = document.getElementById('mau'), bar = document.getElementById('bar');
+  const show = (id) => {
+    const o = OPTS.find((x) => x[0] === id) || OPTS[1];
+    box.innerHTML = cards + R[o[0]]();
+    document.getElementById('vname').textContent = o[1];
+    document.getElementById('vdesc').textContent = o[2];
+    bar.querySelectorAll('button').forEach((b) => b.classList.toggle('on', b.dataset.v === o[0]));
+    history.replaceState(null, '', '#' + o[0]);
+  };
+  bar.innerHTML = OPTS.map((o) => `<button data-v="${o[0]}">${o[1]}</button>`).join('');
+  bar.addEventListener('click', (e) => { const b = e.target.closest('button'); if (b) show(b.dataset.v); });
+  box.addEventListener('click', (e) => {
+    const a = e.target.closest('.arrow');
+    if (a) { const s = a.parentNode.querySelector('.slider'); return s.scrollBy({ left: (a.classList.contains('l') ? -1 : 1) * s.clientWidth * 0.8, behavior: 'smooth' }); }
+    const t = e.target.closest('[data-tab]');
+    if (t) {
+      t.parentNode.querySelectorAll('button').forEach((b) => b.classList.toggle('on', b === t));
+      const led = t.dataset.tab === 'l';
+      document.getElementById('tabSlider').innerHTML = (led ? leds : vids).map((x) => wcard(x)).join('');
+      document.getElementById('tabMore').textContent = led ? 'Tạo màn LED ›' : 'Xem tất cả ›';
+    }
+    if (e.target.closest('a[href="#"]')) e.preventDefault();
+  });
+  show(location.hash.slice(1) || 'plain');
+});
+</script>
+</body>
+</html>

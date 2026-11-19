@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="vi"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Mock: cỡ chữ màn LED nhìn từ bàn tiệc</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&amp;display=swap">
+<style>
+/* MOCK: màn LED thật (/led/...) thu nhỏ đúng bằng cỡ mắt thấy khi ngồi cách màn X mét — so chữ hiện tại với chữ phụ tăng 1,3 lần */
+*{box-sizing:border-box}
+body{margin:0;min-height:100vh;background:radial-gradient(ellipse at 50% 0,#3a2a2e 0,#140d0f 70%);color:#f3e9eb;font:14px/1.4 'Be Vietnam Pro',sans-serif}
+.bar{position:sticky;top:0;z-index:5;display:flex;flex-wrap:wrap;gap:14px 22px;align-items:center;padding:14px 22px;background:rgba(20,13,15,.85);backdrop-filter:blur(8px);border-bottom:1px solid #3a2a2e}
+.bar b{font-size:12px;color:#b9a3a8;font-weight:600;margin-right:6px}
+.seg{display:inline-flex;gap:3px;padding:3px;border-radius:999px;background:#2a1d20}
+.seg button{border:0;border-radius:999px;padding:7px 13px;background:none;color:#e8dadd;font:600 13px 'Be Vietnam Pro',sans-serif;cursor:pointer}
+.seg button.on{background:#d6455d;color:#fff}
+.note{flex-basis:100%;font-size:12.5px;color:#b9a3a8}
+.hall{display:flex;flex-wrap:wrap;justify-content:center;gap:40px 56px;padding:40px 20px 30px}
+.col{display:flex;flex-direction:column;align-items:center;gap:12px}
+.col h3{margin:0;font-size:15px}
+.col h3 small{display:block;font-weight:500;color:#b9a3a8;font-size:12px;text-align:center}
+.scr{position:relative;background:#000;outline:6px solid #2b2326;box-shadow:0 0 80px rgba(255,200,210,.08),0 30px 60px rgba(0,0,0,.6);overflow:hidden}
+.scr iframe{position:absolute;left:0;top:0;width:1920px;height:1080px;border:0;transform-origin:0 0;pointer-events:none}
+.tables{display:flex;justify-content:center;gap:28px;padding:0 0 50px;opacity:.5}
+.tables i{width:70px;height:22px;border-radius:50%;background:#3a2a2e;box-shadow:0 -12px 0 -6px #4a3439}
+</style></head><body>
+<div class="bar">
+  <span><b>Ngồi cách màn</b><span class="seg" id="dist"><button data-v="6">6m · bàn đầu</button><button data-v="12" class="on">12m · giữa sảnh</button><button data-v="20">20m · bàn cuối</button></span></span>
+  <span><b>Cỡ chữ</b><span class="seg" id="ver"><button data-v="a" class="on">Hiện tại</button><button data-v="b">Tăng chữ phụ 1,3×</button></span></span>
+  <span><b>Cảnh</b><span class="seg" id="scn"></span></span>
+  <span class="note">Màn LED rộng 4m. Ngồi thẳng, mắt cách màn máy tính khoảng 55cm thì khung dưới đây to đúng bằng mắt bạn thấy ở bàn tiệc. Bấm "Cỡ chữ" (hoặc phím cách) để so: chữ phụ (tiêu đề, ngày giờ, âm lịch, bố mẹ, địa chỉ) tăng 1,3 lần, tên đôi và ngày giữ nguyên.</span>
+</div>
+<div class="hall"><div class="col"><div class="scr"><iframe id="fa"></iframe><iframe id="fb" style="visibility:hidden"></iframe></div><h3 id="cap">Hiện tại<small>chữ phụ 30–52px · bấm phím cách để đổi nhanh</small></h3></div></div>
+<div class="tables"><i></i><i></i><i></i><i></i><i></i><i></i></div>
+<script>
+const SLUG = new URLSearchParams(location.search).get('slug') || 'duc-anh-pham-nga-2zkz';
+const NAME = { names: 'Tên đôi', date: 'Ngày cưới', countdown: 'Đếm ngược', parents: 'Bố mẹ', msg: "Lời cảm ơn", photo: 'Ảnh' };
+// chữ phụ ×1,3 (tên đôi, ngày lớn, đếm ngược giữ nguyên)
+const BUMP = `.kicker{font-size:50px}.sub{font-size:52px}.wd{font-size:57px}.time{font-size:68px}.lunar{font-size:57px}
+.fam .lb{font-size:47px}.fam .pp{font-size:72px}.fam .ad{font-size:40px}.cd-sub{font-size:57px}
+#stage.st-thanh .kicker{font-size:72px}`;
+const PX_PER_CM = 45, EYE_CM = 55, SCREEN_M = 4; // màn hình laptop ~45 px CSS / cm
+let dist = 12, idx = 0, keys = [];
+const fa = document.getElementById('fa'), fb = document.getElementById('fb');
+function size() {
+  const w = Math.round((SCREEN_M / dist) * EYE_CM * PX_PER_CM), s = w / 1920;
+  document.querySelectorAll('.scr').forEach((el) => { el.style.width = w + 'px'; el.style.height = Math.round(1080 * s) + 'px'; });
+  [fa, fb].forEach((f) => (f.style.transform = `scale(${s})`));
+}
+function go(i) { idx = i; [fa, fb].forEach((f) => { f.contentWindow.postMessage({ type: 'led-goto', index: i }, location.origin); f.contentWindow.postMessage({ type: 'led-pause', paused: true }, location.origin); }); drawScn(); }
+function drawScn() { document.getElementById('scn').innerHTML = keys.map((k, i) => `<button data-i="${i}" class="${i === idx ? 'on' : ''}">${NAME[k] || k}</button>`).join(''); }
+addEventListener('message', (e) => { if (e.source === fa.contentWindow && e.data && e.data.type === 'led-scene' && !keys.length) { keys = e.data.keys; go(0); } });
+fb.onload = () => { const st = fb.contentDocument.createElement('style'); st.textContent = BUMP; fb.contentDocument.head.appendChild(st); };
+[fa, fb].forEach((f) => (f.src = `/led/${SLUG}?preview=1`));
+document.getElementById('dist').onclick = (e) => { const b = e.target.closest('button'); if (!b) return; dist = +b.dataset.v; document.querySelectorAll('#dist button').forEach((x) => x.classList.toggle('on', x === b)); size(); };
+document.getElementById('scn').onclick = (e) => { const b = e.target.closest('button'); if (b) go(+b.dataset.i); };
+function ver(v) { fa.style.visibility = v === "a" ? "visible" : "hidden"; fb.style.visibility = v === "b" ? "visible" : "hidden"; document.querySelectorAll("#ver button").forEach((x) => x.classList.toggle("on", x.dataset.v === v)); document.getElementById("cap").innerHTML = v === "a" ? "Hiện tại<small>chữ phụ 30–52px · bấm phím cách để đổi nhanh</small>" : "Tăng chữ phụ 1,3×<small>chữ phụ 40–68px · tên đôi, ngày giữ nguyên</small>"; }
+document.getElementById("ver").onclick = (e) => { const b = e.target.closest("button"); if (b) ver(b.dataset.v); };
+addEventListener("keydown", (e) => { if (e.code === "Space") { e.preventDefault(); ver(fa.style.visibility === "hidden" ? "a" : "b"); } });
+size();
+</script>
+</body></html>

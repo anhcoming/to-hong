@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="vi"><head><meta charset="utf-8"><title>Mock gợi ý nút Thử ngay (2)</title>
+<style>
+body{margin:0;background:#e9e6e7;font-family:system-ui,sans-serif;padding:16px}
+.row{display:flex;gap:22px;justify-content:center;flex-wrap:wrap}
+.it{width:390px}.it h3{margin:0 0 4px;font-size:15px}.it p{margin:0 0 8px;color:#6d6164;font-size:12.5px;min-height:34px}
+iframe{display:block;width:390px;height:720px;border:0;border-radius:24px;box-shadow:0 10px 30px rgba(0,0,0,.12);background:#fff}
+</style></head><body>
+<div class="row" id="row"></div>
+<script>
+// mỗi mẫu = trang chủ thật (khung điện thoại 390px) + một kiểu gợi ý "bấm là chọn ảnh, có thiệp ngay"
+var F = '"Be Vietnam Pro",sans-serif';
+var V = [
+  ['D · Ba bước tí hon dưới nút', 'Ba chấm nối nhau: Chọn ảnh → Vài giây → Có thiệp. Nhìn là hiểu quy trình.',
+    '.st3{display:flex;align-items:center;justify-content:center;gap:6px;margin-top:12px;font:600 12px ' + F + ';color:#8a7d80}.st3 b{display:inline-grid;place-items:center;width:18px;height:18px;border-radius:50%;background:#fde3e7;color:#d6455d;font-size:10.5px;margin-right:4px}.st3 i{font-style:normal;color:#d9c5c9}',
+    function (d) { d.querySelector('.hcta').insertAdjacentHTML('beforeend', '<div class="st3"><span><b>1</b>Chọn ảnh</span><i>›</i><span><b>2</b>Chờ vài giây</span><i>›</i><span><b>3</b>Có thiệp</span></div>'); }, 0.1],
+  ['E · Chữ phụ ngay trong nút', 'Nút hai dòng: "Thử ngay" to, bên dưới chữ nhỏ "chọn ảnh · vài giây có thiệp". Không thêm dòng nào ngoài nút.',
+    '.hcta .go{flex-direction:row;padding:10px 34px!important}.go .tx{display:flex;flex-direction:column;align-items:flex-start;line-height:1.2}.go .tx small{font:500 11.5px ' + F + ';opacity:.9}',
+    function (d) { var l = d.getElementById('heroLbl'); l.outerHTML = '<span class="tx"><span id="heroLbl">Thử ngay</span><small>chọn ảnh · vài giây có thiệp</small></span>'; }, 0.1],
+  ['F · Khung mời chạm', 'Chữ trong khung đổi thành "Chạm để chọn ảnh", khung nhấp nháy nhẹ — bấm thẳng vào khung cũng được.',
+    '.fan .slot{animation:none!important;opacity:1!important;box-shadow:0 0 0 6px rgba(214,69,93,.10),0 0 40px rgba(239,125,141,.35)}.fan .slot>span{font-weight:700;font-size:15px}',
+    function (d) { d.querySelector('.fan .slot>span').textContent = 'Chạm để chọn ảnh'; }, 0.1],
+  ['G · Ba nhãn nhỏ dưới nút', 'Ba viên nhãn: ⚡ Vài giây · Miễn phí · Không cần đăng ký. Nổi hơn dòng chữ xám của A.',
+    '.tags{display:flex;justify-content:center;gap:6px;margin-top:12px;flex-wrap:wrap}.tags span{padding:4px 10px;border-radius:999px;background:rgba(255,255,255,.85);box-shadow:0 0 0 1px #f3dfe3;font:600 11.5px ' + F + ';color:#7a5a60}',
+    function (d) { d.querySelector('.hcta').insertAdjacentHTML('beforeend', '<div class="tags"><span>⚡ Vài giây có thiệp</span><span>Miễn phí</span><span>Không cần đăng ký</span></div>'); }, 0.1]
+];
+document.getElementById('row').innerHTML = V.map(function (v, i) { return '<div class="it"><h3>' + v[0] + '</h3><p>' + v[1] + '</p><iframe id="f' + i + '" src="/?hint2=' + i + '"></iframe></div>'; }).join('');
+V.forEach(function (v, i) {
+  var f = document.getElementById('f' + i);
+  f.onload = function () {
+    setTimeout(function () {
+      var d = f.contentDocument; if (!d) return;
+      var st = d.createElement('style'); st.textContent = '.hb>.kick,.hb>h1,.hb>.stage,.hb>.hcta{animation:none!important}' + v[2]; d.head.appendChild(st);
+      v[3](d);
+      var T = v[4] * 7000;
+      d.getAnimations().forEach(function (a) { a.pause(); var dur = a.effect.getTiming().duration; if (dur === 7000) a.currentTime = T; });
+    }, 600);
+  };
+});
+</script></body></html>

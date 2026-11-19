@@ -1,0 +1,457 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<script src="/js/theme.js"></script>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>MOCK · Sổ tay cưới</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&amp;family=Dancing+Script:wght@600;700&amp;display=swap">
+<link rel="stylesheet" href="/css/app.css">
+<style>
+/* MOCK sổ tay: Tổng quan gọn (đếm ngược, 3 ô số liệu, 3 việc kế tiếp, dòng các lễ) · Việc cần làm chi tiết (lọc theo lễ, nhóm theo thời gian, bảng chi tiết bên phải) */
+.mk{padding-bottom:80px}
+.tabs2{position:sticky;top:76px;z-index:20;background:var(--bg);padding:6px 0 14px}
+.tabs2 .in{display:flex;gap:4px;width:fit-content;margin:0 auto;padding:5px;border:1px solid var(--line);border-radius:999px;background:var(--surface)}
+.tabs2 button{flex:none;white-space:nowrap;border:0;background:none;padding:9px 18px;border-radius:999px;font:600 14px var(--sans);color:var(--muted);cursor:pointer}
+.tabs2 button.on{background:var(--primary-soft);color:var(--primary)}
+.view{display:none}.view.on{display:block}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:20px}
+.h3{margin:0 0 12px;font-size:16px;display:flex;justify-content:space-between;align-items:center}
+.h3 a{font-size:13px;font-weight:600;text-decoration:none}
+
+/* ---- tổng quan ---- */
+.hero2{display:grid;grid-template-columns:1fr auto;gap:24px;align-items:center;padding:26px 28px;background:radial-gradient(600px 220px at 85% 20%,rgba(214,69,93,.16),transparent),var(--surface)}
+.hero2 .names{margin:0;font:700 44px/1.1 var(--script);color:var(--primary)}
+.hero2 .when{margin:6px 0 0;color:var(--muted);font-size:14px}
+.hero2 .edit{margin-top:12px;display:inline-flex;gap:6px;align-items:center;font-size:13px;font-weight:600;color:var(--muted);border:1px solid var(--line);border-radius:999px;padding:6px 12px;background:none;cursor:pointer}
+.ring{position:relative;width:132px;height:132px}
+.ring svg{transform:rotate(-90deg)}
+.ring .c{position:absolute;inset:0;display:grid;place-content:center;text-align:center}
+.ring b{font-size:36px;line-height:1}
+.ring span{font-size:12px;color:var(--muted)}
+.tiles{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:14px}
+.tile{padding:18px 20px;text-align:left;cursor:pointer;transition:transform .2s,border-color .2s}
+.tile:hover{transform:translateY(-3px);border-color:var(--primary)}
+.tile small{color:var(--muted);font-size:13px;font-weight:600}
+.tile b{display:block;margin:6px 0 2px;font-size:26px}
+.tile .bar{height:6px;border-radius:999px;background:var(--line);overflow:hidden;margin-top:10px}
+.tile .bar i{display:block;height:100%;background:var(--grad)}
+.tile em{font-style:normal;font-size:12.5px;color:var(--muted)}
+.tile em.warn{color:#d97706}
+.two{display:grid;grid-template-columns:1.25fr 1fr;gap:14px;margin-top:14px}
+.next{padding:18px 20px}
+.nx{display:flex;align-items:center;gap:12px;padding:12px 0;border-top:1px solid var(--line)}
+.nx:first-of-type{border-top:0}
+.ck{flex:none;width:22px;height:22px;border-radius:7px;border:2px solid var(--primary);background:none;cursor:pointer;display:grid;place-items:center;color:#fff;font-size:13px}
+.ck.on{background:var(--primary)}
+.nx .t{flex:1;min-width:0}
+.nx .t b{display:block;font-weight:600;font-size:14.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.chip2{display:inline-block;padding:2px 9px;border-radius:999px;font-size:12px;font-weight:600;background:var(--primary-soft);color:var(--primary)}
+.chip2.late{background:#fde8e8;color:#c0392b}.chip2.soon{background:#fff3d6;color:#a16207}.chip2.gray{background:rgba(127,127,127,.12);color:var(--muted)}
+[data-theme="dark"] .chip2.late{background:rgba(192,57,43,.2);color:#ff8a7a}[data-theme="dark"] .chip2.soon{background:rgba(217,119,6,.2);color:#fbbf24}
+.road{padding:18px 20px}
+.steps{list-style:none;margin:6px 0 0;padding:0;position:relative}
+.steps:before{content:"";position:absolute;left:15px;top:14px;bottom:14px;width:2px;background:var(--line)}
+.steps li{position:relative;display:flex;align-items:center;gap:14px;padding:9px 0}
+.steps .dot{position:relative;z-index:1;flex:none;width:32px;height:32px;border-radius:50%;display:grid;place-items:center;background:var(--surface);border:2px solid var(--line);font-size:14px}
+.steps li.done .dot{background:var(--primary);border-color:var(--primary);color:#fff}
+.steps li.now .dot{border-color:var(--primary);box-shadow:0 0 0 5px var(--primary-soft)}
+.steps b{display:block;font-size:14.5px}
+.steps small{color:var(--muted);font-size:12.5px}
+.steps .n{margin-left:auto;font-size:12.5px;color:var(--muted)}
+.mini-prod{display:flex;gap:10px;margin-top:14px;flex-wrap:wrap}
+.mini-prod a{flex:1;min-width:220px;display:flex;align-items:center;gap:12px;padding:12px 16px;text-decoration:none;color:var(--ink)}
+.mini-prod i{font-style:normal;font-size:22px}
+.mini-prod small{display:block;color:var(--muted);font-size:12.5px}
+
+/* ---- việc cần làm ---- */
+.tbar{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:14px}
+.seg{display:flex;padding:4px;border-radius:999px;background:var(--surface);border:1px solid var(--line)}
+.seg button{border:0;background:none;padding:7px 14px;border-radius:999px;font:600 13px var(--sans);color:var(--muted);cursor:pointer}
+.seg button.on{background:var(--primary-soft);color:var(--primary)}
+.search{flex:1;min-width:180px;display:flex;align-items:center;gap:8px;padding:0 14px;height:40px;border-radius:999px;border:1px solid var(--line);background:var(--surface)}
+.search input{flex:1;border:0;background:none;outline:0;font:14px var(--sans);color:var(--ink)}
+.tgrid{display:grid;grid-template-columns:220px minmax(0,1fr) 340px;gap:14px;align-items:start}
+.side{padding:10px;position:sticky;top:150px}
+.side button{display:flex;width:100%;align-items:center;gap:10px;padding:10px 12px;border:0;border-radius:12px;background:none;cursor:pointer;font:600 14px var(--sans);color:var(--ink);text-align:left}
+.side button:hover{background:rgba(127,127,127,.08)}
+.side button.on{background:var(--primary-soft);color:var(--primary)}
+.side button span{margin-left:auto;font-size:12px;color:var(--muted);font-weight:600}
+.side .pg{height:4px;border-radius:999px;background:var(--line);margin:0 12px 8px;overflow:hidden}.side .pg i{display:block;height:100%;background:var(--primary)}
+.grp{margin-bottom:16px}
+.grp h4{margin:0 0 8px;font-size:13px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.grp h4.red{color:#c0392b}
+.trow{display:flex;align-items:center;gap:12px;padding:12px 14px;margin-bottom:8px;cursor:pointer;transition:border-color .2s}
+.trow:hover,.trow.sel{border-color:var(--primary)}
+.trow .t{flex:1;min-width:0}
+.trow .t b{display:block;font-weight:600;font-size:14.5px}
+.trow .t .m{display:flex;gap:6px;flex-wrap:wrap;margin-top:4px}
+.trow.done b{text-decoration:line-through;color:var(--muted)}
+.av{flex:none;width:28px;height:28px;border-radius:50%;display:grid;place-items:center;font-size:12px;font-weight:700;color:#fff;background:#8b5cf6}
+.add{display:flex;align-items:center;gap:8px;width:100%;padding:12px 14px;border:1.5px dashed var(--line);border-radius:14px;background:none;color:var(--muted);font:600 14px var(--sans);cursor:pointer}
+.detail{position:sticky;top:150px;padding:20px}
+.detail .top{display:flex;justify-content:space-between;align-items:flex-start;gap:10px}
+.detail h3{margin:0;font-size:19px}
+.fl{display:grid;grid-template-columns:110px 1fr;gap:10px 12px;margin:16px 0;font-size:14px;align-items:center}
+.fl span{color:var(--muted)}
+.fl .v{font-weight:600}
+.sub{list-style:none;margin:0;padding:0}
+.sub li{display:flex;align-items:center;gap:10px;padding:7px 0;font-size:14px}
+.sub li.d{color:var(--muted);text-decoration:line-through}
+.note{margin-top:14px;padding:12px 14px;border-radius:12px;background:rgba(127,127,127,.08);font-size:14px;color:var(--muted)}
+.dacts{display:flex;gap:8px;margin-top:16px}
+.mockbar{position:fixed;left:50%;bottom:16px;transform:translateX(-50%);z-index:90;padding:8px 16px;border-radius:999px;background:#111;color:#fff;font-size:13px;white-space:nowrap}
+@media (max-width:1100px){.tgrid{grid-template-columns:200px minmax(0,1fr)}.detail{display:none}}
+@media (max-width:760px){
+  .hero2{grid-template-columns:1fr;text-align:center}.ring{margin:0 auto}.hero2 .names{font-size:36px}
+  .tiles{grid-template-columns:1fr}.two{grid-template-columns:1fr}
+  .tgrid{grid-template-columns:1fr}.side{position:static;display:flex;overflow-x:auto;gap:4px}.side button{width:auto;white-space:nowrap}.side .pg{display:none}
+  .tabs2 .in{max-width:calc(100% - 8px);overflow-x:auto;scrollbar-width:none}
+  .tabs2 button{padding:8px 13px}
+  .hero2{padding:22px 18px}
+}
+
+/* ---- ngân sách ---- */
+.bsum{display:grid;grid-template-columns:1.3fr 1fr 1fr 1fr;gap:14px}
+.bsum .card{padding:18px 20px}
+.bsum small{color:var(--muted);font-size:13px;font-weight:600}
+.bsum b{display:block;margin-top:6px;font-size:26px}
+.bsum .big{background:radial-gradient(400px 160px at 90% 0,rgba(214,69,93,.16),transparent),var(--surface)}
+.bbar{height:10px;border-radius:999px;background:var(--line);overflow:hidden;margin-top:12px;display:flex}
+.bbar i{display:block;height:100%;background:var(--grad)}
+.bbar i.dep{background:#f59e0b}
+.leg{display:flex;gap:14px;margin-top:8px;font-size:12px;color:var(--muted)}
+.leg span:before{content:"";display:inline-block;width:9px;height:9px;border-radius:3px;margin-right:6px;background:var(--primary);vertical-align:-1px}
+.leg span.d:before{background:#f59e0b}.leg span.r:before{background:var(--line)}
+.bgrid{display:grid;grid-template-columns:minmax(0,1.4fr) minmax(0,1fr);gap:14px;margin-top:14px}
+.cat{display:grid;grid-template-columns:34px minmax(0,1fr) auto;gap:4px 12px;align-items:center;padding:12px 0;border-top:1px solid var(--line)}
+.cat:first-of-type{border-top:0}
+.cat .ic{grid-row:span 2;width:34px;height:34px;border-radius:10px;display:grid;place-items:center;background:var(--primary-soft);font-size:16px}
+.cat b{font-size:14.5px}
+.cat .amt{font-size:13px;color:var(--muted);text-align:right}
+.cat .amt.over{color:#c0392b;font-weight:600}
+.cat .bar2{grid-column:2/4;height:6px;border-radius:999px;background:var(--line);overflow:hidden}
+.cat .bar2 i{display:block;height:100%;background:var(--primary)}
+.cat .bar2 i.over{background:#c0392b}
+.pay{display:flex;align-items:center;gap:12px;padding:11px 0;border-top:1px solid var(--line);font-size:14px}
+.pay:first-of-type{border-top:0}
+.pay .t{flex:1;min-width:0}.pay .t small{display:block;color:var(--muted);font-size:12.5px}
+.pay b{white-space:nowrap}
+/* ---- khách mời ---- */
+.gsum{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
+.gsum .card{padding:16px 18px}
+.gsum small{color:var(--muted);font-size:13px;font-weight:600}
+.gsum b{display:block;margin-top:4px;font-size:26px}
+.gsum em{font-style:normal;font-size:12.5px;color:var(--muted)}
+.gtbl{margin-top:14px;padding:6px 6px 10px;overflow-x:auto}
+.gtbl table{width:100%;border-collapse:collapse;font-size:14px;min-width:640px}
+.gtbl th{text-align:left;padding:12px 14px;font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);font-weight:700}
+.gtbl td{padding:12px 14px;border-top:1px solid var(--line)}
+.gtbl tr:hover td{background:rgba(127,127,127,.05)}
+.gtbl .nm b{display:block}.gtbl .nm small{color:var(--muted)}
+.rs{display:inline-block;padding:3px 10px;border-radius:999px;font-size:12px;font-weight:600}
+.rs.y{background:#e3f4ea;color:#1f7a4d}.rs.n{background:#fde8e8;color:#c0392b}.rs.w{background:rgba(127,127,127,.12);color:var(--muted)}.rs.s{background:#e8f0fe;color:#2b5fc4}
+[data-theme="dark"] .rs.y{background:rgba(31,122,77,.25);color:#6ee7a8}[data-theme="dark"] .rs.n{background:rgba(192,57,43,.22);color:#ff8a7a}[data-theme="dark"] .rs.s{background:rgba(43,95,196,.25);color:#93b4ff}
+.gtbl .act{display:flex;gap:6px;justify-content:flex-end}
+.side-tag{display:inline-block;padding:2px 9px;border-radius:999px;font-size:12px;font-weight:600;background:rgba(127,127,127,.12);color:var(--muted)}
+/* ---- lịch âm ---- */
+.lgrid{display:grid;grid-template-columns:minmax(0,1.6fr) minmax(0,1fr);gap:14px;align-items:start}
+.lcal{padding:18px}
+.lhead{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+.lhead b{font-size:18px}.lhead small{display:block;color:var(--muted);font-size:13px;font-weight:500}
+.lhead .nav2{display:flex;gap:6px}
+.lhead .nav2 button{width:36px;height:36px;border-radius:50%;border:1px solid var(--line);background:var(--surface);color:var(--ink);cursor:pointer;font-size:16px}
+.ldays{display:grid;grid-template-columns:repeat(7,1fr);gap:6px}
+.ldays .w{text-align:center;font-size:12px;font-weight:700;color:var(--muted);padding:4px 0}
+.ld{position:relative;min-height:64px;padding:8px;border-radius:12px;border:1px solid var(--line);background:var(--surface);cursor:pointer;text-align:left}
+.ld:hover{border-color:var(--primary)}
+.ld b{display:block;font-size:16px}
+.ld small{display:block;font-size:11px;color:var(--muted)}
+.ld.e{border:0;background:none;cursor:default}
+.ld.good:after{content:"";position:absolute;top:9px;right:9px;width:7px;height:7px;border-radius:50%;background:#16a34a}
+.ld.today{box-shadow:inset 0 0 0 2px var(--primary)}
+.ld.wed{background:var(--grad);border-color:transparent;color:#fff}.ld.wed small{color:rgba(255,255,255,.85)}
+.ld.ah{background:var(--primary-soft);border-color:var(--primary)}
+.ld .ev{position:absolute;left:8px;right:8px;bottom:6px;font-size:10.5px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ld.sel{outline:2px solid var(--primary);outline-offset:2px}
+.linfo{padding:20px;position:sticky;top:150px}
+.linfo .bigd{font-size:56px;font-weight:800;line-height:1}
+.linfo .lu{margin:4px 0 14px;color:var(--muted)}
+.linfo .row{display:flex;justify-content:space-between;gap:10px;padding:9px 0;border-top:1px solid var(--line);font-size:14px}
+.linfo .row span{color:var(--muted)}
+.linfo .good{margin-top:14px;padding:12px 14px;border-radius:12px;background:#e3f4ea;color:#1f7a4d;font-size:14px}
+[data-theme="dark"] .linfo .good{background:rgba(31,122,77,.22);color:#6ee7a8}
+.lleg{display:flex;gap:14px;flex-wrap:wrap;margin-top:12px;font-size:12.5px;color:var(--muted)}
+.lleg i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:6px;vertical-align:-1px}
+@media (max-width:900px){.bsum,.gsum{grid-template-columns:1fr 1fr}.bgrid,.lgrid{grid-template-columns:1fr}.linfo{position:static}}
+@media (max-width:520px){.ld{min-height:52px;padding:6px}.ld b{font-size:14px}.ld .ev{display:none}.bsum b,.gsum b{font-size:22px}}
+
+/* hộp đặt ngân sách */
+.bset .tot{display:flex;align-items:center;gap:10px;margin:12px 0 6px}
+.bset .tot input{flex:1;font-size:22px;font-weight:800;padding:12px 16px;border:1px solid var(--line);border-radius:14px;background:var(--surface);color:var(--ink)}
+.bset .quick{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px}
+.bset .quick button{border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:999px;padding:5px 12px;font:600 13px var(--sans);cursor:pointer}
+.bset .quick button:hover{border-color:var(--primary);color:var(--primary)}
+.bset .rowc{display:grid;grid-template-columns:30px minmax(0,1fr) 150px 48px;gap:10px;align-items:center;padding:8px 0;border-top:1px solid var(--line);font-size:14px}
+.bset .rowc input{width:100%;padding:8px 10px;border:1px solid var(--line);border-radius:10px;background:var(--surface);color:var(--ink);font:600 14px var(--sans);text-align:right}
+.bset .rowc .pc{font-size:12px;color:var(--muted);text-align:right}
+.bset .sumline{display:flex;justify-content:space-between;margin:12px 0;padding:10px 14px;border-radius:12px;background:rgba(127,127,127,.08);font-size:14px}
+.bset .sumline.over{background:#fde8e8;color:#c0392b}
+[data-theme="dark"] .bset .sumline.over{background:rgba(192,57,43,.2);color:#ff8a7a}
+</style>
+</head>
+<body>
+<main class="wrap mk" id="mk">
+  <!-- thanh mục: chỉ còn 2 phần chính + 3 phần phụ -->
+  <nav class="tabs2"><div class="in">
+    <button class="on" data-v="ov">Tổng quan</button><button data-v="tk">Việc cần làm</button><button data-v="bd">Ngân sách</button><button data-v="gs">Khách mời</button><button data-v="lc">Lịch âm</button>
+  </div></nav>
+
+  <!-- ================= TỔNG QUAN ================= -->
+  <section class="view on" id="ov">
+    <div class="card hero2">
+      <div>
+        <p class="names">Đức Minh &amp; Thu Hà</p>
+        <p class="when">💍 Chủ Nhật, 20/12/2026 · nhằm 12/11 Bính Ngọ · Miền Bắc</p>
+        <button class="edit">✎ Sửa thông tin &amp; mời người cùng làm</button>
+      </div>
+      <div class="ring" title="Tiến độ chuẩn bị">
+        <svg width="132" height="132"><circle cx="66" cy="66" r="56" fill="none" stroke="var(--line)" stroke-width="10"/><circle cx="66" cy="66" r="56" fill="none" stroke="var(--primary)" stroke-width="10" stroke-linecap="round" stroke-dasharray="352" stroke-dashoffset="253"/></svg>
+        <div class="c"><b>39</b><span>ngày nữa</span></div>
+      </div>
+    </div>
+
+    <div class="tiles">
+      <button class="card tile" data-go="tk"><small>✓ Việc cần làm</small><b>12<span style="font-size:15px;color:var(--muted)"> / 44</span></b><em class="warn">3 việc quá hạn · 5 việc tuần này</em><div class="bar"><i style="width:27%"></i></div></button>
+      <button class="card tile" data-go="bd"><small>₫ Ngân sách</small><b>48tr<span style="font-size:15px;color:var(--muted)"> / 120tr</span></b><em>Đã chi 40% · còn 72 triệu</em><div class="bar"><i style="width:40%"></i></div></button>
+      <button class="card tile" data-go="gs"><small>☺ Khách mời</small><b>186<span style="font-size:15px;color:var(--muted)"> khách</span></b><em>120 sẽ đến · dự kiến 19 mâm</em><div class="bar"><i style="width:65%"></i></div></button>
+    </div>
+
+    <div class="two">
+      <div class="card next">
+        <div class="h3">Việc tiếp theo <a href="#" data-go="tk">Xem tất cả 32 việc →</a></div>
+        <div class="nx"><button class="ck"></button><div class="t"><b>Chốt ngày giờ lễ ăn hỏi với nhà gái</b></div><span class="chip2 late">Quá hạn 2 ngày</span></div>
+        <div class="nx"><button class="ck"></button><div class="t"><b>Đặt tráp ăn hỏi (số lẻ: 5, 7, 9 tráp)</b></div><span class="chip2 soon">Còn 3 ngày</span></div>
+        <div class="nx"><button class="ck"></button><div class="t"><b>Gửi thiệp online cho khách</b></div><span class="chip2">10/11</span></div>
+      </div>
+      <div class="card road">
+        <div class="h3">Các lễ</div>
+        <ol class="steps">
+          <li class="done"><span class="dot">✓</span><span><b>Dạm ngõ</b><small>15/09 · đã xong 8/8 việc</small></span></li>
+          <li class="now"><span class="dot">🎁</span><span><b>Ăn hỏi</b><small>21/10 · còn 4 ngày</small></span><span class="n">3/10</span></li>
+          <li><span class="dot">💍</span><span><b>Lễ cưới</b><small>20/12 · còn 39 ngày</small></span><span class="n">1/20</span></li>
+          <li><span class="dot">♥</span><span><b>Sau cưới</b><small>Cảm ơn khách, lại mặt</small></span><span class="n">0/6</span></li>
+        </ol>
+      </div>
+    </div>
+
+    <div class="mini-prod">
+      <a class="card" href="/thiep-cua-toi"><i>💌</i><span><b>Thiệp cưới</b><small>Đã gửi 142 khách · 120 xác nhận</small></span></a>
+      <a class="card" href="/video-cua-toi"><i>🎬</i><span><b>Video cưới</b><small>Album kỷ niệm · chưa tải MP4</small></span></a>
+    </div>
+  </section>
+
+  <!-- ================= VIỆC CẦN LÀM ================= -->
+  <section class="view" id="tk">
+    <div class="tbar">
+      <div class="seg"><button class="on">Chưa làm</button><button>Đã xong</button><button>Tất cả</button></div>
+      <label class="search">🔍<input placeholder="Tìm việc… (tráp, xe hoa, nhà hàng)"></label>
+      <button class="btn">+ Thêm việc</button>
+    </div>
+    <div class="tgrid">
+      <!-- lọc theo lễ -->
+      <div class="card side">
+        <button class="on">Tất cả việc<span>32</span></button>
+        <button>✓ Dạm ngõ<span>0</span></button><div class="pg"><i style="width:100%"></i></div>
+        <button>🎁 Ăn hỏi<span>7</span></button><div class="pg"><i style="width:30%"></i></div>
+        <button>💍 Lễ cưới<span>19</span></button><div class="pg"><i style="width:5%"></i></div>
+        <button>♥ Sau cưới<span>6</span></button><div class="pg"><i style="width:0"></i></div>
+      </div>
+      <!-- danh sách nhóm theo thời gian -->
+      <div>
+        <div class="grp"><h4 class="red">Quá hạn · 3</h4>
+          <div class="card trow sel"><button class="ck"></button><div class="t"><b>Chốt ngày giờ lễ ăn hỏi với nhà gái</b><div class="m"><span class="chip2 late">Quá hạn 2 ngày</span><span class="chip2 gray">🎁 Ăn hỏi</span><span class="chip2 gray">Lễ nghi</span></div></div><span class="av">M</span></div>
+          <div class="card trow"><button class="ck"></button><div class="t"><b>Hỏi giá 3 nhà hàng tiệc cưới</b><div class="m"><span class="chip2 late">Quá hạn 5 ngày</span><span class="chip2 gray">💍 Cưới</span></div></div><span class="av" style="background:#0ea5e9">H</span></div>
+          <div class="card trow"><button class="ck"></button><div class="t"><b>Chụp ảnh cưới — chọn studio</b><div class="m"><span class="chip2 late">Quá hạn 1 ngày</span><span class="chip2 gray">💍 Cưới</span></div></div></div>
+        </div>
+        <div class="grp"><h4>Tuần này · 5</h4>
+          <div class="card trow"><button class="ck"></button><div class="t"><b>Đặt tráp ăn hỏi (số lẻ: 5, 7, 9 tráp)</b><div class="m"><span class="chip2 soon">Còn 3 ngày</span><span class="chip2 gray">🎁 Ăn hỏi</span><span class="chip2 gray">2/4 việc nhỏ</span></div></div><span class="av">M</span></div>
+          <div class="card trow"><button class="ck"></button><div class="t"><b>Chọn đội bê tráp, đỡ tráp và đặt áo dài đồng phục</b><div class="m"><span class="chip2 soon">Còn 5 ngày</span><span class="chip2 gray">🎁 Ăn hỏi</span></div></div></div>
+        </div>
+        <div class="grp"><h4>Tháng này · 9</h4>
+          <div class="card trow"><button class="ck"></button><div class="t"><b>Gửi thiệp online cho khách</b><div class="m"><span class="chip2">10/11</span><span class="chip2 gray">💍 Cưới</span><span class="chip2 gray">Mở thiệp →</span></div></div></div>
+          <div class="card trow done"><button class="ck on">✓</button><div class="t"><b>Đặt cọc nhà hàng tiệc cưới</b><div class="m"><span class="chip2 gray">Xong 02/11</span></div></div></div>
+        </div>
+        <button class="add">＋ Thêm việc cho lễ ăn hỏi</button>
+      </div>
+      <!-- chi tiết việc đang chọn -->
+      <aside class="card detail">
+        <div class="top"><h3>Chốt ngày giờ lễ ăn hỏi với nhà gái</h3><button class="ck"></button></div>
+        <div class="fl">
+          <span>Hạn chót</span><span class="v">19/10/2026 <span class="chip2 late">Quá hạn 2 ngày</span></span>
+          <span>Thuộc lễ</span><span class="v">🎁 Ăn hỏi (21/10)</span>
+          <span>Người làm</span><span class="v"><span class="av" style="display:inline-grid;width:22px;height:22px;font-size:11px;vertical-align:middle">M</span> Đức Minh</span>
+          <span>Chi phí</span><span class="v">— <a href="#" style="font-weight:500">gắn vào ngân sách</a></span>
+        </div>
+        <div class="h3" style="margin-top:6px">Việc nhỏ <span class="muted" style="font-size:12px">1/3</span></div>
+        <ul class="sub">
+          <li class="d"><button class="ck on">✓</button>Xem ngày đẹp theo tuổi hai bạn</li>
+          <li><button class="ck"></button>Hai bên gia đình thống nhất giờ</li>
+          <li><button class="ck"></button>Báo lại nhà hàng / tư gia</li>
+        </ul>
+        <div class="note">Ghi chú: Bố mẹ nhà gái muốn làm buổi sáng, trước 10 giờ.</div>
+        <div class="dacts"><button class="btn sm">✓ Đánh dấu xong</button><button class="btn sm plain">Sửa</button><button class="btn sm plain">Xoá</button></div>
+      </aside>
+    </div>
+  </section>
+
+  <!-- ================= NGÂN SÁCH ================= -->
+  <section class="view" id="bd">
+    <div class="bsum">
+      <div class="card big"><div style="display:flex;justify-content:space-between;align-items:center;gap:8px"><small>Tổng ngân sách</small><button class="btn sm soft" id="setBudget">✎ Đặt ngân sách</button></div><b id="bTotal">120.000.000đ</b>
+        <div class="bbar"><i style="width:40%"></i><i class="dep" style="width:12%"></i></div>
+        <div class="leg"><span>Đã chi 48tr</span><span class="d">Đã đặt cọc 14tr</span><span class="r">Còn 58tr</span></div></div>
+      <div class="card"><small>Đã chi</small><b>48tr</b><em class="muted" style="font-style:normal;font-size:12.5px">12 khoản</em></div>
+      <div class="card"><small>Cần trả thêm</small><b style="color:#d97706">31tr</b><em class="muted" style="font-style:normal;font-size:12.5px">phần còn lại sau cọc</em></div>
+      <div class="card"><small>Tiền mừng đã nhận</small><b style="color:#16a34a">22tr</b><em class="muted" style="font-style:normal;font-size:12.5px">qua QR trên thiệp</em></div>
+    </div>
+    <div class="bgrid">
+      <div class="card" style="padding:18px 20px">
+        <div class="h3">Theo hạng mục <span style="display:flex;gap:6px"><button class="btn sm plain" id="setBudget2">✎ Sửa dự kiến</button><button class="btn sm plain">+ Hạng mục</button></span></div>
+        <div class="cat"><span class="ic">🍽</span><b>Nhà hàng tiệc cưới</b><span class="amt">25tr / 60tr</span><div class="bar2"><i style="width:42%"></i></div></div>
+        <div class="cat"><span class="ic">📷</span><b>Chụp ảnh cưới</b><span class="amt over">16tr / 15tr · vượt 1tr</span><div class="bar2"><i class="over" style="width:100%"></i></div></div>
+        <div class="cat"><span class="ic">👗</span><b>Trang phục, váy cưới</b><span class="amt">4tr / 12tr</span><div class="bar2"><i style="width:33%"></i></div></div>
+        <div class="cat"><span class="ic">🎁</span><b>Tráp ăn hỏi</b><span class="amt">3tr / 10tr</span><div class="bar2"><i style="width:30%"></i></div></div>
+        <div class="cat"><span class="ic">💌</span><b>Thiệp &amp; quà cảm ơn</b><span class="amt">0 / 5tr</span><div class="bar2"><i style="width:0"></i></div></div>
+        <div class="cat"><span class="ic">🚗</span><b>Xe hoa, đi lại</b><span class="amt">0 / 8tr</span><div class="bar2"><i style="width:0"></i></div></div>
+      </div>
+      <div class="card" style="padding:18px 20px">
+        <div class="h3">Khoản chi gần đây <button class="btn sm">+ Thêm khoản chi</button></div>
+        <div class="pay"><span class="t">Cọc nhà hàng Sen Hồ Tây<small>02/11 · Nhà hàng · Minh trả</small></span><b>15.000.000đ</b></div>
+        <div class="pay"><span class="t">Gói chụp ảnh cưới Đà Lạt<small>28/10 · Chụp ảnh · Hà trả</small></span><b>16.000.000đ</b></div>
+        <div class="pay"><span class="t">Đặt tráp 7 lễ (cọc)<small>25/10 · Tráp ăn hỏi</small></span><b>3.000.000đ</b></div>
+        <div class="pay"><span class="t">Thuê áo dài bê tráp<small>20/10 · Trang phục</small></span><b>4.000.000đ</b></div>
+        <a href="#" style="display:block;margin-top:10px;font-size:13px;font-weight:600">Xem cả 12 khoản →</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= KHÁCH MỜI ================= -->
+  <section class="view" id="gs">
+    <div class="gsum">
+      <div class="card"><small>Khách mời</small><b>186</b><em>Nhà trai 98 · Nhà gái 88</em></div>
+      <div class="card"><small>Sẽ đến</small><b style="color:#16a34a">120</b><em>≈ 12 mâm (10 người)</em></div>
+      <div class="card"><small>Chưa trả lời</small><b>48</b><em>Gửi nhắc qua Zalo</em></div>
+      <div class="card"><small>Tiền mừng</small><b>22tr</b><em>36 người đã gửi</em></div>
+    </div>
+    <div class="tbar" style="margin-top:14px;margin-bottom:0">
+      <div class="seg"><button class="on">Tất cả</button><button>Nhà trai</button><button>Nhà gái</button></div>
+      <div class="seg"><button class="on">Mọi trạng thái</button><button>Sẽ đến</button><button>Chưa trả lời</button></div>
+      <label class="search">🔍<input placeholder="Tìm khách…"></label>
+      <button class="btn sm plain">Nhập danh sách</button><button class="btn">+ Thêm khách</button>
+    </div>
+    <div class="card gtbl"><table>
+      <thead><tr><th>Khách</th><th>Bên</th><th>Số người</th><th>Trạng thái</th><th>Tiền mừng</th><th></th></tr></thead>
+      <tbody>
+        <tr><td class="nm"><b>Anh Hùng &amp; người thương</b><small>Đồng nghiệp · 0912 345 678</small></td><td><span class="side-tag">Nhà trai</span></td><td>2</td><td><span class="rs y">Sẽ đến</span></td><td>1.000.000đ</td><td class="act"><button class="btn sm plain">Chép link thiệp</button></td></tr>
+        <tr><td class="nm"><b>Cô Lan (dì ruột)</b><small>Họ hàng</small></td><td><span class="side-tag">Nhà gái</span></td><td>3</td><td><span class="rs s">Đã xem thiệp</span></td><td>—</td><td class="act"><button class="btn sm plain">Nhắc lại</button></td></tr>
+        <tr><td class="nm"><b>Nhóm bạn đại học</b><small>Bạn bè · 8 người</small></td><td><span class="side-tag">Nhà gái</span></td><td>8</td><td><span class="rs y">Sẽ đến</span></td><td>2.400.000đ</td><td class="act"><button class="btn sm plain">Chép link thiệp</button></td></tr>
+        <tr><td class="nm"><b>Bác Tư</b><small>Hàng xóm</small></td><td><span class="side-tag">Nhà trai</span></td><td>2</td><td><span class="rs w">Chưa gửi thiệp</span></td><td>—</td><td class="act"><button class="btn sm">Gửi thiệp</button></td></tr>
+        <tr><td class="nm"><b>Chị Mai</b><small>Bạn thân</small></td><td><span class="side-tag">Nhà gái</span></td><td>1</td><td><span class="rs n">Không đến được</span></td><td>500.000đ</td><td class="act"><button class="btn sm plain">Xem lời chúc</button></td></tr>
+      </tbody></table></div>
+  </section>
+
+  <!-- ================= LỊCH ÂM ================= -->
+  <section class="view" id="lc">
+    <div class="lgrid">
+      <div class="card lcal">
+        <div class="lhead"><div><b>Tháng 12 · 2026</b><small>Tháng 10 – 11 năm Bính Ngọ</small></div><div class="nav2"><button>‹</button><button>›</button></div></div>
+        <div class="ldays" id="ldays"></div>
+        <div class="lleg"><span><i style="background:var(--primary)"></i>Ngày cưới</span><span><i style="background:var(--primary-soft);border:1px solid var(--primary)"></i>Lễ khác</span><span><i style="background:#16a34a;border-radius:50%"></i>Ngày hoàng đạo</span></div>
+      </div>
+      <aside class="card linfo" id="linfo"></aside>
+    </div>
+  </section>
+</main>
+<div class="mockbar">MOCK sổ tay · 5 phần đều bấm được</div>
+<script src="/js/common.js"></script>
+<script src="/js/lunar.js"></script>
+<script>
+// MOCK: chỉ chuyển giữa Tổng quan và Việc cần làm, đánh dấu ô vuông, chọn việc để xem chi tiết
+renderTopbar('planner').catch(function () {});
+// MOCK: đặt tổng ngân sách và chia dự kiến theo hạng mục (gợi ý tỉ lệ phổ biến)
+(function () {
+  var CATS = [['🍽', 'Nhà hàng tiệc cưới', 50], ['📷', 'Chụp ảnh cưới', 12], ['👗', 'Trang phục, váy cưới', 10], ['🎁', 'Tráp ăn hỏi', 8], ['💌', 'Thiệp & quà cảm ơn', 4], ['🚗', 'Xe hoa, đi lại', 7], ['💐', 'Hoa, trang trí', 5], ['✨', 'Khác (nhẫn, dự phòng)', 4]];
+  var total = 120000000, plan = [60, 15, 12, 10, 5, 8, 6, 4].map(function (m) { return m * 1e6; });
+  var vnd = function (n) { return Math.round(n).toLocaleString('vi-VN') + 'đ'; };
+  var num = function (v) { return +String(v).replace(/[^\d]/g, '') || 0; };
+  function open() {
+    openModal('<div class="bset"><h2 style="margin:0">Đặt ngân sách đám cưới</h2><p class="muted" style="margin:4px 0 0;font-size:14px">Nhập tổng số tiền hai bạn dự định chi, rồi chia cho từng hạng mục. Sổ tay sẽ báo khi hạng mục nào sắp vượt.</p>' +
+      '<div class="tot"><input id="bsTot" inputmode="numeric" value="' + vnd(total) + '"></div>' +
+      '<div class="quick"><span class="muted" style="font-size:13px;align-self:center">Nhanh:</span><button data-q="80">80 triệu</button><button data-q="120">120 triệu</button><button data-q="200">200 triệu</button><button data-q="300">300 triệu</button><button id="bsAuto">✨ Gợi ý chia tự động</button></div>' +
+      CATS.map(function (c, i) { return '<div class="rowc"><span>' + c[0] + '</span><b style="font-weight:600">' + c[1] + '</b><input data-i="' + i + '" inputmode="numeric" value="' + vnd(plan[i] || 0) + '"><span class="pc" data-pc="' + i + '"></span></div>'; }).join('') +
+      '<div class="sumline" id="bsSum"></div><button class="btn block" id="bsSave">Lưu ngân sách</button></div>',
+    function (box, close) {
+      var tot = box.querySelector('#bsTot');
+      function sync() {
+        var t = num(tot.value), sum = 0;
+        box.querySelectorAll('.rowc input').forEach(function (inp) { var v = num(inp.value); sum += v; box.querySelector('[data-pc="' + inp.dataset.i + '"]').textContent = t ? Math.round(v / t * 100) + '%' : ''; });
+        var line = box.querySelector('#bsSum'), d = t - sum;
+        line.className = 'sumline' + (d < 0 ? ' over' : '');
+        line.innerHTML = '<span>Đã chia ' + vnd(sum) + '</span><b>' + (d >= 0 ? 'Còn chưa chia ' + vnd(d) : 'Vượt tổng ' + vnd(-d)) + '</b>';
+      }
+      function auto() { var t = num(tot.value); box.querySelectorAll('.rowc input').forEach(function (inp) { inp.value = vnd(Math.round(t * CATS[inp.dataset.i][2] / 100 / 1e5) * 1e5); }); sync(); }
+      box.addEventListener('input', function (e) { if (e.target.tagName === 'INPUT') sync(); });
+      box.addEventListener('focusout', function (e) { if (e.target.tagName === 'INPUT') e.target.value = vnd(num(e.target.value)); });
+      box.querySelectorAll('[data-q]').forEach(function (b) { b.onclick = function () { tot.value = vnd(+b.dataset.q * 1e6); auto(); }; });
+      box.querySelector('#bsAuto').onclick = auto;
+      box.querySelector('#bsSave').onclick = function () {
+        total = num(tot.value); plan = [].map.call(box.querySelectorAll('.rowc input'), function (i) { return num(i.value); });
+        document.getElementById('bTotal').textContent = vnd(total);
+        close(); toast('Đã lưu ngân sách (mock)');
+      };
+      sync();
+    });
+  }
+  document.getElementById('setBudget').onclick = open;
+  document.getElementById('setBudget2').onclick = open;
+})();
+
+// MOCK lịch âm: lưới tháng 12/2026 có ngày âm dưới từng ngày, chọn ngày để xem chi tiết
+(function () {
+  var box = document.getElementById('ldays'), info = document.getElementById('linfo');
+  var WD = ['T2', 'T3', 'T4', 'T5', 'T6', 'T7', 'CN'], CN = ['Chủ Nhật', 'Thứ Hai', 'Thứ Ba', 'Thứ Tư', 'Thứ Năm', 'Thứ Sáu', 'Thứ Bảy'];
+  var GOOD = [2, 5, 8, 11, 14, 17, 20, 23, 26, 29];
+  var EV = { 20: ['wed', '💍 Lễ cưới'], 6: ['ah', '🤝 Lại mặt?'], 12: ['ah', '📸 Thử váy'] };
+  function lu(d) { var l = window.Lunar ? Lunar.solarToLunar(d, 12, 2026) : { day: d, month: 11 }; return l; }
+  var first = (new Date(2026, 11, 1).getDay() + 6) % 7, html = WD.map(function (w) { return '<div class="w">' + w + '</div>'; }).join('');
+  for (var i = 0; i < first; i++) html += '<div class="ld e"></div>';
+  for (var d = 1; d <= 31; d++) {
+    var l = lu(d), ev = EV[d];
+    html += '<button class="ld' + (GOOD.indexOf(d) >= 0 ? ' good' : '') + (d === 14 ? ' today' : '') + (ev ? ' ' + ev[0] : '') + (d === 20 ? ' sel' : '') + '" data-d="' + d + '"><b>' + d + '</b><small>' + (l.day === 1 ? l.day + '/' + l.month : l.day) + '</small>' + (ev ? '<span class="ev">' + ev[1] + '</span>' : '') + '</button>';
+  }
+  box.innerHTML = html;
+  function show(d) {
+    var l = lu(d), wd = CN[new Date(2026, 11, d).getDay()], good = GOOD.indexOf(d) >= 0;
+    info.innerHTML = '<div class="bigd">' + d + '</div><div class="lu">' + wd + ', tháng 12/2026<br>Âm lịch: ngày ' + l.day + ' tháng ' + l.month + ' năm Bính Ngọ</div>' +
+      '<div class="row"><span>Ngày</span><b>' + (window.Lunar && Lunar.canChiDay ? Lunar.canChiDay(d, 12, 2026) : '—') + '</b></div>' +
+      '<div class="row"><span>Giờ tốt</span><b>Tý, Sửu, Thìn, Tỵ, Mùi, Tuất</b></div>' +
+      '<div class="row"><span>Hợp làm</span><b>Cưới hỏi, ăn hỏi, nhập trạch</b></div>' +
+      (good ? '<div class="good">✓ Ngày hoàng đạo — hợp tổ chức cưới hỏi.</div>' : '<div class="good" style="background:rgba(127,127,127,.1);color:var(--muted)">Ngày bình thường — nên chọn ngày có chấm xanh.</div>') +
+      '<button class="btn block" style="margin-top:14px">Đặt làm ngày cưới</button><button class="btn block plain" style="margin-top:8px">+ Ghi lịch hẹn ngày này</button>';
+    box.querySelectorAll('.ld').forEach(function (b) { b.classList.toggle('sel', +b.dataset.d === d); });
+  }
+  box.addEventListener('click', function (e) { var b = e.target.closest('.ld[data-d]'); if (b) show(+b.dataset.d); });
+  show(20);
+})();
+
+var mk = document.getElementById('mk');
+function view(v) { if (v === 'x') return; document.querySelectorAll('.view').forEach(function (s) { s.classList.toggle('on', s.id === v); }); document.querySelectorAll('.tabs2 button').forEach(function (b) { b.classList.toggle('on', b.dataset.v === v); }); scrollTo(0, 0); }
+mk.addEventListener('click', function (e) {
+  var g = e.target.closest('[data-go],[data-v]'); if (g) { e.preventDefault(); view(g.dataset.go || g.dataset.v); return; }
+  var c = e.target.closest('.ck'); if (c) { c.classList.toggle('on'); c.textContent = c.classList.contains('on') ? '✓' : ''; var r = c.closest('.trow'); if (r) r.classList.toggle('done'); return; }
+  var r2 = e.target.closest('.trow'); if (r2) { document.querySelectorAll('.trow').forEach(function (x) { x.classList.toggle('sel', x === r2); }); document.querySelector('.detail h3').textContent = r2.querySelector('b').textContent; }
+});
+</script>
+</body>
+</html>

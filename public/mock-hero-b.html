@@ -1,0 +1,727 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<script src="/js/theme.js"></script>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>MOCK · Đầu trang B</title>
+<meta name="description" content="Tạo thiệp cưới online có tên riêng từng khách mời, nhạc nền, bản đồ, xác nhận tham dự, mã QR mừng cưới và ngày âm lịch. Kèm video cưới chiếu TV và sổ tay cưới miễn phí. Dùng thử 0đ.">
+<meta property="og:title" content="Cưới Nha — Gửi lời mời cưới có tên từng khách">
+<meta property="og:description" content="Thiệp cưới online có tên từng khách, QR mừng cưới, xác nhận tham dự. Dùng thử miễn phí.">
+<meta property="og:image" content="https://cuoinha.com/demo/cover-dodam-do-ruou.jpg">
+<meta property="og:url" content="https://cuoinha.com/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Cưới Nha">
+<meta property="og:locale" content="vi_VN">
+<meta name="robots" content="noindex">
+<script type="application/ld+json">
+{"@context":"https://schema.org","@graph":[
+{"@type":"Organization","@id":"https://cuoinha.com/#org","name":"Cưới Nha","alternateName":["Cuoi Nha","cuoinha.com"],"url":"https://cuoinha.com/","logo":"https://cuoinha.com/icons/logo-512.png"},
+{"@type":"WebSite","@id":"https://cuoinha.com/#site","name":"Cưới Nha","alternateName":"Cưới Nha — thiệp cưới online","url":"https://cuoinha.com/","inLanguage":"vi","publisher":{"@id":"https://cuoinha.com/#org"}},
+{"@type":"WebApplication","name":"Cưới Nha — Thiệp cưới online","url":"https://cuoinha.com/","applicationCategory":"LifestyleApplication","operatingSystem":"Web","inLanguage":"vi","description":"Tạo thiệp cưới online có tên riêng từng khách mời, nhạc nền, bản đồ, xác nhận tham dự, mã QR mừng cưới và ngày âm lịch.","offers":{"@type":"Offer","price":"0","priceCurrency":"VND","description":"Dùng thử miễn phí"},"publisher":{"@id":"https://cuoinha.com/#org"}}
+]}
+</script>
+<meta name="theme-color" content="#ffffff">
+<link rel="icon" href="/favicon.ico" sizes="48x48"><link rel="icon" href="/favicon.svg" type="image/svg+xml"><link rel="apple-touch-icon" href="/icons/apple-touch-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&amp;family=Dancing+Script:wght@600;700&amp;display=swap">
+<link rel="stylesheet" href="/css/home.css">
+<script>document.documentElement.classList.add('js');</script>
+<style>
+/* MOCK B tối ưu: nền trơn, mọi thứ xếp giữa. Khối giữa là chỗ nhận ảnh thật:
+   bấm nút / bấm hình / kéo thả ảnh vào đâu cũng được → ảnh của khách hiện vào chồng ảnh và vào khung vòm của tấm thiệp ngay trên trang,
+   rồi nút đổi thành "Xem 3 mẫu hợp ảnh của bạn". Ảnh không gửi đi đâu (chỉ đọc trong trình duyệt). */
+.hb{position:relative;overflow:hidden;padding:104px 16px 92px;text-align:center;
+  background:radial-gradient(760px 420px at 50% 62%,rgba(239,125,141,.20),transparent 70%),radial-gradient(520px 360px at 12% 18%,rgba(212,162,76,.10),transparent 70%),var(--bg)}
+[data-theme="dark"] .hb{background:radial-gradient(760px 420px at 50% 62%,rgba(214,69,93,.26),transparent 70%),radial-gradient(520px 360px at 12% 18%,rgba(212,162,76,.08),transparent 70%),var(--bg)}
+.hb>*{position:relative}
+.hb .kick{display:inline-flex;align-items:center;gap:8px;font-size:12px;font-weight:800;letter-spacing:.25em;color:var(--acc)}
+.hb .kick b{display:grid;place-items:center;width:24px;height:24px;border-radius:6px;background:var(--acc);color:#fff;font-size:11px;letter-spacing:0}
+.hb h1{margin:10px auto 4px;max-width:900px;font:900 clamp(34px,4vw,54px)/1.05 var(--sans);letter-spacing:-.03em;color:var(--ink)}
+.hb h1 em{display:block;font:700 1.08em/1.15 var(--script);font-style:normal;color:var(--acc);letter-spacing:0}
+.hb .lead{margin:6px auto 0;max-width:600px;font-size:16px;color:var(--muted)}
+/* sân khấu: chồng ảnh → thiệp */
+.stage{display:flex;align-items:center;justify-content:center;gap:26px;width:max-content;max-width:100%;margin:18px auto 0;padding:14px 26px 36px;border-radius:30px;border:2px dashed transparent;cursor:pointer;transition:border-color .2s,background .2s}
+.stage:hover .pile img:nth-child(1){transform:rotate(-14deg) translateX(-6px)}
+.stage:hover .pile img:nth-child(2){transform:rotate(11deg) translateX(6px)}
+body.drag .stage{border-color:var(--acc);background:rgba(214,69,93,.08)}
+.drophint{position:absolute;left:50%;top:-14px;transform:translateX(-50%);padding:4px 14px;border-radius:999px;background:var(--acc);color:#fff;font:700 13px var(--sans);white-space:nowrap;opacity:0;transition:opacity .2s}
+body.drag .drophint{opacity:1}
+.pile{position:relative;flex:none;width:150px;height:186px}
+.pile img{position:absolute;width:104px;height:136px;object-fit:cover;border:5px solid #fff;border-radius:10px;box-shadow:0 12px 28px rgba(60,20,30,.25);transition:transform .35s}
+.pile img:nth-child(1){left:2px;top:30px;transform:rotate(-9deg)}
+.pile img:nth-child(2){left:40px;top:6px;transform:rotate(7deg)}
+.pile img:nth-child(3){left:24px;top:44px;transform:rotate(-1deg)}
+.lbl{position:absolute;left:50%;top:calc(100% + 12px);transform:translateX(-50%);font:600 13px/1.3 var(--sans);color:var(--muted);white-space:nowrap}
+.lbl.ok{color:var(--ok,#2f7d5b)}
+.flow{flex:none;display:flex;flex-direction:column;align-items:center;gap:6px;color:var(--acc);font-size:30px}
+.flow small{font:600 11px var(--sans);letter-spacing:.06em;color:var(--muted);text-transform:uppercase}
+/* tấm thiệp dựng bằng HTML: ảnh của khách vào khung vòm */
+.mcard{position:relative;flex:none;width:204px;height:276px;padding:16px 14px 0;border-radius:18px;background:#8e1b22;color:#f3d79a;box-shadow:0 26px 60px rgba(90,10,20,.38);overflow:hidden;font-family:Georgia,'Times New Roman',serif;text-align:center}
+.mcard::before{content:"";position:absolute;inset:7px;border:1px solid rgba(243,215,154,.45);border-radius:13px;pointer-events:none}
+.mcard .w{font-size:7px;letter-spacing:.32em}
+.mcard .row{display:flex;align-items:center;justify-content:space-between;margin:6px 6px 0;font-size:8px;letter-spacing:.08em}
+.mcard .row b{font-size:22px;font-weight:400;line-height:1;color:#f3d79a}
+.mcard .row span{width:70px}
+.mcard .arch{position:absolute;left:50%;bottom:0;transform:translateX(-50%);width:152px;height:182px;border-radius:76px 76px 0 0;overflow:hidden;background:#f6eadb;border:4px solid #f6eadb}
+.mcard .arch img{width:100%;height:100%;object-fit:cover;object-position:50% 20%;transition:opacity .4s}
+.mcard .names{position:absolute;left:0;right:0;bottom:12px;z-index:2;font:700 22px/1 var(--script);color:#fff;text-shadow:0 2px 10px rgba(0,0,0,.55)}
+.mcard .shim{position:absolute;inset:0;z-index:3;display:none;place-items:center;background:rgba(142,27,34,.55);color:#fff;font:600 13px var(--sans)}
+.mcard .shim::after{content:"";position:absolute;inset:0;background:linear-gradient(100deg,transparent 30%,rgba(255,255,255,.25) 50%,transparent 70%);background-size:220% 100%;animation:shim 1s linear infinite}
+@keyframes shim{from{background-position:120% 0}to{background-position:-120% 0}}
+.busy .mcard .shim{display:grid}
+/* nút */
+.hcta{display:flex;flex-direction:column;align-items:center;gap:8px;margin-top:20px}
+.hcta .go{display:inline-flex;align-items:center;gap:10px;padding:15px 34px;border:0;border-radius:999px;font:700 17px var(--sans);color:#fff;background:linear-gradient(135deg,#d6455d,#ef7d8d);box-shadow:0 14px 34px rgba(214,69,93,.35);cursor:pointer;text-decoration:none;transition:transform .2s}
+.hcta .go:hover{transform:translateY(-2px)}
+.hcta .hsub{font:600 14px var(--sans);color:var(--muted);text-decoration:none;background:none;border:0;cursor:pointer}
+.hcta .hsub:hover{color:var(--ink)}
+.hcta .lock{margin:2px 0 0;font-size:12px;color:var(--muted)}
+@media (max-width:700px){
+  .hb{padding:104px 16px 60px}
+  .hb h1{font-size:32px}
+  .hb .lead{font-size:15px}
+  .stage{gap:10px;padding:12px 6px 36px;margin-top:24px}
+  .pile{width:118px;height:150px}
+  .pile img{width:84px;height:110px;border-width:4px}
+  .pile img:nth-child(2){left:30px}.pile img:nth-child(3){left:16px;top:36px}
+  .flow{font-size:22px}.flow small{display:none}
+  .mcard{width:168px;height:230px;padding:11px 10px 0}
+  .mcard .w{font-size:5px;letter-spacing:.2em;white-space:nowrap}
+  .mcard .row{margin:4px 2px 0}.mcard .row b{font-size:16px}.mcard .row span{width:46px;font-size:5.5px;line-height:1.4}
+  .mcard .arch{width:126px;height:154px}
+  .mcard .names{font-size:16px}
+  .hcta .go{width:100%;justify-content:center;max-width:360px}
+}
+
+/* tường thiệp trôi phía sau (như trang chủ hiện tại), 3 mức: mờ (mặc định) / rõ / tắt */
+.hb .wall{position:absolute;inset:-4% -2%;z-index:0;display:grid;grid-template-columns:repeat(6,1fr);gap:14px;padding:0 14px;transform:rotate(-4deg);pointer-events:none;transition:opacity .3s,filter .3s}
+.hb .wall~*{z-index:1}
+.hb::after{content:"";position:absolute;inset:0;z-index:0;pointer-events:none;transition:opacity .3s}
+.w-mo .wall{filter:blur(6px) saturate(.6);opacity:.4}
+.w-mo::after{background:radial-gradient(ellipse 55% 60% at 50% 50%,rgba(255,255,255,.75),rgba(255,255,255,.25)),linear-gradient(180deg,var(--bg) 0%,transparent 14%),linear-gradient(0deg,var(--bg) 0%,transparent 22%)}
+[data-theme="dark"] .w-mo::after{background:radial-gradient(ellipse 55% 60% at 50% 50%,rgba(18,14,15,.8),rgba(18,14,15,.35)),linear-gradient(180deg,var(--bg) 0%,transparent 14%),linear-gradient(0deg,var(--bg) 0%,transparent 22%)}
+.w-ro .wall{opacity:.9}
+.w-ro::after{background:radial-gradient(ellipse 52% 58% at 50% 50%,rgba(255,255,255,.93) 40%,rgba(255,255,255,.55)),linear-gradient(180deg,var(--bg) 0%,transparent 14%),linear-gradient(0deg,var(--bg) 0%,transparent 22%)}
+[data-theme="dark"] .w-ro::after{background:radial-gradient(ellipse 52% 58% at 50% 50%,rgba(18,14,15,.93) 40%,rgba(18,14,15,.6)),linear-gradient(180deg,var(--bg) 0%,transparent 14%),linear-gradient(0deg,var(--bg) 0%,transparent 22%)}
+.w-tron .wall{display:none}
+@media (max-width:700px){.hb .wall{grid-template-columns:repeat(3,1fr)}.hb .wall .col:nth-child(n+4){display:none}}
+.wsw{position:fixed;left:50%;bottom:18px;z-index:60;transform:translateX(-50%);display:flex;gap:2px;padding:4px;border-radius:999px;background:#1f1a1b;box-shadow:0 10px 30px rgba(0,0,0,.3)}
+.wsw button{border:0;padding:8px 14px;border-radius:999px;background:none;color:#fff;font:600 13px var(--sans);cursor:pointer;opacity:.6;white-space:nowrap}
+.wsw button.on{background:#d6455d;opacity:1}
+
+/* ===== minh hoạ ảnh → thiệp: 3 kiểu, chuyển bằng hàng nút trên cùng (Bay vào / Trước–sau / Bản trước) ===== */
+.stage>.vx{display:none}
+.v-fly>.fly,.v-ab>.ab{display:block}
+.v-fly>:not(.vx):not(.drophint),.v-ab>:not(.vx):not(.drophint){display:none}
+.stage.v-fly,.stage.v-ab{padding:14px 20px 44px}
+/* --- Bay vào: một tấm ảnh bị kéo bay vào khung vòm, thiệp hiện tên + lấp lánh, lặp lại --- */
+.fly{position:relative;width:540px;height:316px}
+.fly .mcard{position:absolute;left:310px;top:0;width:224px;height:304px;padding:16px 14px 0}
+.fly .mcard .arch{width:168px;height:200px;border-radius:84px 84px 0 0;background:repeating-linear-gradient(45deg,#f6eadb 0 8px,#efdcc6 8px 16px)}
+.fly .mcard .arch img{opacity:0;animation:archIn 6s infinite}
+.fly .slotTxt{position:absolute;left:50%;bottom:78px;transform:translateX(-50%);z-index:1;font:600 11px var(--sans);color:#8e1b22;white-space:nowrap;animation:slotTxt 6s infinite}
+.fly .mcard .names{opacity:0;animation:namesIn 6s infinite}
+.fly .ph0{position:absolute;z-index:3;left:20px;top:64px;width:150px;height:196px;object-fit:cover;object-position:50% 20%;transform:rotate(-6deg);border:6px solid #fff;border-radius:10px;box-shadow:0 18px 40px rgba(0,0,0,.35)}
+.fly .ph{position:absolute;z-index:4;object-fit:cover;object-position:50% 20%;box-shadow:0 18px 40px rgba(0,0,0,.35);animation:flyPh 6s infinite cubic-bezier(.55,.05,.25,1)}
+.fly .hand{position:absolute;z-index:5;width:34px;height:34px;color:#fff;filter:drop-shadow(0 3px 6px rgba(0,0,0,.5));animation:hand 6s infinite cubic-bezier(.55,.05,.25,1)}
+.fly .spark{position:absolute;z-index:6;left:500px;top:28px;font-size:28px;color:#f3d79a;opacity:0;animation:spark 6s infinite}
+.fly .spark.b{left:298px;top:150px;font-size:20px;animation-delay:.15s}
+.fly .step{position:absolute;bottom:-34px;font:600 13px var(--sans);color:var(--muted);white-space:nowrap}
+.fly .step i{display:inline-grid;place-items:center;width:20px;height:20px;margin-right:6px;border-radius:50%;background:var(--acc);color:#fff;font:700 11px var(--sans);font-style:normal}
+.fly .s1{left:20px}.fly .s2{left:340px}
+.fly .s2{animation:s2 6s infinite}
+.fly .dash{position:absolute;left:190px;top:150px;width:108px;border-top:2px dashed rgba(214,69,93,.55);animation:dash 6s infinite}
+.fly .dash::after{content:"";position:absolute;right:-2px;top:-6px;border:5px solid transparent;border-left:8px solid rgba(214,69,93,.8)}
+/* toạ độ: ảnh bắt đầu ở trái (20,64, 150x196, nghiêng), bay vào khung vòm (338,104, 168x200, bo vòm) */
+@keyframes flyPh{
+  0%,14%{left:20px;top:64px;width:150px;height:196px;transform:rotate(-6deg);border:6px solid #fff;border-radius:10px;opacity:1}
+  46%{left:338px;top:104px;width:168px;height:200px;transform:rotate(0);border:0 solid #fff;border-radius:84px 84px 0 0;opacity:1}
+  52%,100%{left:338px;top:104px;width:168px;height:200px;transform:rotate(0);border:0 solid #fff;border-radius:84px 84px 0 0;opacity:0}}
+@keyframes hand{0%{left:150px;top:230px;opacity:0}8%,14%{left:120px;top:200px;opacity:1}46%{left:440px;top:240px;opacity:1}54%,100%{left:470px;top:270px;opacity:0}}
+@keyframes archIn{0%,46%{opacity:0}52%,92%{opacity:1}100%{opacity:0}}
+@keyframes slotTxt{0%,40%{opacity:1}46%,94%{opacity:0}100%{opacity:1}}
+@keyframes namesIn{0%,54%{opacity:0;transform:translateY(8px)}64%,92%{opacity:1;transform:none}100%{opacity:0}}
+@keyframes spark{0%,56%{opacity:0;transform:scale(.3) rotate(0)}64%{opacity:1;transform:scale(1.2) rotate(30deg)}76%,100%{opacity:0;transform:scale(.6) rotate(60deg)}}
+@keyframes s2{0%,54%{color:var(--muted)}64%,92%{color:var(--ink)}}
+@keyframes dash{0%,14%{opacity:.9}30%,100%{opacity:0}}
+.fly.static *{animation:none!important}
+/* --- Trước / sau: cùng một khung, kéo thanh giữa để thấy ảnh thô biến thành thiệp --- */
+.ab{position:relative;width:250px;height:340px;margin:0 auto;border-radius:18px;box-shadow:0 26px 60px rgba(90,10,20,.38);touch-action:none;cursor:ew-resize}
+.ab .mcard{position:absolute;inset:0;width:auto;height:auto;padding:18px 16px 0;box-shadow:none}
+.ab .mcard .arch{width:186px;height:224px;border-radius:93px 93px 0 0}
+.ab .raw{position:absolute;inset:0;border-radius:18px;overflow:hidden;clip-path:inset(0 calc(100% - var(--x,50%)) 0 0)}
+.ab .raw img{width:100%;height:100%;object-fit:cover;object-position:50% 20%}
+.ab .bar{position:absolute;top:-10px;bottom:-10px;left:var(--x,50%);width:3px;margin-left:-1.5px;background:#fff;box-shadow:0 0 12px rgba(0,0,0,.4);pointer-events:none}
+.ab .knob{position:absolute;top:50%;left:var(--x,50%);width:42px;height:42px;margin:-21px 0 0 -21px;border-radius:50%;background:#fff;color:var(--acc);display:grid;place-items:center;font:800 15px var(--sans);box-shadow:0 6px 18px rgba(0,0,0,.35);pointer-events:none}
+.ab .tag{position:absolute;top:12px;padding:3px 10px;border-radius:999px;font:700 11px var(--sans);letter-spacing:.04em;background:rgba(0,0,0,.55);color:#fff;pointer-events:none}
+.ab .tag.l{left:12px}.ab .tag.r{right:12px;background:rgba(243,215,154,.92);color:#8e1b22}
+.ab-cap{position:absolute;left:50%;bottom:-30px;transform:translateX(-50%);font:600 13px var(--sans);color:var(--muted);white-space:nowrap}
+.vsw{position:fixed;left:50%;bottom:64px;z-index:60;transform:translateX(-50%);display:flex;gap:2px;padding:4px;border-radius:999px;background:#1f1a1b;box-shadow:0 10px 30px rgba(0,0,0,.3)}
+.vsw button{border:0;padding:8px 14px;border-radius:999px;background:none;color:#fff;font:600 13px var(--sans);cursor:pointer;opacity:.6;white-space:nowrap}
+.vsw button.on{background:#d6455d;opacity:1}
+@media (max-width:700px){
+  .fly{transform:scale(.62);transform-origin:top left;width:540px;height:316px;margin:0 calc((540px * .62 - 540px) / 1) calc(316px * -.38) 0}
+  .stage.v-fly{width:auto;padding:10px 0 50px}
+  .fly .step{font-size:18px}
+  .ab{width:220px;height:300px}.ab .mcard .arch{width:164px;height:196px;border-radius:82px 82px 0 0}
+}
+@media (prefers-reduced-motion:reduce){.fly *{animation:none!important}.fly .ph{display:none}.fly .mcard .arch img,.fly .mcard .names{opacity:1}}
+
+/* ===== thêm 3 kiểu chuyển động (cùng khung 240x326, lặp 6 giây) ===== */
+.v-flip>.m-flip,.v-wrap>.m-wrap,.v-sweep>.m-sweep{display:block}
+.v-flip>:not(.vx):not(.drophint),.v-wrap>:not(.vx):not(.drophint),.v-sweep>:not(.vx):not(.drophint){display:none}
+.stage.v-flip,.stage.v-wrap,.stage.v-sweep{padding:14px 20px 46px}
+.mo{position:relative;width:240px;height:326px;margin:0 auto}
+.mo .cap2{position:absolute;left:50%;bottom:-34px;transform:translateX(-50%);font:600 13px var(--sans);color:var(--muted);white-space:nowrap}
+.mo .cap2 b{color:var(--ink);transition:color .3s}
+.mo .raw{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:50% 20%;border-radius:14px;border:6px solid #fff;box-shadow:0 22px 50px rgba(0,0,0,.38)}
+.mo .mcard{position:absolute;inset:0;width:auto;height:auto;padding:17px 15px 0}
+.mo .mcard .arch{width:178px;height:216px;border-radius:89px 89px 0 0}
+.mo .sp{position:absolute;z-index:6;font-size:26px;color:#f3d79a;opacity:0;pointer-events:none}
+.mo .sp.a{right:-14px;top:18px}.mo .sp.b{left:-16px;top:150px;font-size:18px}.mo .sp.c{right:6px;bottom:30px;font-size:16px}
+@keyframes spk{0%,52%{opacity:0;transform:scale(.3) rotate(0)}60%{opacity:1;transform:scale(1.2) rotate(30deg)}74%,100%{opacity:0;transform:scale(.6) rotate(70deg)}}
+.mo .sp{animation:spk 6s infinite}.mo .sp.b{animation-delay:.12s}.mo .sp.c{animation-delay:.24s}
+
+/* --- Lật: tấm ảnh lật 3D, mặt sau là thiệp --- */
+.m-flip{perspective:1100px}
+.m-flip .in{position:absolute;inset:0;transform-style:preserve-3d;animation:flipIn 6s infinite cubic-bezier(.6,.05,.25,1)}
+.m-flip .face{position:absolute;inset:0;backface-visibility:hidden;-webkit-backface-visibility:hidden}
+.m-flip .back{transform:rotateY(180deg)}
+.m-flip .back .mcard{box-shadow:0 26px 60px rgba(90,10,20,.4)}
+@keyframes flipIn{0%,22%{transform:rotateY(0) scale(1)}36%{transform:rotateY(100deg) scale(1.06)}48%,90%{transform:rotateY(180deg) scale(1)}100%{transform:rotateY(360deg)}}
+
+/* --- Bao khung: ảnh đứng yên, khung thiệp hiện ra bao quanh, ảnh gọt thành vòm --- */
+.m-wrap .mcard{animation:wrapCard 6s infinite}
+.m-wrap .mcard .arch{visibility:hidden}
+.m-wrap .mcard .w,.m-wrap .mcard .row{animation:wrapTop 6s infinite}
+.m-wrap .mcard .names{z-index:5;animation:wrapNames 6s infinite}
+.m-wrap .ph{position:absolute;z-index:4;object-fit:cover;object-position:50% 20%;animation:wrapPh 6s infinite cubic-bezier(.6,.05,.25,1)}
+/* vòm: rộng 178, cao 216, đáy khung → left (240-178)/2=31, top 326-216=110 */
+@keyframes wrapPh{0%,18%{left:0;top:0;width:240px;height:326px;border-radius:14px;box-shadow:0 22px 50px rgba(0,0,0,.38);outline:6px solid #fff;outline-offset:-6px}
+  44%,92%{left:31px;top:110px;width:178px;height:216px;border-radius:89px 89px 0 0;box-shadow:none;outline:4px solid #f6eadb;outline-offset:-4px}
+  100%{left:0;top:0;width:240px;height:326px;border-radius:14px;outline:6px solid #fff;outline-offset:-6px}}
+@keyframes wrapCard{0%,20%{opacity:0;transform:scale(1.1)}40%,92%{opacity:1;transform:scale(1)}100%{opacity:0;transform:scale(1.1)}}
+@keyframes wrapTop{0%,34%{opacity:0;transform:translateY(-10px)}46%,92%{opacity:1;transform:none}100%{opacity:0}}
+@keyframes wrapNames{0%,50%{opacity:0;transform:translateY(10px)}60%,92%{opacity:1;transform:none}100%{opacity:0}}
+
+/* --- Quét: vạch sáng chạy từ trên xuống, phía trên vạch đã thành thiệp --- */
+.m-sweep .mcard{clip-path:inset(0 0 100% 0);animation:sweepCard 6s infinite linear;box-shadow:none}
+.m-sweep .line{position:absolute;left:-10px;right:-10px;top:0;height:3px;z-index:5;border-radius:3px;background:#fff;box-shadow:0 0 14px 4px rgba(255,214,150,.9),0 0 40px 10px rgba(239,125,141,.6);opacity:0;animation:sweepLine 6s infinite linear}
+@keyframes sweepCard{0%,16%{clip-path:inset(0 0 100% 0)}48%,90%{clip-path:inset(0 0 0 0)}100%{clip-path:inset(0 0 0 0);opacity:0}}
+@keyframes sweepLine{0%,14%{top:0;opacity:0}16%{top:0;opacity:1}48%{top:100%;opacity:1}52%,100%{top:100%;opacity:0}}
+.m-sweep .raw{animation:sweepRaw 6s infinite}
+@keyframes sweepRaw{0%,90%{opacity:1}96%{opacity:1}100%{opacity:1}}
+
+@media (max-width:700px){.mo{width:200px;height:272px}.mo .mcard{padding:12px 11px 0}.mo .mcard .arch{width:150px;height:180px;border-radius:75px 75px 0 0}
+  .mo .mcard .w{font-size:5px;letter-spacing:.2em;white-space:nowrap}.mo .mcard .row b{font-size:16px}.mo .mcard .row span{width:46px;font-size:5.5px}
+  @keyframes wrapPh{0%,18%{left:0;top:0;width:200px;height:272px;border-radius:14px;outline:6px solid #fff;outline-offset:-6px}44%,92%{left:25px;top:92px;width:150px;height:180px;border-radius:75px 75px 0 0;outline:4px solid #f6eadb;outline-offset:-4px}100%{left:0;top:0;width:200px;height:272px;border-radius:14px}}}
+@media (prefers-reduced-motion:reduce){.mo *{animation:none!important}}
+.mo.static *{animation:none!important}
+
+/* ===== Bay vào + tung thiệp (mặc định): vài ảnh bay vào một khung thiệp rỗng → khung loé sáng → tung ra 3 mẫu thiệp xoè như quân bài. Lặp 7 giây ===== */
+.v-fan>.fan{display:block}
+.v-fan>:not(.vx):not(.drophint){display:none}
+.stage.v-fan{padding:10px 20px 74px}
+.fan{position:relative;width:560px;height:330px}
+.fan *{animation-duration:7s;animation-iteration-count:infinite}
+/* ảnh của khách: 3 tấm xếp chồng bên trái */
+.fan .fp{position:absolute;z-index:6;width:118px;height:154px;object-fit:cover;object-position:50% 20%;border:5px solid #fff;border-radius:9px;box-shadow:0 14px 32px rgba(0,0,0,.38);animation-timing-function:cubic-bezier(.55,.05,.3,1)}
+.fan .fp0{animation-name:fp0}.fan .fp1{animation-name:fp1}.fan .fp2{animation-name:fp2}
+@keyframes fp0{0%,12%{left:0;top:80px;transform:rotate(-11deg);opacity:1}36%{left:221px;top:88px;transform:rotate(0) scale(.62);opacity:1}42%,94%{left:221px;top:88px;transform:scale(.4);opacity:0}100%{left:0;top:80px;transform:rotate(-11deg);opacity:1}}
+@keyframes fp1{0%,15%{left:40px;top:56px;transform:rotate(7deg);opacity:1}39%{left:221px;top:88px;transform:rotate(0) scale(.62);opacity:1}45%,94%{left:221px;top:88px;transform:scale(.4);opacity:0}100%{left:40px;top:56px;transform:rotate(7deg);opacity:1}}
+@keyframes fp2{0%,18%{left:20px;top:96px;transform:rotate(-2deg);opacity:1}42%{left:221px;top:88px;transform:rotate(0) scale(.62);opacity:1}48%,94%{left:221px;top:88px;transform:scale(.4);opacity:0}100%{left:20px;top:96px;transform:rotate(-2deg);opacity:1}}
+.fan .hand{position:absolute;z-index:8;width:34px;height:34px;color:#fff;filter:drop-shadow(0 3px 6px rgba(0,0,0,.5));animation-name:fhand;animation-timing-function:cubic-bezier(.55,.05,.3,1)}
+@keyframes fhand{0%{left:150px;top:260px;opacity:0}7%,12%{left:96px;top:196px;opacity:1}40%{left:300px;top:200px;opacity:1}48%,100%{left:330px;top:240px;opacity:0}}
+/* khung thiệp rỗng ở giữa */
+.fan .slot{position:absolute;z-index:2;left:182px;top:30px;width:196px;height:266px;border:2px dashed rgba(243,215,154,.55);border-radius:18px;background:rgba(255,255,255,.04);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;color:#f3d79a;font:600 12px var(--sans);text-align:center;animation-name:fslot}
+.fan .slot i{width:42px;height:42px;border-radius:50%;display:grid;place-items:center;border:2px dashed rgba(243,215,154,.6);font-style:normal;font-size:22px}
+[data-theme="light"] .fan .slot,:root:not([data-theme]) .fan .slot{color:#b5485a;border-color:rgba(214,69,93,.45);background:rgba(214,69,93,.04)}
+@keyframes fslot{0%,30%{opacity:1;transform:none;box-shadow:none}44%{opacity:1;transform:scale(1.05);box-shadow:0 0 0 6px rgba(243,215,154,.25),0 0 60px 10px rgba(239,125,141,.55)}50%,92%{opacity:0;transform:scale(1.1)}100%{opacity:1;transform:none}}
+.fan .flash{position:absolute;z-index:7;left:230px;top:110px;width:100px;height:100px;border-radius:50%;background:radial-gradient(circle,rgba(255,240,210,.95),rgba(255,200,170,.4) 40%,transparent 70%);opacity:0;pointer-events:none;animation-name:fflash}
+@keyframes fflash{0%,44%{opacity:0;transform:scale(.3)}49%{opacity:1;transform:scale(2.2)}58%,100%{opacity:0;transform:scale(3)}}
+/* 3 mẫu thiệp tung ra */
+.fan .tpl{position:absolute;left:182px;top:30px;width:196px;height:266px;border-radius:16px;overflow:hidden;box-shadow:0 24px 54px rgba(0,0,0,.4);opacity:0;animation-timing-function:cubic-bezier(.2,1.4,.4,1)}
+.fan .tA{z-index:5;animation-name:tA}.fan .tB{z-index:4;animation-name:tB}.fan .tC{z-index:4;animation-name:tC}
+@keyframes tA{0%,46%{opacity:0;transform:scale(.55)}58%,90%{opacity:1;transform:translateY(-6px)}97%,100%{opacity:0;transform:translateY(-6px)}}
+@keyframes tB{0%,48%{opacity:0;transform:scale(.55)}62%,90%{opacity:1;transform:translate(-138px,18px) rotate(-13deg)}97%,100%{opacity:0;transform:translate(-138px,18px) rotate(-13deg)}}
+@keyframes tC{0%,50%{opacity:0;transform:scale(.55)}64%,90%{opacity:1;transform:translate(138px,18px) rotate(13deg)}97%,100%{opacity:0;transform:translate(138px,18px) rotate(13deg)}}
+/* mẫu A: đỏ, khung vòm */
+.fan .tA.mcard{width:196px;height:266px;padding:14px 12px 0}
+.fan .tA .arch{width:146px;height:176px;border-radius:73px 73px 0 0}
+.fan .tA .row b{font-size:20px}.fan .tA .row span{width:60px;font-size:7px}
+.fan .tA .names{font-size:18px}
+/* mẫu B: kem, ảnh khung chữ nhật, kiểu "save the date" */
+.fan .tB{background:#f7efe4;color:#7a5b3a;text-align:center;font-family:Georgia,serif}
+.fan .tB .t1{display:block;margin-top:16px;font-size:8px;letter-spacing:.35em}
+.fan .tB .pf{display:block;margin:10px auto 0;width:140px;height:150px;padding:5px;background:#fff;box-shadow:0 6px 14px rgba(122,91,58,.25);transform:rotate(-2deg)}
+.fan .tB .pf img{width:100%;height:100%;object-fit:cover;object-position:50% 20%}
+.fan .tB .nm{display:block;margin-top:12px;font:700 20px/1 var(--script);color:#9b5a3c}
+.fan .tB .dt{display:block;margin-top:6px;font-size:9px;letter-spacing:.25em}
+/* mẫu C: xanh rêu, ảnh tròn viền vàng */
+.fan .tC{background:radial-gradient(circle at 50% 30%,#2f5a47,#1c3a2e);color:#e8cf8f;text-align:center;font-family:Georgia,serif}
+.fan .tC .t1{display:block;margin-top:18px;font-size:7.5px;letter-spacing:.3em}
+.fan .tC .circ{display:block;margin:14px auto 0;width:128px;height:128px;border-radius:50%;padding:4px;border:2px solid #e8cf8f}
+.fan .tC .circ img{width:100%;height:100%;border-radius:50%;object-fit:cover;object-position:50% 20%}
+.fan .tC .nm{display:block;margin-top:14px;font:700 20px/1 var(--script);color:#f3e2b4}
+.fan .tC .dt{display:block;margin-top:6px;font-size:9px;letter-spacing:.25em}
+.fan .sp{position:absolute;z-index:9;color:#f3d79a;opacity:0;animation-name:spk}
+.fan .sp.a{left:400px;top:20px;font-size:26px;animation-delay:.3s}.fan .sp.b{left:150px;top:30px;font-size:20px;animation-delay:.45s}.fan .sp.c{left:470px;top:250px;font-size:18px;animation-delay:.6s}
+@keyframes spk{0%,58%{opacity:0;transform:scale(.3) rotate(0)}66%{opacity:1;transform:scale(1.2) rotate(30deg)}80%,100%{opacity:0;transform:scale(.6) rotate(70deg)}}
+.fan .step{position:absolute;bottom:-62px;font:600 13px var(--sans);color:var(--muted);white-space:nowrap}
+.fan .step i{display:inline-grid;place-items:center;width:20px;height:20px;margin-right:6px;border-radius:50%;background:var(--acc);color:#fff;font:700 11px var(--sans);font-style:normal}
+.fan .s1{left:0;animation-name:st1}.fan .s2{right:0;animation-name:st2}
+@keyframes st1{0%,40%{color:var(--ink)}48%,100%{color:var(--muted)}}
+@keyframes st2{0%,54%{color:var(--muted)}62%,92%{color:var(--ink)}100%{color:var(--muted)}}
+.fan.static *{animation:none!important}
+@media (max-width:700px){.fan{transform:scale(.6);transform-origin:top left;margin:0 -224px -112px 0}.stage.v-fan{padding:10px 0 60px}.fan .step{font-size:20px;bottom:-70px}}
+@media (prefers-reduced-motion:reduce){.fan *{animation:none!important}.fan .fp,.fan .slot,.fan .hand{display:none}.fan .tpl{opacity:1}.fan .tB{transform:translate(-138px,18px) rotate(-13deg)}.fan .tC{transform:translate(138px,18px) rotate(13deg)}}
+</style>
+</head>
+<body data-page="home">
+<header class="hnav" id="hnav"><div class="wrap">
+  <a class="logo" href="/" id="hlogo"><span class="lw" data-brand>Cưới Nha</span><svg class="lh" viewBox="0 0 32 30" aria-hidden="true"><path d="M16 28C6.5 21 3 16 3 11.5 3 7.9 5.8 5 9.4 5c2.6 0 4.6 1.4 6.6 3.9C18 6.4 20 5 22.6 5 26.2 5 29 7.9 29 11.5 29 16 25.5 21 16 28z"/></svg></a>
+  <nav class="menu" aria-label="Menu chính"><a href="/mau-thiep">Thiệp cưới</a><a href="/man-hinh-led-dam-cuoi">Màn hình LED</a><a href="/video-cuoi">Video cưới</a><a href="/so-tay-cuoi">Sổ tay cưới</a></nav>
+  <span id="themeSlot"></span>
+  <div class="hacts" id="hacts"><a class="login" href="/dang-nhap">Đăng nhập</a><a class="btn btn-main btn-sm" href="/mau-thiep">Tạo thiệp</a></div>
+  <button class="burger" id="burger" type="button" aria-label="Mở menu" aria-expanded="false" aria-controls="mpanel"><i></i></button>
+</div>
+<nav class="mpanel" id="mpanel" aria-label="Menu"></nav></header>
+
+<section class="hb w-mo" id="hb">
+  <div class="wall" id="cols" aria-hidden="true"></div>
+  <div class="kick"><b>CN</b>THIỆP CƯỚI ONLINE</div>
+  <h1>Thả ảnh cưới vào,<em>xem ngay thiệp của bạn</em></h1>
+  <p class="lead">Mỗi khách một tấm thiệp mang tên riêng — có nhạc, bản đồ, hộp mừng cưới.</p>
+  <div class="stage v-fan" id="stage" role="button" tabindex="0" aria-label="Chọn hoặc kéo thả ảnh cưới">
+    <span class="drophint">Thả ảnh vào đây</span>
+    <span class="vx fan" id="fan" aria-hidden="true"><span class="slot"><i>+</i>Thiệp của bạn</span><span class="tpl tB"><span class="t1">SAVE THE DATE</span><span class="pf"><img id="fanB" src="/demo/goiy-2.jpg" alt=""></span><span class="nm">Đức Minh &amp; Thu Hà</span><span class="dt">20 · 12 · 2026</span></span><span class="tpl tC"><span class="t1">WE ARE GETTING MARRIED</span><span class="circ"><img id="fanC" src="/demo/goiy-3.jpg" alt=""></span><span class="nm">Đức Minh &amp; Thu Hà</span><span class="dt">20 · 12 · 2026</span></span><span class="tpl tA mcard"><span class="w">WELCOME TO OUR WEDDING</span><span class="row"><span>CHÚ RỂ<br>ĐỨC MINH</span><b>囍</b><span>CÔ DÂU<br>THU HÀ</span></span><span class="arch"><img id="fanA" src="/demo/goiy-1.jpg" alt=""></span><span class="names">Đức Minh &amp; Thu Hà</span></span><span class="flash"></span><img class="fp fp0" id="fp0" src="/demo/goiy-2.jpg" alt=""><img class="fp fp1" id="fp1" src="/demo/goiy-3.jpg" alt=""><img class="fp fp2" id="fp2" src="/demo/goiy-1.jpg" alt=""><svg class="hand" viewBox="0 0 24 24" fill="currentColor"><path d="M9 3a1.5 1.5 0 0 1 3 0v7h.5V5.5a1.5 1.5 0 0 1 3 0V11h.5V7.5a1.5 1.5 0 0 1 3 0V15a7 7 0 0 1-7 7h-.6a6 6 0 0 1-4.6-2.2L3.4 15.6a1.6 1.6 0 0 1 2.4-2.1L8 15.5V3z" stroke="#333" stroke-width=".8"/></svg><span class="sp a">✦</span><span class="sp b">✦</span><span class="sp c">✦</span><span class="step s1"><i>1</i>Thả vài ảnh cưới</span><span class="step s2"><i>2</i>Ra ngay vài mẫu thiệp hợp ảnh</span></span>
+    <span class="vx fly" id="fly" aria-hidden="true"><span class="dash"></span><span class="mcard"><span class="w">WELCOME TO OUR WEDDING</span><span class="row"><span>CHÚ RỂ<br>ĐỨC MINH</span><b>囍</b><span>CÔ DÂU<br>THU HÀ</span></span><span class="arch"><img id="flyArch" src="/demo/goiy-1.jpg" alt=""></span><span class="slotTxt">ảnh của bạn vào đây</span><span class="names">Đức Minh &amp; Thu Hà</span></span><img class="ph0" id="flyPh0" src="/demo/goiy-1.jpg" alt=""><img class="ph" id="flyPh" src="/demo/goiy-1.jpg" alt=""><svg class="hand" viewBox="0 0 24 24" fill="currentColor"><path d="M9 3a1.5 1.5 0 0 1 3 0v7h.5V5.5a1.5 1.5 0 0 1 3 0V11h.5V7.5a1.5 1.5 0 0 1 3 0V15a7 7 0 0 1-7 7h-.6a6 6 0 0 1-4.6-2.2L3.4 15.6a1.6 1.6 0 0 1 2.4-2.1L8 15.5V3z" stroke="#333" stroke-width=".8"/></svg><span class="spark">✦</span><span class="spark b">✦</span><span class="step s1"><i>1</i>Thả ảnh cưới của bạn</span><span class="step s2"><i>2</i>Thiệp xong ngay</span></span>
+    <span class="vx mo m-flip" id="mflip"><span class="in"><span class="face front"><img class="raw" id="flipRaw" src="/demo/goiy-1.jpg" alt=""></span><span class="face back"><span class="mcard "><span class="w">WELCOME TO OUR WEDDING</span><span class="row"><span>CHÚ RỂ<br>ĐỨC MINH</span><b>囍</b><span>CÔ DÂU<br>THU HÀ</span></span><span class="arch"><img id="flipArch" src="/demo/goiy-1.jpg" alt=""></span><span class="names">Đức Minh &amp; Thu Hà</span></span></span></span><span class="sp a">✦</span><span class="sp b">✦</span><span class="sp c">✦</span><span class="cap2">Ảnh của bạn <b>→ lật thành thiệp</b></span></span>
+    <span class="vx mo m-wrap" id="mwrap"><span class="mcard "><span class="w">WELCOME TO OUR WEDDING</span><span class="row"><span>CHÚ RỂ<br>ĐỨC MINH</span><b>囍</b><span>CÔ DÂU<br>THU HÀ</span></span><span class="arch"><img id="wrapArch" src="/demo/goiy-1.jpg" alt=""></span><span class="names">Đức Minh &amp; Thu Hà</span></span><img class="ph" id="wrapPh" src="/demo/goiy-1.jpg" alt=""><span class="sp a">✦</span><span class="sp b">✦</span><span class="sp c">✦</span><span class="cap2">Ảnh của bạn <b>→ khung thiệp tự bao quanh</b></span></span>
+    <span class="vx mo m-sweep" id="msweep"><img class="raw" id="sweepRaw" src="/demo/goiy-1.jpg" alt=""><span class="mcard "><span class="w">WELCOME TO OUR WEDDING</span><span class="row"><span>CHÚ RỂ<br>ĐỨC MINH</span><b>囍</b><span>CÔ DÂU<br>THU HÀ</span></span><span class="arch"><img id="sweepArch" src="/demo/goiy-1.jpg" alt=""></span><span class="names">Đức Minh &amp; Thu Hà</span></span><span class="line"></span><span class="sp a">✦</span><span class="sp b">✦</span><span class="sp c">✦</span><span class="cap2">Ảnh của bạn <b>→ hiện dần thành thiệp</b></span></span>
+    <span class="vx ab" id="ab"><span class="mcard"><span class="w">WELCOME TO OUR WEDDING</span><span class="row"><span>CHÚ RỂ<br>ĐỨC MINH</span><b>囍</b><span>CÔ DÂU<br>THU HÀ</span></span><span class="arch"><img id="abArch" src="/demo/goiy-1.jpg" alt=""></span><span class="names">Đức Minh &amp; Thu Hà</span></span><span class="raw"><img id="abRaw" src="/demo/goiy-1.jpg" alt=""></span><span class="tag l">ẢNH CỦA BẠN</span><span class="tag r">THIỆP</span><span class="bar"></span><span class="knob">⇆</span><span class="ab-cap">Kéo để xem ảnh biến thành thiệp</span></span>
+    <span class="pile" id="pile"><img src="/demo/goiy-2.jpg" alt=""><img src="/demo/goiy-3.jpg" alt=""><img src="/demo/goiy-1.jpg" alt=""><span class="lbl" id="l1">Ảnh của bạn</span></span>
+    <span class="flow" aria-hidden="true">→<small>vài giây</small></span>
+    <span class="mcard"><span class="w">WELCOME TO OUR WEDDING</span>
+      <span class="row"><span>CHÚ RỂ<br>ĐỨC MINH</span><b>囍</b><span>CÔ DÂU<br>THU HÀ</span></span>
+      <span class="arch"><img id="archImg" src="/demo/goiy-1.jpg" alt=""></span>
+      <span class="names">Đức Minh &amp; Thu Hà</span>
+      <span class="shim">Đang dựng thiệp…</span>
+      <span class="lbl" id="l2" style="top:auto;bottom:-26px"></span>
+    </span>
+  </div>
+  <div class="hcta" id="cta">
+    <button class="go" id="go" type="button">📷 Chọn ảnh cưới</button>
+    <a class="hsub" id="sub" href="#mau">hoặc xem các mẫu →</a>
+    <p class="lock">🔒 Ảnh chỉ nằm trên máy bạn cho tới khi bạn chọn dùng một thiệp.</p>
+  </div>
+  <input type="file" id="file" accept="image/*" multiple hidden>
+</section>
+
+<!-- ba chức năng chính -->
+<section class="trio3"><div class="wrap">
+  <h2 class="t3h">Mọi thứ cho đám cưới, <em>gói trong ba món</em></h2>
+  <div class="t3">
+    <a class="t3c" href="/mau-thiep">
+      <div class="vis v-cards"><img src="/demo/cover-songhy-do.jpg" alt=""><img src="/demo/cover-dodam-do-ruou.jpg" alt=""><img src="/demo/cover-hanthu-nau-kem.jpg" alt=""></div>
+      <div class="body"><h3>💌 Thiệp cưới online</h3><p>Mỗi khách một đường link mang tên riêng — có nhạc, bản đồ, xác nhận tham dự, mừng cưới QR.</p><span class="go">Chọn trong <span data-tpl-count>49</span> mẫu thiệp →</span></div></a>
+    <a class="t3c" href="#video">
+      <div class="vis v-video" data-fit><span class="badge">Mới</span><iframe src="/video/demo?preview=1&amp;template=polaroid" loading="lazy" tabindex="-1" title="Video cưới mẫu"></iframe><span class="play">▶</span></div>
+      <div class="body"><h3>🎬 Video cưới</h3><p>Thả ảnh cưới vào là có video chuyển cảnh như CapCut — chiếu TV ngày cưới hoặc tải MP4.</p><span class="go">Xem <span data-video-count>16</span> mẫu video →</span></div></a>
+    <a class="t3c" href="/so-tay-cuoi">
+      <div class="vis v-plan"><ul><li class="d"><i>✓</i><span>Đặt cọc nhà hàng</span></li><li class="d"><i>✓</i><span>Chụp ảnh cưới</span></li><li><i></i><span>Chuẩn bị tráp ăn hỏi</span><em>21/10</em></li><li><i></i><span>Gửi thiệp cho khách</span><em>10/11</em></li></ul></div>
+      <div class="body"><h3>📒 Sổ tay cưới</h3><p>Việc cần làm theo phong tục, ngân sách, khách mời &amp; tiền mừng — cả nhà cùng đánh dấu.</p><span class="go">Miễn phí mãi mãi →</span></div></a>
+  </div>
+</div></section>
+
+<main class="rows" id="mau"></main>
+
+<!-- khu video cưới -->
+<section class="vshow" id="video"><div class="wrap">
+  <div class="vs-copy">
+    <span class="kick">🎬 VIDEO CƯỚI</span>
+    <h2>Thả ảnh cưới vào,<em>video tự dựng</em></h2>
+    <p class="lead">Chọn một mẫu, chèn ảnh và lời chào — chuyển cảnh, chữ bay, ngày âm lịch đều có sẵn. Chiếu trên TV ở sảnh tiệc, lễ dạm ngõ, ăn hỏi, hoặc tải MP4 Full HD gửi người thân.</p>
+    <ol class="vs-steps">
+      <li><b>1</b><span>Chọn mẫu<small><span data-video-count>16</span> phong cách: phim cũ, polaroid, báo cưới, trời sao…</small></span></li>
+      <li><b>2</b><span>Chèn ảnh &amp; chữ<small>Mỗi mẫu 6–12 ảnh, tên đôi lấy sẵn từ thiệp</small></span></li>
+      <li><b>3</b><span>Chiếu TV hoặc tải MP4<small>Mở link trên Smart TV, hoặc chép USB</small></span></li>
+    </ol>
+    <div class="vs-acts"><a class="btn btn-main" href="/video-cuoi">Làm video cưới</a><a class="btn btn-ghost" id="vsFull" href="/video/demo?template=polaroid">⛶ Xem toàn màn</a></div>
+  </div>
+  <div class="vs-tv">
+    <div class="vs-screen" id="vsScreen"><span class="vs-name" id="vsName">Polaroid</span><iframe id="vsFrame" src="/video/demo?preview=1&amp;template=polaroid" title="Video cưới mẫu" tabindex="-1"></iframe></div>
+    <div class="vs-stand"></div>
+    <div class="vs-picks" id="vsPicks"></div>
+  </div>
+</div></section>
+
+<section class="sec"><div class="wrap">
+  <div class="pain-head"><span>Đám cưới<br>mời hơn</span><span class="big">300+</span><span>khách<br>mời?</span></div>
+  <div class="pains">
+    <div class="pain"><div class="ic stamp">🛵</div><b>Đi phát thiệp cả tuần</b><span>Bạn bè ở xa, lịch kín, chạy mãi không hết danh sách</span></div>
+    <div class="pain"><div class="ic stamp">📷</div><b>Gửi ảnh chụp thiệp thì sợ thiếu trang trọng</b><span>Một tấm ảnh gửi cho trăm người, chẳng ai thấy được mời riêng</span></div>
+    <div class="pain"><div class="ic stamp">🤔</div><b>Không biết ai đến để đặt mâm</b><span>Gọi hỏi từng người, đếm tay, sát ngày vẫn chưa chốt được số</span></div>
+  </div>
+</div></section>
+
+<section class="sec soft"><div class="wrap">
+  <h2 class="title">Một đường link, <em>lo trọn lời mời</em></h2>
+  <p class="sub">Mọi thứ khách cần để đến dự đều nằm trong một tấm thiệp, còn bạn có sổ tay theo dõi ai đã xem, ai sẽ đến.</p>
+  <div class="feats">
+    <div class="feat"><h3>Tên riêng từng khách</h3><p>"Kính mời anh Hùng &amp; người thương" — mỗi người một link, biết ai đã mở thiệp.</p><span class="blob">💌</span></div>
+    <div class="feat"><h3>Khách xác nhận, bạn khỏi gọi</h3><p>Ai đến, đi mấy người, khách nhà trai hay nhà gái — tự về sổ tay, xuất Excel chốt mâm.</p><span class="blob">✅</span></div>
+    <div class="feat"><h3>Hộp mừng cưới bằng QR</h3><p>Khách ở xa quét VietQR, tiền mừng vào thẳng tài khoản cô dâu chú rể, không qua trung gian.</p><span class="blob">🎁</span></div>
+    <div class="feat"><h3>Bản đồ, lịch trình, ngày âm</h3><p>Từng địa điểm có chỉ đường và nút lưu lịch; album ảnh, đếm ngược, sổ lưu bút.</p><span class="blob">📍</span></div>
+  </div>
+  <div class="center"><a class="btn btn-main" href="/mau-thiep">Tạo thiệp miễn phí ✨</a></div>
+</div></section>
+
+<section class="sec"><div class="wrap">
+  <h2 class="title" style="text-transform:none">Xong thiệp trong <span class="script" style="font-size:1.3em">5 phút</span></h2>
+  <p class="sub">Không cần biết thiết kế. Điện thoại cũng làm được.</p>
+  <div class="steps">
+    <div>
+      <div class="step"><span class="n">✦</span><div><small>Bước 1</small><h3>Chọn mẫu &amp; điền thông tin</h3><p>Tên cô dâu chú rể, ngày giờ, địa điểm, ảnh cưới. Ngày âm lịch tự tính, xem trước ngay khi gõ.</p></div></div>
+      <div class="step"><span class="n">✎</span><div><small>Bước 2</small><h3>Thêm danh sách khách</h3><p>Dán cả danh sách một lần — mỗi người nhận một đường link mang tên mình.</p></div></div>
+      <div class="step"><span class="n">➤</span><div><small>Bước 3</small><h3>Gửi qua Zalo, Messenger</h3><p>Theo dõi ai đã mở, ai xác nhận đến, đọc lời chúc ngay trên điện thoại.</p></div></div>
+      <a class="btn btn-main steps-cta" href="/mau-thiep">Bắt đầu tạo thiệp</a>
+    </div>
+    <div class="steps-wrap"><div class="phone"><iframe src="/demo/dodam" title="Thiệp mẫu" loading="lazy"></iframe></div></div>
+  </div>
+</div></section>
+
+<section class="sec soft" id="so-tay"><div class="wrap plan">
+  <div class="plan-card">
+    <div class="top"><b>Đức Minh &amp; Thu Hà</b><small>20/12/2026 · nhằm ngày 12 tháng 11 năm Bính Ngọ</small><div class="bar"><i></i></div></div>
+    <ul>
+      <li class="d"><i>✓</i><span>Đặt cọc nhà hàng tiệc cưới</span></li>
+      <li class="d"><i>✓</i><span>Chụp ảnh cưới</span></li>
+      <li><i></i><span>Chuẩn bị tráp ăn hỏi (số lẻ)</span><em>21/10</em></li>
+      <li><i></i><span>Làm thiệp online &amp; gửi khách</span><em>10/11</em></li>
+      <li><i></i><span>Làm video cưới chiếu sảnh tiệc</span><em>10/12</em></li>
+    </ul>
+  </div>
+  <div>
+    <span class="tag-free">Miễn phí mãi mãi</span>
+    <h2>Sổ tay cưới <span class="script">cho cả nhà</span></h2>
+    <p>Checklist từ 12 tháng trước theo phong tục Bắc – Trung – Nam, ngân sách, khách mời &amp; tiền mừng, lịch âm. Gửi một link là người yêu, bố mẹ cùng đánh dấu.</p>
+    <div class="acts"><a class="btn btn-main" href="/so-tay">Mở sổ tay miễn phí</a><a class="btn btn-ghost" href="/so-tay-cuoi">Tìm hiểu thêm →</a></div>
+  </div>
+</div></section>
+
+<section class="sec" id="gia"><div class="wrap">
+  <div class="plans2">
+    <div class="pl">
+      <h3>Thiệp cưới online</h3>
+      <s class="pl-was" data-promo hidden data-list-price-k>179k</s>
+      <span class="pl-amt" data-price-k>129k</span>
+      <ul><li>Thiệp có tên riêng từng khách</li><li>Mời tới 3.000 khách</li><li>Xác nhận tham dự, sổ lưu bút</li><li>Tiền mừng QR 0% phí</li><li class="off">Màn hình LED tiệc cưới</li><li class="off">Video cưới / dạm ngõ MP4</li></ul>
+      <a class="btn btn-ghost" href="/mau-thiep">Tạo thiệp</a>
+    </div>
+    <div class="pl hot">
+      <span class="pl-tag">Đáng mua nhất</span>
+      <h3>Trọn bộ ngày cưới</h3>
+      <s class="pl-was" data-combo-promo hidden data-combo-list-k>299k</s>
+      <span class="pl-amt" data-combo-k>199k</span>
+      <span class="pl-save">Rẻ hơn mua lẻ <b data-combo-save>78k</b></span>
+      <ul><li>Mọi thứ của thiệp cưới online</li><li>Màn hình LED tiệc cưới <small>· chiếu TV sảnh tiệc</small></li><li>Video cưới / dạm ngõ <small>· tải MP4 Full HD</small></li><li>Cùng ảnh, cùng tên — làm một lần dùng cả ba</li></ul>
+      <a class="btn btn-main" href="/mau-thiep">Tạo trọn bộ</a>
+    </div>
+  </div>
+  <p class="pl-cd" data-promo hidden>⏳ Giá mở bán còn <b data-promo-cd></b> · từ <span data-promo-after></span>: thiệp <span data-list-price-k></span><span data-combo-promo hidden>, trọn bộ <span data-combo-list-k></span></span></p>
+  <p class="pl-retail">Dùng thử miễn phí <span data-trial-days>7</span> ngày, <span data-guest-limit>20</span> khách · Mua lẻ: màn LED <span data-led-price>49.000đ</span> · video <span data-video-price>99.000đ</span></p>
+</div></section>
+
+<section class="sec soft" id="hoi-dap"><div class="wrap">
+  <h2 class="title">Câu hỏi thường gặp</h2>
+  <p class="sub" data-contact hidden>Chưa thấy câu trả lời? Nhắn Zalo <b data-zalo></b>, tụi mình trả lời trong ngày.</p>
+  <div class="faq">
+    <details open><summary>Khách mời có cần cài ứng dụng không?</summary><p>Không. Khách chỉ cần bấm vào đường link trong Zalo, Messenger hay tin nhắn là thiệp mở ra ngay trên điện thoại.</p></details>
+    <details><summary>Gửi rồi có sửa được không?</summary><p>Được. Bạn sửa giờ, địa điểm, ảnh… bất cứ lúc nào, khách mở lại link sẽ thấy nội dung mới mà không cần gửi lại.</p></details>
+    <details><summary>Thanh toán bằng cách nào?</summary><p>Chuyển khoản qua mã QR ngân hàng. Tiền về là thiệp được kích hoạt.</p></details>
+    <details><summary>Tiền mừng cưới qua QR có đi qua hệ thống không?</summary><p>Không. Mã QR là tài khoản ngân hàng của chính cô dâu, chú rể — khách chuyển thẳng, chúng mình không giữ đồng nào.</p></details>
+    <details><summary>Hết thời gian dùng thử thì sao?</summary><p>Thiệp tạm khoá với khách mời nhưng mọi nội dung vẫn được giữ nguyên. Kích hoạt là mở lại ngay.</p></details>
+    <details><summary>Thông tin cá nhân có bị lộ lên Google không?</summary><p>Không. Trang thiệp được đánh dấu không cho công cụ tìm kiếm thu thập, chỉ người có đường link mới xem được.</p></details>
+  </div>
+</div></section>
+
+<section class="cta airmail"><h2>Sẵn sàng báo tin vui <span class="script">chưa nè?</span></h2><p>Miễn phí, không cần thẻ thanh toán. Gửi thử cho vài người bạn thân trước.</p><a class="btn" href="/mau-thiep">Tạo thiệp ngay →</a></section>
+
+<footer id="foot"></footer>
+<script src="/js/site.js"></script>
+<script>
+(function () {
+  const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  // ảnh bìa chụp sẵn của từng mẫu × bảng màu (public/demo/cover-<mẫu>-<màu>.jpg)
+  const cover = (id, pal) => `/demo/cover-${id}-${pal}.jpg`;
+
+  // thanh trên kiểu Netflix: logo chữ, 5 mục phẳng, nút sáng/tối, menu điện thoại, trạng thái đăng nhập
+  document.getElementById('themeSlot').outerHTML = themeBtn();
+  const hnav = document.getElementById('hnav'), burger = document.getElementById('burger');
+  const toggle = (el, btn, on) => { el.classList.toggle('open', on); if (btn) btn.setAttribute('aria-expanded', on); };
+  burger.addEventListener('click', () => { const on = !hnav.classList.contains('mopen'); hnav.classList.toggle('mopen', on); burger.setAttribute('aria-expanded', on); });
+  hnav.addEventListener('click', (e) => { if (e.target.closest('.mpanel a')) { hnav.classList.remove('mopen'); burger.setAttribute('aria-expanded', false); } });
+  document.addEventListener('click', (e) => {
+    const me = document.getElementById('me'); if (me && !e.target.closest('#me')) toggle(me, me.querySelector('.caret'), false);
+  });
+  document.addEventListener('keydown', (e) => { if (e.key === 'Escape') { const me = document.getElementById('me'); if (me) toggle(me, me.querySelector('.caret'), false); } });
+  fetch('/api/me').then((r) => r.json()).then(({ user }) => {
+    if (!user) return;
+    const name = user.name || user.email.split('@')[0];
+    document.getElementById('hacts').innerHTML = `<div class="me" id="me"><a class="mine-btn" href="/thiep-cua-toi">Thiệp của tôi</a><button class="caret" type="button" aria-label="Tài khoản" aria-expanded="false"></button>
+        <div class="mmenu"><div class="who"><b>${esc(name)}</b>${esc(user.email)}</div><a href="/thiep-cua-toi">Thiệp &amp; sản phẩm của tôi</a><a href="/so-tay">Sổ tay cưới của tôi</a><a href="#" id="logout">Đăng xuất</a></div></div>`;
+    const me = document.getElementById('me'), caret = me.querySelector('.caret');
+    caret.addEventListener('click', () => toggle(me, caret, !me.classList.contains('open')));
+    document.getElementById('logout').addEventListener('click', async (e) => { e.preventDefault(); await fetch('/api/auth/logout', { method: 'POST' }); location.reload(); });
+  }).catch(() => {});
+
+  // hiện dần từng khối khi cuộn tới, các thẻ cùng hàng lệch nhau một chút
+  const RV = '.pain,.feat,.step,.price-band,.faq details,.title,.pain-head,.phone,.plan-card,.plan>div:last-child';
+  const io = 'IntersectionObserver' in window ? new IntersectionObserver((es) => es.forEach((e) => {
+    if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); }
+  }), { threshold: 0.15 }) : null;
+  const watch = () => document.querySelectorAll(RV).forEach((el) => {
+    if (el.classList.contains('rv')) return;
+    el.style.setProperty('--d', Math.min([...el.parentElement.children].indexOf(el), 5) * 0.08 + 's');
+    el.classList.add('rv');
+    if (io) io.observe(el); else el.classList.add('in');
+  });
+  watch();
+
+  document.addEventListener('meta', (ev) => {
+    const { templates: T, templateGroups: G = [] } = ev.detail;
+    const K = (v) => Math.round(v / 1000) + 'k';
+
+    // tường thiệp trôi: mỗi cột 6 bìa liên tiếp, lệch điểm bắt đầu để các cột cạnh nhau không trùng.
+    // Ảnh nạp ngay (không lazy): cột đang trôi mà ảnh nửa sau mới nạp giữa chừng thì hiện bật ra + giải mã ảnh làm khựng chuyển động.
+    // Màn hẹp chỉ hiện 3 cột đầu (CSS ẩn 3 cột sau) → 3 cột sau để lazy cho khỏi tải thừa.
+    const all = T.flatMap((t) => t.palettes.map((p) => cover(t.id, p.id)));
+    const narrow = matchMedia('(max-width:700px)').matches;
+    document.getElementById('cols').innerHTML = [0, 1, 2, 3, 4, 5].map((c) => {
+      const list = Array.from({ length: 6 }, (_, j) => all[(c * 5 + j * 3) % all.length]);
+      const lazy = narrow && c >= 3 ? ' loading="lazy"' : '';
+      return `<div class="col">${[...list, ...list].map((u) => `<img src="${u}" alt="" decoding="async"${lazy}>`).join('')}</div>`;
+    }).join('');
+    // cuộn qua khỏi billboard thì dừng trôi (nhường GPU cho các hàng thẻ + khung video bên dưới)
+    const bb = document.querySelector('.bb');
+    if (bb && 'IntersectionObserver' in window) new IntersectionObserver((es) => es.forEach((e) => bb.classList.toggle('off', !e.isIntersecting))).observe(bb);
+
+    // các hàng mẫu cuộn ngang kiểu Netflix
+  // nhãn ruy băng tràn mép trái thẻ: Hot = ruy băng đỏ mũi cờ nhọn, Mới = ruy băng xanh đuôi én (CSS .tag)
+  const badge = (t) => t.badge ? `<span class="tag${t.badge === 'Hot' ? ' hot' : ''}"><svg viewBox="0 0 100 26" preserveAspectRatio="none" aria-hidden="true"><path d="${t.badge === 'Hot' ? 'M0 0h88l12 13-12 13H0z' : 'M0 0h100l-8 13 8 13H0z'}"/></svg>${t.badge === 'Hot' ? 'Hot!' : esc(t.badge)}</span>` : '';
+    const card = (t, extra = '') => `<div class="ncard" data-tpl="${t.id}" data-pal="${t.palettes[0].id}">${extra}${extra ? '' : badge(t)}<div class="pic"><a href="/demo/${t.id}" aria-label="Xem thử ${esc(t.name)}"><img src="${cover(t.id, t.palettes[0].id)}" alt="${esc(t.name)}" loading="lazy"></a>
+      <div class="info"><b>${esc(t.name)}</b><a class="use" href="/thiep-cua-toi?tao=${t.id}&mau=${t.palettes[0].id}">Dùng mẫu</a></div></div></div>`;
+    const row = (title, list, cls = '', more = '/mau-thiep', moreText = 'Xem tất cả') => list.length ? `<section class="nrow ${cls}"><h2>${title}<a href="${more}">${moreText} ›</a></h2>
+      <div class="track"><button class="arrow l" type="button" aria-label="Trước">‹</button><div class="slider">${list.join('')}</div><button class="arrow r" type="button" aria-label="Sau">›</button></div></section>` : '';
+    // khối "một lớn, bốn nhỏ" cho video và màn LED: mẫu đứng đầu chiếm ô lớn bên trái, bốn mẫu còn lại xếp lưới 2×2 (không cuộn ngang, không số thứ hạng — số 1–5 chỉ còn ở hàng thiệp)
+    const PILL = '<span class="tag hot"><svg viewBox="0 0 100 26" preserveAspectRatio="none" aria-hidden="true"><path d="M0 0h88l12 13-12 13H0z"/></svg>Nổi bật</span>'; // cùng ruy băng đỏ với nhãn Hot của thẻ thiệp
+    const block = (title, list, more, moreText = 'Xem tất cả') => list.length ? `<section class="nrow fblock"><h2>${title}<a href="${more}">${moreText} ›</a></h2><div class="fgrid wide">${list.join('')}</div></section>` : '';
+    // thẻ video 16:9: poster + tên + số ảnh, rê chuột phát thử video thật (xem bên dưới)
+    const V = (ev.detail.video && ev.detail.video.templates) || [];
+    const TOP_VIDEO = ['polaroid', 'saodem', 'phimcu', 'lichhen', 'songhy']; // 5 mẫu video nổi bật (chọn tay), cùng thứ tự với khu video bên dưới
+    const topVideo = [...TOP_VIDEO.map((id) => V.find((t) => t.id === id)).filter(Boolean), ...V.filter((t) => t.photos && !TOP_VIDEO.includes(t.id))].slice(0, 5);
+    const vcard = (t, i) => `<div class="ncard" data-video="${t.id}">${i ? '' : PILL}<div class="pic"><a href="/video/demo?template=${t.id}" aria-label="Xem thử video ${esc(t.name)}"><img src="/demo/vposter-${t.id}.jpg" alt="${esc(t.name)}" loading="lazy"></a><span class="lbl">${esc(t.name)}<small>${t.photos ? t.slots + ' ảnh' : 'Mẫu chữ'} · chiếu TV, tải MP4</small></span>
+      <div class="info"><b>${esc(t.name)}</b><a class="use" href="/tao-video?mau=${t.id}">Dùng mẫu</a></div></div></div>`;
+    // thẻ màn LED 16:9: mỗi "mẫu" là một cặp bảng màu + hiệu ứng nền; poster chụp sẵn (npm run previews -- <địa chỉ> led), rê chuột chạy màn thật
+    const L = ev.detail.led || { palettes: [], effects: [] };
+    const TOP_LED = [['do', 'sao'], ['den', 'remphale'], ['dem', 'phaohoa'], ['tim', 'hoadang'], ['hong', 'tim']]; // cùng danh sách với tools/previews.js
+    const topLed = TOP_LED.map(([p, e]) => ({ p: L.palettes.find((x) => x.id === p), e: L.effects.find((x) => x.id === e) })).filter((x) => x.p && x.e);
+    const lcard = ({ p, e }, i) => { const q = `palette=${p.id}&effect=${e.id}`; return `<div class="ncard" data-led="${q}">${i ? '' : PILL}<div class="pic"><a href="/led/demo?${q}" aria-label="Xem thử màn LED ${esc(p.name)}"><img src="/demo/lposter-${p.id}-${e.id}.jpg" alt="Màn hình LED ${esc(p.name)}" loading="lazy"></a><span class="lbl one">${esc(p.name)}<small>${esc(e.name)}</small></span>
+      <div class="info"><b>${esc(p.name)}</b><a class="use" href="/tao-led?${q}">Dùng mẫu</a></div></div></div>`; };
+    const hot = T.filter((t) => t.badge === 'Hot');
+    const top = [...hot, ...T.filter((t) => !hot.includes(t))].slice(0, 5); // nổi bật: mẫu Hot trước, thiếu thì lấy thêm mẫu kế tiếp
+    const used = G.filter((g) => T.some((t) => t.group === g.id));
+    const rows = document.getElementById('mau');
+    rows.innerHTML =
+      row('Mẫu thiệp nổi bật', top.map((t, i) => card(t, `<span class="num">${i + 1}</span>`)), 'top')
+      + block('Video cưới chiếu TV', topVideo.map(vcard), '/video-cuoi')
+      + block('Màn hình LED tiệc cưới', topLed.map(lcard), '/tao-led', 'Tạo màn LED')
+      + row('Mới ra mắt', T.filter((t) => t.badge === 'Mới').map((t) => card(t)))
+
+      + used.map((g) => row(esc(g.name), T.filter((t) => t.group === g.id).map((t) => card(t)), '', `/mau-thiep?phong-cach=${g.id}`)).join('')
+      + row('Tất cả mẫu thiệp', T.map((t) => card(t)));
+
+    // khung LED / video 1280×720 thu nhỏ vừa thẻ 16:9
+    const fit = () => rows.querySelectorAll('.wide .pic').forEach((p) => { const f = p.querySelector('iframe'); if (f) f.style.transform = `scale(${Math.max(p.clientWidth / 1280, p.clientHeight / 720)})`; });
+    fit(); addEventListener('resize', fit);
+    rows.addEventListener('click', (e) => {
+      const a = e.target.closest('.arrow'); if (!a) return;
+      const s = a.parentNode.querySelector('.slider'); s.scrollBy({ left: (a.classList.contains('l') ? -1 : 1) * s.clientWidth * 0.8 });
+    });
+
+    // rê chuột vào thẻ: chuột dừng yên 0,5 giây trên thẻ thì nạp trang thiệp thật vào thẻ, hiện dần rồi tự trượt chậm xuống.
+    // Trang thiệp nạp cùng luồng với trang chủ nên khá nặng (~1 giây): chỉ nạp khi con trỏ thật sự di chuyển tới rồi dừng,
+    // không nạp khi thẻ trượt qua dưới con trỏ đứng yên lúc cuộn ngang (trình duyệt vẫn bắn mouseover lúc đó), và huỷ ngay khi hàng cuộn.
+    if (matchMedia('(hover:hover)').matches && !matchMedia('(prefers-reduced-motion:reduce)').matches) {
+      let cur = null, lastX = NaN, lastY = NaN;
+      const stop = () => { if (!cur) return; clearTimeout(cur.t); cancelAnimationFrame(cur.raf); if (cur.f) cur.f.remove(); cur = null; };
+      rows.addEventListener('scroll', stop, { capture: true, passive: true }); // scroll không nổi bọt: bắt ở pha capture
+      rows.addEventListener('pointermove', (e) => {
+        if (e.pointerType && e.pointerType !== 'mouse') return;
+        const moved = e.screenX !== lastX || e.screenY !== lastY; // mousemove giả sau khi cuộn có toạ độ y hệt lần trước
+        lastX = e.screenX; lastY = e.screenY;
+        if (!moved) return;
+        const c = e.target.closest('.ncard[data-tpl],.ncard[data-video],.ncard[data-led]');
+        if (!c) return;
+        if (cur && cur.c !== c) stop();
+        if (cur && cur.f) return; // đã nạp xong trên thẻ này
+        const st = cur = cur || { c };
+        clearTimeout(st.t);
+        st.t = setTimeout(() => {
+          const pic = c.querySelector('.pic'), video = !!(c.dataset.video || c.dataset.led);
+          if (!video) return scrollImage(st, c, pic);
+          const base = 1280, s = Math.max(pic.clientWidth / base, pic.clientHeight / 720); // phủ kín ô: ô lớn của khối cao hơn 16:9 vài px
+          const f = document.createElement('iframe');
+          f.className = 'live'; f.tabIndex = -1; f.title = 'Xem trước';
+          f.style.width = base + 'px'; f.style.height = '720px'; f.style.transform = `scale(${s})`;
+          f.src = c.dataset.led ? `/led/demo?preview=1&${c.dataset.led}` : `/video/demo?preview=1&template=${c.dataset.video}`;
+          pic.querySelector('a').after(f); st.f = f;
+          f.onload = () => { if (cur === st) setTimeout(() => f.classList.add('on'), 150); };
+        }, video(c) ? 500 : 80);
+      });
+      const video = (c) => !!(c.dataset.video || c.dataset.led);
+      // thiệp: ảnh dài chụp sẵn của cả trang (tools/previews.js → /demo/scroll-<mẫu>.jpg) trượt bằng CSS transition —
+      // hiện ngay khi rê chuột, trượt bằng GPU nên mượt; thiếu ảnh (mẫu mới chưa chụp) thì rơi về nạp trang thật vào iframe
+      const scrollImage = (st, c, pic) => {
+        const im = new Image();
+        im.className = 'scrollimg'; im.alt = ''; im.draggable = false;
+        im.src = `/demo/scroll-${c.dataset.tpl}.jpg`;
+        st.f = im;
+        im.onload = () => {
+          if (cur !== st) return;
+          pic.querySelector('a').after(im);
+          const speed = 90 * pic.clientWidth / 390; // px/giây trên màn hình, bằng tốc độ cuộn cũ của trang 390px
+          const run = () => {
+            if (cur !== st) return;
+            const d = im.offsetHeight - pic.clientHeight; if (d <= 0) return;
+            im.style.transition = 'none'; im.style.transform = 'translateY(0)'; void im.offsetHeight;
+            im.style.transition = `transform ${(d / speed).toFixed(2)}s linear`; im.style.transform = `translateY(${-d}px)`;
+          };
+          im.addEventListener('transitionend', () => { if (cur === st) st.t = setTimeout(run, 700); }); // hết trang: nghỉ chút rồi quay lại đầu
+          run();
+        };
+        im.onerror = () => { if (cur === st) liveFrame(st, c, pic); };
+      };
+      const liveFrame = (st, c, pic) => {
+          const base = 390, s = pic.clientWidth / base;
+          const f = document.createElement('iframe');
+          f.className = 'live'; f.tabIndex = -1; f.title = 'Xem trước';
+          f.style.width = base + 'px'; f.style.height = pic.clientHeight / s + 'px'; f.style.transform = `scale(${s})`;
+          f.src = `/demo/${c.dataset.tpl}?palette=${c.dataset.pal}&preview=1&lite=1`;
+          pic.querySelector('a').after(f); st.f = f;
+          f.onload = () => {
+            if (cur !== st) return;
+            setTimeout(() => f.classList.add('on'), 150);
+            let y = 0, last = 0, t0 = 0;
+            const w = f.contentWindow;
+            try { w.document.documentElement.style.scrollbarWidth = 'none'; } catch (err) { /* khác nguồn thì bỏ qua */ }
+            const step = (now) => {
+              if (cur !== st) return;
+              // trang thiệp đặt cuộn mượt: phải cuộn tức thời từng bước
+              if (last && now - last < 100) { y += (now - last) * 0.09 * Math.min(1, (now - (t0 || (t0 = now))) / 700); w.scrollTo({ top: y, behavior: 'instant' }); }
+              last = now;
+              if (y > w.document.documentElement.scrollHeight - w.innerHeight) y = 0; // hết trang thì quay lại đầu
+              st.raf = requestAnimationFrame(step);
+            };
+            setTimeout(() => { if (cur === st) st.raf = requestAnimationFrame(step); }, 350);
+          };
+      };
+      rows.addEventListener('mouseout', (e) => { if (cur && !cur.c.contains(e.relatedTarget)) stop(); });
+      // rê chuột vào một hàng: nạp trước ảnh trượt của các thẻ đang thấy để lúc rê tới thẻ là hiện ngay
+      rows.addEventListener('pointerover', (e) => {
+        const r = e.target.closest('.nrow'); if (!r || r.dataset.pf) return; r.dataset.pf = '1';
+        r.querySelectorAll('.ncard[data-tpl]').forEach((c) => { const b = c.getBoundingClientRect(); if (b.right > 0 && b.left < innerWidth) new Image().src = `/demo/scroll-${c.dataset.tpl}.jpg`; });
+      });
+    }
+
+    // mở thẳng /#mau: cuộn lại sau khi các hàng đã dựng xong
+    if (location.hash === '#mau') requestAnimationFrame(() => rows.scrollIntoView({ behavior: 'instant' }));
+  });
+})();
+</script>
+
+<script>
+// khu video — đổi mẫu khi bấm, tự chuyển mẫu sau mỗi 14 giây cho tới khi người xem bấm chọn
+(function () {
+  var L = [['polaroid','Polaroid','8 ảnh'],['phimcu','Phim cũ','10 ảnh'],['dienanh','Điện ảnh','8 ảnh'],['songhy','Song Hỷ đỏ','10 ảnh'],['traitim','Trái tim','6 ảnh'],['saodem','Trời sao','10 ảnh'],['lichhen','Lịch hẹn','8 ảnh'],['baocuoi','Báo cưới','10 ảnh'],['album','Album kỷ niệm','12 ảnh'],['tapchi','Tạp chí','10 ảnh'],['hoadao','Vòm hoa đào','8 ảnh'],['laxanh','Lá xanh','9 ảnh'],['toigian','Tối giản','12 ảnh']];
+  var box = document.getElementById('vsPicks'), fr = document.getElementById('vsFrame'), nm = document.getElementById('vsName'), full = document.getElementById('vsFull'), scr = document.getElementById('vsScreen');
+  box.innerHTML = L.map(function (t, i) { return '<button type="button" data-id="' + t[0] + '"' + (i ? '' : ' class="on"') + '><img src="/demo/vposter-' + t[0] + '.jpg" alt=""><span>' + t[1] + '</span><small>' + t[2] + '</small></button>'; }).join('');
+  var cur = 0, auto = true;
+  function pick(i) {
+    cur = i; var t = L[i];
+    fr.src = '/video/demo?preview=1&template=' + t[0]; nm.textContent = t[1]; full.href = '/video/demo?template=' + t[0];
+    box.querySelectorAll('button').forEach(function (b, k) { b.classList.toggle('on', k === i); });
+  }
+  box.addEventListener('click', function (e) { var b = e.target.closest('button'); if (!b) return; auto = false; pick([].indexOf.call(box.children, b)); });
+  setInterval(function () { if (auto && document.visibilityState === 'visible') pick((cur + 1) % L.length); }, 14000);
+  function fit() {
+    fr.style.transform = 'scale(' + scr.clientWidth / 1280 + ')';
+    document.querySelectorAll('.v-video').forEach(function (v) { var f = v.querySelector('iframe'); if (f) f.style.transform = 'scale(' + v.clientWidth / 1280 + ')'; });
+  }
+  fit(); addEventListener('resize', fit);
+})();
+</script>
+<div class="vsw" id="vsw"><button data-v="fan" class="on">Bay vào + tung thiệp</button><button data-v="fly">Bay vào</button><button data-v="flip">Lật thẻ</button><button data-v="wrap">Khung bao lại</button><button data-v="sweep">Quét hiện</button><button data-v="ab">Kéo trước/sau</button><button data-v="old">Bản trước</button></div>
+<div class="wsw" id="wsw"><button data-w="mo" class="on">Slide mờ</button><button data-w="ro">Slide rõ</button><button data-w="tron">Nền trơn</button></div>
+<script>
+(function () {
+  var hb = document.getElementById('hb'), w = document.getElementById('wsw');
+  w.onclick = function (e) { var b = e.target.closest('button'); if (!b) return; ['mo', 'ro', 'tron'].forEach(function (k) { hb.classList.toggle('w-' + k, k === b.dataset.w); }); w.querySelectorAll('button').forEach(function (x) { x.classList.toggle('on', x === b); }); };
+})();
+</script>
+<script>
+// chuyển kiểu minh hoạ + thanh kéo trước/sau (tự đưa qua lại cho tới khi khách chạm vào)
+(function () {
+  var st = document.getElementById('stage'), vsw = document.getElementById('vsw');
+  vsw.onclick = function (e) { var b = e.target.closest('button'); if (!b) return; ['fan', 'fly', 'flip', 'wrap', 'sweep', 'ab', 'old'].forEach(function (k) { st.classList.toggle('v-' + k, k === b.dataset.v); }); vsw.querySelectorAll('button').forEach(function (x) { x.classList.toggle('on', x === b); }); document.querySelectorAll('#fan,#fly,.mo').forEach(function (m) { m.classList.add('static'); void m.offsetWidth; m.classList.remove('static'); }); };
+  var ab = document.getElementById('ab'), touched = false, t0 = performance.now();
+  function setX(v) { ab.style.setProperty('--x', Math.max(0, Math.min(100, v)) + '%'); }
+  (function auto(now) { if (!touched) { setX(50 + 38 * Math.sin((now - t0) / 900)); requestAnimationFrame(auto); } })(t0);
+  function at(e) { var r = ab.getBoundingClientRect(); setX(((e.clientX - r.left) / r.width) * 100); }
+  ab.addEventListener('pointerdown', function (e) { e.stopPropagation(); touched = true; ab.setPointerCapture(e.pointerId); at(e); });
+  ab.addEventListener('pointermove', function (e) { if (ab.hasPointerCapture && ab.hasPointerCapture(e.pointerId)) at(e); });
+  ab.addEventListener('click', function (e) { e.stopPropagation(); }); // kéo thanh không mở hộp chọn ảnh
+})();
+</script>
+<script>
+// MOCK: ảnh của khách hiện ngay vào chồng ảnh + khung vòm của thiệp; bản thật sẽ cất ảnh rồi chuyển sang /goi-y để hiện 3 mẫu hợp ảnh
+(function () {
+  var hb = document.getElementById('hb'), file = document.getElementById('file'), go = document.getElementById('go'), sub = document.getElementById('sub');
+  var pile = document.getElementById('pile'), arch = document.getElementById('archImg'), l1 = document.getElementById('l1');
+  var urls = [];
+  function pick() { file.click(); }
+  document.getElementById('stage').onclick = pick;
+  document.getElementById('stage').onkeydown = function (e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); pick(); } };
+  go.onclick = function () { if (hb.classList.contains('done')) location.href = '/goi-y'; else pick(); };
+  file.onchange = function () { take(file.files); file.value = ''; };
+  function take(list) {
+    list = Array.prototype.filter.call(list || [], function (f) { return /^image\//.test(f.type); });
+    if (!list.length) return;
+    urls.forEach(URL.revokeObjectURL); urls = list.slice(0, 12).map(function (f) { return URL.createObjectURL(f); });
+    var imgs = pile.querySelectorAll('img');
+    for (var i = 0; i < 3; i++) imgs[i].src = urls[(urls.length - 1 - i + urls.length * 3) % urls.length];
+    hb.classList.add('busy');
+    l1.textContent = list.length + ' ảnh của bạn';
+    setTimeout(function () {
+      arch.src = urls[0];
+      ['fp0', 'fp1', 'fp2'].forEach(function (id, i) { document.getElementById(id).src = urls[(i + 1) % urls.length]; });
+      document.getElementById('fanA').src = urls[0]; document.getElementById('fanB').src = urls[1 % urls.length]; document.getElementById('fanC').src = urls[2 % urls.length];
+      ['flyArch', 'flyPh', 'flyPh0', 'abArch', 'abRaw', 'flipRaw', 'flipArch', 'wrapArch', 'wrapPh', 'sweepRaw', 'sweepArch'].forEach(function (id) { document.getElementById(id).src = urls[0]; });
+      document.querySelectorAll('#fan,#fly,.mo').forEach(function (f) { f.classList.add('static'); void f.offsetWidth; f.classList.remove('static'); });
+      hb.classList.remove('busy'); hb.classList.add('done');
+      l1.classList.add('ok');
+      go.textContent = 'Xem 3 mẫu hợp ảnh của bạn →';
+      sub.textContent = 'Chọn ảnh khác'; sub.href = '#'; sub.onclick = function (e) { e.preventDefault(); pick(); };
+    }, 1300);
+  }
+  var depth = 0;
+  document.addEventListener('dragenter', function (e) { if (e.dataTransfer && [].indexOf.call(e.dataTransfer.types || [], 'Files') >= 0) { depth++; document.body.classList.add('drag'); } });
+  document.addEventListener('dragleave', function () { if (--depth <= 0) { depth = 0; document.body.classList.remove('drag'); } });
+  document.addEventListener('dragover', function (e) { e.preventDefault(); });
+  document.addEventListener('drop', function (e) { e.preventDefault(); depth = 0; document.body.classList.remove('drag'); if (e.dataTransfer) take(e.dataTransfer.files); });
+})();
+</script>
+</body>
+</html>

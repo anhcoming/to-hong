@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="vi"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Mock: thanh trên trang sau đăng nhập</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&amp;family=Dancing+Script:wght@600;700&amp;display=swap">
+<link rel="stylesheet" href="/css/app.css">
+<style>
+body{padding:24px;background:var(--bg)}
+h1{margin:0;font-size:22px}
+h2{margin:30px 0 4px;font-size:18px}h2 small{font-weight:500;color:var(--muted);font-size:13px}
+.row{display:flex;gap:24px;align-items:flex-start;flex-wrap:wrap;margin-top:10px}
+.desk{flex:1 1 760px;min-width:0;padding:14px;border-radius:18px;background:#fbf3f3}
+.phone{flex:none;width:375px;padding:12px;border-radius:28px;background:#fbf3f3}
+.lbl{font-size:11px;font-weight:700;letter-spacing:.06em;color:var(--muted);text-transform:uppercase;margin:0 0 8px}
+.bar{display:flex;align-items:center;gap:10px;height:58px;padding:0 10px 0 22px;border-radius:999px;background:#fff;box-shadow:0 0 0 1px var(--line),0 10px 30px rgba(120,40,50,.08)}
+.lg{display:flex;align-items:center;text-decoration:none}.lg .lw{font:700 28px/1 var(--script);background:linear-gradient(135deg,#d6455d,#ef7d8d);-webkit-background-clip:text;background-clip:text;color:transparent}
+svg.h{width:24px;height:22px;fill:#ef7d8d;flex:none}
+.tabs{display:flex;gap:4px;margin-left:14px}
+.tabs a{padding:8px 14px;border-radius:999px;font-size:14px;font-weight:600;color:var(--muted);text-decoration:none;white-space:nowrap}
+.tabs a.on{background:var(--primary-soft);color:var(--primary)}
+.sp{flex:1}
+.link{font-size:14px;color:var(--muted);text-decoration:none;white-space:nowrap}
+.btnp{display:inline-flex;align-items:center;gap:6px;height:38px;padding:0 16px;border-radius:999px;background:var(--grad);color:#fff;font-size:14px;font-weight:600;text-decoration:none;box-shadow:0 8px 20px rgba(214,69,93,.28);white-space:nowrap}
+.av{width:38px;height:38px;border-radius:50%;background:linear-gradient(135deg,#f6d7dc,#e9b7c0);display:grid;place-items:center;font-weight:700;color:#8b1a24;flex:none}
+.ic{width:38px;height:38px;border-radius:50%;border:1px solid var(--line);display:grid;place-items:center;flex:none;color:var(--ink)}
+.menu5{display:flex;gap:18px;margin-left:12px;font-size:14px;color:var(--muted)}.menu5 b{color:var(--ink)}
+/* thanh tab dưới cùng điện thoại */
+.scr{position:relative;height:300px;border-radius:20px;background:#fff;box-shadow:0 0 0 1px var(--line);overflow:hidden;margin-top:10px}
+.scr .ct{padding:14px 16px}.scr .ct b{font-size:20px}.scr .ct p{margin:6px 0 0;color:var(--muted);font-size:13px}
+.btab{position:absolute;left:0;right:0;bottom:0;display:flex;border-top:1px solid var(--line);background:#fff;padding:6px 6px 8px}
+.btab a{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;font-size:11px;font-weight:600;color:var(--muted);text-decoration:none}
+.btab a i{width:44px;height:28px;border-radius:999px;display:grid;place-items:center;font-style:normal;font-size:16px}
+.btab a.on{color:var(--primary)}.btab a.on i{background:var(--primary-soft)}
+.btab .plus i{background:var(--grad);color:#fff;border-radius:50%;width:40px;height:40px;margin-top:-16px;box-shadow:0 8px 18px rgba(214,69,93,.35);font-size:20px}
+.pick{margin-top:30px;padding:14px 16px;border-radius:14px;background:var(--primary-soft);font-size:14px}
+</style></head><body>
+<h1>Thanh trên các trang sau đăng nhập — chọn 1 kiểu</h1>
+<p class="muted" style="margin:4px 0 0">Trang: Thiệp của tôi · Video của tôi · Sổ tay. Trang chủ / trang giới thiệu giữ menu như bây giờ.</p>
+
+<h2>A · Giống hệt trang chủ <small>— 5 mục sản phẩm + nút "Của tôi" (bản vừa làm, nhiều chữ)</small></h2>
+<div class="row">
+  <div class="desk"><p class="lbl">Máy tính</p><div class="bar"><a class="lg"><span class="lw">Cưới Nha</span></a><span class="menu5"><b>Thiệp cưới</b><span>Slide cưới</span><span>Màn hình LED</span><span>Video dạm ngõ</span><span>Sổ tay cưới</span></span><span class="sp"></span><a class="btnp">Của tôi ▾</a></div></div>
+  <div class="phone"><p class="lbl">Điện thoại</p><div class="bar" style="padding-left:16px"><svg class="lg h" viewBox="0 0 32 30"><path d="M16 28C6.5 21 3 16 3 11.5 3 7.9 5.8 5 9.4 5c2.6 0 4.6 1.4 6.6 3.9C18 6.4 20 5 22.6 5 26.2 5 29 7.9 29 11.5 29 16 25.5 21 16 28z"/></svg><span class="sp"></span><a class="btnp">Của tôi ▾</a><span class="ic">☰</span></div></div>
+</div>
+
+<h2>B · Tập trung "đồ của tôi" <small>— 3 tab Thiệp · Video · Sổ tay, nút "＋ Tạo mới", ảnh đại diện mở menu (đề xuất)</small></h2>
+<div class="row">
+  <div class="desk"><p class="lbl">Máy tính</p><div class="bar"><a class="lg"><span class="lw">Cưới Nha</span></a><span class="tabs"><a class="on">Thiệp</a><a>Video</a><a>Sổ tay</a></span><span class="sp"></span><a class="link">Xem mẫu</a><a class="btnp">＋ Tạo mới</a><span class="av">ĐA</span></div></div>
+  <div class="phone"><p class="lbl">Điện thoại</p><div class="bar" style="padding-left:16px"><a class="lg"><span class="lw" style="font-size:24px">Cưới Nha</span></a><span class="sp"></span><span class="av">ĐA</span></div>
+    <div class="scr"><div class="ct"><b>Thiệp của tôi</b><p>Nội dung trang…</p></div>
+      <nav class="btab"><a class="on"><i>✉</i>Thiệp</a><a><i>▶</i>Video</a><a class="plus"><i>＋</i>Tạo mới</a><a><i>✎</i>Sổ tay</a><a><i>☺</i>Tôi</a></nav></div></div>
+</div>
+
+<h2>C · Tối giản <small>— chỉ logo + ô chọn "Thiệp của tôi ▾" (đổi sang Video / Sổ tay) + ảnh đại diện</small></h2>
+<div class="row">
+  <div class="desk"><p class="lbl">Máy tính</p><div class="bar"><a class="lg"><span class="lw">Cưới Nha</span></a><span style="margin-left:14px;padding:8px 14px;border-radius:999px;background:var(--primary-soft);color:var(--primary);font-weight:700;font-size:14px">Thiệp của tôi ▾</span><span class="sp"></span><a class="btnp">＋ Tạo thiệp</a><span class="av">ĐA</span></div></div>
+  <div class="phone"><p class="lbl">Điện thoại</p><div class="bar" style="padding-left:16px"><svg class="lg h" viewBox="0 0 32 30"><path d="M16 28C6.5 21 3 16 3 11.5 3 7.9 5.8 5 9.4 5c2.6 0 4.6 1.4 6.6 3.9C18 6.4 20 5 22.6 5 26.2 5 29 7.9 29 11.5 29 16 25.5 21 16 28z"/></svg><span style="padding:7px 12px;border-radius:999px;background:var(--primary-soft);color:var(--primary);font-weight:700;font-size:13px;white-space:nowrap">Thiệp của tôi ▾</span><span class="sp"></span><span class="av">ĐA</span></div></div>
+</div>
+
+<p class="pick">Mỗi kiểu: bấm ảnh đại diện mở menu Tài khoản (tên, email, Trang chủ, Sáng / tối, Đăng xuất).</p>
+</body></html>

@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="vi"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Mock hiệu ứng nút Thử ngay</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@600;700&display=swap">
+<style>
+body{margin:0;padding:30px;background:#fdf5f6;font-family:'Be Vietnam Pro',sans-serif}
+.g{display:grid;grid-template-columns:repeat(2,360px);gap:44px 50px;justify-content:center}
+.it{text-align:center}.it h3{margin:0 0 4px;font-size:14px;color:#2b2224}.it p{margin:0 0 18px;font-size:12px;color:#8a7d80;min-height:32px}
+.go{position:relative;display:inline-flex;align-items:center;gap:10px;padding:14px 40px;border:0;border-radius:999px;font:700 16px 'Be Vietnam Pro';color:#fff;background:linear-gradient(135deg,#d6455d,#ef7d8d);box-shadow:0 14px 34px rgba(214,69,93,.35);overflow:hidden;cursor:pointer}
+.go svg{width:20px;height:20px;fill:none;stroke:#fff;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;flex:none}
+/* A ánh sáng lướt */
+.a::after{content:"";position:absolute;top:0;bottom:0;left:-60%;width:40%;background:linear-gradient(100deg,transparent,rgba(255,255,255,.55),transparent);transform:skewX(-20deg);animation:shine 2.8s ease-in-out infinite}
+@keyframes shine{0%,55%{left:-60%}85%,100%{left:130%}}
+/* B nhịp thở + quầng sáng */
+.b{overflow:visible;animation:breathe 2.2s ease-in-out infinite}
+@keyframes breathe{0%,100%{transform:scale(1);box-shadow:0 14px 34px rgba(214,69,93,.35),0 0 0 0 rgba(214,69,93,.35)}50%{transform:scale(1.04);box-shadow:0 16px 38px rgba(214,69,93,.42),0 0 0 10px rgba(214,69,93,0)}}
+/* C icon lấp lánh + nảy nhẹ */
+.c svg{animation:tw 1.6s ease-in-out infinite}
+@keyframes tw{0%,100%{transform:scale(1) rotate(0)}30%{transform:scale(1.3) rotate(18deg)}60%{transform:scale(.9) rotate(-6deg)}}
+.c{animation:nudge 3.2s ease-in-out infinite}
+@keyframes nudge{0%,80%,100%{transform:translateY(0)}86%{transform:translateY(-5px)}92%{transform:translateY(0)}96%{transform:translateY(-2px)}}
+/* D vòng sóng lan ra */
+.dw{position:relative;display:inline-block}
+.dw::before,.dw::after{content:"";position:absolute;inset:0;border-radius:999px;border:2px solid #ef7d8d;opacity:0;animation:ring 2.4s ease-out infinite}
+.dw::after{animation-delay:1.2s}
+@keyframes ring{0%{transform:scale(1);opacity:.7}100%{transform:scale(1.25,1.6);opacity:0}}
+/* E kết hợp A + C */
+.e::after{content:"";position:absolute;top:0;bottom:0;left:-60%;width:40%;background:linear-gradient(100deg,transparent,rgba(255,255,255,.55),transparent);transform:skewX(-20deg);animation:shine 2.8s ease-in-out infinite}
+.e svg{animation:tw 1.6s ease-in-out infinite}
+</style></head><body>
+<div class="g">
+<div class="it"><h3>A · Ánh sáng lướt qua</h3><p>Một vệt sáng chạy ngang nút mỗi ~3 giây — sang, kéo mắt mà không rối.</p><button class="go a"><svg viewBox="0 0 24 24"><path d="M12 3l1.8 4.7L18.5 9.5l-4.7 1.8L12 16l-1.8-4.7L5.5 9.5l4.7-1.8z"/><path d="M19 15l.8 2 2 .8-2 .8-.8 2-.8-2-2-.8 2-.8z"/></svg>Thử ngay trong 5s</button></div>
+<div class="it"><h3>B · Nhịp thở</h3><p>Nút phồng nhẹ lên xuống như đang thở, quầng hồng toả ra.</p><button class="go b"><svg viewBox="0 0 24 24"><path d="M12 3l1.8 4.7L18.5 9.5l-4.7 1.8L12 16l-1.8-4.7L5.5 9.5l4.7-1.8z"/><path d="M19 15l.8 2 2 .8-2 .8-.8 2-.8-2-2-.8 2-.8z"/></svg>Thử ngay trong 5s</button></div>
+<div class="it"><h3>C · Sao lấp lánh + nảy nhẹ</h3><p>Ngôi sao trong nút xoay lấp lánh, thỉnh thoảng nút nảy lên một cái.</p><button class="go c"><svg viewBox="0 0 24 24"><path d="M12 3l1.8 4.7L18.5 9.5l-4.7 1.8L12 16l-1.8-4.7L5.5 9.5l4.7-1.8z"/><path d="M19 15l.8 2 2 .8-2 .8-.8 2-.8-2-2-.8 2-.8z"/></svg>Thử ngay trong 5s</button></div>
+<div class="it"><h3>D · Sóng lan quanh nút</h3><p>Viền hồng lan ra từ nút như sóng — rất "bấm vào đây".</p><span class="dw"><button class="go"><svg viewBox="0 0 24 24"><path d="M12 3l1.8 4.7L18.5 9.5l-4.7 1.8L12 16l-1.8-4.7L5.5 9.5l4.7-1.8z"/><path d="M19 15l.8 2 2 .8-2 .8-.8 2-.8-2-2-.8 2-.8z"/></svg>Thử ngay trong 5s</button></span></div>
+<div class="it" style="grid-column:1/-1"><h3>E · A + C (sáng lướt + sao lấp lánh)</h3><p>Kết hợp hai hiệu ứng nhẹ nhất.</p><button class="go e"><svg viewBox="0 0 24 24"><path d="M12 3l1.8 4.7L18.5 9.5l-4.7 1.8L12 16l-1.8-4.7L5.5 9.5l4.7-1.8z"/><path d="M19 15l.8 2 2 .8-2 .8-.8 2-.8-2-2-.8 2-.8z"/></svg>Thử ngay trong 5s</button></div>
+</div>
+</body></html>

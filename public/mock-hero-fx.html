@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="vi"><head><meta charset="utf-8"><title>Mock hiệu ứng rơi</title>
+<style>
+body{margin:0;background:#e9e6e7;font-family:system-ui,sans-serif;padding:16px}
+.it{margin:0 auto 22px;width:1280px}.it h3{margin:0 0 6px;font-size:17px}.it p{margin:0 0 8px;color:#6d6164;font-size:13px}
+iframe{display:block;width:1280px;height:720px;border:0;border-radius:14px;box-shadow:0 10px 30px rgba(0,0,0,.12);background:#fff}
+</style></head><body>
+<div id="list"></div>
+<script>
+// mỗi mẫu = trang chủ thật + một lớp hạt rơi / bay chèn vào đầu trang (.hb), không chặn bấm
+var CSS = '.hb>.fx{position:absolute!important}.fx{position:absolute;inset:0;z-index:1;pointer-events:none;overflow:hidden}.fx i{position:absolute;top:-40px;font-style:normal;will-change:transform;animation:fall linear infinite}'
+  + '@keyframes fall{0%{transform:translate3d(0,0,0) rotate(0)}100%{transform:translate3d(var(--dx),780px,0) rotate(var(--r))}}'
+  + '@keyframes rise{0%{transform:translate3d(0,0,0) scale(.6);opacity:0}10%{opacity:.9}100%{transform:translate3d(var(--dx),-760px,0) scale(1.1);opacity:0}}'
+  + '@keyframes tw{0%,100%{opacity:0;transform:scale(.3)}50%{opacity:1;transform:scale(1)}}'
+  + '.hb>.kick,.hb>h1,.hb>.stage,.hb>.hcta{animation:none!important}';
+var V = [
+ ['A · Chữ Hỷ rơi', 'Chữ 囍 đỏ / vàng rơi chậm, xoay nhẹ — đậm chất cưới Việt.', function (r) { return { ch: '囍', n: 26, size: [20, 40], color: ['#d6455d', '#c9a24a', '#e8798a'], dur: [9, 16], mode: 'fall' }; }],
+ ['B · Cánh hoa đào rơi', 'Cánh hoa hồng nhạt rơi lả tả, đung đưa — nhẹ nhàng, lãng mạn.', function () { return { ch: 'petal', n: 36, size: [16, 30], color: ['#f7b6c2', '#f4a3b1', '#fbd3da'], dur: [8, 14], mode: 'fall' }; }],
+ ['C · Trái tim bay lên', 'Trái tim nhỏ bay từ dưới lên rồi tan — hợp với loading tim đập.', function () { return { ch: '♥', n: 26, size: [16, 34], color: ['#ef7d8d', '#f4a3b1', '#d6455d'], dur: [7, 12], mode: 'rise' }; }],
+ ['D · Lấp lánh vàng', 'Đốm sáng vàng nhấp nháy rải rác — sang, không rối.', function () { return { ch: '✦', n: 40, size: [10, 24], color: ['#e2b65c', '#f3d79a', '#d6455d'], dur: [2, 4], mode: 'twinkle' }; }]
+];
+var rnd = function (a, b) { return a + Math.random() * (b - a); };
+function build(d, o) {
+  var box = d.createElement('div'); box.className = 'fx'; var h = '';
+  for (var i = 0; i < o.n; i++) {
+    var sz = rnd(o.size[0], o.size[1]), c = o.color[i % o.color.length], left = rnd(0, 100), dur = rnd(o.dur[0], o.dur[1]), delay = -rnd(0, o.dur[1]);
+    var shape = o.ch === 'petal' ? '<svg width="' + sz + '" height="' + sz + '" viewBox="0 0 20 20"><path d="M10 1C14 5 16 10 10 19 4 10 6 5 10 1z" fill="' + c + '" opacity=".85"/></svg>' : o.ch;
+    if (o.mode === 'fall') h += '<i style="left:' + left + '%;font-size:' + sz + 'px;color:' + c + ';opacity:' + rnd(.55, .95).toFixed(2) + ';--dx:' + rnd(-120, 120).toFixed(0) + 'px;--r:' + rnd(-260, 260).toFixed(0) + 'deg;animation-duration:' + dur + 's;animation-delay:' + delay + 's">' + shape + '</i>';
+    if (o.mode === 'rise') h += '<i style="top:auto;bottom:-30px;left:' + left + '%;font-size:' + sz + 'px;color:' + c + ';--dx:' + rnd(-80, 80).toFixed(0) + 'px;animation-name:rise;animation-timing-function:ease-out;animation-duration:' + dur + 's;animation-delay:' + delay + 's">' + shape + '</i>';
+    if (o.mode === 'twinkle') h += '<i style="top:' + rnd(4, 92) + '%;left:' + left + '%;font-size:' + sz + 'px;color:' + c + ';animation-name:tw;animation-timing-function:ease-in-out;animation-duration:' + dur + 's;animation-delay:' + delay + 's">' + shape + '</i>';
+  }
+  box.innerHTML = h; return box;
+}
+document.getElementById('list').innerHTML = V.map(function (v, i) { return '<div class="it"><h3>' + v[0] + '</h3><p>' + v[1] + '</p><iframe id="f' + i + '" src="/?fx=' + i + '"></iframe></div>'; }).join('');
+V.forEach(function (v, i) {
+  var f = document.getElementById('f' + i);
+  f.onload = function () {
+    var d = f.contentDocument; if (!d) return;
+    var st = d.createElement('style'); st.textContent = CSS; d.head.appendChild(st);
+    var hb = d.querySelector('.hb'); var fx = build(d, v[2]()); hb.insertBefore(fx, hb.querySelector('.wall').nextSibling);
+  };
+});
+</script></body></html>

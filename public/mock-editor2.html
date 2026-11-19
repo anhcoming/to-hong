@@ -1,0 +1,115 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Mock sửa thiệp trên giao diện</title>
+<script src="/js/theme.js"></script>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800;900&amp;display=swap">
+<link rel="stylesheet" href="/css/app.css">
+<style>
+html,body{height:100%}
+body{margin:0;display:flex;flex-direction:column;background:#e9e2da;overflow:hidden}
+/* thanh trên: gọn, chỉ tên + trạng thái + phát hành */
+.bar{flex:none;display:flex;align-items:center;gap:10px;padding:10px 14px;background:var(--bg);border-bottom:1px solid var(--line);z-index:5}
+.bar .back{width:36px;height:36px;display:grid;place-items:center;border-radius:50%;color:var(--ink);text-decoration:none;font-size:20px}
+.bar h1{flex:1;min-width:0;margin:0;font-size:17px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.bar .saved{font-size:13px;color:var(--muted);white-space:nowrap}
+.main{flex:1;min-height:0;display:flex}
+/* công cụ: dọc bên trái (máy tính) / thanh dưới (điện thoại) */
+.tools{flex:none;display:flex;flex-direction:column;gap:4px;padding:12px 8px;background:var(--bg);border-right:1px solid var(--line);width:92px}
+.tools button{display:flex;flex-direction:column;align-items:center;gap:4px;padding:10px 4px;border:0;border-radius:12px;background:none;color:var(--ink);font:inherit;font-size:12px;font-weight:600;cursor:pointer}
+.tools button i{font-style:normal;font-size:20px;line-height:1}
+.tools button:hover{background:var(--primary-soft)}
+.tools button.on{background:var(--primary-soft);color:var(--primary)}
+/* bảng phụ mở cạnh công cụ */
+.sheet{flex:none;width:340px;background:var(--surface);border-right:1px solid var(--line);padding:18px;overflow:auto;display:none}
+.sheet.show{display:block}
+.sheet h2{margin:0 0 4px;font-size:18px}
+.sheet .x{float:right;border:0;background:none;font-size:22px;cursor:pointer;color:var(--muted)}
+/* khung thiệp ở giữa */
+.stage{flex:1;min-width:0;display:grid;place-items:center;padding:18px;overflow:auto}
+.phone{width:400px;max-width:100%;height:min(820px,calc(100vh - 110px));border-radius:36px;background:#1d1517;padding:9px;box-shadow:0 30px 60px rgba(0,0,0,.18)}
+.phone iframe{width:100%;height:100%;border:0;border-radius:28px;background:#fff}
+.hint{position:absolute;left:50%;top:70px;translate:-50% 0;padding:8px 14px;border-radius:999px;background:rgba(20,12,14,.78);color:#fff;font-size:13px;font-weight:600;z-index:6;pointer-events:none;white-space:nowrap}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.ev{border:1px solid var(--line);border-radius:12px;padding:10px 12px;margin:8px 0;display:flex;justify-content:space-between;align-items:center;gap:8px}
+.ev b{display:block}.ev span{font-size:13px;color:var(--muted)}
+.tg{display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--line)}
+.sw{width:40px;height:24px;border-radius:999px;background:var(--primary);position:relative}.sw::after{content:"";position:absolute;right:3px;top:3px;width:18px;height:18px;border-radius:50%;background:#fff}
+.sw.off{background:#ccc}.sw.off::after{right:auto;left:3px}
+.note{margin:24px auto 0;max-width:340px;font-size:12px;color:var(--muted);text-align:center}
+
+/* điện thoại: thiệp tràn màn, công cụ thành thanh dưới, bảng phụ trượt từ dưới lên */
+@media (max-width:760px){
+  .main{flex-direction:column-reverse}
+  .tools{flex-direction:row;width:auto;justify-content:space-around;padding:6px 4px calc(6px + env(safe-area-inset-bottom));border-right:0;border-top:1px solid var(--line)}
+  .tools button{flex:1;padding:6px 2px;font-size:11px}
+  .stage{padding:0}
+  .phone{width:100%;height:100%;border-radius:0;padding:0;box-shadow:none;background:none}
+  .phone iframe{border-radius:0}
+  .sheet{position:fixed;left:0;right:0;bottom:0;width:auto;max-height:75vh;border-radius:20px 20px 0 0;border:0;box-shadow:0 -12px 40px rgba(0,0,0,.25);z-index:20;padding-bottom:calc(18px + env(safe-area-inset-bottom))}
+  .scrim{position:fixed;inset:0;background:rgba(0,0,0,.3);z-index:19;display:none}
+  .sheet.show + .scrim{display:block}
+  .bar .saved{display:none}
+}
+</style>
+</head>
+<body>
+<header class="bar">
+  <a class="back" href="#" aria-label="Quay lại">←</a>
+  <h1>Đức Minh &amp; Thu Hà</h1>
+  <span class="saved">Đã lưu ✓</span>
+  <button class="btn sm plain" onclick="toggleTheme()">◐</button>
+  <button class="btn sm">Phát hành</button>
+</header>
+<div class="main">
+  <nav class="tools" id="tools">
+    <button data-s="tpl"><i>🎨</i>Mẫu</button>
+    <button data-s="date"><i>📅</i>Ngày & lễ</button>
+    <button data-s="music"><i>🎵</i>Nhạc</button>
+    <button data-s="gift"><i>💝</i>Mừng cưới</button>
+    <button data-s="guests"><i>👥</i>Khách</button>
+    <button data-s="more"><i>⋯</i>Thêm</button>
+  </nav>
+  <aside class="sheet" id="sheet"></aside><div class="scrim" id="scrim"></div>
+  <section class="stage">
+    <div class="phone"><iframe id="frame" title="Thiệp"></iframe></div>
+  </section>
+</div>
+<div class="hint" id="hint">Bấm vào ảnh hoặc chữ trên thiệp để sửa</div>
+
+<script>
+const SHEETS = {
+  tpl: `<h2>Mẫu & màu</h2><p class="muted" style="margin:0 0 12px">Lưới ảnh bìa các mẫu như hiện nay, kèm bảng màu.</p>
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px">${['dodam-do-ruou','songhy-do','tapchi-den','hanthu-hong','nau-nau','tim-hong'].map((c) => `<img src="/demo/cover-${c}.jpg" onerror="this.style.visibility='hidden'" style="width:100%;aspect-ratio:3/4;object-fit:cover;object-position:top;border-radius:10px;border:2px solid var(--line)">`).join('')}</div>`,
+  date: `<h2>Ngày & các lễ</h2><p class="muted" style="margin:0 0 12px">Phần duy nhất cần chọn ngày giờ — thiệp tự trình bày theo mẫu.</p>
+    <div class="row"><label class="field"><span>Ngày cưới</span><input type="date" value="2026-12-20"></label><label class="field"><span>Giờ</span><input type="time" value="18:00"></label></div>
+    <div class="ev"><div><b>Lễ Thành Hôn</b><span>09:00 · Tư gia</span></div><button class="btn sm plain">Sửa</button></div>
+    <div class="ev"><div><b>Tiệc Cưới</b><span>18:00 · Nhà hàng</span></div><button class="btn sm plain">Sửa</button></div>
+    <button class="btn block plain" style="margin-top:6px">+ Thêm lễ</button>`,
+  music: `<h2>Nhạc nền</h2><p class="muted">Chọn bài có sẵn hoặc tải MP3 của bạn.</p><button class="btn block">Tải nhạc lên</button>`,
+  gift: `<h2>Mừng cưới</h2><p class="muted" style="margin:0 0 12px">Tài khoản nhận mừng của hai bên (tạo mã QR tự động).</p>
+    <label class="field"><span>Ngân hàng nhà trai</span><select><option>Vietcombank</option></select></label><label class="field"><span>Số tài khoản</span><input value="0123456789"></label>`,
+  guests: `<h2>Khách mời & phản hồi</h2><p class="muted">Danh sách khách, link mời riêng, xác nhận tham dự, lời chúc — giữ như hiện nay.</p>`,
+  more: `<h2>Thêm</h2>
+    <div class="tg"><span>Lịch tháng</span><i class="sw"></i></div><div class="tg"><span>Đếm ngược</span><i class="sw"></i></div><div class="tg"><span>Album ảnh</span><i class="sw"></i></div><div class="tg"><span>Xác nhận tham dự</span><i class="sw"></i></div><div class="tg"><span>Hộp mừng cưới</span><i class="sw off"></i></div><div class="tg"><span>Sổ lưu bút</span><i class="sw"></i></div>
+    <label class="field" style="margin-top:14px"><span>Đường dẫn thiệp</span><input value="duc-minh-thu-ha"></label>
+    <div style="display:grid;gap:8px;margin-top:10px"><button class="btn block plain">🎬 Video cưới</button><button class="btn block plain">👁 Xem như khách</button></div>`,
+};
+const sheet = document.getElementById('sheet');
+document.getElementById('tools').addEventListener('click', (e) => {
+  const b = e.target.closest('[data-s]'); if (!b) return;
+  const open = !b.classList.contains('on');
+  document.querySelectorAll('.tools button').forEach((x) => x.classList.remove('on'));
+  if (open) { b.classList.add('on'); sheet.innerHTML = `<button class="x" aria-label="Đóng">×</button>${SHEETS[b.dataset.s]}`; sheet.classList.add('show'); }
+  else sheet.classList.remove('show');
+});
+sheet.addEventListener('click', (e) => { if (e.target.closest('.x')) { sheet.classList.remove('show'); document.querySelectorAll('.tools button').forEach((x) => x.classList.remove('on')); } });
+document.getElementById('scrim').onclick = () => { sheet.classList.remove('show'); document.querySelectorAll('.tools button').forEach((x) => x.classList.remove('on')); };
+// dùng thiệp thật ở chế độ sửa trực tiếp
+fetch('/api/cards').then((r) => r.json()).then((j) => { const c = (j.cards || [])[0]; if (c) document.getElementById('frame').src = `/t/${c.slug}?preview=1&edit=1`; });
+setTimeout(() => document.getElementById('hint').remove(), 4000);
+</script>
+</body>
+</html>

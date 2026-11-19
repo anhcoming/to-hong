@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="vi"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Mock hàng mẫu thiệp trang chủ</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@500;600;700;800&display=swap">
+<style>
+*{box-sizing:border-box}body{margin:0;padding:20px;background:#e9e6e7;font-family:'Be Vietnam Pro',sans-serif;color:#2b2224}
+.row{display:flex;gap:24px;justify-content:center;flex-wrap:wrap}
+.it{width:375px}.it h3{margin:0 0 4px;font-size:15px}.it p{margin:0 0 8px;color:#6d6164;font-size:12.5px;min-height:34px}
+.ph{height:760px;border-radius:28px;overflow:hidden;background:#fdf7f7;box-shadow:0 10px 30px rgba(0,0,0,.12);overflow-y:auto}
+.ph::-webkit-scrollbar{display:none}
+.sec{padding:18px 0 6px}
+.hd{display:flex;align-items:baseline;justify-content:space-between;padding:0 16px;margin-bottom:12px}
+.hd b{font-size:19px;font-weight:800}.hd a{font-size:13px;font-weight:600;color:#d6455d}
+.cv{display:block;width:100%;aspect-ratio:9/16;object-fit:cover;object-position:top;border-radius:14px;background:#eee;box-shadow:0 8px 20px rgba(120,40,50,.12)}
+.nm{margin:7px 2px 0;font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+/* A lưới 2 cột */
+.ga{display:grid;grid-template-columns:1fr 1fr;gap:14px 12px;padding:0 16px}
+/* B cuộn ngang, thẻ nhỏ ~2,3 thẻ */
+.sb{display:flex;gap:12px;overflow-x:auto;padding:0 16px 6px;scroll-snap-type:x mandatory}.sb::-webkit-scrollbar{display:none}
+.sb>div{flex:none;width:136px;scroll-snap-align:start}
+/* C thẻ lớn giữa, hai bên ló ra + chấm */
+.sc{display:flex;gap:12px;overflow-x:auto;padding:0 56px 4px;scroll-snap-type:x mandatory}.sc::-webkit-scrollbar{display:none}
+.sc>div{flex:none;width:263px;scroll-snap-align:center}.sc .nm{text-align:center;font-size:15px}
+.dots{display:flex;justify-content:center;gap:6px;margin-top:10px}.dots i{width:6px;height:6px;border-radius:50%;background:#e6cfd4}.dots i.on{width:18px;border-radius:9px;background:#d6455d}
+/* D chip phong cách + lưới 2 cột */
+.chips{display:flex;gap:8px;overflow-x:auto;padding:0 16px 12px}.chips::-webkit-scrollbar{display:none}
+.chips span{flex:none;padding:8px 14px;border-radius:999px;background:#fff;box-shadow:0 0 0 1px #f0e4e6;font-size:13px;font-weight:600}.chips span.on{background:#2b2224;color:#fff;box-shadow:none}
+.more{display:block;margin:16px;padding:12px;border-radius:14px;background:#fff;box-shadow:0 0 0 1px #f0e4e6;text-align:center;font-weight:700;font-size:14px;color:#d6455d}
+</style></head><body>
+<div class="row" id="row"></div>
+<script>
+fetch('/api/meta').then(r => r.json()).then(m => {
+  const T = m.templates || [], G = m.templateGroups || [];
+  const hot = T.filter(t => t.badge === 'Hot'); const top = [...hot, ...T.filter(t => !hot.includes(t))];
+  const cover = t => `/demo/cover-${t.id}-${t.palettes[0].id}.jpg`;
+  const one = t => `<div><img class="cv" src="${cover(t)}" alt=""><p class="nm">${t.name}</p></div>`;
+  const hd = (t, more = 'Xem tất cả ›') => `<div class="hd"><b>${t}</b><a>${more}</a></div>`;
+  const V = [
+    ['A · Lưới 2 cột', 'Hiện 6 mẫu nổi bật thành lưới 2 cột, tên dưới ảnh, cuối có nút "Xem tất cả 49 mẫu". Không cuộn ngang, nhìn được nhiều mẫu cùng lúc.',
+      `<div class="sec">${hd('Mẫu thiệp nổi bật', '')}<div class="ga">${top.slice(0, 6).map(one).join('')}</div><a class="more">Xem tất cả ${T.length} mẫu ›</a></div>`],
+    ['B · Hàng cuộn ngang, thẻ nhỏ', 'Như hiện tại nhưng bỏ số 1, 2 to; thẻ nhỏ lại thấy ~2,5 thẻ — gợi ý vuốt ngang. Mỗi phong cách một hàng.',
+      [['Mẫu thiệp nổi bật', top.slice(0, 8)], ...G.slice(0, 2).map(g => [g.name, T.filter(t => t.group === g.id).slice(0, 8)])].filter(x => x[1].length).map(([n, l]) => `<div class="sec">${hd(n)}<div class="sb">${l.map(one).join('')}</div></div>`).join('')],
+    ['C · Thẻ lớn ở giữa', 'Một thẻ to ở giữa, hai thẻ bên ló ra, có chấm báo vị trí. Nổi bật từng mẫu như xem catalogue.',
+      `<div class="sec">${hd('Mẫu thiệp nổi bật')}<div class="sc">${top.slice(0, 6).map(one).join('')}</div><div class="dots"><i class="on"></i><i></i><i></i><i></i><i></i><i></i></div></div>`],
+    ['D · Chip phong cách + lưới', 'Hàng chip lọc nhanh theo phong cách (Truyền thống, Hiện đại, …), bên dưới lưới 2 cột đổi theo chip.',
+      `<div class="sec">${hd('Chọn mẫu thiệp', '')}<div class="chips"><span class="on">Nổi bật</span>${G.map(g => `<span>${g.name}</span>`).join('')}</div><div class="ga">${top.slice(0, 6).map(one).join('')}</div><a class="more">Xem tất cả ${T.length} mẫu ›</a></div>`]
+  ];
+  document.getElementById('row').innerHTML = V.map(v => `<div class="it"><h3>${v[0]}</h3><p>${v[1]}</p><div class="ph">${v[2]}</div></div>`).join('');
+});
+</script></body></html>

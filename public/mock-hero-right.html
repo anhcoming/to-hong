@@ -1,0 +1,532 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<script src="/js/theme.js"></script>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>MOCK · Đầu trang, các phương án</title>
+<meta name="description" content="Tạo thiệp cưới online có tên riêng từng khách mời, nhạc nền, bản đồ, xác nhận tham dự, mã QR mừng cưới và ngày âm lịch. Kèm video cưới chiếu TV và sổ tay cưới miễn phí. Dùng thử 0đ.">
+<meta property="og:title" content="Cưới Nha — Gửi lời mời cưới có tên từng khách">
+<meta property="og:description" content="Thiệp cưới online có tên từng khách, QR mừng cưới, xác nhận tham dự. Dùng thử miễn phí.">
+<meta property="og:image" content="https://cuoinha.com/demo/cover-dodam-do-ruou.jpg">
+<meta property="og:url" content="https://cuoinha.com/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Cưới Nha">
+<meta property="og:locale" content="vi_VN">
+<meta name="robots" content="noindex">
+<script type="application/ld+json">
+{"@context":"https://schema.org","@graph":[
+{"@type":"Organization","@id":"https://cuoinha.com/#org","name":"Cưới Nha","alternateName":["Cuoi Nha","cuoinha.com"],"url":"https://cuoinha.com/","logo":"https://cuoinha.com/icons/logo-512.png"},
+{"@type":"WebSite","@id":"https://cuoinha.com/#site","name":"Cưới Nha","alternateName":"Cưới Nha — thiệp cưới online","url":"https://cuoinha.com/","inLanguage":"vi","publisher":{"@id":"https://cuoinha.com/#org"}},
+{"@type":"WebApplication","name":"Cưới Nha — Thiệp cưới online","url":"https://cuoinha.com/","applicationCategory":"LifestyleApplication","operatingSystem":"Web","inLanguage":"vi","description":"Tạo thiệp cưới online có tên riêng từng khách mời, nhạc nền, bản đồ, xác nhận tham dự, mã QR mừng cưới và ngày âm lịch.","offers":{"@type":"Offer","price":"0","priceCurrency":"VND","description":"Dùng thử miễn phí"},"publisher":{"@id":"https://cuoinha.com/#org"}}
+]}
+</script>
+<meta name="theme-color" content="#ffffff">
+<link rel="icon" href="/favicon.ico" sizes="48x48"><link rel="icon" href="/favicon.svg" type="image/svg+xml"><link rel="apple-touch-icon" href="/icons/apple-touch-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&amp;family=Dancing+Script:wght@600;700&amp;display=swap">
+<link rel="stylesheet" href="/css/home.css">
+<script>document.documentElement.classList.add('js');</script>
+<style>
+/* MOCK nhiều phương án cho đầu trang — nút ở góc dưới để chuyển (hoặc ?o=a|b|c|d|cu):
+   A Gọn: trái chữ + nút, phải hình ảnh → thiệp
+   B Chính giữa: mọi thứ xếp giữa, hình nằm giữa tiêu đề và nút
+   C Thiệp lớn: phải một tấm thiệp lớn nghiêng, ảnh cưới chồng ở góc như đang "biến" thành thiệp
+   D Ô thả ảnh: phải một ô vuông "Thả ảnh cưới vào đây", thiệp mẫu ló phía sau */
+.more{display:none;margin-left:6px;align-self:center;font:600 15px var(--sans);color:var(--muted);text-decoration:none}
+.more:hover{color:var(--ink)}
+.bb[class*="o-"] .bb-in .b-more{display:none}
+.bb[class*="o-"] .more{display:inline}
+.bb[class*="o-"] .acts{align-items:center}
+.bb[class*="o-"] .lead{margin-bottom:26px}
+.opt{display:none;position:absolute;z-index:2;animation:rise .8s .3s cubic-bezier(.2,.8,.2,1) both}
+.bb .opt{display:none}
+.bb.o-a .opt-a,.bb.o-c .opt-c,.bb.o-d .opt-d{display:flex}
+.o-a .bb-in .ba,.o-c .bb-in .ba,.o-d .bb-in .ba{display:none}
+.o-a .bb-in,.o-c .bb-in,.o-d .bb-in{max-width:540px}
+.cap{position:absolute;left:50%;top:calc(100% + 12px);transform:translateX(-50%);padding:4px 12px;border-radius:999px;font:600 13px/1.3 var(--sans);white-space:nowrap;color:var(--ink);background:rgba(255,255,255,.88);box-shadow:0 4px 14px rgba(0,0,0,.12)}
+[data-theme="dark"] .cap{background:rgba(20,15,17,.82);color:#f3e9e6}
+.glow::before{content:"";position:absolute;inset:-60px -80px;z-index:-1;border-radius:50%;background:radial-gradient(closest-side,rgba(255,255,255,.75),transparent);pointer-events:none}
+[data-theme="dark"] .glow::before{background:radial-gradient(closest-side,rgba(18,14,15,.75),transparent)}
+.drag-on{outline:2px dashed var(--acc);outline-offset:10px}
+/* lớp phủ cho A, C, D: phải nhạt hơn bản cũ một chút để hình nổi */
+.o-a.bb::after,.o-c.bb::after,.o-d.bb::after{background:linear-gradient(90deg,rgba(255,255,255,.97) 0%,rgba(255,255,255,.88) 32%,rgba(255,255,255,.5) 56%,rgba(255,255,255,.45) 100%),linear-gradient(180deg,var(--bg) 0%,transparent 12%),linear-gradient(0deg,var(--bg) 0%,transparent 26%)}
+[data-theme="dark"] .o-a.bb::after,[data-theme="dark"] .o-c.bb::after,[data-theme="dark"] .o-d.bb::after{background:linear-gradient(90deg,rgba(18,14,15,.97) 0%,rgba(18,14,15,.88) 32%,rgba(18,14,15,.55) 56%,rgba(18,14,15,.5) 100%),linear-gradient(180deg,var(--bg) 0%,transparent 12%),linear-gradient(0deg,var(--bg) 0%,transparent 26%)}
+
+/* ---- A: hình ảnh → thiệp ---- */
+.opt-a{right:calc(var(--edge) + 40px);top:54%;transform:translateY(-50%);align-items:center;gap:22px}
+.opt-a .ba-stack{width:170px;height:210px}
+.opt-a .ba-stack img{width:120px;height:156px;border-width:5px}
+.opt-a .ba-stack img:nth-child(2){left:44px}
+.opt-a .ba-stack img:nth-child(3){left:22px;top:44px}
+.opt-a .ba-arrow{font-size:34px}
+.opt-a .ba-card{width:230px}
+.opt-a .ba-card img{height:300px;border-radius:18px;box-shadow:0 24px 60px rgba(0,0,0,.35)}
+.opt-a small{display:none}
+
+/* ---- B: chính giữa ---- */
+.o-b .bb-in{left:50%;transform:translate(-50%,-50%);max-width:760px;width:calc(100% - 32px);text-align:center}
+.o-b .kick{justify-content:center}
+.o-b .lead{margin-left:auto;margin-right:auto}
+.o-b .bb-in .ba{margin:4px auto 26px}
+.o-b .ba-stack{width:150px;height:180px}
+.o-b .ba-stack img{width:104px;height:136px}
+.o-b .ba-card{width:180px}.o-b .ba-card img{height:236px}
+.o-b .acts{justify-content:center}
+.o-b .ba-lock{text-align:center}
+.o-b.bb{min-height:860px}
+.o-b.bb::after{background:radial-gradient(ellipse 58% 62% at 50% 52%,rgba(255,255,255,.96) 35%,rgba(255,255,255,.7) 70%,rgba(255,255,255,.4)),linear-gradient(180deg,var(--bg) 0%,transparent 12%),linear-gradient(0deg,var(--bg) 0%,transparent 26%)}
+[data-theme="dark"] .o-b.bb::after{background:radial-gradient(ellipse 58% 62% at 50% 52%,rgba(18,14,15,.96) 35%,rgba(18,14,15,.75) 70%,rgba(18,14,15,.45)),linear-gradient(180deg,var(--bg) 0%,transparent 12%),linear-gradient(0deg,var(--bg) 0%,transparent 26%)}
+
+/* ---- C: thiệp lớn nghiêng, ảnh cưới chồng góc ---- */
+.opt-c{right:calc(var(--edge) + 60px);top:53%;transform:translateY(-50%);width:400px;height:470px}
+.opt-c .card{position:absolute;right:0;top:0;width:300px;height:420px;object-fit:cover;object-position:50% 10%;border-radius:22px;transform:rotate(4deg);box-shadow:0 30px 70px rgba(0,0,0,.38)}
+.opt-c .ph{position:absolute;width:132px;height:172px;object-fit:cover;border:6px solid #fff;border-radius:10px;box-shadow:0 14px 34px rgba(0,0,0,.3)}
+.opt-c .ph1{left:0;bottom:30px;transform:rotate(-10deg)}
+.opt-c .ph2{left:56px;bottom:6px;transform:rotate(3deg)}
+.opt-c .spark{position:absolute;left:150px;bottom:150px;width:46px;height:46px;border-radius:50%;display:grid;place-items:center;background:var(--acc);color:#fff;font-size:22px;box-shadow:0 10px 26px rgba(214,69,93,.45)}
+.opt-c .cap{left:auto;right:30px;transform:none;top:auto;bottom:-14px}
+
+/* ---- D: ô thả ảnh ---- */
+.opt-d{right:calc(var(--edge) + 60px);top:54%;transform:translateY(-50%);width:420px;height:420px}
+.opt-d .peek{position:absolute;right:-10px;top:-20px;width:220px;height:300px;object-fit:cover;object-position:50% 10%;border-radius:18px;transform:rotate(7deg);box-shadow:0 24px 60px rgba(0,0,0,.35);opacity:.95}
+.opt-d .zone{position:absolute;left:0;bottom:0;width:300px;height:300px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;text-align:center;border:2px dashed rgba(214,69,93,.6);border-radius:28px;
+  background:rgba(255,255,255,.82);-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);box-shadow:0 24px 60px rgba(80,20,35,.18);color:var(--ink);text-decoration:none;transition:border-color .2s,transform .2s}
+.opt-d .zone:hover,.opt-d .zone.drag-on{border-color:var(--acc);transform:translateY(-3px);outline:0}
+.opt-d .zone i{width:68px;height:68px;border-radius:50%;display:grid;place-items:center;background:linear-gradient(135deg,#d6455d,#ef7d8d);font-style:normal;font-size:30px;box-shadow:0 12px 28px rgba(214,69,93,.4)}
+.opt-d .zone b{font-size:19px}
+.opt-d .zone span{font-size:13px;color:var(--muted)}
+[data-theme="dark"] .opt-d .zone{background:rgba(30,22,25,.82)}
+
+@media (max-width:1180px){.opt-a{right:calc(var(--edge) + 8px);gap:14px}.opt-a .ba-stack{width:140px;height:180px}.opt-a .ba-stack img{width:100px;height:130px}.opt-a .ba-card{width:180px}.opt-a .ba-card img{height:236px}
+  .opt-c,.opt-d{right:calc(var(--edge) + 8px);transform:translateY(-50%) scale(.85);transform-origin:right center}
+  .o-a .bb-in,.o-c .bb-in,.o-d .bb-in{max-width:450px}}
+/* màn hẹp: A, C, D giữ như bản hiện tại (hình dưới tiêu đề) */
+@media (max-width:900px){.o-a .bb-in .ba,.o-c .bb-in .ba,.o-d .bb-in .ba{display:flex}.bb.o-a .opt-a,.bb.o-c .opt-c,.bb.o-d .opt-d{display:none}
+  .o-b .bb-in{left:auto;transform:none;width:auto}.o-b.bb{min-height:78vh}}
+.cmp{position:fixed;left:50%;bottom:18px;z-index:60;transform:translateX(-50%);display:flex;gap:2px;padding:4px;border-radius:999px;background:#1f1a1b;box-shadow:0 10px 30px rgba(0,0,0,.3)}
+.cmp button{border:0;padding:8px 14px;border-radius:999px;background:none;color:#fff;font:600 13px var(--sans);cursor:pointer;opacity:.6;white-space:nowrap}
+.cmp button.on{background:#d6455d;opacity:1}
+
+/* ---- kiểu nền (hàng nút thứ hai): tường thiệp như cũ / tường thiệp mờ và tối hẳn / nền trơn ---- */
+.bg-mo .wall{filter:blur(7px) saturate(.55);opacity:.35}
+.bg-tron .wall{display:none}
+.bg-tron.bb{background:radial-gradient(900px 520px at 78% 40%,rgba(239,125,141,.22),transparent 70%),radial-gradient(700px 500px at 10% 90%,rgba(212,162,76,.12),transparent 70%),var(--bg)}
+[data-theme="dark"] .bg-tron.bb{background:radial-gradient(900px 520px at 78% 40%,rgba(214,69,93,.28),transparent 70%),radial-gradient(700px 500px at 10% 90%,rgba(212,162,76,.1),transparent 70%),var(--bg)}
+.bg-tron.bb::after{background:linear-gradient(0deg,var(--bg) 0%,transparent 18%)!important}
+.bg-mo.bb::after{background:linear-gradient(180deg,var(--bg) 0%,transparent 12%),linear-gradient(0deg,var(--bg) 0%,transparent 26%)!important}
+.cmp2{bottom:64px}
+</style>
+</head>
+<body data-page="home">
+<header class="hnav" id="hnav"><div class="wrap">
+  <a class="logo" href="/" id="hlogo"><span class="lw" data-brand>Cưới Nha</span><svg class="lh" viewBox="0 0 32 30" aria-hidden="true"><path d="M16 28C6.5 21 3 16 3 11.5 3 7.9 5.8 5 9.4 5c2.6 0 4.6 1.4 6.6 3.9C18 6.4 20 5 22.6 5 26.2 5 29 7.9 29 11.5 29 16 25.5 21 16 28z"/></svg></a>
+  <nav class="menu" aria-label="Menu chính"><a href="/mau-thiep">Thiệp cưới</a><a href="/man-hinh-led-dam-cuoi">Màn hình LED</a><a href="/video-cuoi">Video cưới</a><a href="/so-tay-cuoi">Sổ tay cưới</a></nav>
+  <span id="themeSlot"></span>
+  <div class="hacts" id="hacts"><a class="login" href="/dang-nhap">Đăng nhập</a><a class="btn btn-main btn-sm" href="/mau-thiep">Tạo thiệp</a></div>
+  <button class="burger" id="burger" type="button" aria-label="Mở menu" aria-expanded="false" aria-controls="mpanel"><i></i></button>
+</div>
+<nav class="mpanel" id="mpanel" aria-label="Menu"></nav></header>
+
+<section class="bb o-a bg-mo" id="bb">
+  <div class="wall" id="cols" aria-hidden="true"></div>
+  <div class="bb-in">
+    <div class="kick"><b>CN</b>THIỆP CƯỚI ONLINE</div>
+    <h1>Thả ảnh cưới vào,<em>xem ngay thiệp của bạn</em></h1>
+    <p class="lead">Mỗi khách một tấm thiệp mang tên riêng — có nhạc, bản đồ, hộp mừng cưới.</p>
+    <!-- ảnh của bạn → thiệp của bạn: cho thấy kết quả trước khi bấm; cả khối dẫn tới trang gợi ý thiệp từ ảnh (/goi-y) -->
+    <a class="ba" href="/goi-y" aria-label="Chọn ảnh cưới để xem thiệp của bạn">
+      <span class="ba-stack"><img src="/demo/goiy-2.jpg" alt="" width="86" height="112"><img src="/demo/goiy-3.jpg" alt="" width="86" height="112"><img src="/demo/goiy-1.jpg" alt="" width="86" height="112"><small>Ảnh của bạn</small></span>
+      <span class="ba-arrow" aria-hidden="true">→</span>
+      <span class="ba-card"><img src="/demo/cover-songhy-do.jpg" alt="" width="300" height="400"><small>Thiệp của bạn, sau vài giây</small></span>
+    </a>
+    <div class="acts"><a class="b b-photo" href="/goi-y">📷 Chọn ảnh cưới</a><a class="b b-more" href="#mau">▶ Xem các mẫu</a><a class="more" href="#mau">hoặc xem các mẫu →</a></div>
+    <p class="ba-lock">🔒 Ảnh chỉ nằm trên máy bạn cho tới khi bạn chọn dùng một thiệp.</p>
+  </div>
+  <a class="opt opt-a ba glow drop" href="/goi-y" aria-label="Chọn hoặc kéo thả ảnh cưới">
+    <span class="ba-stack"><img src="/demo/goiy-2.jpg" alt="" width="86" height="112"><img src="/demo/goiy-3.jpg" alt="" width="86" height="112"><img src="/demo/goiy-1.jpg" alt="" width="86" height="112"><span class="cap">Ảnh của bạn</span></span>
+    <span class="ba-arrow" aria-hidden="true">→</span>
+    <span class="ba-card"><img src="/demo/cover-songhy-do.jpg" alt="" width="300" height="400"><span class="cap">Thiệp của bạn, sau vài giây</span></span>
+  </a>
+  <a class="opt opt-c glow drop" href="/goi-y" aria-label="Chọn hoặc kéo thả ảnh cưới">
+    <img class="card" src="/demo/cover-songhy-do.jpg" alt="" width="300" height="400">
+    <img class="ph ph1" src="/demo/goiy-2.jpg" alt="" width="132" height="172">
+    <img class="ph ph2" src="/demo/goiy-1.jpg" alt="" width="132" height="172">
+    <span class="spark" aria-hidden="true">✦</span>
+    <span class="cap">Ảnh của bạn → thiệp trong vài giây</span>
+  </a>
+  <div class="opt opt-d glow">
+    <img class="peek" src="/demo/cover-songhy-do.jpg" alt="" width="300" height="400">
+    <a class="zone drop" href="/goi-y" aria-label="Chọn hoặc kéo thả ảnh cưới"><i>📷</i><b>Thả ảnh cưới vào đây</b><span>hoặc bấm để chọn · thiệp có sau vài giây</span></a>
+  </div>
+</section>
+
+<!-- ba chức năng chính -->
+<section class="trio3"><div class="wrap">
+  <h2 class="t3h">Mọi thứ cho đám cưới, <em>gói trong ba món</em></h2>
+  <div class="t3">
+    <a class="t3c" href="/mau-thiep">
+      <div class="vis v-cards"><img src="/demo/cover-songhy-do.jpg" alt=""><img src="/demo/cover-dodam-do-ruou.jpg" alt=""><img src="/demo/cover-hanthu-nau-kem.jpg" alt=""></div>
+      <div class="body"><h3>💌 Thiệp cưới online</h3><p>Mỗi khách một đường link mang tên riêng — có nhạc, bản đồ, xác nhận tham dự, mừng cưới QR.</p><span class="go">Chọn trong <span data-tpl-count>49</span> mẫu thiệp →</span></div></a>
+    <a class="t3c" href="#video">
+      <div class="vis v-video" data-fit><span class="badge">Mới</span><iframe src="/video/demo?preview=1&amp;template=polaroid" loading="lazy" tabindex="-1" title="Video cưới mẫu"></iframe><span class="play">▶</span></div>
+      <div class="body"><h3>🎬 Video cưới</h3><p>Thả ảnh cưới vào là có video chuyển cảnh như CapCut — chiếu TV ngày cưới hoặc tải MP4.</p><span class="go">Xem <span data-video-count>16</span> mẫu video →</span></div></a>
+    <a class="t3c" href="/so-tay-cuoi">
+      <div class="vis v-plan"><ul><li class="d"><i>✓</i><span>Đặt cọc nhà hàng</span></li><li class="d"><i>✓</i><span>Chụp ảnh cưới</span></li><li><i></i><span>Chuẩn bị tráp ăn hỏi</span><em>21/10</em></li><li><i></i><span>Gửi thiệp cho khách</span><em>10/11</em></li></ul></div>
+      <div class="body"><h3>📒 Sổ tay cưới</h3><p>Việc cần làm theo phong tục, ngân sách, khách mời &amp; tiền mừng — cả nhà cùng đánh dấu.</p><span class="go">Miễn phí mãi mãi →</span></div></a>
+  </div>
+</div></section>
+
+<main class="rows" id="mau"></main>
+
+<!-- khu video cưới -->
+<section class="vshow" id="video"><div class="wrap">
+  <div class="vs-copy">
+    <span class="kick">🎬 VIDEO CƯỚI</span>
+    <h2>Thả ảnh cưới vào,<em>video tự dựng</em></h2>
+    <p class="lead">Chọn một mẫu, chèn ảnh và lời chào — chuyển cảnh, chữ bay, ngày âm lịch đều có sẵn. Chiếu trên TV ở sảnh tiệc, lễ dạm ngõ, ăn hỏi, hoặc tải MP4 Full HD gửi người thân.</p>
+    <ol class="vs-steps">
+      <li><b>1</b><span>Chọn mẫu<small><span data-video-count>16</span> phong cách: phim cũ, polaroid, báo cưới, trời sao…</small></span></li>
+      <li><b>2</b><span>Chèn ảnh &amp; chữ<small>Mỗi mẫu 6–12 ảnh, tên đôi lấy sẵn từ thiệp</small></span></li>
+      <li><b>3</b><span>Chiếu TV hoặc tải MP4<small>Mở link trên Smart TV, hoặc chép USB</small></span></li>
+    </ol>
+    <div class="vs-acts"><a class="btn btn-main" href="/video-cuoi">Làm video cưới</a><a class="btn btn-ghost" id="vsFull" href="/video/demo?template=polaroid">⛶ Xem toàn màn</a></div>
+  </div>
+  <div class="vs-tv">
+    <div class="vs-screen" id="vsScreen"><span class="vs-name" id="vsName">Polaroid</span><iframe id="vsFrame" src="/video/demo?preview=1&amp;template=polaroid" title="Video cưới mẫu" tabindex="-1"></iframe></div>
+    <div class="vs-stand"></div>
+    <div class="vs-picks" id="vsPicks"></div>
+  </div>
+</div></section>
+
+<section class="sec"><div class="wrap">
+  <div class="pain-head"><span>Đám cưới<br>mời hơn</span><span class="big">300+</span><span>khách<br>mời?</span></div>
+  <div class="pains">
+    <div class="pain"><div class="ic stamp">🛵</div><b>Đi phát thiệp cả tuần</b><span>Bạn bè ở xa, lịch kín, chạy mãi không hết danh sách</span></div>
+    <div class="pain"><div class="ic stamp">📷</div><b>Gửi ảnh chụp thiệp thì sợ thiếu trang trọng</b><span>Một tấm ảnh gửi cho trăm người, chẳng ai thấy được mời riêng</span></div>
+    <div class="pain"><div class="ic stamp">🤔</div><b>Không biết ai đến để đặt mâm</b><span>Gọi hỏi từng người, đếm tay, sát ngày vẫn chưa chốt được số</span></div>
+  </div>
+</div></section>
+
+<section class="sec soft"><div class="wrap">
+  <h2 class="title">Một đường link, <em>lo trọn lời mời</em></h2>
+  <p class="sub">Mọi thứ khách cần để đến dự đều nằm trong một tấm thiệp, còn bạn có sổ tay theo dõi ai đã xem, ai sẽ đến.</p>
+  <div class="feats">
+    <div class="feat"><h3>Tên riêng từng khách</h3><p>"Kính mời anh Hùng &amp; người thương" — mỗi người một link, biết ai đã mở thiệp.</p><span class="blob">💌</span></div>
+    <div class="feat"><h3>Khách xác nhận, bạn khỏi gọi</h3><p>Ai đến, đi mấy người, khách nhà trai hay nhà gái — tự về sổ tay, xuất Excel chốt mâm.</p><span class="blob">✅</span></div>
+    <div class="feat"><h3>Hộp mừng cưới bằng QR</h3><p>Khách ở xa quét VietQR, tiền mừng vào thẳng tài khoản cô dâu chú rể, không qua trung gian.</p><span class="blob">🎁</span></div>
+    <div class="feat"><h3>Bản đồ, lịch trình, ngày âm</h3><p>Từng địa điểm có chỉ đường và nút lưu lịch; album ảnh, đếm ngược, sổ lưu bút.</p><span class="blob">📍</span></div>
+  </div>
+  <div class="center"><a class="btn btn-main" href="/mau-thiep">Tạo thiệp miễn phí ✨</a></div>
+</div></section>
+
+<section class="sec"><div class="wrap">
+  <h2 class="title" style="text-transform:none">Xong thiệp trong <span class="script" style="font-size:1.3em">5 phút</span></h2>
+  <p class="sub">Không cần biết thiết kế. Điện thoại cũng làm được.</p>
+  <div class="steps">
+    <div>
+      <div class="step"><span class="n">✦</span><div><small>Bước 1</small><h3>Chọn mẫu &amp; điền thông tin</h3><p>Tên cô dâu chú rể, ngày giờ, địa điểm, ảnh cưới. Ngày âm lịch tự tính, xem trước ngay khi gõ.</p></div></div>
+      <div class="step"><span class="n">✎</span><div><small>Bước 2</small><h3>Thêm danh sách khách</h3><p>Dán cả danh sách một lần — mỗi người nhận một đường link mang tên mình.</p></div></div>
+      <div class="step"><span class="n">➤</span><div><small>Bước 3</small><h3>Gửi qua Zalo, Messenger</h3><p>Theo dõi ai đã mở, ai xác nhận đến, đọc lời chúc ngay trên điện thoại.</p></div></div>
+      <a class="btn btn-main steps-cta" href="/mau-thiep">Bắt đầu tạo thiệp</a>
+    </div>
+    <div class="steps-wrap"><div class="phone"><iframe src="/demo/dodam" title="Thiệp mẫu" loading="lazy"></iframe></div></div>
+  </div>
+</div></section>
+
+<section class="sec soft" id="so-tay"><div class="wrap plan">
+  <div class="plan-card">
+    <div class="top"><b>Đức Minh &amp; Thu Hà</b><small>20/12/2026 · nhằm ngày 12 tháng 11 năm Bính Ngọ</small><div class="bar"><i></i></div></div>
+    <ul>
+      <li class="d"><i>✓</i><span>Đặt cọc nhà hàng tiệc cưới</span></li>
+      <li class="d"><i>✓</i><span>Chụp ảnh cưới</span></li>
+      <li><i></i><span>Chuẩn bị tráp ăn hỏi (số lẻ)</span><em>21/10</em></li>
+      <li><i></i><span>Làm thiệp online &amp; gửi khách</span><em>10/11</em></li>
+      <li><i></i><span>Làm video cưới chiếu sảnh tiệc</span><em>10/12</em></li>
+    </ul>
+  </div>
+  <div>
+    <span class="tag-free">Miễn phí mãi mãi</span>
+    <h2>Sổ tay cưới <span class="script">cho cả nhà</span></h2>
+    <p>Checklist từ 12 tháng trước theo phong tục Bắc – Trung – Nam, ngân sách, khách mời &amp; tiền mừng, lịch âm. Gửi một link là người yêu, bố mẹ cùng đánh dấu.</p>
+    <div class="acts"><a class="btn btn-main" href="/so-tay">Mở sổ tay miễn phí</a><a class="btn btn-ghost" href="/so-tay-cuoi">Tìm hiểu thêm →</a></div>
+  </div>
+</div></section>
+
+<section class="sec" id="gia"><div class="wrap">
+  <div class="plans2">
+    <div class="pl">
+      <h3>Thiệp cưới online</h3>
+      <s class="pl-was" data-promo hidden data-list-price-k>179k</s>
+      <span class="pl-amt" data-price-k>129k</span>
+      <ul><li>Thiệp có tên riêng từng khách</li><li>Mời tới 3.000 khách</li><li>Xác nhận tham dự, sổ lưu bút</li><li>Tiền mừng QR 0% phí</li><li class="off">Màn hình LED tiệc cưới</li><li class="off">Video cưới / dạm ngõ MP4</li></ul>
+      <a class="btn btn-ghost" href="/mau-thiep">Tạo thiệp</a>
+    </div>
+    <div class="pl hot">
+      <span class="pl-tag">Đáng mua nhất</span>
+      <h3>Trọn bộ ngày cưới</h3>
+      <s class="pl-was" data-combo-promo hidden data-combo-list-k>299k</s>
+      <span class="pl-amt" data-combo-k>199k</span>
+      <span class="pl-save">Rẻ hơn mua lẻ <b data-combo-save>78k</b></span>
+      <ul><li>Mọi thứ của thiệp cưới online</li><li>Màn hình LED tiệc cưới <small>· chiếu TV sảnh tiệc</small></li><li>Video cưới / dạm ngõ <small>· tải MP4 Full HD</small></li><li>Cùng ảnh, cùng tên — làm một lần dùng cả ba</li></ul>
+      <a class="btn btn-main" href="/mau-thiep">Tạo trọn bộ</a>
+    </div>
+  </div>
+  <p class="pl-cd" data-promo hidden>⏳ Giá mở bán còn <b data-promo-cd></b> · từ <span data-promo-after></span>: thiệp <span data-list-price-k></span><span data-combo-promo hidden>, trọn bộ <span data-combo-list-k></span></span></p>
+  <p class="pl-retail">Dùng thử miễn phí <span data-trial-days>7</span> ngày, <span data-guest-limit>20</span> khách · Mua lẻ: màn LED <span data-led-price>49.000đ</span> · video <span data-video-price>99.000đ</span></p>
+</div></section>
+
+<section class="sec soft" id="hoi-dap"><div class="wrap">
+  <h2 class="title">Câu hỏi thường gặp</h2>
+  <p class="sub" data-contact hidden>Chưa thấy câu trả lời? Nhắn Zalo <b data-zalo></b>, tụi mình trả lời trong ngày.</p>
+  <div class="faq">
+    <details open><summary>Khách mời có cần cài ứng dụng không?</summary><p>Không. Khách chỉ cần bấm vào đường link trong Zalo, Messenger hay tin nhắn là thiệp mở ra ngay trên điện thoại.</p></details>
+    <details><summary>Gửi rồi có sửa được không?</summary><p>Được. Bạn sửa giờ, địa điểm, ảnh… bất cứ lúc nào, khách mở lại link sẽ thấy nội dung mới mà không cần gửi lại.</p></details>
+    <details><summary>Thanh toán bằng cách nào?</summary><p>Chuyển khoản qua mã QR ngân hàng. Tiền về là thiệp được kích hoạt.</p></details>
+    <details><summary>Tiền mừng cưới qua QR có đi qua hệ thống không?</summary><p>Không. Mã QR là tài khoản ngân hàng của chính cô dâu, chú rể — khách chuyển thẳng, chúng mình không giữ đồng nào.</p></details>
+    <details><summary>Hết thời gian dùng thử thì sao?</summary><p>Thiệp tạm khoá với khách mời nhưng mọi nội dung vẫn được giữ nguyên. Kích hoạt là mở lại ngay.</p></details>
+    <details><summary>Thông tin cá nhân có bị lộ lên Google không?</summary><p>Không. Trang thiệp được đánh dấu không cho công cụ tìm kiếm thu thập, chỉ người có đường link mới xem được.</p></details>
+  </div>
+</div></section>
+
+<section class="cta airmail"><h2>Sẵn sàng báo tin vui <span class="script">chưa nè?</span></h2><p>Miễn phí, không cần thẻ thanh toán. Gửi thử cho vài người bạn thân trước.</p><a class="btn" href="/mau-thiep">Tạo thiệp ngay →</a></section>
+
+<footer id="foot"></footer>
+<script src="/js/site.js"></script>
+<script>
+(function () {
+  const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  // ảnh bìa chụp sẵn của từng mẫu × bảng màu (public/demo/cover-<mẫu>-<màu>.jpg)
+  const cover = (id, pal) => `/demo/cover-${id}-${pal}.jpg`;
+
+  // thanh trên kiểu Netflix: logo chữ, 5 mục phẳng, nút sáng/tối, menu điện thoại, trạng thái đăng nhập
+  document.getElementById('themeSlot').outerHTML = themeBtn();
+  const hnav = document.getElementById('hnav'), burger = document.getElementById('burger');
+  const toggle = (el, btn, on) => { el.classList.toggle('open', on); if (btn) btn.setAttribute('aria-expanded', on); };
+  burger.addEventListener('click', () => { const on = !hnav.classList.contains('mopen'); hnav.classList.toggle('mopen', on); burger.setAttribute('aria-expanded', on); });
+  hnav.addEventListener('click', (e) => { if (e.target.closest('.mpanel a')) { hnav.classList.remove('mopen'); burger.setAttribute('aria-expanded', false); } });
+  document.addEventListener('click', (e) => {
+    const me = document.getElementById('me'); if (me && !e.target.closest('#me')) toggle(me, me.querySelector('.caret'), false);
+  });
+  document.addEventListener('keydown', (e) => { if (e.key === 'Escape') { const me = document.getElementById('me'); if (me) toggle(me, me.querySelector('.caret'), false); } });
+  fetch('/api/me').then((r) => r.json()).then(({ user }) => {
+    if (!user) return;
+    const name = user.name || user.email.split('@')[0];
+    document.getElementById('hacts').innerHTML = `<div class="me" id="me"><a class="mine-btn" href="/thiep-cua-toi">Thiệp của tôi</a><button class="caret" type="button" aria-label="Tài khoản" aria-expanded="false"></button>
+        <div class="mmenu"><div class="who"><b>${esc(name)}</b>${esc(user.email)}</div><a href="/thiep-cua-toi">Thiệp &amp; sản phẩm của tôi</a><a href="/so-tay">Sổ tay cưới của tôi</a><a href="#" id="logout">Đăng xuất</a></div></div>`;
+    const me = document.getElementById('me'), caret = me.querySelector('.caret');
+    caret.addEventListener('click', () => toggle(me, caret, !me.classList.contains('open')));
+    document.getElementById('logout').addEventListener('click', async (e) => { e.preventDefault(); await fetch('/api/auth/logout', { method: 'POST' }); location.reload(); });
+  }).catch(() => {});
+
+  // hiện dần từng khối khi cuộn tới, các thẻ cùng hàng lệch nhau một chút
+  const RV = '.pain,.feat,.step,.price-band,.faq details,.title,.pain-head,.phone,.plan-card,.plan>div:last-child';
+  const io = 'IntersectionObserver' in window ? new IntersectionObserver((es) => es.forEach((e) => {
+    if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); }
+  }), { threshold: 0.15 }) : null;
+  const watch = () => document.querySelectorAll(RV).forEach((el) => {
+    if (el.classList.contains('rv')) return;
+    el.style.setProperty('--d', Math.min([...el.parentElement.children].indexOf(el), 5) * 0.08 + 's');
+    el.classList.add('rv');
+    if (io) io.observe(el); else el.classList.add('in');
+  });
+  watch();
+
+  document.addEventListener('meta', (ev) => {
+    const { templates: T, templateGroups: G = [] } = ev.detail;
+    const K = (v) => Math.round(v / 1000) + 'k';
+
+    // tường thiệp trôi: mỗi cột 6 bìa liên tiếp, lệch điểm bắt đầu để các cột cạnh nhau không trùng.
+    // Ảnh nạp ngay (không lazy): cột đang trôi mà ảnh nửa sau mới nạp giữa chừng thì hiện bật ra + giải mã ảnh làm khựng chuyển động.
+    // Màn hẹp chỉ hiện 3 cột đầu (CSS ẩn 3 cột sau) → 3 cột sau để lazy cho khỏi tải thừa.
+    const all = T.flatMap((t) => t.palettes.map((p) => cover(t.id, p.id)));
+    const narrow = matchMedia('(max-width:700px)').matches;
+    document.getElementById('cols').innerHTML = [0, 1, 2, 3, 4, 5].map((c) => {
+      const list = Array.from({ length: 6 }, (_, j) => all[(c * 5 + j * 3) % all.length]);
+      const lazy = narrow && c >= 3 ? ' loading="lazy"' : '';
+      return `<div class="col">${[...list, ...list].map((u) => `<img src="${u}" alt="" decoding="async"${lazy}>`).join('')}</div>`;
+    }).join('');
+    // cuộn qua khỏi billboard thì dừng trôi (nhường GPU cho các hàng thẻ + khung video bên dưới)
+    const bb = document.querySelector('.bb');
+    if (bb && 'IntersectionObserver' in window) new IntersectionObserver((es) => es.forEach((e) => bb.classList.toggle('off', !e.isIntersecting))).observe(bb);
+
+    // các hàng mẫu cuộn ngang kiểu Netflix
+  // nhãn ruy băng tràn mép trái thẻ: Hot = ruy băng đỏ mũi cờ nhọn, Mới = ruy băng xanh đuôi én (CSS .tag)
+  const badge = (t) => t.badge ? `<span class="tag${t.badge === 'Hot' ? ' hot' : ''}"><svg viewBox="0 0 100 26" preserveAspectRatio="none" aria-hidden="true"><path d="${t.badge === 'Hot' ? 'M0 0h88l12 13-12 13H0z' : 'M0 0h100l-8 13 8 13H0z'}"/></svg>${t.badge === 'Hot' ? 'Hot!' : esc(t.badge)}</span>` : '';
+    const card = (t, extra = '') => `<div class="ncard" data-tpl="${t.id}" data-pal="${t.palettes[0].id}">${extra}${extra ? '' : badge(t)}<div class="pic"><a href="/demo/${t.id}" aria-label="Xem thử ${esc(t.name)}"><img src="${cover(t.id, t.palettes[0].id)}" alt="${esc(t.name)}" loading="lazy"></a>
+      <div class="info"><b>${esc(t.name)}</b><a class="use" href="/thiep-cua-toi?tao=${t.id}&mau=${t.palettes[0].id}">Dùng mẫu</a></div></div></div>`;
+    const row = (title, list, cls = '', more = '/mau-thiep', moreText = 'Xem tất cả') => list.length ? `<section class="nrow ${cls}"><h2>${title}<a href="${more}">${moreText} ›</a></h2>
+      <div class="track"><button class="arrow l" type="button" aria-label="Trước">‹</button><div class="slider">${list.join('')}</div><button class="arrow r" type="button" aria-label="Sau">›</button></div></section>` : '';
+    // khối "một lớn, bốn nhỏ" cho video và màn LED: mẫu đứng đầu chiếm ô lớn bên trái, bốn mẫu còn lại xếp lưới 2×2 (không cuộn ngang, không số thứ hạng — số 1–5 chỉ còn ở hàng thiệp)
+    const PILL = '<span class="tag hot"><svg viewBox="0 0 100 26" preserveAspectRatio="none" aria-hidden="true"><path d="M0 0h88l12 13-12 13H0z"/></svg>Nổi bật</span>'; // cùng ruy băng đỏ với nhãn Hot của thẻ thiệp
+    const block = (title, list, more, moreText = 'Xem tất cả') => list.length ? `<section class="nrow fblock"><h2>${title}<a href="${more}">${moreText} ›</a></h2><div class="fgrid wide">${list.join('')}</div></section>` : '';
+    // thẻ video 16:9: poster + tên + số ảnh, rê chuột phát thử video thật (xem bên dưới)
+    const V = (ev.detail.video && ev.detail.video.templates) || [];
+    const TOP_VIDEO = ['polaroid', 'saodem', 'phimcu', 'lichhen', 'songhy']; // 5 mẫu video nổi bật (chọn tay), cùng thứ tự với khu video bên dưới
+    const topVideo = [...TOP_VIDEO.map((id) => V.find((t) => t.id === id)).filter(Boolean), ...V.filter((t) => t.photos && !TOP_VIDEO.includes(t.id))].slice(0, 5);
+    const vcard = (t, i) => `<div class="ncard" data-video="${t.id}">${i ? '' : PILL}<div class="pic"><a href="/video/demo?template=${t.id}" aria-label="Xem thử video ${esc(t.name)}"><img src="/demo/vposter-${t.id}.jpg" alt="${esc(t.name)}" loading="lazy"></a><span class="lbl">${esc(t.name)}<small>${t.photos ? t.slots + ' ảnh' : 'Mẫu chữ'} · chiếu TV, tải MP4</small></span>
+      <div class="info"><b>${esc(t.name)}</b><a class="use" href="/tao-video?mau=${t.id}">Dùng mẫu</a></div></div></div>`;
+    // thẻ màn LED 16:9: mỗi "mẫu" là một cặp bảng màu + hiệu ứng nền; poster chụp sẵn (npm run previews -- <địa chỉ> led), rê chuột chạy màn thật
+    const L = ev.detail.led || { palettes: [], effects: [] };
+    const TOP_LED = [['do', 'sao'], ['den', 'remphale'], ['dem', 'phaohoa'], ['tim', 'hoadang'], ['hong', 'tim']]; // cùng danh sách với tools/previews.js
+    const topLed = TOP_LED.map(([p, e]) => ({ p: L.palettes.find((x) => x.id === p), e: L.effects.find((x) => x.id === e) })).filter((x) => x.p && x.e);
+    const lcard = ({ p, e }, i) => { const q = `palette=${p.id}&effect=${e.id}`; return `<div class="ncard" data-led="${q}">${i ? '' : PILL}<div class="pic"><a href="/led/demo?${q}" aria-label="Xem thử màn LED ${esc(p.name)}"><img src="/demo/lposter-${p.id}-${e.id}.jpg" alt="Màn hình LED ${esc(p.name)}" loading="lazy"></a><span class="lbl one">${esc(p.name)}<small>${esc(e.name)}</small></span>
+      <div class="info"><b>${esc(p.name)}</b><a class="use" href="/tao-led?${q}">Dùng mẫu</a></div></div></div>`; };
+    const hot = T.filter((t) => t.badge === 'Hot');
+    const top = [...hot, ...T.filter((t) => !hot.includes(t))].slice(0, 5); // nổi bật: mẫu Hot trước, thiếu thì lấy thêm mẫu kế tiếp
+    const used = G.filter((g) => T.some((t) => t.group === g.id));
+    const rows = document.getElementById('mau');
+    rows.innerHTML =
+      row('Mẫu thiệp nổi bật', top.map((t, i) => card(t, `<span class="num">${i + 1}</span>`)), 'top')
+      + block('Video cưới chiếu TV', topVideo.map(vcard), '/video-cuoi')
+      + block('Màn hình LED tiệc cưới', topLed.map(lcard), '/tao-led', 'Tạo màn LED')
+      + row('Mới ra mắt', T.filter((t) => t.badge === 'Mới').map((t) => card(t)))
+
+      + used.map((g) => row(esc(g.name), T.filter((t) => t.group === g.id).map((t) => card(t)), '', `/mau-thiep?phong-cach=${g.id}`)).join('')
+      + row('Tất cả mẫu thiệp', T.map((t) => card(t)));
+
+    // khung LED / video 1280×720 thu nhỏ vừa thẻ 16:9
+    const fit = () => rows.querySelectorAll('.wide .pic').forEach((p) => { const f = p.querySelector('iframe'); if (f) f.style.transform = `scale(${Math.max(p.clientWidth / 1280, p.clientHeight / 720)})`; });
+    fit(); addEventListener('resize', fit);
+    rows.addEventListener('click', (e) => {
+      const a = e.target.closest('.arrow'); if (!a) return;
+      const s = a.parentNode.querySelector('.slider'); s.scrollBy({ left: (a.classList.contains('l') ? -1 : 1) * s.clientWidth * 0.8 });
+    });
+
+    // rê chuột vào thẻ: chuột dừng yên 0,5 giây trên thẻ thì nạp trang thiệp thật vào thẻ, hiện dần rồi tự trượt chậm xuống.
+    // Trang thiệp nạp cùng luồng với trang chủ nên khá nặng (~1 giây): chỉ nạp khi con trỏ thật sự di chuyển tới rồi dừng,
+    // không nạp khi thẻ trượt qua dưới con trỏ đứng yên lúc cuộn ngang (trình duyệt vẫn bắn mouseover lúc đó), và huỷ ngay khi hàng cuộn.
+    if (matchMedia('(hover:hover)').matches && !matchMedia('(prefers-reduced-motion:reduce)').matches) {
+      let cur = null, lastX = NaN, lastY = NaN;
+      const stop = () => { if (!cur) return; clearTimeout(cur.t); cancelAnimationFrame(cur.raf); if (cur.f) cur.f.remove(); cur = null; };
+      rows.addEventListener('scroll', stop, { capture: true, passive: true }); // scroll không nổi bọt: bắt ở pha capture
+      rows.addEventListener('pointermove', (e) => {
+        if (e.pointerType && e.pointerType !== 'mouse') return;
+        const moved = e.screenX !== lastX || e.screenY !== lastY; // mousemove giả sau khi cuộn có toạ độ y hệt lần trước
+        lastX = e.screenX; lastY = e.screenY;
+        if (!moved) return;
+        const c = e.target.closest('.ncard[data-tpl],.ncard[data-video],.ncard[data-led]');
+        if (!c) return;
+        if (cur && cur.c !== c) stop();
+        if (cur && cur.f) return; // đã nạp xong trên thẻ này
+        const st = cur = cur || { c };
+        clearTimeout(st.t);
+        st.t = setTimeout(() => {
+          const pic = c.querySelector('.pic'), video = !!(c.dataset.video || c.dataset.led);
+          if (!video) return scrollImage(st, c, pic);
+          const base = 1280, s = Math.max(pic.clientWidth / base, pic.clientHeight / 720); // phủ kín ô: ô lớn của khối cao hơn 16:9 vài px
+          const f = document.createElement('iframe');
+          f.className = 'live'; f.tabIndex = -1; f.title = 'Xem trước';
+          f.style.width = base + 'px'; f.style.height = '720px'; f.style.transform = `scale(${s})`;
+          f.src = c.dataset.led ? `/led/demo?preview=1&${c.dataset.led}` : `/video/demo?preview=1&template=${c.dataset.video}`;
+          pic.querySelector('a').after(f); st.f = f;
+          f.onload = () => { if (cur === st) setTimeout(() => f.classList.add('on'), 150); };
+        }, video(c) ? 500 : 80);
+      });
+      const video = (c) => !!(c.dataset.video || c.dataset.led);
+      // thiệp: ảnh dài chụp sẵn của cả trang (tools/previews.js → /demo/scroll-<mẫu>.jpg) trượt bằng CSS transition —
+      // hiện ngay khi rê chuột, trượt bằng GPU nên mượt; thiếu ảnh (mẫu mới chưa chụp) thì rơi về nạp trang thật vào iframe
+      const scrollImage = (st, c, pic) => {
+        const im = new Image();
+        im.className = 'scrollimg'; im.alt = ''; im.draggable = false;
+        im.src = `/demo/scroll-${c.dataset.tpl}.jpg`;
+        st.f = im;
+        im.onload = () => {
+          if (cur !== st) return;
+          pic.querySelector('a').after(im);
+          const speed = 90 * pic.clientWidth / 390; // px/giây trên màn hình, bằng tốc độ cuộn cũ của trang 390px
+          const run = () => {
+            if (cur !== st) return;
+            const d = im.offsetHeight - pic.clientHeight; if (d <= 0) return;
+            im.style.transition = 'none'; im.style.transform = 'translateY(0)'; void im.offsetHeight;
+            im.style.transition = `transform ${(d / speed).toFixed(2)}s linear`; im.style.transform = `translateY(${-d}px)`;
+          };
+          im.addEventListener('transitionend', () => { if (cur === st) st.t = setTimeout(run, 700); }); // hết trang: nghỉ chút rồi quay lại đầu
+          run();
+        };
+        im.onerror = () => { if (cur === st) liveFrame(st, c, pic); };
+      };
+      const liveFrame = (st, c, pic) => {
+          const base = 390, s = pic.clientWidth / base;
+          const f = document.createElement('iframe');
+          f.className = 'live'; f.tabIndex = -1; f.title = 'Xem trước';
+          f.style.width = base + 'px'; f.style.height = pic.clientHeight / s + 'px'; f.style.transform = `scale(${s})`;
+          f.src = `/demo/${c.dataset.tpl}?palette=${c.dataset.pal}&preview=1&lite=1`;
+          pic.querySelector('a').after(f); st.f = f;
+          f.onload = () => {
+            if (cur !== st) return;
+            setTimeout(() => f.classList.add('on'), 150);
+            let y = 0, last = 0, t0 = 0;
+            const w = f.contentWindow;
+            try { w.document.documentElement.style.scrollbarWidth = 'none'; } catch (err) { /* khác nguồn thì bỏ qua */ }
+            const step = (now) => {
+              if (cur !== st) return;
+              // trang thiệp đặt cuộn mượt: phải cuộn tức thời từng bước
+              if (last && now - last < 100) { y += (now - last) * 0.09 * Math.min(1, (now - (t0 || (t0 = now))) / 700); w.scrollTo({ top: y, behavior: 'instant' }); }
+              last = now;
+              if (y > w.document.documentElement.scrollHeight - w.innerHeight) y = 0; // hết trang thì quay lại đầu
+              st.raf = requestAnimationFrame(step);
+            };
+            setTimeout(() => { if (cur === st) st.raf = requestAnimationFrame(step); }, 350);
+          };
+      };
+      rows.addEventListener('mouseout', (e) => { if (cur && !cur.c.contains(e.relatedTarget)) stop(); });
+      // rê chuột vào một hàng: nạp trước ảnh trượt của các thẻ đang thấy để lúc rê tới thẻ là hiện ngay
+      rows.addEventListener('pointerover', (e) => {
+        const r = e.target.closest('.nrow'); if (!r || r.dataset.pf) return; r.dataset.pf = '1';
+        r.querySelectorAll('.ncard[data-tpl]').forEach((c) => { const b = c.getBoundingClientRect(); if (b.right > 0 && b.left < innerWidth) new Image().src = `/demo/scroll-${c.dataset.tpl}.jpg`; });
+      });
+    }
+
+    // mở thẳng /#mau: cuộn lại sau khi các hàng đã dựng xong
+    if (location.hash === '#mau') requestAnimationFrame(() => rows.scrollIntoView({ behavior: 'instant' }));
+  });
+})();
+</script>
+
+<script>
+// khu video — đổi mẫu khi bấm, tự chuyển mẫu sau mỗi 14 giây cho tới khi người xem bấm chọn
+(function () {
+  var L = [['polaroid','Polaroid','8 ảnh'],['phimcu','Phim cũ','10 ảnh'],['dienanh','Điện ảnh','8 ảnh'],['songhy','Song Hỷ đỏ','10 ảnh'],['traitim','Trái tim','6 ảnh'],['saodem','Trời sao','10 ảnh'],['lichhen','Lịch hẹn','8 ảnh'],['baocuoi','Báo cưới','10 ảnh'],['album','Album kỷ niệm','12 ảnh'],['tapchi','Tạp chí','10 ảnh'],['hoadao','Vòm hoa đào','8 ảnh'],['laxanh','Lá xanh','9 ảnh'],['toigian','Tối giản','12 ảnh']];
+  var box = document.getElementById('vsPicks'), fr = document.getElementById('vsFrame'), nm = document.getElementById('vsName'), full = document.getElementById('vsFull'), scr = document.getElementById('vsScreen');
+  box.innerHTML = L.map(function (t, i) { return '<button type="button" data-id="' + t[0] + '"' + (i ? '' : ' class="on"') + '><img src="/demo/vposter-' + t[0] + '.jpg" alt=""><span>' + t[1] + '</span><small>' + t[2] + '</small></button>'; }).join('');
+  var cur = 0, auto = true;
+  function pick(i) {
+    cur = i; var t = L[i];
+    fr.src = '/video/demo?preview=1&template=' + t[0]; nm.textContent = t[1]; full.href = '/video/demo?template=' + t[0];
+    box.querySelectorAll('button').forEach(function (b, k) { b.classList.toggle('on', k === i); });
+  }
+  box.addEventListener('click', function (e) { var b = e.target.closest('button'); if (!b) return; auto = false; pick([].indexOf.call(box.children, b)); });
+  setInterval(function () { if (auto && document.visibilityState === 'visible') pick((cur + 1) % L.length); }, 14000);
+  function fit() {
+    fr.style.transform = 'scale(' + scr.clientWidth / 1280 + ')';
+    document.querySelectorAll('.v-video').forEach(function (v) { var f = v.querySelector('iframe'); if (f) f.style.transform = 'scale(' + v.clientWidth / 1280 + ')'; });
+  }
+  fit(); addEventListener('resize', fit);
+})();
+</script>
+<div class="cmp cmp2" id="cmpbg"><button data-g="wall">Nền: tường thiệp</button><button data-g="mo" class="on">Nền: mờ</button><button data-g="tron">Nền: trơn</button></div>
+<div class="cmp" id="cmpopt"><button data-v="a" class="on">A · Gọn</button><button data-v="b">B · Chính giữa</button><button data-v="c">C · Thiệp lớn</button><button data-v="d">D · Ô thả ảnh</button><button data-v="cu">Bản cũ</button></div>
+<script>
+(function () {
+  var bb = document.getElementById('bb'), cmp = document.getElementById("cmpopt");
+  function set(v) {
+    ['a', 'b', 'c', 'd'].forEach(function (k) { bb.classList.toggle('o-' + k, k === v); });
+    cmp.querySelectorAll('button').forEach(function (b) { b.classList.toggle('on', b.dataset.v === v); });
+    history.replaceState(null, '', '?o=' + v);
+  }
+  cmp.onclick = function (e) { var b = e.target.closest('button'); if (b) set(b.dataset.v); };
+  var g = document.getElementById('cmpbg');
+  function setBg(v) { ['mo', 'tron'].forEach(function (k) { bb.classList.toggle('bg-' + k, k === v); }); g.querySelectorAll('button').forEach(function (b) { b.classList.toggle('on', b.dataset.g === v); }); }
+  g.onclick = function (e) { var b = e.target.closest('button'); if (b) setBg(b.dataset.g); };
+  var n = /[?&]nen=(wall|mo|tron)/.exec(location.search); if (n) setBg(n[1]);
+  var m = /[?&]o=(a|b|c|d|cu)/.exec(location.search); if (m) set(m[1]);
+  // kéo ảnh vào hình / ô thì hiện viền, thả thì sang trang gợi ý (mock)
+  document.querySelectorAll('.drop').forEach(function (z) {
+    ['dragenter', 'dragover'].forEach(function (ev) { z.addEventListener(ev, function (e) { e.preventDefault(); z.classList.add('drag-on'); }); });
+    ['dragleave', 'drop'].forEach(function (ev) { z.addEventListener(ev, function (e) { e.preventDefault(); z.classList.remove('drag-on'); if (ev === 'drop') location.href = '/goi-y'; }); });
+  });
+})();
+</script>
+</body>
+</html>

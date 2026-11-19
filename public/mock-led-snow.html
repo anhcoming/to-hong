@@ -1,0 +1,188 @@
+<!doctype html>
+<html lang="vi"><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Mock — Màn LED tuyết rơi</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Ephesis&family=Cormorant+Garamond:wght@400;500&family=Hanken+Grotesk:wght@400;600&display=swap">
+<style>
+html,body{margin:0;height:100%;background:#05070d;overflow:hidden;font-family:'Hanken Grotesk',system-ui,sans-serif}
+#stage{position:absolute;left:50%;top:50%;width:min(100vw,177.78vh);height:min(56.25vw,100vh);transform:translate(-50%,-50%);overflow:hidden;
+  background:radial-gradient(120% 80% at 50% 0%,#1d2b46 0%,#0f1830 45%,#070b17 100%)}
+canvas{position:absolute;inset:0;width:100%;height:100%}
+.txt{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;color:#f4f7ff;text-align:center;z-index:3;pointer-events:none}
+.mono{font:400 clamp(28px,7vw,110px)/1 'Ephesis',cursive;color:#e9eefc;text-shadow:0 0 24px rgba(190,210,255,.45);margin-bottom:.1em}
+.kick{font:500 clamp(9px,1.1vw,17px)/1 'Cormorant Garamond',serif;letter-spacing:.5em;text-transform:uppercase;color:#c9d6f2;opacity:.85;margin-bottom:1.6em}
+.names{font:400 clamp(30px,7.4vw,118px)/1.05 'Ephesis',cursive;text-shadow:0 0 30px rgba(170,200,255,.5),0 0 2px rgba(255,255,255,.6)}
+.names .amp{font-size:.55em;margin:0 .25em;color:#bcd0ff}
+.date{margin-top:1.2em;font:500 clamp(11px,1.5vw,24px)/1 'Cormorant Garamond',serif;letter-spacing:.35em;color:#dfe7fb}
+.tabs{position:fixed;left:50%;bottom:14px;transform:translateX(-50%);display:flex;gap:6px;z-index:9;background:rgba(0,0,0,.45);padding:6px;border-radius:999px}
+.tabs button{border:0;border-radius:999px;padding:8px 14px;background:rgba(255,255,255,.12);color:#fff;font:600 13px system-ui;cursor:pointer}
+.tabs button.on{background:#e9eefc;color:#101a30}
+</style></head><body>
+<div id="stage">
+  <canvas id="bg"></canvas>
+  <div class="txt">
+    <div class="mono">H N</div>
+    <div class="kick">Lễ Thành Hôn</div>
+    <div class="names">Gia Huy<span class="amp">&amp;</span>Bảo Ngọc</div>
+    <div class="date">20 · 12 · 2026</div>
+  </div>
+  <canvas id="fg"></canvas>
+</div>
+<div class="tabs"><button data-v="a" class="on">A · Tuyết nhẹ</button><button data-v="b">B · Tuyết + ánh trăng</button><button data-v="c">C · Tuyết dày, đọng sàn</button></div>
+<script>
+// Mock: tuyết rơi 3 lớp chiều sâu (xa: nhỏ, chậm, mờ; gần: to, nhoè, nhanh), lắc lư theo gió nhẹ.
+(function () {
+  var st = document.getElementById('stage'), bg = document.getElementById('bg'), fg = document.getElementById('fg');
+  var b = bg.getContext('2d'), f = fg.getContext('2d'), W, H, K = Math.min(2, devicePixelRatio || 1);
+  var V = 'a', flakes = [], ground = [];
+  function size() { var r = st.getBoundingClientRect(); W = r.width; H = r.height; [bg, fg].forEach(function (c) { c.width = W * K; c.height = H * K; }); }
+  var rnd = function (a, c) { return a + Math.random() * (c - a); };
+  // Bông tuyết tinh thể 6 cánh (vẽ một lần ra ảnh, mỗi kiểu một dáng nhánh ngẫu nhiên nhưng đối xứng):
+  // nét kính trong — viền sáng, lòng tối hơn, vệt sáng mảnh ở giữa — như tinh thể băng thật.
+  function crystal(seed) {
+    var S = 192, c = document.createElement('canvas'); c.width = c.height = S;
+    var g = c.getContext('2d'), R = S * 0.42, rs = seed;
+    var rnd2 = function () { rs = (rs * 9301 + 49297) % 233280; return rs / 233280; };
+    var kind = seed % 4; // 0 nhánh dày (dendrite), 1 nhánh thưa dài, 2 bản lục giác + nhánh ngắn, 3 hình sao đơn giản
+    var segs = [];
+    var L = function (x1, y1, x2, y2, w) { segs.push([x1, y1, x2, y2, w]); };
+    // một cánh (dọc lên trên, tâm 0,0), các nhánh đối xứng hai bên
+    var nb = kind === 3 ? 1 : kind === 1 ? 3 : kind === 2 ? 2 : 4 + Math.floor(rnd2() * 2);
+    var arm = [];
+    arm.push([0, 0, 0, -R, 1]);
+    for (var k = 0; k < nb; k++) {
+      var t = 0.3 + 0.6 * (k + rnd2() * 0.4) / nb, len = R * (kind === 1 ? 0.42 : 0.34) * (1.05 - t * 0.75) * (0.8 + rnd2() * 0.4), ang = Math.PI / 3 * (0.9 + rnd2() * 0.2);
+      var bx = Math.sin(ang) * len, by = -R * t - Math.cos(ang) * len;
+      arm.push([0, -R * t, bx, by, 0.75]); arm.push([0, -R * t, -bx, by, 0.75]);
+      if (kind === 0 && len > R * 0.18) { // nhánh con
+        var tt = 0.55, sx = bx * tt, sy = -R * t + (by + R * t) * tt, sl = len * 0.38;
+        arm.push([sx, sy, sx + Math.sin(0) * sl, sy - sl, 0.5]); arm.push([-sx, sy, -sx, sy - sl, 0.5]);
+      }
+    }
+    if (kind === 2) { // bản lục giác ở tâm
+      for (var h = 0; h < 6; h++) { var a1 = h * Math.PI / 3, a2 = (h + 1) * Math.PI / 3, rr = R * 0.24; L(Math.sin(a1) * rr, -Math.cos(a1) * rr, Math.sin(a2) * rr, -Math.cos(a2) * rr, 0.8); }
+    }
+    for (var m = 0; m < 6; m++) { var A = m * Math.PI / 3, ca = Math.cos(A), sa = Math.sin(A);
+      arm.forEach(function (q) { L(q[0] * ca - q[1] * sa, q[0] * sa + q[1] * ca, q[2] * ca - q[3] * sa, q[2] * sa + q[3] * ca, q[4]); }); }
+    var W0 = S * 0.034;
+    g.translate(S / 2, S / 2); g.lineCap = 'round'; g.lineJoin = 'round';
+    var pass = function (wm, style, blur) { g.strokeStyle = style; g.shadowBlur = blur || 0; g.shadowColor = 'rgba(190,210,255,.9)';
+      segs.forEach(function (q) { g.lineWidth = Math.max(1, W0 * q[4] * wm); g.beginPath(); g.moveTo(q[0], q[1]); g.lineTo(q[2], q[3]); g.stroke(); }); };
+    pass(1.6, 'rgba(200,215,255,.35)', S * 0.05); // quầng sáng
+    pass(1.0, 'rgba(245,248,255,.95)');            // thân băng
+    pass(0.45, 'rgba(120,135,165,.75)');           // lòng tối (độ dày của kính)
+    pass(0.15, 'rgba(255,255,255,.95)');           // vệt sáng mảnh
+    g.fillStyle = 'rgba(255,255,255,.9)'; g.beginPath(); g.arc(0, 0, W0 * 0.9, 0, 7); g.fill();
+    return c;
+  }
+  var SP = [], SPB = [];
+  for (var q = 1; q <= 12; q++) { var cr = crystal(q * 7919); SP.push(cr);
+    var bl = document.createElement('canvas'); bl.width = bl.height = cr.width; var bx = bl.getContext('2d'); bx.filter = 'blur(' + (cr.width * .018) + 'px)'; bx.drawImage(cr, 0, 0); SPB.push(bl); }
+  // hạt tuyết li ti ở rất xa (chấm mềm)
+  var DOT = (function () { var c = document.createElement('canvas'), s = 32; c.width = c.height = s; var g = c.getContext('2d'), gr = g.createRadialGradient(s / 2, s / 2, 0, s / 2, s / 2, s / 2);
+    gr.addColorStop(0, 'rgba(255,255,255,1)'); gr.addColorStop(.4, 'rgba(235,242,255,.7)'); gr.addColorStop(1, 'rgba(220,232,255,0)'); g.fillStyle = gr; g.fillRect(0, 0, s, s); return c; })();
+  function cfg() { return V === 'a' ? { n: 170, wind: .15 } : V === 'b' ? { n: 200, wind: .25 } : { n: 340, wind: .35 }; }
+  function make(init) {
+    var z = Math.random(), L = z < .68 ? 0 : z < .93 ? 1 : 2; // 0 xa, 1 giữa, 2 gần
+    var dot = L === 0 && Math.random() < .45; // xa hẳn: chấm tròn li ti (bé tới mức không thấy cánh)
+    var r = (dot ? rnd(.6, 1.3) : [rnd(2.2, 4.5), rnd(5, 10), rnd(13, 21)][L]) * (H / 700); // xa: tinh thể nhỏ, giữa: vừa, gần: to
+    return { L: L, x: rnd(-.1, 1.1) * W, y: init ? rnd(-.1, 1) * H : rnd(-.15, -.02) * H, r: r,
+      dot: dot, vy: [rnd(14, 24), rnd(26, 40), rnd(48, 70)][L] * (H / 700), ph: rnd(0, 6.28), sw: rnd(.4, 1.1), amp: rnd(6, 22) * (L + 1) * (H / 700),
+      a: [rnd(.45, .75), rnd(.55, .85), rnd(.4, .6)][L], si: Math.floor(Math.random() * SP.length), rot: rnd(0, 6.28), vr: rnd(-.5, .5), tilt: rnd(0, 6.28) };
+  }
+  // kiểu C: tuyết đọng có thêm — bông rơi xuống nằm lại trên lớp tuyết rồi tan dần, ánh lấp lánh trên mặt tuyết,
+  // sương lạnh trôi sát sàn, thỉnh thoảng có cơn gió: tuyết rơi xiên mạnh hơn và cuốn bụi tuyết bay lên khỏi mặt sàn.
+  var rest = [], glints = [], drift = [];
+  // độ cao mặt tuyết (px tính từ đáy) tại vị trí u (0..1)
+  function gh(u) { var k = Math.max(0, Math.min(ground.length - 1, u * (ground.length - 1))), i0 = Math.floor(k), i1 = Math.min(ground.length - 1, i0 + 1), g = ground[i0] + (ground[i1] - ground[i0]) * (k - i0);
+    return H * (.028 + .014 * Math.sin(u * 7.3 + .6) + .008 * Math.sin(u * 19 + 2.1) + .004 * Math.sin(u * 41)) + g; }
+  function reset() { flakes = []; for (var i = 0; i < cfg().n; i++) flakes.push(make(true)); ground = new Float32Array(160); rest = []; drift = [];
+    glints = []; for (var j = 0; j < 70; j++) glints.push({ u: Math.random(), d: Math.random(), ph: rnd(0, 6.28), sp: rnd(.6, 1.6), s: rnd(.6, 1.4) }); }
+  // gió giật: phần lớn thời gian lặng, thỉnh thoảng nổi một cơn (0..1)
+  function gustAt(t) { var x = Math.sin(t * .17) * .7 + Math.sin(t * .053 + 1.3) * .3; return Math.max(0, Math.min(1, (x - .55) / .3)); }
+  function drawBg(t) {
+    b.setTransform(K, 0, 0, K, 0, 0); b.clearRect(0, 0, W, H);
+    if (V === 'b') { // ánh trăng: quầng sáng trên cao + tia sáng xiên mờ
+      var g = b.createRadialGradient(W * .78, H * .12, 0, W * .78, H * .12, H * .55); g.addColorStop(0, 'rgba(230,238,255,.35)'); g.addColorStop(.25, 'rgba(170,195,255,.12)'); g.addColorStop(1, 'rgba(0,0,0,0)');
+      b.fillStyle = g; b.fillRect(0, 0, W, H);
+      b.save(); b.globalCompositeOperation = 'lighter';
+      for (var i = 0; i < 4; i++) { var a = .035 + .02 * Math.sin(t * .3 + i); b.fillStyle = 'rgba(200,215,255,' + a + ')'; b.beginPath(); var x0 = W * (.62 + i * .06); b.moveTo(x0, 0); b.lineTo(x0 + W * .05, 0); b.lineTo(x0 - W * .35, H); b.lineTo(x0 - W * .42, H); b.fill(); }
+      b.restore();
+    }
+    // sàn: sương lạnh mờ dưới đáy
+    var gb = b.createLinearGradient(0, H * .72, 0, H); gb.addColorStop(0, 'rgba(160,185,235,0)'); gb.addColorStop(1, 'rgba(160,185,235,' + (V === 'c' ? .22 : .12) + ')'); b.fillStyle = gb; b.fillRect(0, H * .72, W, H * .28);
+    if (V === 'c') { // tuyết đọng: dải trắng mềm gợn theo chỗ hạt rơi xuống
+      // sương lạnh trôi chậm sát sàn
+      for (var m = 0; m < 3; m++) { var mx = (((m * .47 + t * (.012 + m * .006)) % 1.5) - .25) * W, my = H * (.84 + m * .03), mr = W * (.32 + m * .06);
+        var mg = b.createRadialGradient(mx, my, 0, mx, my, mr); mg.addColorStop(0, 'rgba(190,205,240,.10)'); mg.addColorStop(1, 'rgba(190,205,240,0)');
+        b.save(); b.translate(mx, my); b.scale(1, .22); b.translate(-mx, -my); b.fillStyle = mg; b.fillRect(mx - mr, my - mr, mr * 2, mr * 2); b.restore(); }
+      b.beginPath(); b.moveTo(0, H);
+      for (var j = 0; j < ground.length; j++) { var u = j / (ground.length - 1); b.lineTo(u * W, H - gh(u)); }
+      b.lineTo(W, H); b.closePath();
+      var gg = b.createLinearGradient(0, H * .9, 0, H); gg.addColorStop(0, 'rgba(225,235,255,.18)'); gg.addColorStop(.45, 'rgba(225,235,255,.42)'); gg.addColorStop(1, 'rgba(205,220,250,.6)'); b.fillStyle = gg; b.filter = 'blur(' + (H * .008) + 'px)'; b.fill(); b.filter = 'none';
+      // bông tuyết rơi xuống nằm lại trên mặt tuyết, nằm nghiêng, tan dần
+      for (var q = rest.length - 1; q >= 0; q--) { var R0 = rest[q]; R0.life += 1 / 60;
+        var al = Math.min(1, R0.life * 4) * Math.max(0, 1 - R0.life / R0.max); if (al <= 0) { rest.splice(q, 1); continue; }
+        var ry = H - gh(R0.x / W) + R0.r * .3, s2 = R0.r * 2.4 * (1 - .35 * R0.life / R0.max);
+        b.save(); b.globalAlpha = al * .8; b.translate(R0.x, ry); b.scale(1, .45); b.rotate(R0.rot); b.drawImage(R0.sp, -s2, -s2, s2 * 2, s2 * 2); b.restore(); }
+      // lấp lánh trên mặt tuyết: chớp sáng ngắn, mỗi điểm một nhịp
+      b.save(); b.globalCompositeOperation = 'lighter';
+      for (var q2 = 0; q2 < glints.length; q2++) { var G = glints[q2], v = Math.pow(Math.max(0, Math.sin(t * G.sp + G.ph)), 24); if (v < .02) continue;
+        var gx = G.u * W, gy = H - gh(G.u) * (.25 + .7 * G.d), L2 = H * .012 * G.s * (.5 + v);
+        b.globalAlpha = v * .9; b.strokeStyle = '#fff'; b.lineWidth = Math.max(.6, H * .0012);
+        b.beginPath(); b.moveTo(gx - L2, gy); b.lineTo(gx + L2, gy); b.moveTo(gx, gy - L2 * 1.3); b.lineTo(gx, gy + L2 * 1.3); b.stroke();
+        b.globalAlpha = v * .5; b.drawImage(DOT, gx - L2 * .6, gy - L2 * .6, L2 * 1.2, L2 * 1.2); }
+      b.restore();
+    }
+  }
+  var last = performance.now();
+  function frame(now) {
+    var dt = Math.min(.05, (now - last) / 1000), t = now / 1000; last = now;
+    drawBg(t);
+    var c = cfg(), G1 = gustAt(t) * (V === 'c' ? 1 : .35), gust = Math.sin(t * .23) * .6 + Math.sin(t * .071) * .4 + G1 * 2.6;
+    b.setTransform(K, 0, 0, K, 0, 0); f.setTransform(K, 0, 0, K, 0, 0); f.clearRect(0, 0, W, H);
+    for (var i = 0; i < flakes.length; i++) {
+      var p = flakes[i];
+      p.y += p.vy * dt; p.x += (gust * c.wind * 40 * (p.L + 1) * (H / 700)) * dt;
+      var x = p.x + Math.sin(t * p.sw + p.ph) * p.amp;
+      var floor = V === 'c' ? H - gh(Math.max(0, Math.min(1, x / W))) * (p.L === 0 ? .9 : .6) : H + 10;
+      if (p.y > floor) {
+        if (V === 'c' && p.L > 0) { var k = Math.max(0, Math.min(ground.length - 1, Math.round(x / W * (ground.length - 1)))); ground[k] = Math.min(H * .03, ground[k] + .4);
+          if (!p.dot && rest.length < 160) rest.push({ x: x, r: p.r * (p.L === 2 ? .55 : .9), sp: SP[p.si], rot: p.rot, life: 0, max: rnd(3, 7) }); }
+        flakes[i] = make(false); continue;
+      }
+      if (x < -20) p.x += W + 40; if (x > W + 20) p.x -= W + 40;
+      // lớp xa + giữa vẽ sau chữ (canvas nền), lớp gần vẽ trước chữ, nhoè (bokeh)
+      var ctx = p.L === 2 ? f : b;
+      var edge = Math.max(0, Math.min(1, (p.y + H * .04) / (H * .12))); // vào màn từ từ ở mép trên
+      ctx.globalAlpha = Math.min(1, p.a * edge * (V === 'b' && x > W * .4 ? 1.15 : 1));
+      if (p.dot) { var s0 = p.r * 2.6; ctx.drawImage(DOT, x - s0, p.y - s0, s0 * 2, s0 * 2); continue; }
+      // xoay chậm + lật nhẹ (nghiêng theo một trục) như bông tuyết đang chao trong gió
+      p.rot += p.vr * dt; var cz = Math.cos(t * 0.8 + p.tilt), sq = 0.75 + 0.25 * cz, s1 = p.r * 2.4;
+      // bông quay mặt chính diện thì bắt sáng, sáng lên một chút rồi dịu lại
+      ctx.globalAlpha = Math.min(1, ctx.globalAlpha * (.85 + .35 * Math.pow(Math.max(0, cz), 12)));
+      var ca = Math.cos(p.rot), sa = Math.sin(p.rot);
+      ctx.setTransform(K * ca, K * sa, -K * sa * sq, K * ca * sq, K * x, K * p.y);
+      ctx.drawImage(p.L === 2 ? SPB[p.si] : SP[p.si], -s1, -s1, s1 * 2, s1 * 2);
+      ctx.setTransform(K, 0, 0, K, 0, 0);
+    }
+    b.globalAlpha = f.globalAlpha = 1;
+    // cơn gió cuốn bụi tuyết bay lên khỏi mặt sàn
+    if (V === 'c') {
+      var dir = gust >= 0 ? 1 : -1, n = G1 * 90 * dt; while (n > 0) { if (Math.random() < n) { var du = Math.random(); drift.push({ x: du * W, y: H - gh(du), vx: dir * rnd(60, 180) * (H / 700), vy: -rnd(8, 40) * (H / 700), life: 0, max: rnd(1.2, 2.6), r: rnd(.5, 1.4) * (H / 700) }); } n -= 1; }
+      b.save(); b.globalCompositeOperation = 'lighter';
+      for (var d = drift.length - 1; d >= 0; d--) { var P = drift[d]; P.life += dt; if (P.life > P.max) { drift.splice(d, 1); continue; }
+        P.x += P.vx * dt; P.y += P.vy * dt; P.vy += 12 * (H / 700) * dt; P.vx *= .995;
+        var fa = Math.sin(Math.PI * P.life / P.max) * .7, s3 = P.r * 3; b.globalAlpha = fa; b.drawImage(DOT, P.x - s3, P.y - s3, s3 * 2, s3 * 2); }
+      b.restore();
+    }
+    if (V === 'c') for (var j = 1; j < ground.length - 1; j++) ground[j] = ground[j] * .9995 + (ground[j - 1] + ground[j + 1] - 2 * ground[j]) * .02; // tuyết đọng tự san đều
+    requestAnimationFrame(frame);
+  }
+  document.querySelectorAll('.tabs button').forEach(function (bt) { bt.onclick = function () { V = bt.dataset.v; document.querySelectorAll('.tabs button').forEach(function (x) { x.classList.toggle('on', x === bt); }); reset(); }; });
+  addEventListener('resize', function () { size(); reset(); });
+  size(); reset(); requestAnimationFrame(frame);
+})();
+</script>
+</body></html>

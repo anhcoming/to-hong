@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="vi"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Mock loading trong khung</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@500;600;700&display=swap">
+<style>
+*{box-sizing:border-box}body{margin:0;padding:28px;background:#f6eef0;font-family:'Be Vietnam Pro',sans-serif;color:#2b2224}
+.row{display:flex;flex-wrap:wrap;gap:28px;justify-content:center}
+.it{text-align:center}.it h3{margin:0 0 10px;font-size:14px}
+.slot{position:relative;width:172px;height:306px;border:2px dashed rgba(214,69,93,.45);border-radius:18px;background:rgba(255,255,255,.75);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;color:#b5485a;overflow:hidden}
+.lb{font-size:12.5px;font-weight:600;color:#b5485a}
+/* A vòng gradient */
+.ra{width:48px;height:48px;border-radius:50%;background:conic-gradient(from 0deg,transparent,#ef7d8d,#d6455d);-webkit-mask:radial-gradient(farthest-side,transparent calc(100% - 5px),#000 calc(100% - 4px));mask:radial-gradient(farthest-side,transparent calc(100% - 5px),#000 calc(100% - 4px));animation:spin .9s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+/* B 3 trái tim nhảy */
+.hb{display:flex;gap:8px}.hb i{font-style:normal;font-size:20px;color:#d6455d;animation:hop 1s ease-in-out infinite}.hb i:nth-child(2){animation-delay:.15s}.hb i:nth-child(3){animation-delay:.3s}
+@keyframes hop{0%,100%{transform:translateY(0) scale(.8);opacity:.5}40%{transform:translateY(-12px) scale(1.1);opacity:1}}
+/* C trái tim đập + vòng lan */
+.hp{position:relative;width:60px;height:60px;display:grid;place-items:center}.hp b{font-size:34px;color:#d6455d;animation:beat 1s ease-in-out infinite}.hp::before,.hp::after{content:"";position:absolute;inset:0;border-radius:50%;border:2px solid #ef7d8d;animation:ring 1.6s ease-out infinite;opacity:0}.hp::after{animation-delay:.8s}
+@keyframes beat{0%,100%{transform:scale(1)}15%{transform:scale(1.25)}30%{transform:scale(.95)}45%{transform:scale(1.15)}}
+@keyframes ring{0%{transform:scale(.6);opacity:.8}100%{transform:scale(1.8);opacity:0}}
+/* D khung thiệp hiện dần (khung xương lấp lánh) */
+.sk{width:120px;display:flex;flex-direction:column;gap:9px;align-items:center}.sk span{display:block;border-radius:8px;background:linear-gradient(90deg,#f6dfe3 25%,#fff4f6 45%,#f6dfe3 65%);background-size:300% 100%;animation:sh 1.2s linear infinite}
+@keyframes sh{from{background-position:100% 0}to{background-position:0 0}}
+/* E nhẫn cưới xoay + lấp lánh */
+.rg{position:relative;width:64px;height:64px}.rg svg{width:64px;height:64px;animation:spin 2.4s linear infinite}.rg em{position:absolute;font-style:normal;color:#f3c76a;animation:tw 1.2s ease-in-out infinite}.rg em:nth-of-type(1){top:-6px;right:-4px}.rg em:nth-of-type(2){bottom:-4px;left:-6px;animation-delay:.6s;font-size:12px}
+@keyframes tw{0%,100%{opacity:0;transform:scale(.4)}50%{opacity:1;transform:scale(1.1)}}
+/* F phong bì mở */
+.env{position:relative;width:76px;height:52px;border-radius:6px;background:#d6455d;animation:bob 1.4s ease-in-out infinite}.env::before{content:"";position:absolute;left:0;right:0;top:0;height:30px;background:#c03a51;clip-path:polygon(0 0,100% 0,50% 100%);transform-origin:top;animation:flap 1.4s ease-in-out infinite}.env::after{content:"♥";position:absolute;left:50%;top:14px;transform:translateX(-50%);color:#f3d79a;font-size:14px}
+@keyframes flap{0%,100%{transform:rotateX(0)}50%{transform:rotateX(180deg)}}@keyframes bob{50%{transform:translateY(-6px)}}
+</style></head><body>
+<div class="row">
+<div class="it"><h3>A · Vòng xoay gradient</h3><div class="slot"><div class="ra"></div></div></div>
+<div class="it"><h3>B · 3 trái tim nhảy</h3><div class="slot"><div class="hb"><i>♥</i><i>♥</i><i>♥</i></div><span class="lb">Đang tạo thiệp…</span></div></div>
+<div class="it"><h3>C · Trái tim đập + vòng lan</h3><div class="slot"><div class="hp"><b>♥</b></div></div></div>
+<div class="it"><h3>D · Thiệp hiện dần (khung xương)</h3><div class="slot"><div class="sk"><span style="width:70px;height:10px"></span><span style="width:110px;height:120px"></span><span style="width:90px;height:12px"></span><span style="width:60px;height:10px"></span></div></div></div>
+<div class="it"><h3>E · Nhẫn cưới xoay lấp lánh</h3><div class="slot"><div class="rg"><svg viewBox="0 0 64 64" fill="none" stroke="#d6455d" stroke-width="3"><circle cx="25" cy="34" r="14"/><circle cx="39" cy="34" r="14" stroke="#f3c76a"/></svg><em>✦</em><em>✦</em></div></div></div>
+<div class="it"><h3>F · Phong bì mở</h3><div class="slot" style="perspective:300px"><div class="env"></div><span class="lb">Đang tạo thiệp…</span></div></div>
+</div>
+</body></html>

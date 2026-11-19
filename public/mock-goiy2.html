@@ -1,0 +1,207 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Mock gợi ý thiệp trên điện thoại</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&amp;family=Dancing+Script:wght@700&amp;display=swap">
+<style>
+*{box-sizing:border-box}
+html,body{margin:0;height:100%}
+body{font-family:'Be Vietnam Pro',system-ui,sans-serif;color:#2b2023;background:#e9e2dd;-webkit-tap-highlight-color:transparent}
+/* khung xem: điện thoại thật thì full màn; máy tính thì một cột 400px giữa */
+.app{position:relative;max-width:430px;height:100dvh;margin:0 auto;background:#fffafa;overflow:hidden;display:flex;flex-direction:column}
+@media (min-width:600px){.app{height:min(900px,100dvh);margin-top:max(0px,calc((100dvh - 900px)/2));border-radius:28px;box-shadow:0 30px 80px rgba(60,20,30,.25)}}
+/* thanh trên gọn: logo nhỏ + ảnh của bạn */
+.top{flex:none;display:flex;align-items:center;gap:10px;padding:10px 14px;background:#fffafa;z-index:5}
+.logo{font:700 24px/1 'Dancing Script',cursive;color:#d6455d;text-decoration:none;margin-right:auto}
+.mine{display:flex;align-items:center;gap:6px;padding:4px 10px 4px 4px;border:1px solid #f0dfe2;border-radius:999px;background:#fff;font-size:12.5px;font-weight:600;color:#6b5a5e}
+.mine i{display:flex}
+.mine i b{width:26px;height:26px;border-radius:50%;border:2px solid #fff;background:#eee center/cover;margin-left:-8px}
+.mine i b:first-child{margin-left:0}
+.who{flex:none;display:flex;align-items:center;gap:8px;margin:0 14px 10px;padding:9px 12px;border-radius:12px;background:#fbeff1;font-size:13px;color:#6b5a5e}
+.who b{color:#2b2023}
+.who span{margin-left:auto;color:#d6455d;font-weight:700}
+.cta{flex:none;display:flex;gap:10px;align-items:center;padding:10px 14px calc(12px + env(safe-area-inset-bottom));background:linear-gradient(transparent,#fffafa 30%);z-index:6}
+.btn{border:0;border-radius:999px;padding:15px 18px;font:700 16px 'Be Vietnam Pro',sans-serif;cursor:pointer}
+.btn.main{flex:1;background:linear-gradient(135deg,#d6455d,#e8708a);color:#fff;box-shadow:0 10px 24px rgba(214,69,93,.3)}
+.btn.ghost{background:#fff;border:1.5px solid #f0dfe2;color:#2b2023;padding:13px 16px}
+.chip{display:inline-block;padding:3px 9px;border-radius:999px;background:#fbeff1;color:#d6455d;font-size:11.5px;font-weight:700}
+.chip.best{background:#d6455d;color:#fff}
+/* khung thiệp thu nhỏ từ 375px */
+.view{position:relative;overflow:hidden;background:#f6eeee}
+.view iframe{position:absolute;left:0;top:0;width:375px;border:0;transform-origin:0 0;background:#fff}
+.view .wait{position:absolute;inset:0;display:grid;place-items:center;color:#a99;font-size:13px}
+
+/* ===== A · vuốt từng thiệp to ===== */
+.A{flex:1;min-height:0;display:flex;flex-direction:column}
+.A .rail{flex:1;min-height:0;display:flex;gap:12px;overflow-x:auto;scroll-snap-type:x mandatory;padding:0 14px;scrollbar-width:none}
+.A .rail::-webkit-scrollbar{display:none}
+.A .slide{position:relative;flex:none;width:calc(100% - 28px);height:100%;scroll-snap-align:center;border-radius:22px;overflow:hidden;box-shadow:0 12px 30px rgba(120,40,50,.15)}
+.A .slide:first-child{margin-left:0}
+.A .view{position:absolute;inset:0}
+.A .tag{position:absolute;left:10px;right:10px;top:10px;display:flex;align-items:center;gap:8px;padding:8px 12px;border-radius:14px;background:rgba(255,255,255,.88);backdrop-filter:blur(8px);font-size:13px;z-index:2}
+.A .tag b{font-size:14px}
+.A .tag .n{margin-left:auto;color:#a99;font-weight:600}
+.A .dots{flex:none;display:flex;justify-content:center;gap:6px;padding:10px 0 0}
+.A .dots i{width:6px;height:6px;border-radius:9px;background:#e6d0d4;transition:width .2s,background .2s}
+.A .dots i.on{width:18px;background:#d6455d}
+
+/* ===== B · lưới 2 cột + xem to ===== */
+.B{flex:1;min-height:0;overflow:auto;padding:0 14px 90px}
+.B h2{margin:4px 2px 10px;font-size:15px}
+.B h2 small{font-weight:500;color:#a99;margin-left:6px}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.gi{position:relative;border:0;padding:0;background:none;text-align:left;cursor:pointer;font:inherit;color:inherit}
+.gi .im{display:block;width:100%;aspect-ratio:9/15;border-radius:16px;background:#f3e8e8 top/cover;box-shadow:0 6px 18px rgba(120,40,50,.12)}
+.gi .chip{position:absolute;left:8px;top:8px}
+.gi b{display:block;margin:7px 2px 0;font-size:13.5px}
+.gi small{display:block;margin:1px 2px 0;color:#a99;font-size:12px}
+.more{display:block;width:100%;margin:16px 0 0}
+.sheet{position:absolute;inset:0;z-index:20;display:flex;flex-direction:column;background:#fffafa;transform:translateY(100%);transition:transform .3s cubic-bezier(.2,.8,.2,1)}
+.sheet.show{transform:none}
+.sheet .sh{flex:none;display:flex;align-items:center;gap:10px;padding:12px 14px}
+.sheet .sh button{width:36px;height:36px;border-radius:50%;border:0;background:#fbeff1;color:#d6455d;font-size:18px;cursor:pointer}
+.sheet .sh div{flex:1;min-width:0}
+.sheet .sh b{display:block;font-size:15px}
+.sheet .sh small{color:#a99;font-size:12px}
+.sheet .view{flex:1;margin:0 14px;border-radius:20px}
+
+/* ===== C · xem to + dải mẫu ===== */
+.C{flex:1;min-height:0;display:flex;flex-direction:column}
+.C .big{flex:1;min-height:0;margin:0 14px;border-radius:22px;box-shadow:0 12px 30px rgba(120,40,50,.15)}
+.C .meta{flex:none;display:flex;align-items:center;gap:8px;padding:10px 16px 6px;font-size:13px}
+.C .meta b{font-size:15px}
+.C .meta span{color:#a99}
+.C .strip{flex:none;display:flex;gap:8px;overflow-x:auto;padding:4px 14px 2px;scrollbar-width:none}
+.C .strip::-webkit-scrollbar{display:none}
+.C .strip button{flex:none;width:58px;border:0;padding:0;background:none;cursor:pointer;font:inherit}
+.C .strip i{display:block;width:58px;height:84px;border-radius:12px;background:#f3e8e8 top/cover;border:2.5px solid transparent;transition:border-color .2s,transform .2s}
+.C .strip button.on i{border-color:#d6455d;transform:translateY(-3px)}
+.C .strip small{display:block;margin-top:3px;font-size:10.5px;color:#8a7a7d;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-align:center}
+.C .strip button.on small{color:#d6455d;font-weight:700}
+
+/* chuyển phương án (chỉ có trong mock) */
+.opt{position:fixed;left:50%;top:10px;translate:-50% 0;z-index:99;display:flex;gap:4px;padding:4px;border-radius:999px;background:#2b2023;box-shadow:0 8px 24px rgba(0,0,0,.3)}
+.opt button{border:0;border-radius:999px;padding:7px 12px;background:none;color:#fff;font:600 12px 'Be Vietnam Pro',sans-serif;cursor:pointer;white-space:nowrap}
+.opt button.on{background:#d6455d}
+@media (max-width:599px){.opt{top:6px}.top{padding-top:52px}}
+[hidden]{display:none!important}
+</style>
+</head>
+<body>
+<div class="opt" id="opt"><button class="on" data-o="A">A · Vuốt thiệp to</button><button data-o="B">B · Lưới 2 cột</button><button data-o="C">C · Xem to + dải mẫu</button></div>
+
+<div class="app" id="app">
+  <header class="top">
+    <a class="logo" href="#">Cưới Nha</a>
+    <span class="mine"><i><b style="background-image:url(/demo/hero-1.jpg)"></b><b style="background-image:url(/demo/hero-2.jpg)"></b><b style="background-image:url(/demo/hero-3.jpg)"></b></i>3 ảnh · Đổi</span>
+  </header>
+  <div class="who">👰🤵 <b>Gia Huy &amp; Bảo Ngọc</b> · 20.12.2026<span>Sửa</span></div>
+
+  <!-- A -->
+  <section class="A" id="A">
+    <div class="rail" id="railA"></div>
+    <div class="dots" id="dotsA"></div>
+  </section>
+
+  <!-- B -->
+  <section class="B" id="B" hidden>
+    <h2>Hợp với ảnh của bạn <small>bấm để xem to</small></h2>
+    <div class="grid" id="gridB"></div>
+    <button class="btn ghost more">Xem thêm 6 mẫu</button>
+  </section>
+
+  <!-- C -->
+  <section class="C" id="C" hidden>
+    <div class="view big" id="bigC"><iframe title="Xem thiệp"></iframe><span class="wait">Đang dựng thiệp…</span></div>
+    <div class="meta" id="metaC"></div>
+    <div class="strip" id="stripC"></div>
+  </section>
+
+  <div class="cta" id="cta"><button class="btn main" id="use">Dùng thiệp này</button></div>
+
+  <!-- B: xem to -->
+  <div class="sheet" id="sheetB">
+    <div class="sh"><button id="shX" aria-label="Đóng">✕</button><div><b id="shT"></b><small id="shS"></small></div><button id="shP" aria-label="Mẫu trước">‹</button><button id="shN" aria-label="Mẫu sau">›</button></div>
+    <div class="view" id="shV"><iframe title="Xem thiệp"></iframe><span class="wait">Đang dựng thiệp…</span></div>
+    <div class="cta"><button class="btn main">Dùng thiệp này</button></div>
+  </div>
+</div>
+
+<script>
+// Mock: mẫu thật (/api/meta), ảnh bìa thật (/demo/cover-…jpg), thiệp thật trong khung (/goi-y/xem/…?lite=1)
+const $ = (s, r = document) => r.querySelector(s);
+let T = [], cur = { A: 0, C: 0, B: 0 };
+const LABEL = ['Hợp ảnh nhất', 'Gợi ý', 'Gợi ý', 'Khác phong cách', 'Gợi ý', 'Gợi ý'];
+const cover = (t) => `/demo/cover-${t.id}-${t.palettes[0].id}.jpg`;
+const live = (t) => `/goi-y/xem/${t.id}?palette=${t.palettes[0].id}&lite=1&groom=Gia%20Huy&bride=B%E1%BA%A3o%20Ng%E1%BB%8Dc&date=2026-12-20`;
+function fitView(v) { const fr = v.querySelector('iframe'); if (!fr) return; const sc = v.clientWidth / 375; fr.style.transform = `scale(${sc})`; fr.style.height = Math.ceil(v.clientHeight / sc) + 'px'; }
+function load(v, t) { const fr = v.querySelector('iframe'); const w = v.querySelector('.wait'); if (w) w.hidden = false; fr.style.opacity = 0; fr.onload = () => { fr.style.opacity = 1; if (w) w.hidden = true; }; fr.src = live(t); fitView(v); }
+addEventListener('resize', () => document.querySelectorAll('.view').forEach(fitView));
+
+fetch('/api/meta').then((r) => r.json()).then((m) => {
+  // 6 mẫu đầu "hợp ảnh" (mock: lấy đại diện mỗi nhóm), B lấy 12
+  const seen = new Set(); T = [];
+  m.templates.forEach((t) => { if (!seen.has(t.group) && T.length < 6) { seen.add(t.group); T.push(t); } });
+  m.templates.forEach((t) => { if (T.length < 12 && !T.includes(t)) T.push(t); });
+  buildA(); buildB(); buildC();
+});
+
+// ----- A -----
+function buildA() {
+  const rail = $('#railA'), dots = $('#dotsA'), list = T.slice(0, 6);
+  rail.innerHTML = list.map((t, i) => `<article class="slide"><div class="tag"><span class="chip ${i ? '' : 'best'}">${LABEL[i]}</span><b>${t.name}</b><span class="n">${i + 1}/${list.length}</span></div><div class="view"><iframe title="${t.name}" loading="lazy"></iframe><span class="wait">Đang dựng thiệp…</span></div></article>`).join('');
+  dots.innerHTML = list.map((_, i) => `<i class="${i ? '' : 'on'}"></i>`).join('');
+  const slides = [...rail.children];
+  // nạp thiệp đang xem + thiệp kế bên (không dựng cả 6 cùng lúc)
+  const ensure = (i) => [i, i + 1].forEach((k) => { const s = slides[k]; if (s && !s.dataset.l) { s.dataset.l = 1; load(s.querySelector('.view'), list[k]); } });
+  requestAnimationFrame(() => { slides.forEach((s) => fitView(s.querySelector('.view'))); ensure(0); });
+  rail.addEventListener('scroll', () => {
+    const i = Math.round(rail.scrollLeft / (slides[0].offsetWidth + 12));
+    if (i === cur.A) return; cur.A = i;
+    [...dots.children].forEach((d, k) => d.classList.toggle('on', k === i));
+    ensure(i);
+  }, { passive: true });
+}
+// ----- B -----
+function buildB() {
+  $('#gridB').innerHTML = T.map((t, i) => `<button class="gi" data-i="${i}"><span class="im" style="background-image:url('${cover(t)}')"></span>${i < 6 ? `<span class="chip ${i ? '' : 'best'}">${LABEL[i]}</span>` : ''}<b>${t.name}</b><small>${t.palettes[0].name}</small></button>`).join('');
+  $('#gridB').onclick = (e) => { const b = e.target.closest('.gi'); if (b) openB(+b.dataset.i); };
+  $('#shX').onclick = () => $('#sheetB').classList.remove('show');
+  $('#shP').onclick = () => openB((cur.B + T.length - 1) % T.length);
+  $('#shN').onclick = () => openB((cur.B + 1) % T.length);
+}
+function openB(i) {
+  cur.B = i; const t = T[i];
+  $('#shT').textContent = t.name; $('#shS').textContent = `${t.palettes[0].name} · ${i + 1}/${T.length}`;
+  $('#sheetB').classList.add('show');
+  setTimeout(() => load($('#shV'), t), 30);
+}
+// ----- C -----
+function buildC() {
+  const list = T.slice(0, 10);
+  $('#stripC').innerHTML = list.map((t, i) => `<button data-i="${i}" class="${i ? '' : 'on'}"><i style="background-image:url('${cover(t)}')"></i><small>${t.name}</small></button>`).join('');
+  $('#stripC').onclick = (e) => { const b = e.target.closest('button'); if (!b) return; pickC(+b.dataset.i); };
+  pickC(0, true);
+  function pickC(i, first) {
+    cur.C = i; const t = list[i];
+    [...$('#stripC').children].forEach((b, k) => b.classList.toggle('on', k === i));
+    $('#metaC').innerHTML = `<span class="chip ${i ? '' : 'best'}">${LABEL[i] || 'Gợi ý'}</span><b>${t.name}</b><span>· ${t.palettes[0].name}</span>`;
+    if (!first || !$('#C').hidden) load($('#bigC'), t); else $('#bigC').dataset.pending = i;
+  }
+  window.__loadC = () => { if ($('#bigC').dataset.pending !== undefined) { delete $('#bigC').dataset.pending; load($('#bigC'), list[cur.C]); } else fitView($('#bigC')); };
+}
+// ----- chuyển phương án -----
+$('#opt').onclick = (e) => {
+  const b = e.target.closest('button'); if (!b) return;
+  [...$('#opt').children].forEach((x) => x.classList.toggle('on', x === b));
+  ['A', 'B', 'C'].forEach((k) => ($('#' + k).hidden = k !== b.dataset.o));
+  $('#cta').hidden = b.dataset.o === 'B';
+  $('#sheetB').classList.remove('show');
+  if (b.dataset.o === 'C') window.__loadC();
+  if (b.dataset.o === 'A') document.querySelectorAll('#railA .view').forEach(fitView);
+};
+</script>
+</body>
+</html>

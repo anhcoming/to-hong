@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="vi"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Mock: thanh tab dưới (điện thoại)</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&amp;family=Dancing+Script:wght@600;700&amp;display=swap">
+<link rel="stylesheet" href="/css/app.css">
+<style>
+body{padding:24px;background:#f3eeee}
+h1{margin:0;font-size:22px}
+.grid{display:flex;flex-wrap:wrap;gap:22px;margin-top:18px}
+.col{width:300px}
+.col h2{margin:0 0 4px;font-size:16px}.col p{margin:0 0 10px;font-size:12.5px;color:var(--muted);min-height:34px}
+.ph{position:relative;height:330px;border-radius:30px;background:var(--bg);box-shadow:0 0 0 8px #fff,0 0 0 9px var(--line),0 20px 40px rgba(120,40,50,.12);overflow:hidden}
+.ph .ct{padding:18px 16px}.ph .ct b{font-size:20px}.ph .ct i{display:block;height:70px;margin-top:12px;border-radius:14px;background:#fff;box-shadow:0 0 0 1px var(--line)}
+svg{width:21px;height:21px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;display:block}
+/* A: hiện tại */
+.A{position:absolute;left:0;right:0;bottom:0;display:flex;padding:6px 4px 10px;background:#fff;border-top:1px solid var(--line)}
+.A a{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;font-size:10.5px;font-weight:600;color:var(--muted)}
+.A a span{display:grid;place-items:center;width:44px;height:26px;border-radius:999px}
+.A a.on{color:var(--primary)}.A a.on span{background:var(--primary-soft)}
+.A a.plus span{width:42px;height:42px;margin-top:-18px;border-radius:50%;background:var(--grad);color:#fff;font-size:22px;box-shadow:0 8px 18px rgba(214,69,93,.35)}
+/* B: viên thuốc nổi, nút + nằm ngang hàng */
+.B{position:absolute;left:12px;right:12px;bottom:12px;display:flex;align-items:center;justify-content:space-around;height:60px;padding:0 6px;border-radius:999px;background:rgba(255,255,255,.92);backdrop-filter:blur(12px);box-shadow:0 0 0 1px var(--line),0 12px 30px rgba(120,40,50,.16)}
+.B a{display:flex;flex-direction:column;align-items:center;gap:2px;font-size:10px;font-weight:600;color:var(--muted)}
+.B a.on{color:var(--primary)}
+.B a.plus{width:44px;height:44px;border-radius:50%;background:var(--grad);color:#fff;justify-content:center;font-size:22px;box-shadow:0 6px 14px rgba(214,69,93,.35)}
+/* C: 4 tab + nút tròn nổi góc phải */
+.C{position:absolute;left:0;right:0;bottom:0;display:flex;padding:8px 6px 12px;background:#fff;border-top:1px solid var(--line)}
+.C a{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;font-size:10.5px;font-weight:600;color:var(--muted)}
+.C a.on{color:var(--primary)}
+.C a.on::after{content:'';width:18px;height:3px;border-radius:3px;background:var(--primary);margin-top:1px}
+.fab{position:absolute;right:16px;bottom:78px;display:flex;align-items:center;gap:6px;height:48px;padding:0 18px 0 14px;border-radius:999px;background:var(--grad);color:#fff;font-size:14px;font-weight:700;box-shadow:0 10px 24px rgba(214,69,93,.38)}
+.fab b{font-size:20px;line-height:1}
+/* D: chỉ icon, tab đang chọn nở ra hiện chữ */
+.D{position:absolute;left:12px;right:12px;bottom:12px;display:flex;align-items:center;justify-content:space-between;height:58px;padding:0 8px;border-radius:20px;background:#fff;box-shadow:0 0 0 1px var(--line),0 12px 30px rgba(120,40,50,.14)}
+.D a{display:flex;align-items:center;gap:6px;height:40px;padding:0 12px;border-radius:999px;color:var(--muted);font-size:13px;font-weight:700}
+.D a.on{background:var(--primary-soft);color:var(--primary)}
+.D a.plus{padding:0;width:40px;justify-content:center;background:var(--grad);color:#fff;font-size:20px}
+/* E: kính tối kiểu iOS */
+.E{position:absolute;left:14px;right:14px;bottom:12px;display:flex;align-items:center;justify-content:space-around;height:62px;border-radius:24px;background:rgba(31,26,27,.88);backdrop-filter:blur(14px);box-shadow:0 14px 34px rgba(0,0,0,.28)}
+.E a{display:flex;flex-direction:column;align-items:center;gap:3px;font-size:10px;font-weight:600;color:rgba(255,255,255,.6)}
+.E a.on{color:#fff}.E a.on svg{color:#ef7d8d}
+.E a.plus{width:42px;height:42px;border-radius:14px;background:var(--grad);color:#fff;justify-content:center;font-size:22px}
+.av{width:22px;height:22px;border-radius:50%;background:linear-gradient(135deg,#f6d7dc,#e9b7c0);color:#8b1a24;font-size:9px;font-weight:800;display:grid;place-items:center}
+</style></head><body>
+<h1>Thanh tab dưới (điện thoại) — chọn 1 kiểu</h1>
+<p class="muted" style="margin:4px 0 0">Đang ở trang Video của tôi.</p>
+<div class="grid" id="g"></div>
+<script>
+const I = {
+  card: '<svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2.5"/><path d="M3.5 6.5 12 13l8.5-6.5"/></svg>',
+  video: '<svg viewBox="0 0 24 24"><rect x="3" y="6" width="13" height="12" rx="2.5"/><path d="m16 10.5 5-3v9l-5-3"/></svg>',
+  book: '<svg viewBox="0 0 24 24"><path d="M5 4.5A1.5 1.5 0 0 1 6.5 3H19v15H6.5A1.5 1.5 0 0 0 5 19.5z"/><path d="M5 19.5A1.5 1.5 0 0 0 6.5 21H19v-3"/><path d="M9 8h6M9 11.5h4"/></svg>',
+};
+const av = '<i class="av">AV</i>';
+const ct = '<div class="ct"><b>Video của tôi</b><i></i><i></i></div>';
+const K = [
+  ['A · Hiện tại', 'Dải trắng sát đáy, 5 mục, nút ＋ tròn nhô lên giữa.', `<nav class="A"><a><span>${I.card}</span>Thiệp</a><a class="on"><span>${I.video}</span>Video</a><a class="plus"><span>＋</span>Tạo mới</a><a><span>${I.book}</span>Sổ tay</a><a><span>${av}</span>Tôi</a></nav>`],
+  ['B · Viên thuốc nổi', 'Thanh bo tròn nổi cách mép, nút ＋ nằm ngang hàng, gọn và nhẹ hơn (đề xuất).', `<nav class="B"><a>${I.card}Thiệp</a><a class="on">${I.video}Video</a><a class="plus">＋</a><a>${I.book}Sổ tay</a><a>${av}Tôi</a></nav>`],
+  ['C · 4 tab + nút tạo nổi', 'Thanh chỉ 4 mục, gạch chân mục đang xem; nút "＋ Tạo mới" nổi góc phải phía trên.', `<a class="fab"><b>＋</b>Tạo mới</a><nav class="C"><a>${I.card}Thiệp</a><a class="on">${I.video}Video</a><a>${I.book}Sổ tay</a><a>${av}Tôi</a></nav>`],
+  ['D · Chỉ icon, mục đang xem nở chữ', 'Mục đang xem hiện thêm chữ trong viên hồng, các mục khác chỉ icon.', `<nav class="D"><a>${I.card}</a><a class="on">${I.video}Video</a><a class="plus">＋</a><a>${I.book}</a><a>${av}</a></nav>`],
+  ['E · Kính tối', 'Thanh tối bo góc nổi, chữ trắng, mục đang xem icon hồng.', `<nav class="E"><a>${I.card}Thiệp</a><a class="on">${I.video}Video</a><a class="plus">＋</a><a>${I.book}Sổ tay</a><a>${av}Tôi</a></nav>`],
+];
+document.getElementById('g').innerHTML = K.map(([t, d, h]) => `<div class="col"><h2>${t}</h2><p>${d}</p><div class="ph">${ct}${h}</div></div>`).join('');
+</script>
+</body></html>

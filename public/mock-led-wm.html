@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="vi"><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Mock — nhãn Bản dùng thử màn LED</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Charm:wght@400;700&family=Hanken+Grotesk:wght@400;600;700&family=Cormorant+Garamond:wght@500&display=swap">
+<style>
+body{margin:0;background:#f6f1f1;font-family:'Hanken Grotesk',system-ui,sans-serif;color:#2a2022;padding:28px}
+h1{font-size:22px;margin:0 0 4px}
+p.d{margin:0 0 22px;color:#7a6a6e}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(520px,1fr));gap:26px}
+.it h2{font-size:15px;margin:0 0 8px}
+.it h2 small{font-weight:400;color:#7a6a6e;margin-left:6px}
+/* màn mô phỏng 1920×1080 thu nhỏ: mọi kích thước tính theo cqw để giống màn thật */
+.scr{position:relative;aspect-ratio:16/9;border-radius:10px;overflow:hidden;background:#05070f url('/demo/lposter-bac-dembac.jpg') center/cover;container-type:inline-size;box-shadow:0 14px 34px rgba(40,10,20,.18)}
+.scr.light{background-image:url('/demo/lposter-ngabac-satinnga.jpg')}
+
+/* 0. hiện tại */
+.w0{position:absolute;right:2.9cqw;bottom:2.7cqw;display:flex;align-items:center;gap:.8cqw;height:3.2cqw;padding:0 1.35cqw 0 1.4cqw;border-radius:99px;background:rgba(24,14,16,.5);border:1px solid rgba(255,255,255,.22);backdrop-filter:blur(6px);color:rgba(255,255,255,.86);font:600 .9cqw/1 'Hanken Grotesk';letter-spacing:.18em;text-transform:uppercase}
+.w0 b{font:700 2cqw/1 'Charm';letter-spacing:0;text-transform:none;color:#fff;padding-right:.8cqw;border-right:1px solid rgba(255,255,255,.35)}
+.w0 i{color:#ef7d8d;font-style:normal;font-size:1.2cqw}
+
+/* 1. chữ ký mảnh: không khung, chữ nghiêng mờ + vạch, như chữ ký nhiếp ảnh gia */
+.w1{position:absolute;right:3cqw;bottom:2.6cqw;text-align:right;color:rgba(255,255,255,.72)}
+.w1 b{display:block;font:400 2.3cqw/1 'Charm';color:rgba(255,255,255,.85)}
+.w1 span{display:block;margin-top:.45cqw;font:600 .72cqw/1 'Hanken Grotesk';letter-spacing:.35em;text-transform:uppercase;opacity:.75}
+.w1 span::before{content:"";display:inline-block;width:2.2cqw;height:1px;background:currentColor;vertical-align:middle;margin-right:.7cqw;opacity:.7}
+
+/* 2. dải mỏng dưới đáy: căn giữa, chạy ngang */
+.w2{position:absolute;left:0;right:0;bottom:0;height:3.4cqw;display:flex;align-items:center;justify-content:center;gap:1.2cqw;background:linear-gradient(rgba(0,0,0,0),rgba(0,0,0,.55));color:rgba(255,255,255,.85);font:600 .95cqw/1 'Hanken Grotesk';letter-spacing:.2em;text-transform:uppercase}
+.w2 b{font:700 1.6cqw/1 'Charm';letter-spacing:0;text-transform:none;color:#fff}
+.w2 em{font-style:normal;opacity:.55}
+
+/* 3. dải chéo góc trên phải (ribbon) */
+.w3{position:absolute;top:3.2cqw;right:-6.2cqw;transform:rotate(38deg);width:26cqw;padding:.7cqw 0;text-align:center;background:linear-gradient(90deg,#c8364f,#ef7d8d);color:#fff;font:700 .95cqw/1 'Hanken Grotesk';letter-spacing:.3em;text-transform:uppercase;box-shadow:0 .4cqw 1.2cqw rgba(0,0,0,.35)}
+
+/* 4. con dấu tròn góc dưới phải */
+.w4{position:absolute;right:2.6cqw;bottom:2.4cqw;width:8.4cqw;height:8.4cqw;border-radius:50%;border:1.5px solid rgba(255,255,255,.55);display:grid;place-items:center;color:rgba(255,255,255,.85);transform:rotate(-10deg)}
+.w4::before{content:"";position:absolute;inset:.5cqw;border-radius:50%;border:1px dashed rgba(255,255,255,.35)}
+.w4 svg{position:absolute;inset:0;width:100%;height:100%}
+.w4 b{font:700 1.7cqw/1 'Charm';color:#fff}
+
+/* 5. chữ chìm lặp chéo khắp màn (khó cắt bỏ nhất) */
+.w5{position:absolute;inset:-20%;transform:rotate(-18deg);display:grid;grid-template-columns:repeat(5,1fr);align-content:space-around;justify-items:center;gap:4cqw 0;pointer-events:none}
+.w5 span{font:700 2.1cqw/1 'Charm';color:rgba(255,255,255,.12);white-space:nowrap}
+.w5 span small{font:600 .75cqw 'Hanken Grotesk';letter-spacing:.3em;text-transform:uppercase;margin-left:.6cqw}
+
+/* 6. thẻ kính nhỏ gọn một dòng, góc dưới trái */
+.w6{position:absolute;left:2.6cqw;bottom:2.4cqw;display:flex;align-items:center;gap:.6cqw;padding:.55cqw 1cqw;border-radius:.6cqw;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.18);backdrop-filter:blur(6px);color:rgba(255,255,255,.8);font:600 .8cqw/1 'Hanken Grotesk';letter-spacing:.12em;text-transform:uppercase}
+.w6 i{width:.55cqw;height:.55cqw;border-radius:50%;background:#ef7d8d;box-shadow:0 0 .6cqw #ef7d8d}
+.w6 b{font:700 1.3cqw/1 'Charm';letter-spacing:0;text-transform:none;color:#fff}
+
+/* nền sáng (lụa ngà) — chữ tối */
+.scr.light .w1{color:rgba(90,20,35,.7)}.scr.light .w1 b{color:rgba(122,31,46,.85)}
+</style></head><body>
+<h1>Nhãn "Bản dùng thử" trên màn LED — các kiểu khác</h1>
+<p class="d">Ảnh nền là màn LED thật thu nhỏ; nhãn vẽ đúng tỉ lệ như trên màn 1920×1080.</p>
+<div class="grid">
+  <div class="it"><h2>0 · Hiện tại <small>viên kính, tim hồng + Cưới Nha + BẢN DÙNG THỬ</small></h2>
+    <div class="scr"><div class="w0"><i>♥</i><b>Cưới Nha</b>Bản dùng thử</div></div></div>
+
+  <div class="it"><h2>1 · Chữ ký mảnh <small>không khung, như chữ ký nhiếp ảnh gia — nhẹ nhàng nhất</small></h2>
+    <div class="scr"><div class="w1"><b>Cưới Nha</b><span>Bản xem trước</span></div></div></div>
+
+  <div class="it"><h2>2 · Dải mỏng dưới đáy <small>căn giữa, chìm vào nền tối</small></h2>
+    <div class="scr"><div class="w2"><b>Cưới Nha</b><em>·</em>Bản xem trước<em>·</em>cuoinha.com</div></div></div>
+
+  <div class="it"><h2>3 · Ruy băng góc <small>nổi bật, rõ là bản thử</small></h2>
+    <div class="scr"><div class="w3">Dùng thử</div></div></div>
+
+  <div class="it"><h2>4 · Con dấu tròn <small>kiểu triện, sang hơn</small></h2>
+    <div class="scr"><div class="w4"><svg viewBox="0 0 100 100" aria-hidden="true"><defs><path id="c" d="M50 50 m-37 0 a37 37 0 1 1 74 0 a37 37 0 1 1 -74 0"/></defs><text fill="rgba(255,255,255,.75)" font-family="Hanken Grotesk" font-weight="700" font-size="8.5" letter-spacing="3.2"><textPath href="#c">BẢN XEM TRƯỚC · CUOINHA.COM ·</textPath></text></svg><b>CN</b></div></div></div>
+
+  <div class="it"><h2>5 · Chữ chìm khắp màn <small>khó cắt / che nhất, gần như không ảnh hưởng nhìn</small></h2>
+    <div class="scr"><div class="w5"><script>document.write(Array(30).fill('<span>Cưới Nha<small>dùng thử</small></span>').join(''))</script></div></div></div>
+
+  <div class="it"><h2>6 · Thẻ nhỏ một dòng <small>gọn, góc dưới trái, chấm hồng nhấp nháy</small></h2>
+    <div class="scr"><div class="w6"><i></i><b>Cưới Nha</b>Bản dùng thử</div></div></div>
+
+  <div class="it"><h2>1 trên nền sáng <small>(lụa ngà) — chữ tự đổi màu tối</small></h2>
+    <div class="scr light"><div class="w1"><b>Cưới Nha</b><span>Bản xem trước</span></div></div></div>
+</div>
+</body></html>

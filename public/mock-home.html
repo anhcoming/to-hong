@@ -1,0 +1,265 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Mock trang chủ</title>
+<link rel="icon" href="/favicon.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Charm:wght@400;700&amp;family=Fraunces:ital,opsz,wght@0,9..144,300..700;1,9..144,300..700&amp;family=Hanken+Grotesk:wght@300;400;500;600;700&amp;family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500&amp;display=swap">
+<style>
+/* Trang mock: 5 hướng thiết kế trang chủ, chuyển bằng thanh trên cùng. Mỗi hướng dùng biến màu riêng trên <body data-v>. */
+*,*::before,*::after{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;font:16px/1.6 'Hanken Grotesk',system-ui,sans-serif;background:var(--bg);color:var(--ink);-webkit-font-smoothing:antialiased;overflow-x:hidden}
+a{color:inherit;text-decoration:none}
+img{display:block;max-width:100%}
+.wrap{max-width:1200px;margin:0 auto;padding:0 20px}
+body{--bg:#141012;--bg2:#1c1618;--card:#211a1d;--ink:#f5ece6;--muted:#b9aaa3;--line:rgba(245,236,230,.12);--acc:#e0b46a;--grad:linear-gradient(120deg,#a91d2c,#d03b50 50%,#d79a3a);--serif:'Fraunces',Georgia,serif}
+body[data-v="mag"]{--bg:#f7f1e8;--bg2:#efe6d8;--card:#fffaf2;--ink:#231915;--muted:#6d5c53;--line:rgba(60,35,25,.14);--acc:#9c2a2f;--serif:'Cormorant Garamond',Georgia,serif}
+body[data-v="white"],body[data-v="lwall"]{--bg:#ffffff;--bg2:#f6f4f1;--card:#fff;--ink:#1d1a19;--muted:#77706b;--line:rgba(0,0,0,.08);--acc:#c2414f;--grad:linear-gradient(120deg,#c2414f,#e07a7f)}
+body[data-v="wall"]{--bg:#0f0c0d;--bg2:#171214;--card:#1c1618;--acc:#d9b26a}
+
+/* thanh chọn hướng (chỉ có ở mock) */
+.mockbar{position:fixed;left:50%;bottom:16px;z-index:100;transform:translateX(-50%);display:flex;flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;gap:6px;max-width:calc(100% - 24px);padding:6px;border-radius:999px;background:rgba(30,24,26,.9);backdrop-filter:blur(10px);box-shadow:0 10px 30px rgba(0,0,0,.35)}
+.mockbar button{flex:none;border:0;background:transparent;color:#eee;border-radius:999px;padding:8px 14px;font:600 13px 'Hanken Grotesk',sans-serif;cursor:pointer}
+.mockbar button[aria-pressed="true"]{background:#fff;color:#1d1a19}
+
+/* thanh menu chung */
+.nav{position:sticky;top:0;z-index:50;background:color-mix(in srgb,var(--bg) 82%,transparent);backdrop-filter:blur(12px);border-bottom:1px solid var(--line)}
+.nav .wrap{display:flex;align-items:center;gap:26px;height:68px}
+.logo{display:flex;align-items:center;gap:10px;font:600 22px var(--serif);white-space:nowrap}
+.logo svg{width:28px;height:28px}
+.links{display:flex;gap:22px;margin-left:auto;font-size:14px;color:var(--muted)}
+.links a:hover{color:var(--ink)}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:12px 24px;border-radius:999px;font:600 15px 'Hanken Grotesk',sans-serif;border:0;cursor:pointer;white-space:nowrap;transition:transform .2s}
+.btn:hover{transform:translateY(-2px)}
+.btn-main{background:var(--grad);color:#fff;box-shadow:0 10px 26px rgba(169,29,44,.3)}
+.btn-ghost{background:transparent;color:var(--ink);border:1px solid var(--line)}
+.btn-sm{padding:9px 16px;font-size:14px}
+@media (max-width:860px){.links{display:none}.nav .btn-ghost{display:none}.nav .btn-main{margin-left:auto}}
+
+/* khối dùng chung */
+.sec{padding:96px 0}
+.eyebrow{font-size:12px;letter-spacing:.3em;text-transform:uppercase;color:var(--acc)}
+.h2{margin:10px 0 12px;font:600 clamp(30px,4.2vw,50px)/1.12 var(--serif)}
+.h2 em{font-style:italic;background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent}
+.lead{margin:0;color:var(--muted);font-size:17px;max-width:600px}
+.center{text-align:center}.center .lead{margin:0 auto}
+
+/* thẻ mẫu (phương án A đã chọn): trang bìa thật dựng 390px rồi thu nhỏ */
+.thumb{--s:.5;position:relative;display:block;aspect-ratio:9/16;overflow:hidden;border-radius:12px;background:var(--bg2)}
+.thumb iframe{position:absolute;left:0;top:0;width:390px;height:693px;border:0;transform:scale(var(--s));transform-origin:0 0;pointer-events:none}
+.tag{position:absolute;top:10px;right:10px;z-index:2;padding:3px 11px;border-radius:999px;background:#e11d48;color:#fff;font-size:12px;font-weight:600;line-height:1.5}
+.tag.hot{background:#8b5cf6}
+.chips{display:flex;gap:8px;overflow-x:auto;scrollbar-width:none;margin:26px -20px 22px;padding:2px 20px}
+.chips button{flex:none;border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:999px;padding:8px 16px;font:500 14px 'Hanken Grotesk',sans-serif;cursor:pointer}
+.chips button[aria-pressed="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+@media (min-width:640px){.grid{grid-template-columns:repeat(3,minmax(0,1fr));gap:18px}}
+@media (min-width:960px){.grid{grid-template-columns:repeat(5,minmax(0,1fr))}}
+.gcard .thumb{box-shadow:0 12px 32px rgba(0,0,0,.25);transition:transform .3s}
+.gcard .thumb:hover{transform:translateY(-4px)}
+.gcard .row{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:10px 2px 0}
+.gcard b{font-size:15px}
+.gcard .go{display:grid;place-items:center;width:32px;height:32px;border-radius:50%;background:var(--bg2);flex:none}
+.gcard[hidden]{display:none}
+
+/* 3 điểm mạnh + lời kêu gọi cuối trang */
+.feats{display:grid;gap:18px}
+@media (min-width:800px){.feats{grid-template-columns:repeat(3,1fr)}}
+.feat{padding:26px;border:1px solid var(--line);border-radius:18px;background:var(--card)}
+.feat i{display:block;font-style:normal;font:600 30px var(--serif);color:var(--acc)}
+.feat b{display:block;margin:8px 0 6px;font-size:17px}
+.feat p{margin:0;color:var(--muted);font-size:15px}
+.cta{margin:0 20px 110px;padding:60px 24px;border-radius:28px;text-align:center;background:var(--bg2);border:1px solid var(--line)}
+.foot{padding:30px 0 90px;border-top:1px solid var(--line);color:var(--muted);font-size:14px}
+
+/* ===== 1. Sân khấu thiệp: tối, điện thoại chạy thiệp thật tự đổi mẫu ===== */
+.stage{position:relative;overflow:hidden;padding:70px 0 90px;background:radial-gradient(900px 500px at 80% 30%,rgba(214,59,80,.18),transparent 60%),radial-gradient(700px 500px at 10% 90%,rgba(215,154,58,.12),transparent 60%)}
+.stage .wrap{display:grid;gap:50px;align-items:center}
+@media (min-width:900px){.stage .wrap{grid-template-columns:1.1fr .9fr}}
+.stage h1{margin:16px 0 18px;font:600 clamp(42px,6.4vw,78px)/1.02 var(--serif)}
+.stage h1 em{display:block;font:700 .82em 'Charm',cursive;background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent}
+.stage p.sub{margin:0 0 30px;color:var(--muted);font-size:18px;max-width:520px}
+.stage .acts{display:flex;gap:12px;flex-wrap:wrap}
+.stage .ticks{display:flex;gap:18px;flex-wrap:wrap;margin-top:28px;font-size:14px;color:var(--muted)}
+.stage .ticks b{color:var(--ink)}
+.phone{--s:.8;position:relative;width:min(320px,80vw);margin:0 auto;aspect-ratio:9/18.6;border:10px solid #0b0809;border-radius:46px;overflow:hidden;background:#000;box-shadow:0 40px 90px rgba(0,0,0,.55),0 0 0 1px rgba(255,255,255,.08)}
+.phone iframe{position:absolute;left:0;top:0;width:390px;height:806px;border:0;transform:scale(var(--s));transform-origin:0 0;transition:opacity .5s}
+.phone-cap{display:flex;justify-content:center;align-items:center;gap:10px;margin-top:18px;font-size:14px;color:var(--muted)}
+.phone-cap b{color:var(--ink)}
+.phone-cap button{width:30px;height:30px;border-radius:50%;border:1px solid var(--line);background:var(--card);color:var(--ink);cursor:pointer}
+
+/* ===== 2. Tạp chí cưới: nền ngà, chữ có chân lớn, ảnh tràn nửa trang ===== */
+.mag-hero{display:grid;min-height:calc(100vh - 68px)}
+@media (min-width:900px){.mag-hero{grid-template-columns:1fr 1fr}}
+.mag-photo{position:relative;min-height:56vh;background:url('/demo/dodam-2.jpg') center 30%/cover}
+.mag-photo span{position:absolute;left:20px;bottom:18px;padding:6px 12px;background:rgba(255,250,242,.9);font-size:12px;letter-spacing:.2em;text-transform:uppercase}
+.mag-copy{display:flex;flex-direction:column;justify-content:center;padding:60px clamp(24px,5vw,80px)}
+.mag-issue{display:flex;justify-content:space-between;padding-bottom:14px;border-bottom:1px solid var(--ink);font-size:12px;letter-spacing:.25em;text-transform:uppercase}
+.mag-copy h1{margin:28px 0 20px;font:500 clamp(52px,7.4vw,104px)/.92 var(--serif);letter-spacing:-.01em}
+.mag-copy h1 em{font-style:italic;color:var(--acc)}
+.mag-copy p{margin:0 0 30px;font:400 21px/1.5 var(--serif);color:var(--muted);max-width:480px}
+.mag-copy .btn-main{background:var(--acc);box-shadow:none;border-radius:0;letter-spacing:.08em;text-transform:uppercase;font-size:13px;padding:16px 28px}
+.mag-copy .btn-ghost{border-radius:0;letter-spacing:.08em;text-transform:uppercase;font-size:13px;padding:16px 28px;border-color:var(--ink)}
+body[data-v="mag"] .gcard .thumb{border-radius:2px;box-shadow:0 1px 0 var(--line)}
+body[data-v="mag"] .h2{font-weight:500;font-size:clamp(36px,5vw,64px)}
+body[data-v="mag"] .feat{border-radius:0;border-width:1px 0 0;background:none;padding:22px 0}
+body[data-v="mag"] .cta{border-radius:0}
+
+/* ===== 3. Tường thiệp chuyển động: cột ảnh trôi chậm sau tiêu đề, viền vàng đồng ===== */
+.wall{position:relative;height:calc(100vh - 68px);min-height:600px;overflow:hidden;display:grid;place-items:center}
+.cols{position:absolute;inset:-10% -5%;display:grid;grid-template-columns:repeat(6,1fr);gap:16px;transform:rotate(-6deg);opacity:.55}
+.col{display:flex;flex-direction:column;gap:16px;animation:up 60s linear infinite}
+.col:nth-child(even){animation-name:down;animation-duration:70s}
+.col img{width:100%;aspect-ratio:9/16;object-fit:cover;object-position:top;border-radius:10px;box-shadow:0 10px 30px rgba(0,0,0,.45)}
+@keyframes up{from{transform:translateY(0)}to{transform:translateY(-50%)}}
+@keyframes down{from{transform:translateY(-50%)}to{transform:translateY(0)}}
+.wall::after{content:"";position:absolute;inset:0;background:radial-gradient(ellipse 55% 50% at 50% 50%,rgba(15,12,13,.92),rgba(15,12,13,.55) 70%,rgba(15,12,13,.85))}
+.wall-in{position:relative;z-index:2;max-width:760px;padding:0 20px;text-align:center}
+.frame{padding:46px clamp(20px,5vw,60px);border:1px solid rgba(217,178,106,.5);outline:1px solid rgba(217,178,106,.25);outline-offset:8px}
+.wall h1{margin:14px 0 16px;font:500 clamp(40px,6vw,74px)/1.04 var(--serif);color:#fbf3e6}
+.wall h1 em{font:700 .9em 'Charm',cursive;font-style:normal;color:var(--acc)}
+.wall p{margin:0 auto 28px;color:#c9bcb4;font-size:18px;max-width:520px}
+.wall .btn-main{background:linear-gradient(120deg,#b8892f,#e2c27a);color:#1a1310;box-shadow:0 10px 30px rgba(217,178,106,.3)}
+.wall .acts{display:flex;gap:12px;justify-content:center;flex-wrap:wrap}
+@media (max-width:640px){.cols{grid-template-columns:repeat(3,1fr)}}
+@media (prefers-reduced-motion:reduce){.col{animation:none}}
+
+/* ===== 4. Trắng tối giản: ba tấm thiệp thật xếp nghiêng, nhiều khoảng trống ===== */
+.white-hero{padding:90px 0 40px;text-align:center;overflow:hidden}
+@media (max-width:640px){.trio .t1{transform:translateX(-118%) rotate(-9deg) translateY(30px)}.trio .t3{transform:translateX(18%) rotate(9deg) translateY(30px)}}
+.white-hero h1{margin:16px auto 18px;max-width:820px;font:600 clamp(40px,6vw,72px)/1.05 var(--serif);letter-spacing:-.02em}
+.white-hero h1 em{font-style:normal;color:var(--acc)}
+.white-hero p{margin:0 auto 30px;color:var(--muted);font-size:18px;max-width:560px}
+.white-hero .acts{display:flex;gap:12px;justify-content:center;flex-wrap:wrap}
+.trio{position:relative;height:clamp(340px,46vw,520px);margin-top:60px}
+.trio .thumb{position:absolute;left:50%;top:0;width:clamp(170px,22vw,260px);box-shadow:0 30px 60px rgba(0,0,0,.14);transition:transform .5s}
+.trio .t1{transform:translateX(-140%) rotate(-9deg) translateY(30px)}
+.trio .t2{transform:translateX(-50%);z-index:2}
+.trio .t3{transform:translateX(40%) rotate(9deg) translateY(30px)}
+.trio:hover .t1{transform:translateX(-150%) rotate(-12deg) translateY(20px)}
+.trio:hover .t3{transform:translateX(50%) rotate(12deg) translateY(20px)}
+body[data-v="white"] .nav,body[data-v="lwall"] .nav{background:rgba(255,255,255,.9)}
+body[data-v="white"] .gcard .thumb,body[data-v="lwall"] .gcard .thumb{box-shadow:0 10px 30px rgba(0,0,0,.08)}
+body[data-v="white"] .feat,body[data-v="lwall"] .feat{background:var(--bg2);border:0}
+
+/* ===== 5. Tường sáng: chữ và màu của hướng 4, nền là tường ảnh bìa trôi chậm, mờ dần về trắng ở giữa ===== */
+.lwall{position:relative;height:calc(100vh - 68px);min-height:640px;overflow:hidden;display:grid;place-items:center;text-align:center}
+.lwall .cols{opacity:1}
+.lwall .col img{box-shadow:0 14px 34px rgba(60,30,30,.12)}
+.lwall::after{content:"";position:absolute;inset:0;background:radial-gradient(ellipse 38% 40% at 50% 50%,#fff 50%,rgba(255,255,255,.8) 78%,rgba(255,255,255,.45))}
+.lwall-in{position:relative;z-index:2;max-width:640px;padding:0 20px}
+.lwall h1{margin:14px auto 14px;font:600 clamp(38px,5vw,62px)/1.06 var(--serif);letter-spacing:-.02em}
+.lwall h1 em{font-style:normal;color:var(--acc)}
+.lwall p{margin:0 auto 28px;color:var(--muted);font-size:18px}
+.lwall .acts{display:flex;gap:12px;justify-content:center;flex-wrap:wrap}
+@media (max-width:640px){.lwall::after{background:radial-gradient(ellipse 75% 42% at 50% 50%,#fff 50%,rgba(255,255,255,.85) 78%,rgba(255,255,255,.6))}}
+</style>
+</head>
+<body data-v="stage">
+<script>document.body.dataset.v = new URLSearchParams(location.search).get('v') || 'stage';</script>
+<nav class="mockbar" aria-label="Chọn hướng thiết kế">
+  <button data-v="stage" aria-pressed="true">1 · Sân khấu thiệp</button>
+  <button data-v="mag">2 · Tạp chí cưới</button>
+  <button data-v="wall">3 · Tường thiệp</button>
+  <button data-v="white">4 · Trắng tối giản</button>
+  <button data-v="lwall">5 · Tường sáng</button>
+</nav>
+<header class="nav"><div class="wrap">
+  <a class="logo" href="#"><svg viewBox="0 0 32 32" fill="none"><path d="M16 27C6.5 20 3 15 3 10.5 3 6.9 5.8 4 9.4 4c2.6 0 4.6 1.4 6.6 3.9C18 5.4 20 4 22.6 4 26.2 4 29 6.9 29 10.5 29 15 25.5 20 16 27z" stroke="#d03b50" stroke-width="2"/></svg>Cưới Nha</a>
+  <div class="links"><a href="#mau">Mẫu thiệp</a><a href="#">Video dạm ngõ</a><a href="#">Màn hình LED</a><a href="#">Sổ tay cưới</a><a href="#">Bảng giá</a></div>
+  <a class="btn btn-ghost btn-sm" href="#">Đăng nhập</a><a class="btn btn-main btn-sm" href="#">Tạo thiệp</a>
+</div></header>
+<main id="hero"></main>
+<section class="sec" id="mau"><div class="wrap">
+  <span class="eyebrow">Bộ sưu tập</span><h2 class="h2">Mẫu thiệp <em>được yêu thích</em></h2>
+  <p class="lead">Bấm vào mẫu để xem như khách mời nhìn thấy, chọn bảng màu rồi bấm → để dùng.</p>
+  <div class="chips" id="chips"></div><div class="grid" id="grid"></div>
+</div></section>
+<section class="sec" style="padding-top:20px"><div class="wrap">
+  <div class="feats">
+    <div class="feat"><i>01</i><b>Tên riêng từng khách</b><p>"Kính gửi anh Hùng &amp; người thương" — mỗi người một link, biết ai đã mở thiệp.</p></div>
+    <div class="feat"><i>02</i><b>Khách xác nhận, bạn khỏi gọi</b><p>Ai đến, đi mấy người, nhà trai hay nhà gái — tự về sổ tay, xuất Excel chốt mâm.</p></div>
+    <div class="feat"><i>03</i><b>Mừng cưới bằng QR</b><p>Khách ở xa quét VietQR mừng thẳng vào tài khoản cô dâu chú rể.</p></div>
+  </div>
+</div></section>
+<div class="cta center"><span class="eyebrow">Dùng thử miễn phí</span><h2 class="h2">Tấm thiệp đầu tiên <em>trong 5 phút</em></h2><p class="lead" style="margin-bottom:26px">Không cần thẻ thanh toán. Sửa bất cứ lúc nào.</p><a class="btn btn-main" href="#">Tạo thiệp miễn phí →</a></div>
+<footer class="foot"><div class="wrap">© Cưới Nha · Thiệp cưới online</div></footer>
+
+<script>
+const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const cover = (id, pal) => `/demo/${id}?palette=${pal}&preview=1`;
+const fit = () => document.querySelectorAll('.thumb,.phone').forEach((e) => e.style.setProperty('--s', e.clientWidth / 390));
+new ResizeObserver(fit).observe(document.body);
+// Ảnh bìa thật của từng mẫu (chụp từ /demo/<id>?preview=1): mỗi mẫu một ảnh trước, bản màu phụ xếp sau
+const PHOTOS = ['dodam-do-ruou', 'songhy-do', 'longphung-do-tham', 'toduyen-xanh-la', 'thanhdiep-xanh-la', 'nau-nau', 'songhy2-do-son', 'hoamoc-xanh-la', 'naudam-nau-dam', 'xanhla-xanh-la', 'tim-tim', 'longphung-do-son', 'hoamoc-xanh-reu', 'dodam-xanh-reu', 'thanhdiep-nau-dat', 'songhy-xanh'].map((n) => `/demo/cover-${n}.jpg`);
+// Mỗi cột lấy 8 ảnh liên tiếp, lệch điểm bắt đầu để các cột cạnh nhau không trùng
+const wallCol = (c) => Array.from({ length: 8 }, (_, k) => PHOTOS[(c * 5 + k * 2) % PHOTOS.length]);
+const wallCols = () => `<div class="cols">${[0, 1, 2, 3, 4, 5].map((c) => { const list = wallCol(c); return `<div class="col">${[...list, ...list].map((u) => `<img src="${u}" alt="" loading="lazy">`).join('')}</div>`; }).join('')}</div>`;
+let T = [], G = [], timer;
+
+const heroes = {
+  stage: () => `<section class="stage"><div class="wrap">
+      <div><span class="eyebrow">Thiệp cưới online · báo tin vui bằng một đường link</span>
+        <h1>Mình cưới nha<em>mời bạn tới chung vui!</em></h1>
+        <p class="sub">Thiệp mang tên riêng từng khách, mở ra trong Zalo như một tấm thiệp thật — có nhạc, bản đồ, hộp mừng cưới.</p>
+        <div class="acts"><a class="btn btn-main" href="#">Tạo thiệp miễn phí →</a><a class="btn btn-ghost" href="#mau">Xem các mẫu</a></div>
+        <div class="ticks"><span>✦ <b>Dùng thử 0đ</b></span><span>✦ Trả <b>một lần</b>, dùng mãi</span><span>✦ Ngày <b>âm lịch</b> tự tính</span></div></div>
+      <div><div class="phone"><iframe id="live" title="Thiệp mẫu"></iframe></div>
+        <div class="phone-cap"><button id="prev" aria-label="Mẫu trước">‹</button><span>Đang xem: <b id="lname"></b></span><button id="next" aria-label="Mẫu sau">›</button></div></div>
+    </div></section>`,
+  mag: () => `<section class="mag-hero"><div class="mag-photo"><span>Mẫu Đỏ Đậm</span></div>
+      <div class="mag-copy"><div class="mag-issue"><span>Cưới Nha</span><span>Số mùa cưới 2026</span></div>
+        <h1>Mình<br>cưới <em>nha</em></h1>
+        <p>Một tấm thiệp mang tên riêng từng người, gửi qua Zalo, mở ra như thiệp thật — kèm nhạc, bản đồ và hộp mừng cưới.</p>
+        <div style="display:flex;gap:12px;flex-wrap:wrap"><a class="btn btn-main" href="#">Tạo thiệp miễn phí</a><a class="btn btn-ghost" href="#mau">Xem bộ sưu tập</a></div></div></section>`,
+  wall: () => `<section class="wall">${wallCols()}
+      <div class="wall-in"><div class="frame"><span class="eyebrow">Thiệp cưới online</span><h1>Mình cưới nha, <em>mời bạn tới chung vui</em></h1>
+        <p>Tên riêng từng khách, nhạc nền, bản đồ, hộp mừng cưới — làm trong 5 phút, gửi bằng một đường link.</p>
+        <div class="acts"><a class="btn btn-main" href="#">Tạo thiệp miễn phí →</a><a class="btn btn-ghost" href="#mau">Xem các mẫu</a></div></div></div></section>`,
+  white: () => `<section class="white-hero"><div class="wrap"><span class="eyebrow">Thiệp cưới online</span>
+      <h1>Thiệp mời đẹp như in, <em>gửi bằng một đường link</em></h1>
+      <p>Mỗi khách một tấm thiệp mang tên riêng. Có nhạc, bản đồ, xác nhận tham dự và hộp mừng cưới.</p>
+      <div class="acts"><a class="btn btn-main" href="#">Tạo thiệp miễn phí →</a><a class="btn btn-ghost" href="#mau">Xem các mẫu</a></div>
+      <div class="trio" id="trio"></div></div></section>`,
+  lwall: () => `<section class="lwall">${wallCols()}<div class="lwall-in"><span class="eyebrow">Thiệp cưới online</span>
+      <h1>Đẹp như in, <em>gửi bằng một link</em></h1>
+      <p>Mỗi khách một tấm thiệp mang tên riêng.</p>
+      <div class="acts"><a class="btn btn-main" href="#">Tạo thiệp miễn phí →</a><a class="btn btn-ghost" href="#mau">Xem các mẫu</a></div></div></section>`,
+};
+
+function gallery() {
+  const used = G.filter((g) => T.some((t) => t.group === g.id));
+  const chips = document.getElementById('chips');
+  chips.innerHTML = [{ id: '', name: 'Tất cả' }, ...used].map((g, i) => `<button data-g="${g.id}" aria-pressed="${!i}">${esc(g.name)}</button>`).join('');
+  document.getElementById('grid').innerHTML = T.map((t) => `<div class="gcard" data-g="${t.group}"><a href="/demo/${t.id}"><span class="thumb">${t.badge ? `<span class="tag${t.badge === 'Hot' ? ' hot' : ''}">${esc(t.badge)}</span>` : ''}<iframe loading="lazy" tabindex="-1" src="${cover(t.id, t.palettes[0].id)}" title="${esc(t.name)}"></iframe></span></a><div class="row"><b>${esc(t.name)}</b><a class="go" href="#">→</a></div></div>`).join('');
+  chips.onclick = (e) => { const b = e.target.closest('button'); if (!b) return; chips.querySelectorAll('button').forEach((x) => x.setAttribute('aria-pressed', x === b)); document.querySelectorAll('.gcard').forEach((c) => { c.hidden = !!b.dataset.g && c.dataset.g !== b.dataset.g; }); fit(); };
+}
+
+function show(v) {
+  clearInterval(timer);
+  document.body.dataset.v = v;
+  document.querySelectorAll('.mockbar button').forEach((b) => b.setAttribute('aria-pressed', b.dataset.v === v));
+  document.getElementById('hero').innerHTML = heroes[v]();
+  if (v === 'stage') {
+    // điện thoại chạy thiệp thật (chạm mở được), tự đổi sang mẫu Hot kế tiếp sau 9 giây
+    const list = T.filter((t) => t.badge === 'Hot'); let k = 0;
+    const go = (i) => { k = (i + list.length) % list.length; const t = list[k]; document.getElementById('live').src = `/demo/${t.id}?palette=${t.palettes[0].id}`; document.getElementById('lname').textContent = t.name; };
+    document.getElementById('prev').onclick = () => go(k - 1);
+    document.getElementById('next').onclick = () => go(k + 1);
+    go(0); timer = setInterval(() => go(k + 1), 9000);
+  }
+  if (v === 'white') {
+    const pick = ['songhy', 'dodam', 'thanhdiep'].map((id) => T.find((t) => t.id === id)).filter(Boolean);
+    document.getElementById('trio').innerHTML = pick.map((t, i) => `<span class="thumb t${i + 1}"><iframe tabindex="-1" src="${cover(t.id, t.palettes[0].id)}" title="${esc(t.name)}"></iframe></span>`).join('');
+  }
+  scrollTo(0, 0);
+  requestAnimationFrame(fit);
+}
+document.querySelector('.mockbar').onclick = (e) => { const b = e.target.closest('button'); if (b) show(b.dataset.v); };
+fetch('/api/meta').then((r) => r.json()).then((m) => { T = m.templates; G = m.templateGroups || []; gallery(); show(new URLSearchParams(location.search).get('v') || 'stage'); });
+</script>
+</body>
+</html>

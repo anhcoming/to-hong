@@ -1,0 +1,218 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Mock cải tiến trình sửa</title>
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&family=Playfair+Display:wght@500;600&display=swap" rel="stylesheet">
+<style>
+:root{--p:#d6455d;--ps:#fff0f2;--ink:#1f1a1b;--mu:#6f6668;--ln:#f0e4e5;--bg:#fbf6f4;--ok:#2f7d5b;--oks:#e6f3ec}
+*{box-sizing:border-box}
+body{margin:0;font-family:'Be Vietnam Pro',system-ui,sans-serif;background:var(--bg);color:var(--ink);font-size:14px}
+.wrap{max-width:1120px;margin:0 auto;padding:28px 16px 80px}
+h1{font-size:26px;margin:0 0 6px;text-align:center}
+.lead{text-align:center;color:var(--mu);margin:0 auto 28px;max-width:640px;line-height:1.6}
+.toc{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin-bottom:30px}
+.toc a{padding:7px 14px;border-radius:999px;background:#fff;border:1px solid var(--ln);color:var(--ink);text-decoration:none;font-weight:600;font-size:13px}
+.blk{background:#fff;border-radius:22px;padding:22px;margin-bottom:22px;box-shadow:0 8px 28px rgba(80,30,40,.06)}
+.blk>h2{margin:0 0 4px;font-size:19px;display:flex;align-items:center;gap:10px}
+.blk>h2 i{font-style:normal;width:30px;height:30px;border-radius:50%;background:var(--p);color:#fff;display:grid;place-items:center;font-size:14px;flex:none}
+.why{color:var(--mu);margin:0 0 16px;line-height:1.55}
+.why b{color:var(--ink)}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:18px;align-items:start}
+@media(max-width:860px){.two{grid-template-columns:1fr}}
+.tag{display:inline-block;font-size:11px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;padding:3px 9px;border-radius:999px;margin-bottom:8px}
+.tag.old{background:#f1eded;color:var(--mu)}.tag.new{background:var(--ps);color:var(--p)}
+/* khung popup giả */
+.modal{border:1px solid var(--ln);border-radius:18px;padding:18px;background:#fff;box-shadow:0 18px 50px rgba(60,20,30,.12)}
+.modal h3{margin:0 0 4px;font-size:17px}
+.modal .s{color:var(--mu);font-size:12.5px;margin:0 0 12px}
+.lbl{font-size:12px;font-weight:600;margin:10px 0 5px}
+.in{display:flex;align-items:center;height:40px;border:1px solid var(--ln);border-radius:10px;padding:0 12px;background:#fff;font-size:13.5px}
+.in.ph{color:#a99f9b}
+.row{display:grid;grid-template-columns:1fr 112px;gap:8px}
+.sel{display:flex;align-items:center;justify-content:space-between;height:40px;border:1px solid var(--ln);border-radius:10px;padding:0 10px;font-size:13px;background:#fff}
+.sel::after{content:'▾';color:var(--mu)}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0}
+.chip{padding:6px 11px;border-radius:999px;border:1px dashed #e2c9cd;color:var(--p);font-weight:600;font-size:12.5px;background:#fff}
+.chip.on{border-style:solid;background:var(--ps)}
+.ev{border:1px solid var(--ln);border-radius:12px;padding:10px 12px;margin-bottom:8px;display:flex;align-items:center;gap:10px}
+.ev b{font-size:13.5px}.ev small{display:block;color:var(--mu);font-size:12px;margin-top:2px}
+.ev .main{margin-left:auto;font-size:11px;font-weight:700;color:#fff;background:var(--ink);padding:3px 8px;border-radius:999px}
+.ev .st{margin-left:auto;color:#cbbfc1;font-size:16px}
+.btn{display:block;text-align:center;padding:11px;border-radius:999px;background:linear-gradient(90deg,#d6455d,#ef7d8d);color:#fff;font-weight:700;margin-top:12px}
+.note{font-size:12px;color:var(--mu);background:#faf6f5;border-radius:10px;padding:8px 10px;margin-top:10px}
+/* danh sách mục */
+.secs{display:grid;gap:6px}
+.sec{display:flex;align-items:center;gap:10px;border:1px solid var(--ln);border-radius:12px;padding:9px 12px;background:#fff}
+.sec .ck{width:20px;height:20px;border-radius:50%;display:grid;place-items:center;font-size:12px;flex:none}
+.sec .ck.y{background:var(--ok);color:#fff}.sec .ck.n{border:2px solid #d9cfd1}
+.sec .ck.w{background:#f2a33a;color:#fff}
+.sec span{flex:1;font-weight:600;font-size:13.5px}.sec small{color:var(--mu);font-weight:500;font-size:12px}
+.tg{width:34px;height:20px;border-radius:999px;background:#ddd;position:relative;flex:none}
+.tg::after{content:'';position:absolute;top:2px;left:2px;width:16px;height:16px;border-radius:50%;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.2)}
+.tg.on{background:var(--ok)}.tg.on::after{left:16px}
+.prog{display:flex;align-items:center;gap:10px;margin-bottom:12px}
+.prog .bar{flex:1;height:8px;border-radius:99px;background:#f2e6e8;overflow:hidden}.prog .bar i{display:block;height:100%;width:64%;background:var(--ok);border-radius:99px}
+.prog b{font-size:13px}
+.search{display:flex;align-items:center;gap:8px;height:38px;border:1px solid var(--ln);border-radius:999px;padding:0 14px;color:#a99f9b;margin-bottom:12px;font-size:13px}
+/* thanh trên trình sửa */
+.topbar{display:flex;align-items:center;gap:12px;border:1px solid var(--ln);border-radius:14px;padding:10px 14px;background:#fff}
+.topbar .t{font-weight:700}
+.prof{display:flex;align-items:center;gap:8px;margin-left:auto;padding:6px 12px;border-radius:999px;background:var(--oks);color:var(--ok);font-weight:600;font-size:12.5px}
+.prof small{color:var(--mu);font-weight:500}
+.pb{padding:7px 14px;border-radius:999px;background:var(--p);color:#fff;font-weight:700;font-size:12.5px}
+.uses{display:flex;gap:8px;margin-top:12px;flex-wrap:wrap}
+.use{flex:1;min-width:140px;border:1px solid var(--ln);border-radius:12px;padding:10px 12px}
+.use b{display:block;font-size:13px}.use small{color:var(--ok);font-weight:600;font-size:12px}
+/* thiệp điện thoại */
+.phone{width:270px;margin:0 auto;border:10px solid #1d1a1b;border-radius:34px;overflow:hidden;background:#fdf6ee}
+.pc{padding:18px 16px;text-align:center;font-family:'Playfair Display',serif;color:#6b1e24;border-bottom:1px dashed #ead8cd}
+.pc h4{margin:0 0 8px;font-size:15px;letter-spacing:.08em;text-transform:uppercase}
+.pc p{margin:4px 0;font-family:'Be Vietnam Pro';font-size:12px;color:#7a5a55}
+.dots{display:flex;justify-content:center;gap:8px;margin:8px 0}
+.dots i{width:30px;height:30px;border-radius:50%;border:2px solid #fff;box-shadow:0 0 0 1px #e6d4c8}
+.qa{text-align:left;font-family:'Be Vietnam Pro';font-size:12px;background:#fff;border-radius:10px;padding:8px 10px;margin:6px 0}
+.qa b{color:#6b1e24}
+.call{display:flex;gap:8px;justify-content:center;margin-top:6px}
+.call span{font-family:'Be Vietnam Pro';font-size:12px;font-weight:600;padding:7px 12px;border-radius:999px;background:#6b1e24;color:#fff}
+.lang{display:inline-flex;border:1px solid #e6d4c8;border-radius:999px;overflow:hidden;font-family:'Be Vietnam Pro';font-size:11px;font-weight:700;margin-bottom:6px}
+.lang span{padding:4px 10px}.lang span.on{background:#6b1e24;color:#fff}
+.newb{font-family:'Be Vietnam Pro';font-size:10px;font-weight:700;background:var(--p);color:#fff;padding:2px 7px;border-radius:999px;margin-left:6px;vertical-align:middle;letter-spacing:0}
+/* xem trước chia sẻ */
+.zalo{border-radius:16px;background:#e9f2ff;padding:14px}
+.bub{background:#fff;border-radius:14px;overflow:hidden;max-width:290px;box-shadow:0 2px 8px rgba(0,0,0,.08)}
+.bub .img{height:150px;background:linear-gradient(135deg,#8b1a24,#c9545f);display:grid;place-items:center;color:#fff;font-family:'Playfair Display';font-size:20px}
+.bub .tx{padding:10px 12px}.bub .tx b{display:block;font-size:13.5px}.bub .tx small{color:var(--mu);font-size:12px}.bub .tx em{display:block;color:#0068ff;font-size:11.5px;font-style:normal;margin-top:4px}
+.later{opacity:.75}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Những gì sẽ thay đổi trên Cưới Nha</h1>
+  <p class="lead">Học từ cách Ngày Chung Đôi tạo thiệp, nhưng giữ hướng đã chốt: <b>sửa thẳng trên thiệp, mọi thứ mở bằng popup</b>. Đây là mock giao diện, chưa phải code thật — anh chốt mục nào thì t làm mục đó.</p>
+  <div class="toc"><a href="#a">1 · Danh xưng & các lễ</a><a href="#b">2 · Danh sách mục ✓</a><a href="#c">3 · Hồ sơ cưới dùng chung</a><a href="#d">4 · Mục mới trên thiệp</a><a href="#e">5 · Ảnh khi chia sẻ link</a></div>
+
+  <!-- 1 -->
+  <section class="blk" id="a">
+    <h2><i>1</i>Danh xưng cạnh tên + chọn lễ có sẵn + "lễ chính"</h2>
+    <p class="why">Ở popup <b>"Thông tin chính"</b> (nút Thông tin) và hộp <b>"Bắt đầu nhanh"</b>. Thiệp truyền thống Việt luôn ghi <b>Trưởng nam / Thứ nữ / Út nữ…</b> và tên bố mẹ có <b>Ông / Bà</b> — hiện Cưới Nha chưa có. Các lễ thêm bằng một chạm, có <b>giờ đón khách</b> và đánh dấu <b>lễ chính</b> (dùng cho trang bìa, đếm ngược, lịch).</p>
+    <div class="two">
+      <div>
+        <span class="tag old">Hiện tại</span>
+        <div class="modal">
+          <h3>Thông tin chính</h3>
+          <div class="lbl">Tên chú rể</div><div class="in">Đức Anh</div>
+          <div class="lbl">Bố</div><div class="in">Vũ Văn Hùng</div>
+          <div class="lbl">Các lễ</div>
+          <div class="ev"><div><b>Lễ Thành Hôn</b><small>10:00 · 20/12</small></div></div>
+          <div class="chip" style="display:inline-block">+ Thêm lễ</div>
+          <div class="note">Thêm lễ = ô trống, tự gõ tên "Lễ Vu Quy", "Tiệc cưới nhà trai"…</div>
+        </div>
+      </div>
+      <div>
+        <span class="tag new">Sẽ thành</span>
+        <div class="modal">
+          <h3>Thông tin chính</h3>
+          <div class="lbl">Chú rể</div>
+          <div class="row"><div class="in">Vũ Đức Anh</div><div class="sel">Trưởng nam</div></div>
+          <div class="lbl">Bố · Mẹ</div>
+          <div class="row"><div class="in">Vũ Văn Hùng</div><div class="sel">Ông</div></div>
+          <div class="row" style="margin-top:6px"><div class="in">Nguyễn Thị Lan</div><div class="sel">Bà</div></div>
+          <div class="lbl">Các lễ — bấm để thêm</div>
+          <div class="chips"><span class="chip">+ Lễ ăn hỏi</span><span class="chip">+ Lễ vu quy</span><span class="chip on">✓ Lễ thành hôn</span><span class="chip">+ Tiệc nhà trai</span><span class="chip on">✓ Tiệc nhà gái</span><span class="chip">+ Lễ khác</span></div>
+          <div class="ev"><div><b>Lễ Thành Hôn</b><small>Đón khách 9:30 · Làm lễ 10:00 · CN 20/12 (12/11 âm lịch)</small></div><span class="main">★ Lễ chính</span></div>
+          <div class="ev"><div><b>Tiệc cưới nhà gái</b><small>Đón khách 17:30 · Khai tiệc 18:30 · Nhà hàng Ngọc Lan</small></div><span class="st">☆</span></div>
+          <div class="note">Có ô "Hiện nhà gái trước" cho đám cưới tổ chức bên nhà gái. Ngày âm lịch tự tính.</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 2 -->
+  <section class="blk" id="b">
+    <h2><i>2</i>Danh sách mục của thiệp: ✓ đã có / bật tắt từng mục</h2>
+    <p class="why">Thêm tab <b>"Các mục"</b> ở thanh trái (thay cho tab "Thêm" đã bỏ). Nhìn là biết thiệp <b>còn thiếu gì trước khi phát hành</b>; gạt để ẩn mục không dùng; bấm tên mục → thiệp cuộn tới mục đó và mở popup sửa. Có ô tìm nhanh như bên kia.</p>
+    <div class="two">
+      <div class="modal">
+        <h3>Các mục của thiệp</h3>
+        <p class="s">Gạt để ẩn / hiện trên thiệp. Bấm tên mục để sửa.</p>
+        <div class="search">🔍 Tìm mục: nhạc, ngày cưới, lời chúc…</div>
+        <div class="prog"><div class="bar"><i></i></div><b>9/14 mục đã có nội dung</b></div>
+        <div class="secs">
+          <div class="sec"><i class="ck y">✓</i><span>Trang bìa <small>· ảnh, tên, ngày</small></span><i class="tg on"></i></div>
+          <div class="sec"><i class="ck y">✓</i><span>Lời mời & lễ cưới</span><i class="tg on"></i></div>
+          <div class="sec"><i class="ck w">!</i><span>Cô dâu & chú rể <small>· thiếu ảnh cô dâu</small></span><i class="tg on"></i></div>
+          <div class="sec"><i class="ck y">✓</i><span>Album ảnh <small>· 8 ảnh</small></span><i class="tg on"></i></div>
+          <div class="sec"><i class="ck n"></i><span>Chuyện tình yêu <small>· chưa viết</small></span><i class="tg on"></i></div>
+          <div class="sec"><i class="ck y">✓</i><span>Bản đồ</span><i class="tg on"></i></div>
+          <div class="sec"><i class="ck y">✓</i><span>Lịch trình ngày cưới</span><i class="tg on"></i></div>
+          <div class="sec"><i class="ck n"></i><span>Dress code <span class="newb">MỚI</span></span><i class="tg"></i></div>
+          <div class="sec"><i class="ck y">✓</i><span>Mừng cưới (QR)</span><i class="tg on"></i></div>
+          <div class="sec"><i class="ck y">✓</i><span>Xác nhận tham dự</span><i class="tg on"></i></div>
+          <div class="sec"><i class="ck y">✓</i><span>Sổ lưu bút</span><i class="tg on"></i></div>
+        </div>
+      </div>
+      <div class="modal">
+        <h3>Bấm "Phát hành thiệp" khi còn thiếu</h3>
+        <p class="s">Không chặn, chỉ nhắc — khách vẫn phát hành được.</p>
+        <div class="sec" style="margin-bottom:6px"><i class="ck w">!</i><span>Cô dâu & chú rể <small>· thiếu ảnh cô dâu</small></span></div>
+        <div class="sec"><i class="ck n"></i><span>Chuyện tình yêu <small>· đang bật nhưng chưa viết → sẽ hiện chữ mẫu</small></span></div>
+        <div class="btn">Vẫn phát hành</div>
+        <div style="text-align:center;margin-top:8px;color:var(--p);font-weight:600">Bổ sung trước</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 3 -->
+  <section class="blk" id="c">
+    <h2><i>3</i>Hồ sơ cưới dùng chung cho Thiệp · Màn LED · Video · Sổ tay</h2>
+    <p class="why">Cưới Nha <b>đã có sẵn nền móng</b>: sổ tay cưới giữ tên đôi + ngày cưới và tự đồng bộ sang thiệp. Mở rộng thêm <b>các lễ, số điện thoại, số tài khoản mừng cưới</b>, và hiện rõ trên thanh trên trình sửa. Điền một lần, tạo thiệp thứ hai / màn LED / video là có sẵn — không popup bắt điền khi vừa vào như bên kia.</p>
+    <div class="topbar"><span class="t">← Đức Anh & Phạm Nga</span><span class="prof">✓ Hồ sơ cưới <small>· dùng chung 3 sản phẩm</small></span><span class="pb">Phát hành thiệp</span></div>
+    <div class="uses">
+      <div class="use"><b>Thiệp cưới</b><small>✓ tên, ngày, các lễ, mừng cưới</small></div>
+      <div class="use"><b>Màn hình LED</b><small>✓ tên, ngày tự điền</small></div>
+      <div class="use"><b>Video cưới</b><small>✓ tên, ngày, địa điểm tự điền</small></div>
+      <div class="use"><b>Sổ tay cưới</b><small>✓ khách mời, lịch, ngân sách</small></div>
+    </div>
+    <div class="note">Sửa ở đâu cũng cập nhật hồ sơ — và từ giờ <b>ô trống không bao giờ xoá chữ đã điền</b> (lỗi mất tên vừa sửa).</div>
+  </section>
+
+  <!-- 4 -->
+  <section class="blk" id="d">
+    <h2><i>4</i>Mục mới trên thiệp</h2>
+    <p class="why">Thêm vào mọi mẫu, bật / tắt ở tab "Các mục": <b>Dress code</b> (gợi ý màu trang phục), <b>Hỏi đáp vui về hai bạn</b>, <b>nút gọi điện</b> cho chú rể / cô dâu, <b>song ngữ Việt – Anh</b> cho khách nước ngoài.</p>
+    <div class="phone">
+      <div class="pc"><div class="lang"><span class="on">VI</span><span>EN</span></div><h4>Trang phục <span class="newb">MỚI</span></h4><p>Mời bạn diện tông màu:</p><div class="dots"><i style="background:#f3e6d8"></i><i style="background:#c9a27e"></i><i style="background:#8b1a24"></i><i style="background:#2c2c2c"></i></div><p>Nam: vest / sơ mi · Nữ: váy, áo dài</p></div>
+      <div class="pc"><h4>Hỏi đáp <span class="newb">MỚI</span></h4>
+        <div class="qa"><b>Hai bạn quen nhau thế nào?</b><br>Cùng lớp đại học, ngồi cạnh nhau 4 năm 😄</div>
+        <div class="qa"><b>Ai tỏ tình trước?</b><br>Anh Đức Anh, ngày 20/10/2019.</div></div>
+      <div class="pc"><h4>Liên hệ <span class="newb">MỚI</span></h4><p>Cần hỏi đường, gọi ngay:</p><div class="call"><span>📞 Chú rể</span><span>📞 Cô dâu</span></div></div>
+    </div>
+  </section>
+
+  <!-- 5 -->
+  <section class="blk" id="e">
+    <h2><i>5</i>Ảnh & chữ hiện khi gửi link qua Zalo / Facebook</h2>
+    <p class="why">Hiện Cưới Nha tự tạo ảnh chia sẻ. Thêm popup cho khách <b>tự chọn ảnh, sửa tiêu đề & mô tả</b>, kèm giải thích ngắn "Zalo/Facebook giữ ảnh cũ vài giờ — gửi lại link có thêm ?v=2 để thấy ảnh mới".</p>
+    <div class="two">
+      <div class="modal">
+        <h3>Khi gửi link thiệp</h3>
+        <div class="lbl">Ảnh</div><div class="in">📷 Ảnh bìa (mặc định) · <span style="color:var(--p);margin-left:6px;font-weight:600">Đổi ảnh</span></div>
+        <div class="lbl">Tiêu đề</div><div class="in">Thiệp cưới Đức Anh & Phạm Nga</div>
+        <div class="lbl">Mô tả</div><div class="in">Chủ Nhật 20/12/2026 · Trân trọng kính mời</div>
+        <div class="btn">Lưu</div>
+      </div>
+      <div class="zalo"><span class="tag new" style="background:#fff">Xem trước trên Zalo</span>
+        <div class="bub"><div class="img">Đức Anh & Phạm Nga</div><div class="tx"><b>Thiệp cưới Đức Anh & Phạm Nga</b><small>Chủ Nhật 20/12/2026 · Trân trọng kính mời</small><em>cuoinha.com</em></div></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="blk later">
+    <h2><i>·</i>Để sau (không làm đợt này)</h2>
+    <p class="why" style="margin:0"><b>Quét thiệp giấy bằng AI</b> — hay cho marketing nhưng tốn công. <b>Trình sửa kéo thả kiểu Canva</b> — bên kia bị treo khi thử, khó dùng trên điện thoại; Cưới Nha giữ kiểu bấm thẳng lên thiệp.</p>
+  </section>
+</div>
+</body>
+</html>

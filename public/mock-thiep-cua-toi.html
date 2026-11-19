@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="vi"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<script src="/js/theme.js"></script>
+<title>Mock: tab Thiệp — tách thiệp của bạn khỏi kho mẫu</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&amp;family=Dancing+Script:wght@600;700&amp;display=swap">
+<link rel="stylesheet" href="/css/app.css">
+<style>
+/* MOCK: tab "Thiệp" sau đăng nhập, dùng đúng thanh trên thật (renderTopbar). Nút A / B / C ở góc dưới để đổi kiểu. */
+.lbl{font-size:12px;font-weight:700;letter-spacing:.06em;color:var(--muted);text-transform:uppercase;margin:0 0 10px}
+.ok{color:#23824f}
+.sp{flex:1}
+.bp{display:inline-flex;align-items:center;justify-content:center;gap:6px;height:40px;padding:0 18px;border-radius:999px;background:var(--grad);color:#fff;font-size:14px;font-weight:700;white-space:nowrap;box-shadow:0 8px 18px rgba(214,69,93,.25)}
+.bo{display:inline-flex;align-items:center;justify-content:center;gap:6px;height:40px;padding:0 16px;border-radius:999px;border:1px solid var(--line);background:var(--surface);font-size:14px;font-weight:600;white-space:nowrap}
+.grid{display:grid;grid-template-columns:repeat(6,1fr);gap:16px}
+.tp{display:flex;flex-direction:column;gap:7px;font-size:14px;font-weight:600}
+.tp i{display:block;aspect-ratio:3/4;border-radius:12px;background:#eee top/cover;box-shadow:0 0 0 1px var(--line)}
+.chips{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 16px}.chips span{padding:8px 15px;border-radius:999px;background:var(--surface);box-shadow:0 0 0 1px var(--line);font-size:14px;font-weight:600}.chips .on{background:var(--ink);color:#fff;box-shadow:none}
+h1.pt{margin:0;font-size:32px}.ps{margin:4px 0 18px;color:var(--muted)}
+/* A */
+.hero{display:grid;grid-template-columns:170px 1fr auto;gap:26px;align-items:center;padding:20px;border-radius:24px;background:var(--surface);box-shadow:0 0 0 1px var(--line),0 10px 30px rgba(120,40,50,.07)}
+.hero>i{display:block;aspect-ratio:3/4;border-radius:14px;background:#eee top/cover;box-shadow:0 8px 20px rgba(120,40,50,.15)}
+.hero h3{margin:8px 0 0;font-size:24px}
+.badge{display:inline-flex;align-items:center;gap:5px;padding:3px 10px;border-radius:999px;background:#e9f6ef;color:#23824f;font-size:12px;font-weight:700}
+.stats{display:flex;gap:30px;margin-top:16px}.stats b{display:block;font-size:22px}.stats small{font-size:12.5px;color:var(--muted)}
+.acts{display:flex;flex-direction:column;gap:8px;min-width:190px}
+.link{font-size:13.5px;color:var(--primary);font-weight:600}
+.row{display:flex;align-items:center;gap:12px;margin-top:12px;padding:12px 16px;border-radius:16px;background:var(--surface);box-shadow:0 0 0 1px var(--line);font-size:14px}
+.th{display:flex}.th i{width:30px;height:40px;border-radius:7px;background:#eee top/cover;margin-left:-9px;box-shadow:0 0 0 2px var(--surface)}.th i:first-child{margin-left:0}
+/* B */
+.sub{display:flex;gap:26px;border-bottom:1px solid var(--line);margin:0 0 20px}
+.sub span{padding:0 0 12px;font-size:16px;font-weight:700;color:var(--muted)}.sub .on{color:var(--ink);box-shadow:inset 0 -2.5px var(--primary)}
+.sub em{font-style:normal;font-size:12px;margin-left:6px;padding:1px 8px;border-radius:999px;background:#f1e4e6}
+.list{display:grid;grid-template-columns:repeat(5,1fr);gap:16px}
+.cd{border-radius:18px;background:var(--surface);box-shadow:0 0 0 1px var(--line);overflow:hidden}
+.cd i{display:block;aspect-ratio:4/3.4;background:#eee center 20%/cover}
+.cd div{padding:12px}.cd b{display:block;font-size:14.5px}.cd small{font-size:12.5px;color:var(--muted)}
+.cd .r{display:flex;gap:6px;margin-top:10px;padding:0}.cd .r span{flex:1;height:34px;font-size:13px}
+.cd.main{box-shadow:0 0 0 2px var(--primary)}
+.cd.new{display:grid;place-items:center;border:1.5px dashed #e2cfd3;box-shadow:none;background:none;color:var(--primary);font-weight:700}
+/* C */
+.two{display:grid;grid-template-columns:300px 1fr;gap:28px;align-items:start}
+.side{position:sticky;top:96px;padding:16px;border-radius:22px;background:var(--surface);box-shadow:0 0 0 1px var(--line)}
+.side>i{display:block;aspect-ratio:3/4;border-radius:14px;background:#eee top/cover;margin-bottom:12px}
+.side h3{margin:6px 0 2px;font-size:19px}
+.side .acts{min-width:0;margin-top:14px}
+.side .mini{display:flex;justify-content:space-between;margin-top:14px;padding-top:12px;border-top:1px solid var(--line);font-size:13.5px}
+.two .grid{grid-template-columns:repeat(4,1fr)}
+/* nút đổi kiểu (chỉ có trong mock) */
+.sw{position:fixed;right:20px;bottom:20px;z-index:99;display:flex;gap:4px;padding:5px;border-radius:999px;background:#2a1b1e;box-shadow:0 10px 30px rgba(0,0,0,.25)}
+.sw button{border:0;border-radius:999px;padding:9px 16px;background:none;color:#fff;font:700 14px var(--sans);cursor:pointer}.sw button.on{background:#d6455d}
+.v{display:none}.v.on{display:block}
+</style></head><body>
+<main class="wrap" style="padding-top:28px;padding-bottom:90px">
+
+<section class="v on" data-v="A">
+  <p class="lbl">Thiệp của bạn</p>
+  <div class="hero"><i style="background-image:url(/demo/cover-anhdo-do-do.jpg)"></i>
+    <div><span class="badge">✓ Trọn bộ đã kích hoạt</span><h3>Đức Anh &amp; Phạm Nga</h3><p class="muted" style="margin:4px 0 0;font-size:14px">Mẫu Song Hỷ · Chủ nhật 20/12/2026 · cuoinha.com/t/duc-anh-pham-nga</p>
+      <div class="stats"><div><b>86</b><small>khách đã mời</small></div><div><b>214</b><small>lượt xem</small></div><div><b>41</b><small>xác nhận đến</small></div><div><b>12</b><small>lời chúc</small></div></div></div>
+    <div class="acts"><span class="bp">✎ Sửa thiệp</span><span class="bo">✉ Gửi cho khách</span><span class="bo">Quản lý ›</span></div></div>
+  <div class="row"><span class="th"><i style="background-image:url(/demo/cover-catdan-do-vintage.jpg)"></i><i style="background-image:url(/demo/cover-denlong-hong-phan.jpg)"></i><i style="background-image:url(/demo/cover-cucdai-xanh-reu.jpg)"></i><i style="background-image:url(/demo/cover-bienxanh-trang-cat.jpg)"></i></span><b>4 bản nháp khác</b><span class="muted">· Mẫu Đơn, Hoài Niệm, Rừng Thông, Ngà Ngọc</span><span class="sp"></span><span class="link">Xem ▾</span></div>
+  <div class="row"><span>🎨 Muốn đổi mẫu? Áp mẫu khác lên thiệp này — nội dung, ảnh giữ nguyên.</span><span class="sp"></span><span class="bo">Xem 49 mẫu ›</span></div>
+</section>
+
+<section class="v" data-v="B">
+  <div class="sub"><span class="on">Thiệp của tôi<em>5</em></span><span>Kho mẫu<em>49</em></span></div>
+  <div class="list">
+    <div class="cd main"><i style="background-image:url(/demo/cover-anhdo-do-do.jpg)"></i><div><b>Đức Anh &amp; Phạm Nga</b><small class="ok">✓ Đã kích hoạt · Song Hỷ</small><div class="r"><span class="bp">Sửa</span><span class="bo">Gửi khách</span></div></div></div>
+    <div class="cd"><i style="background-image:url(/demo/cover-catdan-do-vintage.jpg)"></i><div><b>Đức Anh &amp; Phạm Nga</b><small>Bản nháp · Mẫu Đơn</small><div class="r"><span class="bo">Sửa</span><span class="bo">⋯</span></div></div></div>
+    <div class="cd"><i style="background-image:url(/demo/cover-denlong-hong-phan.jpg)"></i><div><b>Đức Anh &amp; Phạm Nga</b><small>Bản nháp · Hoài Niệm</small><div class="r"><span class="bo">Sửa</span><span class="bo">⋯</span></div></div></div>
+    <div class="cd"><i style="background-image:url(/demo/cover-cucdai-xanh-reu.jpg)"></i><div><b>Đức Anh &amp; Phạm Nga</b><small>Bản nháp · Rừng Thông</small><div class="r"><span class="bo">Sửa</span><span class="bo">⋯</span></div></div></div>
+    <div class="cd new">＋ Thiệp mới từ kho mẫu</div>
+  </div>
+</section>
+
+<section class="v" data-v="C">
+  <div class="two">
+    <div class="side"><p class="lbl">Thiệp của bạn</p><i style="background-image:url(/demo/cover-anhdo-do-do.jpg)"></i><span class="badge">✓ Đã kích hoạt</span><h3>Đức Anh &amp; Phạm Nga</h3><small class="muted">Song Hỷ · 86 khách đã mời</small>
+      <div class="acts"><span class="bp">✎ Sửa thiệp</span><span class="bo">✉ Gửi cho khách</span></div>
+      <div class="mini"><span class="muted">4 bản nháp khác</span><span class="link">Xem ›</span></div></div>
+    <div><h1 class="pt">Mẫu thiệp</h1><p class="ps">49 mẫu · bấm để xem thử, ưng thì áp lên thiệp của bạn</p>
+      <div class="chips"><span class="on">Tất cả</span><span>Truyền thống</span><span>Tối giản</span><span>Hoa &amp; thiên nhiên</span><span>Hoàng gia</span></div>
+      <div class="grid" id="tplC"></div></div>
+  </div>
+</section>
+
+<section class="v" data-v="A" id="aTpl" hidden></section>
+</main>
+<div class="sw" id="sw"><button class="on" data-k="A">A · Thiệp lớn</button><button data-k="B">B · Tab con</button><button data-k="C">C · Cột trái</button></div>
+<script src="/js/common.js"></script>
+<script>
+// MOCK: thanh trên thật của trang Thiệp; ảnh mẫu lấy từ ảnh bìa demo
+renderTopbar('cards').catch(() => {});
+const covers = ['catdan-do-vintage', 'anhdo-xanh-dam', 'denlong-xanh-mint', 'dentrang-den-trang', 'bienxanh-xanh-bien', 'cucdai-vang-cuc', 'catdan-nau-giay', 'dentrang-nau-sepia'];
+const names = ['Mẫu Đơn', 'Song Hỷ', 'Long Phụng', 'Tơ Duyên', 'Thanh Diệp', 'Song Hỷ Đỏ', 'Hoài Niệm', 'Ngà Ngọc'];
+document.getElementById('tplC').innerHTML = covers.map((c, i) => `<div class="tp"><i style="background-image:url(/demo/cover-${c}.jpg)"></i>${names[i]}</div>`).join('');
+document.getElementById('sw').onclick = (e) => {
+  const b = e.target.closest('button'); if (!b) return;
+  document.querySelectorAll('#sw button').forEach((x) => x.classList.toggle('on', x === b));
+  document.querySelectorAll('.v').forEach((v) => v.classList.toggle('on', v.dataset.v === b.dataset.k && !v.hidden));
+  scrollTo(0, 0);
+};
+</script>
+</body></html>

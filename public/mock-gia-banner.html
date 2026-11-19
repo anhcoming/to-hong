@@ -1,0 +1,93 @@
+<!doctype html>
+<html lang="vi"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Mock · đặt giá trên banner</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;600;700&display=swap">
+<style>
+body{margin:0;padding:24px;background:#ece6e4;font:14px/1.45 'Be Vietnam Pro',sans-serif;color:#2b2224}
+h1{margin:0 0 4px;font-size:22px}p.d{margin:0 0 10px;color:#7a6d70;max-width:900px}
+h2{margin:34px 0 4px;font-size:18px}
+.row{display:flex;gap:20px;align-items:flex-start;flex-wrap:wrap}
+.dev{position:relative;overflow:hidden;border-radius:14px;background:#fff;box-shadow:0 10px 30px rgba(0,0,0,.1)}
+.dev iframe{border:0;transform-origin:0 0;display:block}
+.desk{width:768px;height:516px}.desk iframe{width:1280px;height:860px;transform:scale(.6)}
+.mob{width:280px;height:560px}.mob iframe{width:390px;height:780px;transform:scale(.718)}
+.lab{font-size:12px;color:#8a7d80;margin:6px 0 0}
+</style></head><body>
+<h1>Trang chủ · đặt giá 99k / 129k ở đâu</h1>
+<p class="d">Mỗi phương án là trang chủ thật (máy tính + điện thoại), chỉ thêm phần giá. Phần "thả ảnh → ra thiệp" giữ nguyên.</p>
+
+<h2>A · Một dòng dưới nút "Chọn ảnh cưới"</h2>
+<p class="d">Nhẹ nhất: thấy giá ngay dưới nút bấm, không lấn phần chính.</p>
+<div class="row"><div class="dev desk"><iframe data-opt="A"></iframe></div><div><div class="dev mob"><iframe data-opt="A"></iframe></div></div></div>
+
+<h2>B · Nhãn "Chỉ từ 99k" trên tiêu đề</h2>
+<p class="d">Thay dòng nhỏ "THIỆP CƯỚI ONLINE" bằng nhãn giá nổi bật, mắt đọc tiêu đề là thấy giá.</p>
+<div class="row"><div class="dev desk"><iframe data-opt="B"></iframe></div><div><div class="dev mob"><iframe data-opt="B"></iframe></div></div></div>
+
+<h2>C · Thẻ giá nổi cạnh khung thiệp</h2>
+<p class="d">Một thẻ nhỏ nghiêng, kiểu tem giá, đặt cạnh khung thả ảnh. Bắt mắt hơn A, vẫn để khung ảnh làm chính.</p>
+<div class="row"><div class="dev desk"><iframe data-opt="C"></iframe></div><div><div class="dev mob"><iframe data-opt="C"></iframe></div></div></div>
+
+<h2>D · Dải giá chạy ngang dưới thanh menu</h2>
+<p class="d">Dải màu chạy liên tục: "Thiệp cưới 99k · Trọn bộ thiệp + LED + video 129k · Dùng thử miễn phí…". Thấy ở mọi lúc mở trang, kiểu thông báo khuyến mãi.</p>
+<div class="row"><div class="dev desk"><iframe data-opt="D"></iframe></div><div><div class="dev mob"><iframe data-opt="D"></iframe></div></div></div>
+
+<h2>E · Thanh thông báo mảnh trên cùng (tách khỏi menu)</h2>
+<p class="d">Dải hồng nhạt sát mép trên màn hình, chữ đậm màu, giá màu đỏ, chạy chậm, mờ dần ở hai mép. Viên menu nổi lùi xuống dưới, không bị cắt.</p>
+<div class="row"><div class="dev desk"><iframe data-opt="E"></iframe></div><div><div class="dev mob"><iframe data-opt="E"></iframe></div></div></div>
+
+<h2>F · Dải mềm nằm trong viên menu</h2>
+<p class="d">Vẫn gắn dưới menu như D, nhưng nền hồng rất nhạt, bo theo viên menu, chữ nhỏ gọn, dấu ✦ thay emoji, mờ dần ở hai mép.</p>
+<div class="row"><div class="dev desk"><iframe data-opt="F"></iframe></div><div><div class="dev mob"><iframe data-opt="F"></iframe></div></div></div>
+
+<h2>E2 · Thanh trên cùng, nền hồng đậm, giá trong ô trắng</h2>
+<p class="d">Cùng vị trí E, nhưng nền màu thương hiệu đậm, chữ trắng, giá nằm trong ô trắng chữ đỏ nên mắt bắt ngay.</p>
+<div class="row"><div class="dev desk"><iframe data-opt="E2"></iframe></div><div><div class="dev mob"><iframe data-opt="E2"></iframe></div></div></div>
+
+<h2>E3 · Thanh trên cùng, nền hồng vừa, giá trong ô đỏ</h2>
+<p class="d">Nhẹ hơn E2 nhưng rõ hơn E: nền hồng đào, chữ đậm, giá trong ô đỏ chữ trắng.</p>
+<div class="row"><div class="dev desk"><iframe data-opt="E3"></iframe></div><div><div class="dev mob"><iframe data-opt="E3"></iframe></div></div></div>
+
+<h2>G · Thanh E2 + giữ viên menu, thanh trôi đi khi cuộn</h2>
+<p class="d">Đầu trang: thanh giá ở trên, viên menu nằm sát ngay dưới (khe hở nhỏ). Cuộn xuống: thanh giá trôi đi, viên menu lên sát mép trên như bây giờ. (Cuộn thử trong khung để xem.)</p>
+<div class="row"><div class="dev desk"><iframe data-opt="G"></iframe></div><div><div class="dev mob"><iframe data-opt="G"></iframe></div></div></div>
+
+<h2>H · Thanh E2 + menu dàn ngang trắng, dính liền dưới thanh</h2>
+<p class="d">Bỏ dáng viên nổi: menu trắng trải hết bề ngang, nối liền ngay dưới thanh giá thành một khối đầu trang (kiểu trang bán hàng quen thuộc).</p>
+<div class="row"><div class="dev desk"><iframe data-opt="H"></iframe></div><div><div class="dev mob"><iframe data-opt="H"></iframe></div></div></div>
+
+<script>
+var CSS = {
+  A: '.pmk-line{margin:12px 0 0;font-size:15px;color:#6f6266;text-align:center}.pmk-line b{color:var(--red,#d6455d);font-size:17px}.pmk-line span{white-space:nowrap}.pmk-line small{font-size:12px}',
+  B: '.pmk-pill{display:inline-flex;align-items:center;gap:8px;margin:0 auto 10px;padding:7px 16px;border-radius:999px;background:#fff;border:1.5px solid rgba(214,69,93,.35);box-shadow:0 6px 18px rgba(214,69,93,.15);font-weight:600;font-size:14px;color:#3a2a2d}.pmk-pill b{color:#d6455d;font-size:16px}.pmk-pill i{width:1px;height:14px;background:rgba(0,0,0,.15)}',
+  C: '.stage{position:relative}.pmk-tag{position:absolute;z-index:5;right:-150px;top:14%;rotate:6deg;padding:16px 22px;font-size:14px;border-radius:16px;background:#fff;box-shadow:0 14px 34px rgba(120,40,50,.22);text-align:left;font-size:12px;line-height:1.35;color:#6f6266}.pmk-tag b{display:block;font-size:32px;line-height:1.1;color:#d6455d}.pmk-tag hr{border:0;border-top:1px dashed #eadfe1;margin:8px 0}.pmk-tag em{font-style:normal;font-weight:700;color:#2b2224}@media(max-width:600px){.pmk-tag{right:4px;top:2%;padding:8px 12px}.pmk-tag b{font-size:17px}}',
+  E: '.pmk-ann{position:fixed;top:0;left:0;right:0;z-index:60;height:34px;overflow:hidden;background:#fbe9ec;color:#4a3236;font-size:13px;font-weight:500;white-space:nowrap;display:flex;align-items:center;-webkit-mask-image:linear-gradient(90deg,transparent,#000 8%,#000 92%,transparent);mask-image:linear-gradient(90deg,transparent,#000 8%,#000 92%,transparent)}.pmk-ann>div{display:inline-flex;animation:pmk 45s linear infinite}.pmk-ann span{padding:0 18px}.pmk-ann b{color:#c93a55;font-weight:700}.pmk-ann i{font-style:normal;color:#e2a3ae}.hnav{top:46px!important}.hb{padding-top:140px!important}@keyframes pmk{to{transform:translateX(-50%)}}',
+  E2: '.pmk-ann{position:fixed;top:0;left:0;right:0;z-index:60;height:40px;overflow:hidden;font-size:14px;font-weight:600;white-space:nowrap;display:flex;align-items:center;-webkit-mask-image:linear-gradient(90deg,transparent,#000 6%,#000 94%,transparent);mask-image:linear-gradient(90deg,transparent,#000 6%,#000 94%,transparent)}.pmk-ann>div{display:inline-flex;align-items:center;animation:pmk 40s linear infinite}.pmk-ann span{padding:0 16px}.pmk-ann b{display:inline-block;margin-left:6px;padding:2px 9px;border-radius:999px;font-weight:800;font-size:14.5px}.pmk-ann i{font-style:normal;opacity:.6}.hnav{top:52px!important}.hb{padding-top:146px!important}@keyframes pmk{to{transform:translateX(-50%)}}.pmk-ann{background:linear-gradient(90deg,#c93a55,#e2586f,#c93a55);color:#fff}.pmk-ann b{background:#fff;color:#c93a55}',
+  E3: '.pmk-ann{position:fixed;top:0;left:0;right:0;z-index:60;height:40px;overflow:hidden;font-size:14px;font-weight:600;white-space:nowrap;display:flex;align-items:center;-webkit-mask-image:linear-gradient(90deg,transparent,#000 6%,#000 94%,transparent);mask-image:linear-gradient(90deg,transparent,#000 6%,#000 94%,transparent)}.pmk-ann>div{display:inline-flex;align-items:center;animation:pmk 40s linear infinite}.pmk-ann span{padding:0 16px}.pmk-ann b{display:inline-block;margin-left:6px;padding:2px 9px;border-radius:999px;font-weight:800;font-size:14.5px}.pmk-ann i{font-style:normal;opacity:.6}.hnav{top:52px!important}.hb{padding-top:146px!important}@keyframes pmk{to{transform:translateX(-50%)}}.pmk-ann{background:#f8d3da;color:#4a2a30}.pmk-ann b{background:#d6455d;color:#fff}',
+  G: '.pmk-ann{left:0;right:0;z-index:60;height:40px;overflow:hidden;font-size:14px;font-weight:600;white-space:nowrap;display:flex;align-items:center;background:linear-gradient(90deg,#c93a55,#e2586f,#c93a55);color:#fff;-webkit-mask-image:linear-gradient(90deg,transparent,#000 6%,#000 94%,transparent);mask-image:linear-gradient(90deg,transparent,#000 6%,#000 94%,transparent)}.pmk-ann>div{display:inline-flex;align-items:center;animation:pmk 40s linear infinite}.pmk-ann span{padding:0 16px}.pmk-ann b{display:inline-block;margin-left:6px;padding:2px 9px;border-radius:999px;font-weight:800;font-size:14.5px;background:#fff;color:#c93a55}.pmk-ann i{font-style:normal;opacity:.6}@keyframes pmk{to{transform:translateX(-50%)}}.pmk-ann{position:absolute;top:0}.hnav{top:48px!important;transition:top .25s,border-radius .2s!important}.hnav.pmk-up{top:14px!important}.hb{padding-top:146px!important}',
+  H: '.pmk-ann{left:0;right:0;z-index:60;height:40px;overflow:hidden;font-size:14px;font-weight:600;white-space:nowrap;display:flex;align-items:center;background:linear-gradient(90deg,#c93a55,#e2586f,#c93a55);color:#fff;-webkit-mask-image:linear-gradient(90deg,transparent,#000 6%,#000 94%,transparent);mask-image:linear-gradient(90deg,transparent,#000 6%,#000 94%,transparent)}.pmk-ann>div{display:inline-flex;align-items:center;animation:pmk 40s linear infinite}.pmk-ann span{padding:0 16px}.pmk-ann b{display:inline-block;margin-left:6px;padding:2px 9px;border-radius:999px;font-weight:800;font-size:14.5px;background:#fff;color:#c93a55}.pmk-ann i{font-style:normal;opacity:.6}@keyframes pmk{to{transform:translateX(-50%)}}.pmk-ann{position:fixed;top:0;-webkit-mask-image:none;mask-image:none}.hnav{top:40px!important;left:0!important;transform:none!important;width:100%!important;border-radius:0!important;background:#fff!important;border:0!important;border-bottom:1px solid #f1e4e7!important;box-shadow:0 6px 20px rgba(120,40,50,.06)!important;backdrop-filter:none!important}.hnav>.wrap{max-width:1240px!important;margin:0 auto}.hb{padding-top:150px!important}',
+  F: '.pmk-soft{overflow:hidden;border-top:1px solid rgba(214,69,93,.12);background:rgba(251,233,236,.75);border-radius:0 0 30px 30px;color:#4a3236;font-size:12.5px;font-weight:500;white-space:nowrap;-webkit-mask-image:linear-gradient(90deg,transparent,#000 6%,#000 94%,transparent);mask-image:linear-gradient(90deg,transparent,#000 6%,#000 94%,transparent)}.pmk-soft>div{display:inline-flex;padding:7px 0;animation:pmk 45s linear infinite}.pmk-soft span{padding:0 16px}.pmk-soft b{color:#c93a55;font-weight:700}.pmk-soft i{font-style:normal;color:#e2a3ae}.hb{padding-top:128px!important}@keyframes pmk{to{transform:translateX(-50%)}}',
+  D: '.pmk-tk{overflow:hidden;background:linear-gradient(90deg,#c93a55,#e2586f,#c93a55);color:#fff;font-size:14px;font-weight:600;white-space:nowrap}.pmk-tk>div{display:inline-flex;gap:0;padding:9px 0;animation:pmk 28s linear infinite}.pmk-tk span{padding:0 22px}.pmk-tk b{color:#ffe7a8}@keyframes pmk{to{transform:translateX(-50%)}}.pmk-tk:hover>div{animation-play-state:paused}'
+};
+var TICK = '<span>💌 Thiệp cưới online <b>99k</b></span><span>✨ Trọn bộ thiệp + màn LED + video <b>129k</b></span><span>🎁 Dùng thử miễn phí 7 ngày</span><span>📩 Mỗi khách một thiệp tên riêng</span>';
+function apply(f) {
+  var d = f.contentDocument, o = f.dataset.opt; if (!d || !d.body) return;
+  var st = d.createElement('style'); st.textContent = CSS[o]; d.head.appendChild(st);
+  var hb = d.getElementById('hb'); if (!hb) return;
+  if (o === 'A') { var p = d.createElement('p'); p.className = 'pmk-line'; p.innerHTML = '<span>Dùng thử miễn phí</span> · <span>Thiệp <b>99k</b></span> · <span>Trọn bộ <b>129k</b> <small>(thiệp + LED + video)</small></span>'; hb.querySelector('.hcta').appendChild(p); }
+  if (o === 'B') { var k = hb.querySelector('.kick'); var s = d.createElement('div'); s.style.textAlign = 'center'; s.innerHTML = '<span class="pmk-pill">💌 Thiệp chỉ từ <b>99k</b><i></i>Trọn bộ <b>129k</b></span>'; k.replaceWith(s); }
+  if (o === 'C') { var t = d.createElement('div'); t.className = 'pmk-tag'; t.innerHTML = 'Thiệp cưới<b>99k</b><hr>Trọn bộ <em>129k</em><br>thiệp + LED + video'; hb.querySelector('.stage').appendChild(t); }
+  var SOFT = '<span>Thiệp cưới online <b>99k</b></span><i>✦</i><span>Trọn bộ thiệp + màn LED + video <b>129k</b></span><i>✦</i><span>Dùng thử miễn phí 7 ngày</span><i>✦</i><span>Mỗi khách một thiệp tên riêng</span><i>✦</i>';
+  if (o === 'G' || o === 'H') { var g = d.createElement('div'); g.className = 'pmk-ann'; var S3 = '<span>Thiệp cưới online<b>99k</b></span><i>✦</i><span>Trọn bộ thiệp + màn LED + video<b>129k</b></span><i>✦</i><span>Dùng thử miễn phí 7 ngày</span><i>✦</i><span>Mỗi khách một thiệp tên riêng</span><i>✦</i>'; g.innerHTML = '<div>' + S3 + S3 + S3 + S3 + '</div>'; d.body.insertBefore(g, d.body.firstChild);
+    if (o === 'G') { var w = f.contentWindow, hn = d.getElementById('hnav'); w.addEventListener('scroll', function () { hn.classList.toggle('pmk-up', w.scrollY > 34); }, { passive: true }); } }
+  if (o === 'E2' || o === 'E3') { var e2 = d.createElement('div'); e2.className = 'pmk-ann'; var S2 = '<span>Thiệp cưới online<b>99k</b></span><i>✦</i><span>Trọn bộ thiệp + màn LED + video<b>129k</b></span><i>✦</i><span>Dùng thử miễn phí 7 ngày</span><i>✦</i><span>Mỗi khách một thiệp tên riêng</span><i>✦</i>'; e2.innerHTML = '<div>' + S2 + S2 + S2 + S2 + '</div>'; d.body.insertBefore(e2, d.body.firstChild); }
+  if (o === 'E') { var e = d.createElement('div'); e.className = 'pmk-ann'; e.innerHTML = '<div>' + SOFT + SOFT + SOFT + SOFT + '</div>'; d.body.insertBefore(e, d.body.firstChild); }
+  if (o === 'F') { var h2 = d.getElementById('hnav'); var m2 = d.createElement('div'); m2.className = 'pmk-soft'; m2.innerHTML = '<div>' + SOFT + SOFT + SOFT + SOFT + '</div>'; h2.insertBefore(m2, h2.querySelector('.mpanel')); }
+  if (o === 'D') { var h = d.getElementById('hnav'); var m = d.createElement('div'); m.className = 'pmk-tk'; m.innerHTML = '<div>' + TICK + TICK + TICK + TICK + '</div>'; h.insertBefore(m, h.querySelector('.mpanel')); }
+}
+document.querySelectorAll('iframe[data-opt]').forEach(function (f) {
+  f.addEventListener('load', function () { setTimeout(function () { apply(f); }, 300); });
+  f.src = '/?mock=' + f.dataset.opt + Math.random().toString(36).slice(2, 6);
+});
+</script>
+</body></html>

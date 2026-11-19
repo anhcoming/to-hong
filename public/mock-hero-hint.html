@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="vi"><head><meta charset="utf-8"><title>Mock gợi ý nút Thử ngay</title>
+<style>
+body{margin:0;background:#e9e6e7;font-family:system-ui,sans-serif;padding:16px}
+.row{display:flex;gap:22px;justify-content:center;flex-wrap:wrap}
+.it{width:390px}.it h3{margin:0 0 4px;font-size:15px}.it p{margin:0 0 8px;color:#6d6164;font-size:12.5px;min-height:34px}
+iframe{display:block;width:390px;height:720px;border:0;border-radius:24px;box-shadow:0 10px 30px rgba(0,0,0,.12);background:#fff}
+</style></head><body>
+<div class="row" id="row"></div>
+<script>
+// mỗi mẫu = trang chủ thật (khung điện thoại 390px), hoạt hình dừng ở lúc ảnh còn quanh khung để dễ so
+var HINT = '<p class="hint">Chọn ảnh · có thiệp sau vài giây · không cần đăng ký</p>';
+var CSS = '.hint{margin:10px 0 0;font:500 12.5px/1.4 "Be Vietnam Pro",sans-serif;color:#8a7d80;text-align:center}';
+var V = [
+  ['Hiện tại', 'Để so sánh.', '', '', 0.1],
+  ['A · Dòng nhỏ dưới nút', 'Giải thích bấm vào thì làm gì, nhanh, không cần đăng ký.', HINT, '', 0.1],
+  ['B · A + nhãn "Ảnh của bạn"', 'Thêm nhãn nhỏ trên ảnh polaroid và trong khung — rõ là ảnh CỦA KHÁCH thành thiệp.', HINT,
+    '.fan .fp{outline:0}.yl{position:absolute;z-index:9;padding:3px 10px;border-radius:999px;background:#d6455d;color:#fff;font:700 12px "Be Vietnam Pro",sans-serif;white-space:nowrap}', 0.1, true],
+  ['C · A, dừng lúc thiệp bung', 'Cùng mẫu A nhưng chụp lúc thiệp đã bung — dòng nhỏ vẫn nói rõ thiệp này làm từ ảnh của bạn.', HINT.replace('Chọn ảnh', 'Thiệp từ ảnh của bạn'), '', 0.65]
+];
+document.getElementById('row').innerHTML = V.map(function (v, i) { return '<div class="it"><h3>' + v[0] + '</h3><p>' + v[1] + '</p><iframe id="f' + i + '" src="/?hint=' + i + '"></iframe></div>'; }).join('');
+V.forEach(function (v, i) {
+  var f = document.getElementById('f' + i);
+  f.onload = function () {
+    setTimeout(function () {
+      var d = f.contentDocument, w = f.contentWindow; if (!d) return;
+      var st = d.createElement('style'); st.textContent = '.hb>.kick,.hb>h1,.hb>.stage,.hb>.hcta{animation:none!important}' + CSS + (v[3] || ''); d.head.appendChild(st);
+      if (v[2]) d.querySelector('.hcta').insertAdjacentHTML('beforeend', v[2]);
+      if (v[5]) {
+        var fan = d.querySelector('.fan');
+        fan.insertAdjacentHTML('beforeend', '<span class="yl" style="left:30px;top:-14px">Ảnh của bạn</span><span class="yl" style="left:226px;top:150px;background:#fff;color:#d6455d;box-shadow:0 4px 12px rgba(0,0,0,.12)">→ Thiệp của bạn</span>');
+      }
+      var T = v[4] * 7000;
+      d.getAnimations().forEach(function (a) { a.pause(); var dur = a.effect.getTiming().duration; if (dur === 7000) a.currentTime = T; });
+    }, 600);
+  };
+});
+</script></body></html>

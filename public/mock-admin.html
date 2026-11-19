@@ -1,0 +1,563 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<script src="/js/theme.js"></script>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>MOCK · Quản trị</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&amp;family=Dancing+Script:wght@600;700&amp;display=swap">
+<link rel="stylesheet" href="/css/app.css">
+<style>
+/* MOCK trang quản trị mới:
+   - thanh bên trái (điện thoại: nút ☰ mở ra), mỗi trang chỉ có tiêu đề + nút chính + bộ lọc + danh sách
+   - tạo / sửa / xác nhận → popup giữa màn hình; bấm một dòng → bảng chi tiết trượt từ bên phải
+   - thao tác phụ của mỗi dòng gom vào nút ⋯ */
+body{background:var(--bg)}
+.ad{display:grid;grid-template-columns:232px minmax(0,1fr);min-height:100vh}
+.ad>div{min-width:0}
+/* ---- thanh bên ---- */
+.side{position:sticky;top:0;height:100vh;display:flex;flex-direction:column;gap:2px;padding:18px 12px;border-right:1px solid var(--line);background:var(--surface)}
+.side .brand{display:flex;align-items:baseline;gap:8px;padding:2px 10px 18px}
+.side .brand b{font:700 28px/1 var(--script);color:var(--primary)}
+.side .brand span{font-size:12px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.08em}
+.nv{display:flex;align-items:center;gap:11px;width:100%;padding:9px 10px;border:0;border-radius:10px;background:none;color:var(--muted);font:500 14px var(--sans);cursor:pointer;text-align:left}
+.nv svg{flex:none;width:18px;height:18px}
+.nv:hover{background:var(--bg);color:var(--ink)}
+.nv.on{background:var(--primary-soft);color:var(--primary);font-weight:600}
+.nv .n{margin-left:auto;min-width:20px;padding:0 6px;border-radius:999px;background:var(--primary);color:#fff;font-size:11px;font-weight:700;line-height:20px;text-align:center}
+.side .sep{height:1px;background:var(--line);margin:10px 6px}
+.side .me{margin-top:auto;display:flex;align-items:center;gap:10px;padding:10px;border-radius:12px;border:1px solid var(--line);font-size:13px}
+.side .me .av{flex:none;width:32px;height:32px;border-radius:50%;display:grid;place-items:center;background:var(--primary-soft);color:var(--primary);font-weight:700}
+.side .me div{min-width:0;flex:1}.side .me small{display:block;color:var(--muted)}
+.side .me .theme-btn{flex:none}
+.mtop{display:none}
+/* ---- nội dung ---- */
+.main{min-width:0;padding:26px 32px 80px}
+.ph{display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-bottom:18px}
+.ph h1{margin:0;font-size:24px;font-weight:700}
+.ph p{margin:2px 0 0;color:var(--muted);font-size:14px}
+.ph .r{margin-left:auto;display:flex;gap:8px;align-items:center}
+.page{display:none}.page.on{display:block}
+.box{background:var(--surface);border:1px solid var(--line);border-radius:16px}
+/* bộ lọc: ô tìm + nhóm nút trạng thái + chọn sản phẩm */
+.bar{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:12px}
+.search{position:relative;flex:1 1 240px;max-width:340px}
+.search svg{position:absolute;left:12px;top:50%;transform:translateY(-50%);width:16px;height:16px;color:var(--muted)}
+.search input{width:100%;height:40px;padding:0 12px 0 36px;border:1px solid var(--line);border-radius:10px;background:var(--surface);font-size:14px}
+.seg{display:flex;gap:2px;padding:3px;border:1px solid var(--line);border-radius:11px;background:var(--surface);overflow-x:auto;scrollbar-width:none}
+.seg button{flex:none;border:0;background:none;padding:6px 12px;border-radius:8px;font:500 13px var(--sans);color:var(--muted);cursor:pointer;white-space:nowrap}
+.seg button.on{background:var(--bg);color:var(--ink);font-weight:600;box-shadow:0 1px 2px rgba(0,0,0,.06)}
+.seg button i{font-style:normal;margin-left:5px;color:var(--primary);font-weight:700}
+.sel{height:40px;padding:0 30px 0 12px;border:1px solid var(--line);border-radius:10px;background:var(--surface);font-size:14px}
+.bar .cnt{margin-left:auto;font-size:13px;color:var(--muted)}
+/* bảng */
+.tb{width:100%;border-collapse:collapse;font-size:14px}
+.tb th{padding:10px 14px;text-align:left;font-size:12px;font-weight:600;color:var(--muted);border-bottom:1px solid var(--line);white-space:nowrap}
+.tb td{padding:12px 14px;border-bottom:1px solid var(--line);vertical-align:middle}
+.tb tr:last-child td{border-bottom:0}
+.tb tbody tr{cursor:pointer;transition:background .12s}
+.tb tbody tr:hover{background:var(--bg)}
+.tb .s{display:block;font-size:12px;color:var(--muted);margin-top:1px}
+.tb .num{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+.tb .act{width:1%;white-space:nowrap;text-align:right}
+.code{font:700 13px ui-monospace,SFMono-Regular,Consolas,monospace;letter-spacing:.02em}
+.pill{display:inline-flex;align-items:center;gap:6px;padding:3px 10px;border-radius:999px;font-size:12px;font-weight:600;background:var(--bg);color:var(--muted);white-space:nowrap}
+.pill::before{content:"";width:6px;height:6px;border-radius:50%;background:currentColor}
+.pill.ok{background:var(--ok-soft);color:var(--ok)}.pill.warn{background:var(--warn-soft);color:var(--warn)}.pill.red{background:var(--primary-soft);color:var(--primary)}
+.dots{width:32px;height:32px;border:0;border-radius:8px;background:none;color:var(--muted);cursor:pointer;font-size:18px;line-height:1}
+.dots:hover{background:var(--bg);color:var(--ink)}
+.empty{padding:40px;text-align:center;color:var(--muted)}
+/* menu ⋯ */
+.menu{position:fixed;z-index:80;min-width:180px;padding:6px;border:1px solid var(--line);border-radius:12px;background:var(--surface);box-shadow:0 14px 40px rgba(0,0,0,.14)}
+.menu button{display:block;width:100%;padding:8px 10px;border:0;border-radius:8px;background:none;text-align:left;font:500 14px var(--sans);cursor:pointer;color:var(--ink)}
+.menu button:hover{background:var(--bg)}
+.menu button.d{color:var(--danger)}
+.menu hr{border:0;border-top:1px solid var(--line);margin:4px 0}
+/* ---- tổng quan ---- */
+.kp{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:14px}
+.kp .box{padding:16px 18px}
+.kp span{font-size:13px;color:var(--muted)}
+.kp b{display:block;font-size:26px;font-weight:700;margin:2px 0}
+.kp small{font-size:12px;color:var(--muted)}
+.kp small.up{color:var(--ok)}
+.g2{display:grid;grid-template-columns:1.4fr 1fr;gap:14px}
+.bh{display:flex;align-items:center;justify-content:space-between;padding:14px 18px 6px}
+.bh h3{margin:0;font-size:15px}.bh a,.bh button.lk{font-size:13px;font-weight:600;color:var(--primary);background:none;border:0;cursor:pointer;text-decoration:none}
+.todo{list-style:none;margin:0;padding:4px 8px 10px}
+.todo li{display:flex;align-items:center;gap:12px;padding:10px;border-radius:10px;cursor:pointer}
+.todo li:hover{background:var(--bg)}
+.todo .ic{flex:none;width:34px;height:34px;border-radius:10px;display:grid;place-items:center;background:var(--warn-soft);color:var(--warn);font-size:16px}
+.todo div{flex:1;min-width:0;font-size:14px}.todo small{display:block;color:var(--muted);font-size:12px}
+.chart{padding:4px 18px 16px}
+.chart svg{width:100%;height:150px;display:block}
+.chart rect{fill:var(--primary);opacity:.8}
+.chart text{font-size:10px;fill:var(--muted)}
+/* ---- popup giữa màn hình ---- */
+.ov{position:fixed;inset:0;z-index:60;background:rgba(20,10,12,.42);display:none;align-items:center;justify-content:center;padding:16px;animation:fade .15s}
+.ov.on{display:flex}
+.md{width:100%;max-width:520px;max-height:calc(100vh - 32px);overflow:auto;background:var(--surface);border-radius:18px;box-shadow:0 30px 80px rgba(0,0,0,.3);animation:pop .18s}
+.md.sm{max-width:400px}
+.md header{position:sticky;top:0;z-index:1;display:flex;align-items:center;gap:10px;padding:18px 20px 10px;background:var(--surface)}
+.md header h2{margin:0;font-size:18px}
+.md .x{margin-left:auto;width:32px;height:32px;border:0;border-radius:50%;background:var(--bg);font-size:18px;cursor:pointer;color:var(--muted)}
+.md .bd{padding:6px 20px 8px;display:grid;gap:14px}
+.md footer{position:sticky;bottom:0;display:flex;justify-content:flex-end;gap:8px;padding:14px 20px 18px;background:var(--surface);border-top:1px solid var(--line)}
+.fl{display:grid;gap:6px;font-size:13px;font-weight:600}
+.fl small{font-weight:400;color:var(--muted)}
+.fl input,.fl select,.fl textarea{height:42px;padding:0 12px;border:1px solid var(--line);border-radius:10px;background:var(--surface);font-size:15px;font-weight:400}
+.fl textarea{height:84px;padding:10px 12px;resize:vertical}
+.fl input:focus,.fl select:focus,.fl textarea:focus,.search input:focus{outline:2px solid var(--primary-soft);border-color:var(--primary)}
+.r2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.ig{display:flex}.ig input{flex:1;min-width:0;border-radius:10px 0 0 10px}.ig .tg{display:flex;border:1px solid var(--line);border-left:0;border-radius:0 10px 10px 0;overflow:hidden}
+.ig .tg button{border:0;background:var(--surface);padding:0 14px;font:600 14px var(--sans);color:var(--muted);cursor:pointer}
+.ig .tg button.on{background:var(--primary-soft);color:var(--primary)}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chips label{display:inline-flex;align-items:center;gap:6px;padding:7px 12px;border:1px solid var(--line);border-radius:999px;font-size:13px;font-weight:500;cursor:pointer}
+.chips input{display:none}
+.chips label:has(input:checked){border-color:var(--primary);background:var(--primary-soft);color:var(--primary)}
+.preview{padding:12px 14px;border-radius:12px;background:var(--bg);font-size:13px;color:var(--muted)}
+.preview b{color:var(--ink)}
+.codein{display:flex;gap:8px}.codein input{flex:1;text-transform:uppercase;font-weight:700;letter-spacing:.04em}
+.codein button{flex:none;width:42px;border:1px solid var(--line);border-radius:10px;background:var(--surface);cursor:pointer}
+/* ---- bảng chi tiết trượt từ phải ---- */
+.dr{position:fixed;inset:0;z-index:55;display:none}
+.dr.on{display:block}
+.dr .bg{position:absolute;inset:0;background:rgba(20,10,12,.3);animation:fade .15s}
+.dr aside{position:absolute;top:0;right:0;bottom:0;width:min(460px,100%);display:flex;flex-direction:column;background:var(--surface);box-shadow:-20px 0 60px rgba(0,0,0,.18);animation:slide .2s}
+.dr .dh{display:flex;align-items:flex-start;gap:10px;padding:20px 22px 14px;border-bottom:1px solid var(--line)}
+.dr .dh h2{margin:0;font-size:19px}.dr .dh p{margin:2px 0 0;font-size:13px;color:var(--muted)}
+.dr .db{flex:1;overflow:auto;padding:16px 22px;display:grid;gap:18px;align-content:start}
+.dr .df{display:flex;gap:8px;padding:14px 22px 18px;border-top:1px solid var(--line)}
+.dr .df .btn{flex:1}
+.kv{display:grid;grid-template-columns:120px 1fr;gap:9px 12px;margin:0;font-size:14px}
+.kv dt{color:var(--muted)}.kv dd{margin:0;min-width:0;overflow-wrap:anywhere}
+.sec h4{margin:0 0 8px;font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
+.tl{list-style:none;margin:0;padding:0;display:grid;gap:8px}
+.tl li{display:flex;gap:10px;align-items:center;padding:10px 12px;border:1px solid var(--line);border-radius:12px;font-size:14px}
+.tl li small{margin-left:auto;color:var(--muted);font-size:12px}
+.lnk{display:flex;align-items:center;gap:8px;padding:10px 12px;border:1px solid var(--line);border-radius:12px;font-size:14px;text-decoration:none;color:var(--ink)}
+.lnk span{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.lnk:hover{border-color:var(--primary)}
+.tgl{display:flex;align-items:center;justify-content:space-between;padding:10px 12px;border:1px solid var(--line);border-radius:12px;font-size:14px}
+.sw{position:relative;width:40px;height:24px;border-radius:999px;background:var(--line);border:0;cursor:pointer;transition:background .15s}
+.sw::after{content:"";position:absolute;top:3px;left:3px;width:18px;height:18px;border-radius:50%;background:#fff;transition:transform .15s;box-shadow:0 1px 3px rgba(0,0,0,.2)}
+.sw.on{background:var(--ok)}.sw.on::after{transform:translateX(16px)}
+/* cài đặt: danh sách dòng, mỗi nhóm sửa trong popup */
+.set{display:grid;gap:14px;max-width:760px}
+.srow{display:flex;align-items:center;gap:14px;padding:14px 18px;border-bottom:1px solid var(--line)}
+.srow:last-child{border-bottom:0}
+.srow div{flex:1;min-width:0}.srow b{display:block;font-size:14px}.srow small{color:var(--muted);font-size:13px}
+.srow .v{font-weight:600;font-size:14px;text-align:right;white-space:nowrap}
+.note{display:flex;gap:10px;align-items:center;padding:10px 14px;margin-bottom:12px;border-radius:12px;background:var(--ok-soft);color:var(--ok);font-size:13px;font-weight:500}
+.note button{margin-left:auto;background:none;border:0;color:inherit;font-weight:700;cursor:pointer;text-decoration:underline}
+.toast{position:fixed;left:50%;bottom:24px;z-index:90;transform:translateX(-50%);padding:10px 18px;border-radius:999px;background:var(--ink);color:var(--bg);font-size:14px;font-weight:500;opacity:0;pointer-events:none;transition:opacity .2s}
+.toast.on{opacity:1}
+@keyframes fade{from{opacity:0}}@keyframes pop{from{opacity:0;transform:scale(.96) translateY(8px)}}@keyframes slide{from{transform:translateX(40px);opacity:0}}
+/* ---- điện thoại ---- */
+@media (max-width:900px){
+  .ad{grid-template-columns:minmax(0,1fr)}
+  .side{position:fixed;z-index:70;left:0;top:0;bottom:0;width:260px;transform:translateX(-100%);transition:transform .2s;box-shadow:20px 0 60px rgba(0,0,0,.2)}
+  .side.open{transform:none}
+  .mtop{display:flex;position:sticky;top:0;z-index:40;align-items:center;gap:10px;padding:10px 16px;background:var(--surface);border-bottom:1px solid var(--line)}
+  .mtop button{width:38px;height:38px;border:1px solid var(--line);border-radius:10px;background:none;font-size:18px;cursor:pointer;color:var(--ink)}
+  .mtop b{font:700 24px/1 var(--script);color:var(--primary)}
+  .mtop span{font-size:15px;font-weight:600}
+  .main{padding:16px 16px 80px}
+  .ph h1{font-size:20px}.ph p{display:none}
+  .kp{grid-template-columns:1fr 1fr}.kp b{font-size:21px}
+  .g2,.r2{grid-template-columns:1fr}
+  .search{max-width:none;flex-basis:100%}
+  .bar .cnt{display:none}
+  /* bảng → thẻ: mỗi dòng 2 cột chữ, ẩn cột phụ */
+  .seg{max-width:100%}
+  .tb,.tb tbody{display:block}
+  .tb thead{display:none}
+  .tb tr{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:4px 10px;padding:12px 14px;border-bottom:1px solid var(--line)}
+  .tb td{padding:0;border:0;grid-column:1;min-width:0}
+  .tb td.num{text-align:left}
+  .tb td.hm{display:none}
+  .tb .act{grid-column:2;grid-row:1/span 3;align-self:center}
+  .kv{grid-template-columns:100px 1fr}
+}
+</style>
+</head>
+<body>
+<div class="ad">
+  <nav class="side" id="side">
+    <div class="brand"><b>Cưới Nha</b><span>Quản trị</span></div>
+    <button class="nv on" data-p="home"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 12l9-8 9 8M5 10v10h14V10"/></svg>Tổng quan</button>
+    <button class="nv" data-p="orders"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="6" width="18" height="13" rx="2"/><path d="M3 10h18M7 15h4"/></svg>Đơn hàng<span class="n">2</span></button>
+    <button class="nv" data-p="disc"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M20.6 13.4l-7.2 7.2a2 2 0 0 1-2.8 0L3 13V3h10l7.6 7.6a2 2 0 0 1 0 2.8z"/><circle cx="7.5" cy="7.5" r="1.5"/></svg>Mã giảm giá</button>
+    <button class="nv" data-p="users"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="9" cy="8" r="4"/><path d="M2 21a7 7 0 0 1 14 0M17 11a3 3 0 1 0 0-6M22 21a6 6 0 0 0-4-5.6"/></svg>Người dùng</button>
+    <button class="nv" data-p="cards"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 4h16v16H4zM4 9h16"/><path d="M12 13.5c-1-1.4-3-1-3 .6 0 1.4 3 3.4 3 3.4s3-2 3-3.4c0-1.6-2-2-3-.6z"/></svg>Thiệp & sản phẩm</button>
+    <button class="nv" data-p="traffic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 20h18M6 16v-5M11 16V7M16 16v-8M21 16V4"/></svg>Truy cập</button>
+    <div class="sep"></div>
+    <button class="nv" data-p="settings"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>Cài đặt</button>
+    <button class="nv" data-p="audit"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>Nhật ký</button>
+    <div class="me"><span class="av">A</span><div><b>Chủ web</b><small><a href="#" onclick="toast('Đã đăng xuất (mock)');return false">Đăng xuất</a></small></div><span id="tbtn"></span></div>
+  </nav>
+
+  <div>
+    <div class="mtop"><button onclick="side.classList.add('open')" aria-label="Mở menu">☰</button><b>Cưới Nha</b><span id="mtitle">Tổng quan</span></div>
+    <main class="main">
+
+      <!-- ===== TỔNG QUAN ===== -->
+      <section class="page on" id="p-home">
+        <div class="ph"><div><h1>Chào buổi sáng 👋</h1><p>Thứ Hai, 16/11/2026 · 2 việc cần xử lý</p></div></div>
+        <div class="kp">
+          <div class="box"><span>Doanh thu 30 ngày</span><b>2.451.000đ</b><small class="up">▲ 18% so với tháng trước</small></div>
+          <div class="box"><span>Đơn đã thanh toán</span><b>19</b><small>3 tuần này</small></div>
+          <div class="box"><span>Khách ghé hôm nay</span><b>142</b><small>Hôm qua 118 · chỉ khách ngoài</small></div>
+          <div class="box"><span>Người dùng mới</span><b>37</b><small>30 ngày · 12 đã tạo thiệp</small></div>
+        </div>
+        <div class="g2">
+          <div class="box"><div class="bh"><h3>Doanh thu 30 ngày</h3><button class="lk" data-go="orders">Xem đơn →</button></div><div class="chart" id="ch1"></div></div>
+          <div class="box"><div class="bh"><h3>Cần xử lý</h3></div>
+            <ul class="todo">
+              <li data-order="CB7K2MQ"><span class="ic">!</span><div><b>CB7K2MQ · chuyển thiếu 50.000đ</b><small>hoa.nguyen@gmail.com · Trọn bộ · 2 giờ trước</small></div></li>
+              <li data-order="TH4QW9P"><span class="ic">⏳</span><div><b>TH4QW9P · khách báo đã chuyển</b><small>minh.tran@gmail.com · Thiệp · 25 phút trước · SePay chưa thấy tiền</small></div></li>
+              <li data-go="disc"><span class="ic" style="background:var(--primary-soft);color:var(--primary)">%</span><div><b>Mã TET20 sắp hết hạn</b><small>Hết hạn 20/11 · đã dùng 8 lượt</small></div></li>
+            </ul>
+          </div>
+        </div>
+      </section>
+
+      <!-- ===== ĐƠN HÀNG ===== -->
+      <section class="page" id="p-orders">
+        <div class="ph"><div><h1>Đơn hàng</h1><p>Đơn chuyển đúng mã, đủ tiền được SePay kích hoạt tự động — ở đây chỉ còn đơn cần bạn xem.</p></div></div>
+        <div class="bar">
+          <label class="search"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4-4"/></svg><input placeholder="Tìm mã đơn, email, tên đôi…" id="oq"></label>
+          <div class="seg" id="oseg"><button class="on" data-f="pending">Cần xử lý<i>2</i></button><button data-f="paid">Đã thanh toán</button><button data-f="cancelled">Đã huỷ</button><button data-f="">Tất cả</button></div>
+          <select class="sel"><option>Mọi sản phẩm</option><option>Thiệp</option><option>Trọn bộ</option><option>Màn LED</option><option>Video</option></select>
+          <span class="cnt" id="ocnt"></span>
+        </div>
+        <div class="box"><table class="tb"><thead><tr><th>Đơn</th><th>Khách</th><th class="hm">Sản phẩm</th><th class="num">Số tiền</th><th>Trạng thái</th><th></th></tr></thead><tbody id="otb"></tbody></table></div>
+      </section>
+
+      <!-- ===== MÃ GIẢM GIÁ ===== -->
+      <section class="page" id="p-disc">
+        <div class="ph"><div><h1>Mã giảm giá</h1><p>Mã phát cho khách nhập ở bước thanh toán.</p></div><div class="r"><button class="btn" onclick="discModal()">+ Tạo mã</button></div></div>
+        <div class="bar">
+          <label class="search"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4-4"/></svg><input placeholder="Tìm mã, ghi chú…"></label>
+          <div class="seg" id="dseg"><button class="on" data-f="run">Đang chạy</button><button data-f="end">Đã dừng</button><button data-f="">Tất cả</button></div>
+        </div>
+        <div class="box"><table class="tb"><thead><tr><th>Mã</th><th>Giảm</th><th class="hm">Áp dụng</th><th class="hm">Hạn</th><th class="num">Đã dùng</th><th>Trạng thái</th><th></th></tr></thead><tbody id="dtb"></tbody></table></div>
+      </section>
+
+      <!-- ===== NGƯỜI DÙNG ===== -->
+      <section class="page" id="p-users">
+        <div class="ph"><div><h1>Người dùng</h1><p>Bấm một người để xem thiệp, đơn và khoá tài khoản.</p></div></div>
+        <div class="bar">
+          <label class="search"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4-4"/></svg><input placeholder="Tìm email, tên…"></label>
+          <div class="seg"><button class="on">Tất cả</button><button>Đã trả tiền</button><button>Mới 7 ngày</button><button>Đã khoá</button></div>
+        </div>
+        <div class="box"><table class="tb"><thead><tr><th>Người dùng</th><th class="hm">Đăng ký</th><th class="num">Thiệp</th><th class="num">Đã chi</th><th class="hm">Hoạt động</th><th></th></tr></thead><tbody id="utb"></tbody></table></div>
+      </section>
+
+      <!-- ===== THIỆP ===== -->
+      <section class="page" id="p-cards">
+        <div class="ph"><div><h1>Thiệp & sản phẩm</h1><p>Bấm một thiệp để xem link, bật/tắt LED, video, gỡ thiệp vi phạm.</p></div></div>
+        <div class="bar">
+          <label class="search"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4-4"/></svg><input placeholder="Tìm tên đôi, đường dẫn, email…"></label>
+          <div class="seg"><button class="on">Tất cả</button><button>Đã phát hành</button><button>Đã kích hoạt</button><button>Dùng thử</button><button>Bị gỡ</button></div>
+        </div>
+        <div class="box"><table class="tb"><thead><tr><th>Thiệp</th><th class="hm">Chủ thiệp</th><th>Sản phẩm</th><th class="num hm">Lượt xem</th><th class="num">Khách</th><th></th></tr></thead><tbody id="ctb"></tbody></table></div>
+      </section>
+
+      <!-- ===== TRUY CẬP ===== -->
+      <section class="page" id="p-traffic">
+        <div class="ph"><div><h1>Truy cập</h1><p>Lượt ghé các trang giới thiệu.</p></div><div class="r"><select class="sel"><option>7 ngày</option><option selected>30 ngày</option><option>90 ngày</option></select></div></div>
+        <div class="note">✓ Chỉ đếm khách ngoài — máy này và tài khoản anhcoming không được tính<button onclick="openMd('mdx')">Chi tiết</button></div>
+        <div class="kp">
+          <div class="box"><span>Khách 30 ngày</span><b>3.284</b><small>2.410 người ghé lần đầu</small></div>
+          <div class="box"><span>Lượt xem trang</span><b>7.912</b><small>2,4 trang mỗi khách</small></div>
+          <div class="box"><span>Khách → tạo thiệp</span><b>4,1%</b><small>135 thiệp</small></div>
+          <div class="box"><span>Khách → trả tiền</span><b>0,6%</b><small>19 đơn</small></div>
+        </div>
+        <div class="g2">
+          <div class="box"><div class="bh"><h3>Khách mỗi ngày</h3></div><div class="chart" id="ch2"></div></div>
+          <div class="box"><div class="bh"><h3>Khách tới từ đâu</h3><button class="lk" onclick="toast('Mở popup đủ danh sách nguồn, trang, thiết bị, mẫu (mock)')">Xem thêm</button></div>
+            <ul class="todo"><li><span class="ic" style="background:#e7f0ff;color:#2d6cdf">f</span><div><b>Facebook</b><small>1.412 khách</small></div></li><li><span class="ic" style="background:#e3f7f6;color:#0a8a83">Z</span><div><b>Zalo</b><small>903 khách</small></div></li><li><span class="ic" style="background:var(--bg);color:var(--muted)">↗</span><div><b>Trực tiếp</b><small>611 khách</small></div></li></ul>
+          </div>
+        </div>
+      </section>
+
+      <!-- ===== CÀI ĐẶT ===== -->
+      <section class="page" id="p-settings">
+        <div class="ph"><div><h1>Cài đặt</h1><p>Mỗi nhóm bấm Sửa để đổi trong popup — đổi xong áp dụng ngay.</p></div></div>
+        <div class="set">
+          <div class="box">
+            <div class="bh"><h3>Giá bán</h3><button class="btn sm plain" onclick="openMd('mdp')">Sửa</button></div>
+            <div class="srow"><div><b>Thiệp cưới</b><small>Giá mở bán đến 31/01/2027</small></div><span class="v"><s style="color:var(--muted);font-weight:400">179.000đ</s> 129.000đ</span></div>
+            <div class="srow"><div><b>Trọn bộ</b><small>Thiệp + LED + video</small></div><span class="v"><s style="color:var(--muted);font-weight:400">299.000đ</s> 199.000đ</span></div>
+            <div class="srow"><div><b>Màn hình LED</b></div><span class="v">49.000đ</span></div>
+            <div class="srow"><div><b>Video cưới</b></div><span class="v">99.000đ</span></div>
+          </div>
+          <div class="box">
+            <div class="bh"><h3>Dùng thử</h3><button class="btn sm plain" onclick="openMd('mdp')">Sửa</button></div>
+            <div class="srow"><div><b>Số ngày dùng thử</b></div><span class="v">7 ngày</span></div>
+            <div class="srow"><div><b>Khách có link riêng</b><small>Khi chưa kích hoạt</small></div><span class="v">20 khách</span></div>
+          </div>
+          <div class="box">
+            <div class="bh"><h3>Thương hiệu & hỗ trợ</h3><button class="btn sm plain" onclick="openMd('mdp')">Sửa</button></div>
+            <div class="srow"><div><b>Tên</b><small>Mình cưới nha — thiệp cưới online, gửi qua Zalo trong 5 phút</small></div><span class="v">Cưới Nha</span></div>
+            <div class="srow"><div><b>Zalo · Email hỗ trợ</b></div><span class="v">0900 000 000</span></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ===== NHẬT KÝ ===== -->
+      <section class="page" id="p-audit">
+        <div class="ph"><div><h1>Nhật ký</h1><p>Mọi thao tác trong trang quản trị.</p></div></div>
+        <div class="box"><table class="tb"><tbody>
+          <tr><td><b>Tạo mã giảm giá</b><span class="s">CUOI50K · -50.000đ</span></td><td class="num"><span class="s">10 phút trước</span></td></tr>
+          <tr><td><b>Xác nhận đơn</b><span class="s">TH8PLM2 · 129.000đ</span></td><td class="num"><span class="s">1 giờ trước</span></td></tr>
+          <tr><td><b>Kích hoạt tay: Màn hình LED</b><span class="s">hoa-tuan · tặng khách review</span></td><td class="num"><span class="s">hôm qua</span></td></tr>
+          <tr><td><b>Sửa cài đặt</b><span class="s">price, promoEndsAt</span></td><td class="num"><span class="s">3 ngày trước</span></td></tr>
+        </tbody></table></div>
+      </section>
+    </main>
+  </div>
+</div>
+
+<!-- popup: tạo / sửa mã giảm giá -->
+<div class="ov" id="mdd"><div class="md">
+  <header><h2 id="mddT">Tạo mã giảm giá</h2><button class="x" onclick="closeMd()">×</button></header>
+  <div class="bd">
+    <label class="fl">Mã<div class="codein"><input id="dcode" placeholder="VD: CUOI50K" maxlength="30"><button type="button" title="Tạo ngẫu nhiên" onclick="dcode.value='CUOI'+Math.random().toString(36).slice(2,6).toUpperCase();prev()">🎲</button></div></label>
+    <label class="fl">Mức giảm<div class="ig"><input id="dval" inputmode="numeric" placeholder="50000" oninput="prev()"><div class="tg" id="dtype"><button type="button" class="on" data-t="đ">đ</button><button type="button" data-t="%">%</button></div></div></label>
+    <div class="fl">Áp dụng cho<div class="chips"><label><input type="checkbox" checked onchange="prev()">Thiệp</label><label><input type="checkbox" onchange="prev()">Trọn bộ</label><label><input type="checkbox" onchange="prev()">Màn LED</label><label><input type="checkbox" onchange="prev()">Video</label></div></div>
+    <div class="r2">
+      <label class="fl">Hết hạn sau ngày<input type="date"><small>Để trống = không hạn</small></label>
+      <label class="fl">Số lượt tối đa<input inputmode="numeric" placeholder="Không giới hạn"></label>
+    </div>
+    <label class="fl"><span>Ghi chú <small>· chỉ bạn thấy</small></span><input placeholder="VD: phát cho nhóm FB cưới"></label>
+    <div class="preview" id="dprev"></div>
+  </div>
+  <footer><button class="btn plain" onclick="closeMd()">Huỷ</button><button class="btn" id="mddB" onclick="closeMd();toast('Đã tạo mã '+(dcode.value||'CUOI50K').toUpperCase())">Tạo mã</button></footer>
+</div></div>
+
+<!-- popup: xác nhận (dùng chung) -->
+<div class="ov" id="mdc"><div class="md sm">
+  <header><h2 id="mdcT"></h2><button class="x" onclick="closeMd()">×</button></header>
+  <div class="bd"><p id="mdcP" style="margin:0;color:var(--muted);font-size:14px"></p><label class="fl" id="mdcR" style="display:none">Lý do<input placeholder="VD: đã nhận tiền mặt"></label></div>
+  <footer><button class="btn plain" onclick="closeMd()">Thôi</button><button class="btn" id="mdcB"></button></footer>
+</div></div>
+
+<!-- popup: sửa giá -->
+<div class="ov" id="mdp"><div class="md">
+  <header><h2>Sửa giá bán</h2><button class="x" onclick="closeMd()">×</button></header>
+  <div class="bd">
+    <div class="r2"><label class="fl">Thiệp — đang bán<input value="129000"></label><label class="fl">Giá gốc (gạch)<input value="179000"></label></div>
+    <label class="fl">Giá mở bán đến hết ngày<input type="date" value="2027-01-31"><small>Qua ngày này tự thu giá gốc</small></label>
+    <div class="r2"><label class="fl">Trọn bộ<input value="199000"></label><label class="fl">Trọn bộ — giá gốc<input value="299000"></label></div>
+    <div class="r2"><label class="fl">Màn hình LED<input value="49000"></label><label class="fl">Video cưới<input value="99000"></label></div>
+    <p style="margin:0;font-size:13px;color:var(--muted)">Áp dụng cho đơn tạo từ bây giờ; đơn đang chờ giữ giá cũ.</p>
+  </div>
+  <footer><button class="btn plain" onclick="closeMd()">Huỷ</button><button class="btn" onclick="closeMd();toast('Đã lưu giá')">Lưu</button></footer>
+</div></div>
+
+<!-- popup: chi tiết loại trừ thống kê -->
+<div class="ov" id="mdx"><div class="md sm">
+  <header><h2>Chỉ đếm khách ngoài</h2><button class="x" onclick="closeMd()">×</button></header>
+  <div class="bd" style="font-size:14px;color:var(--muted)">
+    <p style="margin:0">Không tính lượt vào từ máy đã mở /admin hoặc đăng nhập tài khoản <b style="color:var(--ink)">anhcoming</b>. Thiệp, đăng ký, đơn của tài khoản đó cũng bỏ khỏi phễu.</p>
+    <p style="margin:0">Điện thoại của bạn: mở /admin một lần để được loại. Số liệu trước 16/11/2026 vẫn lẫn lượt của bạn.</p>
+  </div>
+  <footer><button class="btn" onclick="closeMd()">Đã hiểu</button></footer>
+</div></div>
+
+<!-- bảng chi tiết bên phải -->
+<div class="dr" id="dr"><div class="bg" onclick="closeDr()"></div><aside id="drIn"></aside></div>
+<div class="toast" id="toast"></div>
+
+<script>
+// ---------- dữ liệu giả ----------
+const O = [
+  { code: 'CB7K2MQ', at: '14:20 hôm nay', email: 'hoa.nguyen@gmail.com', names: 'Hoa & Tuấn', slug: 'hoa-tuan', pub: true, prod: 'Trọn bộ', amt: 199000, st: 'pending', sp: [['warn', 'Nhận thiếu 149.000đ', '2 giờ trước']], flag: 'Chuyển thiếu 50.000đ' },
+  { code: 'TH4QW9P', at: '15:55 hôm nay', email: 'minh.tran@gmail.com', names: 'Minh & Thảo', slug: 'minh-thao', pub: false, prod: 'Thiệp', amt: 129000, st: 'pending', claimed: '25 phút trước', sp: [] },
+  { code: 'TH8PLM2', at: '09:12 hôm nay', email: 'lan.pham@yahoo.com', names: 'Lan & Khoa', slug: 'lan-khoa', pub: true, prod: 'Thiệp', amt: 79000, coupon: 'CUOI50K', st: 'paid', via: 'tự động', sp: [['ok', 'Đã nhận đủ 79.000đ', '6 giờ trước']] },
+  { code: 'LD3NVBX', at: 'hôm qua', email: 'hoa.nguyen@gmail.com', names: 'Hoa & Tuấn', slug: 'hoa-tuan', pub: true, prod: 'Màn LED', amt: 49000, st: 'paid', via: 'tự động', sp: [['ok', 'Đã nhận đủ 49.000đ', 'hôm qua']] },
+  { code: 'VD9QQ1C', at: '12/11', email: 'duc.le@gmail.com', names: 'Đức & Mai', slug: 'duc-mai', pub: true, prod: 'Video', amt: 99000, st: 'paid', via: 'xác nhận tay', sp: [] },
+  { code: 'TH2ZZ8R', at: '10/11', email: 'backtest@test.vn', names: 'Tuấn & Lan', slug: 'thiep-uyfzf3', pub: false, prod: 'Thiệp', amt: 129000, st: 'cancelled', sp: [] },
+];
+const D = [
+  { code: 'CUOI50K', off: '-50.000đ', for: 'Thiệp, Trọn bộ', exp: 'Không hạn', used: 12, lim: 20, st: 'run', note: 'Nhóm FB cưới' },
+  { code: 'TET20', off: '-20%', for: 'Mọi sản phẩm', exp: '20/11/2026', used: 8, lim: 0, st: 'run', note: 'Sắp hết hạn' },
+  { code: 'REVIEWLED', off: '-100%', for: 'Màn LED', exp: 'Không hạn', used: 3, lim: 10, st: 'run', note: 'Tặng khách review' },
+  { code: 'KOL30', off: '-30%', for: 'Thiệp', exp: '31/10/2026', used: 5, lim: 0, st: 'exp', note: '' },
+  { code: 'THU', off: '-10.000đ', for: 'Thiệp', exp: 'Không hạn', used: 0, lim: 0, st: 'off', note: 'Mã thử' },
+];
+const U = [
+  { email: 'hoa.nguyen@gmail.com', name: 'Hoa Nguyễn', via: 'Google', at: '02/11', cards: 1, spent: 248000, seen: '2 giờ trước' },
+  { email: 'minh.tran@gmail.com', name: 'Minh Trần', via: 'Google', at: '15/11', cards: 1, spent: 0, seen: '25 phút trước' },
+  { email: 'lan.pham@yahoo.com', name: 'Lan Phạm', via: 'Email', at: '14/11', cards: 2, spent: 79000, seen: '6 giờ trước' },
+  { email: 'duc.le@gmail.com', name: 'Đức Lê', via: 'Google', at: '08/11', cards: 1, spent: 99000, seen: '3 ngày trước' },
+];
+const C = [
+  { names: 'Hoa & Tuấn', slug: 'hoa-tuan', owner: 'hoa.nguyen@gmail.com', p: ['Thiệp ✓', 'LED ✓', 'Video ✓'], views: 482, guests: 186, pub: true },
+  { names: 'Lan & Khoa', slug: 'lan-khoa', owner: 'lan.pham@yahoo.com', p: ['Thiệp ✓'], views: 211, guests: 95, pub: true },
+  { names: 'Minh & Thảo', slug: 'minh-thao', owner: 'minh.tran@gmail.com', p: ['Thiệp · thử 5 ngày'], views: 0, guests: 12, pub: false },
+  { names: 'Đức & Mai', slug: 'duc-mai', owner: 'duc.le@gmail.com', p: ['Thiệp · hết thử', 'Video ✓'], views: 64, guests: 40, pub: true },
+];
+const money = (n) => n.toLocaleString('vi-VN') + 'đ';
+const $ = (s) => document.querySelector(s);
+const ST = (o) => o.st === 'paid' ? `<span class="pill ok">Đã thanh toán</span>` : o.st === 'cancelled' ? '<span class="pill">Đã huỷ</span>'
+  : o.flag ? `<span class="pill warn">${o.flag}</span>` : o.claimed ? '<span class="pill warn">Khách báo đã chuyển</span>' : '<span class="pill">Chờ thanh toán</span>';
+const DST = { run: '<span class="pill ok">Đang chạy</span>', exp: '<span class="pill red">Hết hạn</span>', off: '<span class="pill">Đã tắt</span>' };
+
+// ---------- điều hướng ----------
+const TITLES = { home: 'Tổng quan', orders: 'Đơn hàng', disc: 'Mã giảm giá', users: 'Người dùng', cards: 'Thiệp & sản phẩm', traffic: 'Truy cập', settings: 'Cài đặt', audit: 'Nhật ký' };
+function go(p) {
+  document.querySelectorAll('.nv').forEach((b) => b.classList.toggle('on', b.dataset.p === p));
+  document.querySelectorAll('.page').forEach((s) => s.classList.toggle('on', s.id === 'p-' + p));
+  mtitle.textContent = TITLES[p]; side.classList.remove('open'); scrollTo(0, 0);
+  history.replaceState(null, '', '#' + p);
+}
+document.querySelectorAll('.nv').forEach((b) => (b.onclick = () => go(b.dataset.p)));
+document.addEventListener('click', (e) => {
+  const g = e.target.closest('[data-go]'); if (g) return go(g.dataset.go);
+  const o = e.target.closest('[data-order]'); if (o) return orderDr(O.find((x) => x.code === o.dataset.order));
+  if (!e.target.closest('.menu') && !e.target.closest('.dots')) closeMenu();
+  if (innerWidth <= 900 && side.classList.contains('open') && !e.target.closest('.side') && !e.target.closest('.mtop')) side.classList.remove('open');
+});
+
+// ---------- danh sách ----------
+let of = 'pending', df = 'run';
+function renderOrders() {
+  const q = oq.value.toLowerCase();
+  const list = O.filter((o) => (!of || o.st === of) && (!q || (o.code + o.email + o.names).toLowerCase().includes(q)));
+  ocnt.textContent = list.length + ' đơn';
+  otb.innerHTML = list.length ? list.map((o) => `<tr data-order="${o.code}">
+    <td><span class="code">${o.code}</span><span class="s">${o.at}</span></td>
+    <td>${o.names}<span class="s">${o.email}</span></td>
+    <td class="hm">${o.prod}${o.coupon ? `<span class="s">mã ${o.coupon}</span>` : ''}</td>
+    <td class="num"><b>${money(o.amt)}</b></td>
+    <td>${ST(o)}</td>
+    <td class="act">${o.st === 'pending' ? `<button class="btn sm" data-ok="${o.code}">Xác nhận</button>` : `<button class="dots" data-m="o:${o.code}">⋯</button>`}</td></tr>`).join('')
+    : '<tr><td colspan="6" class="empty">Không còn đơn nào cần xử lý 🎉</td></tr>';
+}
+function renderDisc() {
+  const list = D.filter((d) => !df || (df === 'run' ? d.st === 'run' : d.st !== 'run'));
+  dtb.innerHTML = list.map((d) => `<tr data-disc="${d.code}">
+    <td><span class="code">${d.code}</span>${d.note ? `<span class="s">${d.note}</span>` : ''}</td>
+    <td><b>${d.off}</b></td><td class="hm">${d.for}</td><td class="hm">${d.exp}</td>
+    <td class="num">${d.used}${d.lim ? ` / ${d.lim}` : ''}</td><td>${DST[d.st]}</td>
+    <td class="act"><button class="dots" data-m="d:${d.code}">⋯</button></td></tr>`).join('');
+}
+utb.innerHTML = U.map((u) => `<tr data-user="${u.email}"><td><b>${u.name}</b><span class="s">${u.email}</span></td><td class="hm">${u.at}<span class="s">${u.via}</span></td><td class="num">${u.cards}</td><td class="num">${u.spent ? money(u.spent) : '—'}</td><td class="hm"><span class="s">${u.seen}</span></td><td class="act"><button class="dots" data-m="u:${u.email}">⋯</button></td></tr>`).join('');
+ctb.innerHTML = C.map((c) => `<tr data-card="${c.slug}"><td><b>${c.names}</b><span class="s">/t/${c.slug} · ${c.pub ? 'đã phát hành' : 'nháp'}</span></td><td class="hm">${c.owner}</td><td>${c.p.map((x) => `<span class="s" style="display:inline;margin-right:8px">${x}</span>`).join('')}</td><td class="num hm">${c.views}</td><td class="num">${c.guests}</td><td class="act"><button class="dots" data-m="c:${c.slug}">⋯</button></td></tr>`).join('');
+oseg.onclick = (e) => { const b = e.target.closest('button'); if (!b) return; of = b.dataset.f; oseg.querySelectorAll('button').forEach((x) => x.classList.toggle('on', x === b)); renderOrders(); };
+dseg.onclick = (e) => { const b = e.target.closest('button'); if (!b) return; df = b.dataset.f; dseg.querySelectorAll('button').forEach((x) => x.classList.toggle('on', x === b)); renderDisc(); };
+oq.oninput = renderOrders;
+renderOrders(); renderDisc();
+
+// bấm vào dòng → chi tiết; nút trong dòng → việc riêng
+document.addEventListener('click', (e) => {
+  const ok = e.target.closest('[data-ok]'); if (ok) { e.stopPropagation(); return confirmOrder(O.find((x) => x.code === ok.dataset.ok)); }
+  const m = e.target.closest('[data-m]'); if (m) { e.stopPropagation(); return openMenu(m, m.dataset.m); }
+  const d = e.target.closest('[data-disc]'); if (d) return discModal(D.find((x) => x.code === d.dataset.disc));
+  const u = e.target.closest('[data-user]'); if (u) return userDr(U.find((x) => x.email === u.dataset.user));
+  const c = e.target.closest('[data-card]'); if (c) return cardDr(C.find((x) => x.slug === c.dataset.card));
+}, true);
+
+// ---------- menu ⋯ ----------
+let menuEl = null;
+function closeMenu() { if (menuEl) { menuEl.remove(); menuEl = null; } }
+function openMenu(btn, key) {
+  closeMenu();
+  const [k, id] = [key.slice(0, 1), key.slice(2)];
+  const items = k === 'd' ? [['Sửa', () => discModal(D.find((x) => x.code === id))], ['Sao chép mã', () => toast('Đã sao chép ' + id)], ['Xem đơn dùng mã', () => { go('orders'); oq.value = id; renderOrders(); }], '-', ['Tắt mã', () => toast('Đã tắt ' + id)], ['Xoá', () => ask('Xoá mã ' + id + '?', 'Đơn đã dùng mã vẫn giữ nguyên. Muốn tạm ngừng thì nên Tắt.', 'Xoá mã', 'Đã xoá ' + id), 'd']]
+    : k === 'o' ? [['Xem chi tiết', () => orderDr(O.find((x) => x.code === id))], ['Ghi chú', () => toast('Popup ghi chú (mock)')], ['Mở thiệp ↗', () => toast('Mở thiệp (mock)')]]
+    : k === 'u' ? [['Xem chi tiết', () => userDr(U.find((x) => x.email === id))], ['Đặt lại mật khẩu', () => ask('Đặt lại mật khẩu?', 'Tạo mật khẩu tạm để gửi cho ' + id + '.', 'Đặt lại', 'Mật khẩu tạm: ab12-cd34 (mock)')], '-', ['Khoá tài khoản', () => ask('Khoá ' + id + '?', 'Người này không đăng nhập được nữa, thiệp vẫn mở cho khách.', 'Khoá', 'Đã khoá'), 'd']]
+    : [['Xem chi tiết', () => cardDr(C.find((x) => x.slug === id))], ['Mở thiệp ↗', () => toast('Mở /t/' + id + ' (mock)')], '-', ['Gỡ thiệp', () => ask('Gỡ thiệp /t/' + id + '?', 'Khách mở link sẽ thấy thông báo thiệp tạm ẩn.', 'Gỡ thiệp', 'Đã gỡ', true), 'd']];
+  menuEl = document.createElement('div'); menuEl.className = 'menu';
+  items.forEach((it) => { if (it === '-') return menuEl.insertAdjacentHTML('beforeend', '<hr>'); const b = document.createElement('button'); b.textContent = it[0]; if (it[2]) b.className = 'd'; b.onclick = () => { closeMenu(); it[1](); }; menuEl.appendChild(b); });
+  document.body.appendChild(menuEl);
+  const r = btn.getBoundingClientRect();
+  menuEl.style.top = Math.min(innerHeight - menuEl.offsetHeight - 8, r.bottom + 4) + 'px';
+  menuEl.style.left = Math.max(8, r.right - menuEl.offsetWidth) + 'px';
+}
+
+// ---------- popup ----------
+function openMd(id) { closeMd(); document.getElementById(id).classList.add('on'); }
+function closeMd() { document.querySelectorAll('.ov.on').forEach((x) => x.classList.remove('on')); }
+document.querySelectorAll('.ov').forEach((o) => (o.onclick = (e) => { if (e.target === o) closeMd(); }));
+addEventListener('keydown', (e) => { if (e.key === 'Escape') { closeMd(); closeDr(); closeMenu(); } });
+function ask(title, text, btn, done, reason) {
+  mdcT.textContent = title; mdcP.innerHTML = text; mdcB.textContent = btn; mdcR.style.display = reason ? '' : 'none';
+  mdcB.onclick = () => { closeMd(); closeDr(); toast(done); };
+  openMd('mdc');
+}
+function confirmOrder(o) {
+  ask(`Xác nhận đơn ${o.code}?`, `Kiểm tra app ngân hàng đã nhận <b style="color:var(--ink)">${money(o.amt)}</b> với nội dung <b style="color:var(--ink)">${o.code}</b>. ${o.prod} của ${o.names} sẽ được kích hoạt ngay.`, 'Đã nhận tiền, kích hoạt', 'Đã kích hoạt ' + o.code);
+}
+let dt = 'đ';
+dtype.onclick = (e) => { const b = e.target.closest('button'); if (!b) return; dt = b.dataset.t; dtype.querySelectorAll('button').forEach((x) => x.classList.toggle('on', x === b)); dval.placeholder = dt === '%' ? '20' : '50000'; prev(); };
+function prev() {
+  const v = +dval.value || 0;
+  const prods = [...document.querySelectorAll('#mdd .chips input')].filter((x) => x.checked).map((x) => x.parentNode.textContent);
+  const off = dt === '%' ? Math.round(129000 * Math.min(v, 100) / 100 / 1000) * 1000 : Math.min(v, 129000);
+  dprev.innerHTML = v ? `Khách nhập <b>${(dcode.value || 'MÃ').toUpperCase()}</b> → thiệp <s>129.000đ</s> còn <b>${money(129000 - off)}</b>${off >= 129000 ? ' · kích hoạt luôn, không cần chuyển khoản' : ''} · áp cho ${prods.join(', ') || '…'}`
+    : 'Nhập mức giảm để xem khách sẽ trả bao nhiêu.';
+}
+function discModal(d) {
+  mddT.textContent = d ? 'Sửa mã ' + d.code : 'Tạo mã giảm giá';
+  mddB.textContent = d ? 'Lưu' : 'Tạo mã';
+  dcode.value = d ? d.code : ''; dcode.readOnly = !!d;
+  dval.value = d ? d.off.replace(/[^\d]/g, '') : '';
+  dtype.querySelectorAll('button').forEach((x) => x.classList.toggle('on', x.dataset.t === (d && d.off.includes('%') ? '%' : 'đ'))); dt = d && d.off.includes('%') ? '%' : 'đ';
+  prev(); openMd('mdd'); if (!d) setTimeout(() => dcode.focus(), 50);
+}
+
+// ---------- bảng chi tiết ----------
+function openDr(html) { drIn.innerHTML = html; dr.classList.add('on'); }
+function closeDr() { dr.classList.remove('on'); }
+const X = '<button class="x" style="margin-left:auto;width:32px;height:32px;border:0;border-radius:50%;background:var(--bg);font-size:18px;cursor:pointer;color:var(--muted)" onclick="closeDr()">×</button>';
+function orderDr(o) {
+  openDr(`<div class="dh"><div><h2><span class="code" style="font-size:18px">${o.code}</span></h2><p>${o.prod} · tạo ${o.at}</p></div>${X}</div>
+    <div class="db">
+      <div>${ST(o)}</div>
+      <dl class="kv"><dt>Khách</dt><dd>${o.email}</dd><dt>Đôi</dt><dd>${o.names}</dd><dt>Số tiền</dt><dd><b>${money(o.amt)}</b>${o.coupon ? ` · mã ${o.coupon}` : ''}</dd>${o.via ? `<dt>Kích hoạt</dt><dd>${o.via}</dd>` : ''}${o.claimed ? `<dt>Khách báo</dt><dd>đã chuyển · ${o.claimed}</dd>` : ''}</dl>
+      <div class="sec"><h4>Thiệp web</h4><a class="lnk" href="#" onclick="toast('Mở /t/${o.slug}?preview=1 (mock)');return false"><span>/t/${o.slug}</span><small style="color:var(--muted)">${o.pub ? 'đã phát hành' : 'nháp'}</small> ↗</a></div>
+      <div class="sec"><h4>SePay</h4>${o.sp.length ? `<ul class="tl">${o.sp.map((t) => `<li><span class="pill ${t[0]}">${t[1]}</span><small>${t[2]}</small></li>`).join('')}</ul>` : `<p style="margin:0;font-size:14px;color:var(--muted)">${o.st === 'paid' ? 'Không qua SePay' : 'Chưa nhận được tiền nào cho đơn này.'}</p>`}</div>
+      <div class="sec"><h4>Ghi chú</h4><label class="fl"><textarea placeholder="VD: đã gọi khách, chuyển thiếu…"></textarea></label></div>
+    </div>
+    ${o.st === 'pending' ? `<div class="df"><button class="btn plain" onclick="ask('Huỷ đơn ${o.code}?','Khách vẫn tạo được đơn mới.','Huỷ đơn','Đã huỷ đơn')">Huỷ đơn</button><button class="btn" onclick="confirmOrder(O.find(x=>x.code==='${o.code}'))">Xác nhận đã nhận tiền</button></div>` : ''}`);
+}
+function userDr(u) {
+  openDr(`<div class="dh"><div><h2>${u.name}</h2><p>${u.email} · đăng nhập bằng ${u.via}</p></div>${X}</div>
+    <div class="db">
+      <dl class="kv"><dt>Đăng ký</dt><dd>${u.at}</dd><dt>Hoạt động</dt><dd>${u.seen}</dd><dt>Đã chi</dt><dd><b>${u.spent ? money(u.spent) : '—'}</b></dd></dl>
+      <div class="sec"><h4>Thiệp (${u.cards})</h4>${C.filter((c) => c.owner === u.email).map((c) => `<a class="lnk" href="#" onclick="cardDr(C.find(x=>x.slug==='${c.slug}'));return false"><span><b>${c.names}</b> · /t/${c.slug}</span>›</a>`).join('') || '<p style="margin:0;color:var(--muted);font-size:14px">Chưa có thiệp.</p>'}</div>
+      <div class="sec"><h4>Đơn hàng</h4><ul class="tl">${O.filter((o) => o.email === u.email).map((o) => `<li data-order="${o.code}" style="cursor:pointer"><span class="code">${o.code}</span>${o.prod}<small>${money(o.amt)}</small></li>`).join('') || '<li style="color:var(--muted)">Chưa có đơn</li>'}</ul></div>
+    </div>
+    <div class="df"><button class="btn plain" onclick="ask('Đặt lại mật khẩu?','Tạo mật khẩu tạm để gửi cho ${u.email}.','Đặt lại','Mật khẩu tạm: ab12-cd34 (mock)')">Đặt lại mật khẩu</button><button class="btn plain" style="color:var(--danger)" onclick="ask('Khoá ${u.email}?','Người này không đăng nhập được nữa.','Khoá','Đã khoá')">Khoá</button></div>`);
+}
+function cardDr(c) {
+  const on = (s) => c.p.some((x) => x.startsWith(s) && x.includes('✓'));
+  openDr(`<div class="dh"><div><h2>${c.names}</h2><p>${c.owner}</p></div>${X}</div>
+    <div class="db">
+      <a class="lnk" href="#" onclick="toast('Mở /t/${c.slug}?preview=1 (mock)');return false"><span>/t/${c.slug}</span><small style="color:var(--muted)">${c.pub ? 'đã phát hành' : 'nháp'}</small> ↗</a>
+      <dl class="kv"><dt>Lượt xem</dt><dd>${c.views}</dd><dt>Khách mời</dt><dd>${c.guests}</dd></dl>
+      <div class="sec"><h4>Kích hoạt tay</h4><div style="display:grid;gap:8px">
+        ${[['Thiệp', on('Thiệp')], ['Màn LED', on('LED')], ['Video', on('Video')]].map(([n, v]) => `<div class="tgl">${n}<button class="sw ${v ? 'on' : ''}" onclick="ask('${v ? 'Huỷ kích hoạt' : 'Kích hoạt'} ${n}?','Ghi lý do để sau này tra lại.','${v ? 'Huỷ kích hoạt' : 'Kích hoạt'}','Đã cập nhật',true)"></button></div>`).join('')}
+      </div></div>
+    </div>
+    <div class="df"><button class="btn plain" style="color:var(--danger)" onclick="ask('Gỡ thiệp /t/${c.slug}?','Khách mở link sẽ thấy thông báo thiệp tạm ẩn. Chủ thiệp vẫn sửa được.','Gỡ thiệp','Đã gỡ',true)">Gỡ thiệp vi phạm</button></div>`);
+}
+
+// ---------- biểu đồ ----------
+function bars(el, n, seed) {
+  let x = seed; const v = Array.from({ length: n }, (_, i) => { x = (x * 9301 + 49297) % 233280; return 20 + (x / 233280) * 80 + i * 1.2; });
+  const max = Math.max(...v), W = 600, H = 130, bw = W / n;
+  el.innerHTML = `<svg viewBox="0 0 ${W} ${H + 16}" preserveAspectRatio="none">${v.map((y, i) => `<rect x="${i * bw + 1.5}" y="${H - (y / max) * H}" width="${bw - 3}" height="${(y / max) * H}" rx="2"/>`).join('')}${[0, 10, 20, 29].map((i) => `<text x="${i * bw + bw / 2}" y="${H + 13}" text-anchor="middle">${String(((i + 17) % 30) + 1).padStart(2, '0')}/${i + 17 >= 30 ? 11 : 10}</text>`).join('')}</svg>`;
+}
+bars(ch1, 30, 7); bars(ch2, 30, 3);
+
+let tt; function toast(t) { const el = $('#toast'); el.textContent = t; el.classList.add('on'); clearTimeout(tt); tt = setTimeout(() => el.classList.remove('on'), 2200); }
+tbtn.innerHTML = window.themeBtn ? themeBtn() : '';
+const h = location.hash.slice(1); if (TITLES[h]) go(h);
+</script>
+</body>
+</html>

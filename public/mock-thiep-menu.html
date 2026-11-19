@@ -1,0 +1,106 @@
+<!doctype html>
+<html lang="vi"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Mock: đưa "Thiệp của bạn" ra chỗ riêng</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&amp;family=Dancing+Script:wght@600;700&amp;display=swap">
+<link rel="stylesheet" href="/css/app.css">
+<style>
+/* MOCK: 3 cách tách "Thiệp của bạn" khỏi kho mẫu — mỗi cách có máy tính (thanh trên dài như thật) + điện thoại */
+body{padding:24px;background:#f3eeee}
+h1{margin:0;font-size:22px}
+h2{margin:34px 0 4px;font-size:18px}h2 small{font-weight:500;color:var(--muted);font-size:13px}
+.row{display:flex;gap:22px;align-items:flex-start;flex-wrap:wrap;margin-top:10px}
+.desk{flex:1 1 820px;min-width:0;border-radius:18px;background:var(--bg);box-shadow:0 0 0 1px var(--line);padding:14px 18px 18px;overflow:hidden}
+.ph{flex:none;position:relative;width:300px;height:560px;border-radius:30px;background:var(--bg);box-shadow:0 0 0 8px #fff,0 0 0 9px var(--line),0 20px 40px rgba(120,40,50,.12);overflow:hidden}
+.lb{font-size:11px;font-weight:700;letter-spacing:.06em;color:var(--muted);text-transform:uppercase;margin:0 0 8px}
+svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;display:block}
+/* thanh trên máy tính như thật: viên thuốc dài */
+.bar{position:relative;display:flex;align-items:center;gap:6px;height:60px;padding:0 10px 0 22px;border-radius:999px;background:#fff;box-shadow:0 0 0 1px var(--line),0 10px 30px rgba(120,40,50,.08)}
+.lg{font:700 27px/1 var(--script);color:var(--primary);margin-right:14px;white-space:nowrap}
+.t{padding:8px 14px;border-radius:999px;font-size:14.5px;font-weight:600;color:var(--muted);white-space:nowrap;display:flex;align-items:center;gap:6px}.t.on{background:var(--primary-soft);color:var(--primary)}
+.t em{font-style:normal;font-size:11px;padding:1px 7px;border-radius:999px;background:var(--primary);color:#fff}
+.sp{flex:1}
+.ic{width:38px;height:38px;border-radius:50%;display:grid;place-items:center;color:var(--muted);position:relative}
+.ic em{position:absolute;top:2px;right:0;min-width:16px;height:16px;padding:0 4px;border-radius:9px;background:var(--primary);color:#fff;font:700 10px/16px var(--sans);font-style:normal;text-align:center}
+.bp{display:inline-flex;align-items:center;gap:6px;height:40px;padding:0 18px;border-radius:999px;background:var(--grad);color:#fff;font-size:14.5px;font-weight:700;white-space:nowrap;box-shadow:0 8px 18px rgba(214,69,93,.25)}
+.bo{display:inline-flex;align-items:center;gap:6px;height:38px;padding:0 14px;border-radius:999px;border:1px solid var(--line);background:#fff;font-size:14px;font-weight:600;white-space:nowrap}
+.av{width:38px;height:38px;border-radius:50%;background:linear-gradient(135deg,#f6d7dc,#e9b7c0);display:grid;place-items:center;font-weight:700;color:#8b1a24;font-size:13px;flex:none}
+.muted{color:var(--muted)}
+/* nội dung dưới thanh */
+.pg{margin-top:20px}
+.pg h3{margin:0;font-size:24px}.pg p{margin:4px 0 14px;color:var(--muted);font-size:13.5px}
+.cards{display:grid;grid-template-columns:repeat(5,1fr);gap:12px}
+.cd{border-radius:14px;background:#fff;box-shadow:0 0 0 1px var(--line);overflow:hidden;font-size:12.5px}
+.cd i{display:block;aspect-ratio:4/3.3;background:#eee center 20%/cover}.cd div{padding:8px 10px}.cd b{display:block;font-size:13px}
+.cd.main{box-shadow:0 0 0 2px var(--primary)}
+.cd.new{display:grid;place-items:center;border:1.5px dashed #e2cfd3;box-shadow:none;background:none;color:var(--primary);font-weight:700}
+.tpl{display:grid;grid-template-columns:repeat(7,1fr);gap:10px}.tpl i{display:block;aspect-ratio:3/4;border-radius:10px;background:#eee top/cover}
+/* dropdown thiệp */
+.dd{position:absolute;right:120px;top:68px;width:320px;padding:8px;border-radius:18px;background:#fff;box-shadow:0 0 0 1px var(--line),0 18px 40px rgba(120,40,50,.18);z-index:3}
+.dd .it{display:flex;align-items:center;gap:10px;padding:8px;border-radius:12px;font-size:13px}.dd .it.on{background:var(--primary-soft)}
+.dd .it i{width:36px;height:46px;border-radius:8px;background:#eee top/cover;flex:none}.dd .it b{display:block;font-size:13.5px}.dd .it small{color:var(--muted)}
+.dd .ft{display:flex;justify-content:space-between;padding:8px 8px 4px;border-top:1px solid var(--line);margin-top:6px;font-size:13px;font-weight:600;color:var(--primary)}
+/* điện thoại */
+.ph .hd{display:flex;align-items:center;gap:8px;padding:14px 14px 8px}.ph .hd .lg{font-size:22px;margin:0}
+.ph .ct{padding:4px 14px}
+.ph h4{margin:4px 0 10px;font-size:18px}
+.mc{display:flex;gap:10px;align-items:center;padding:10px;border-radius:14px;background:#fff;box-shadow:0 0 0 1px var(--line);margin-bottom:8px;font-size:12px}
+.mc i{width:44px;height:58px;border-radius:9px;background:#eee top/cover;flex:none}.mc b{display:block;font-size:13.5px}.mc.main{box-shadow:0 0 0 2px var(--primary)}
+.mt{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.mt i{display:block;aspect-ratio:3/4;border-radius:9px;background:#eee top/cover}
+.bb{position:absolute;left:10px;right:10px;bottom:10px;display:flex;align-items:center;justify-content:space-around;height:56px;border-radius:999px;background:rgba(255,255,255,.95);box-shadow:0 0 0 1px var(--line),0 10px 24px rgba(120,40,50,.16)}
+.bb a{display:flex;flex-direction:column;align-items:center;gap:2px;font-size:9.5px;font-weight:600;color:var(--muted)}.bb a.on{color:var(--primary)}
+.bb a.plus{width:42px;height:42px;border-radius:50%;background:var(--grad);color:#fff;justify-content:center;font-size:22px}
+.bb .avs{width:22px;height:22px;border-radius:50%;background:linear-gradient(135deg,#f6d7dc,#e9b7c0);color:#8b1a24;font-size:8.5px;font-weight:800;display:grid;place-items:center}
+.sheet{position:absolute;left:0;right:0;bottom:0;padding:10px 14px 14px;border-radius:22px 22px 0 0;background:#fff;box-shadow:0 -10px 30px rgba(0,0,0,.18)}
+.sheet::before{content:'';display:block;width:38px;height:4px;border-radius:9px;background:#e6d6d9;margin:0 auto 10px}
+.dim{position:absolute;inset:0;background:rgba(40,25,28,.4)}
+.pick{margin-top:30px;padding:14px 16px;border-radius:14px;background:var(--primary-soft);font-size:14px}
+</style></head><body>
+<h1>Đưa "Thiệp của bạn" ra chỗ riêng — chọn 1 cách</h1>
+<p class="muted" style="margin:4px 0 0">Thanh trên máy tính vẽ dài như thật. Kho mẫu thành trang riêng "Mẫu thiệp".</p>
+
+<h2>A · Menu riêng: tab "Thiệp của tôi" + tab "Mẫu thiệp" <small>— mỗi thứ một mục trên thanh trên và thanh dưới (đề xuất)</small></h2>
+<div class="row">
+  <div class="desk"><p class="lb">Máy tính · đang ở "Thiệp của tôi"</p>
+    <div class="bar"><span class="lg">Cưới Nha</span><span class="t on">Thiệp của tôi<em>5</em></span><span class="t">Mẫu thiệp</span><span class="t">Video</span><span class="t">Sổ tay</span><span class="sp"></span><span class="ic"><svg viewBox="0 0 24 24"><path d="M20 14.5A8 8 0 0 1 9.5 4 8 8 0 1 0 20 14.5z"/></svg></span><span class="bp">＋ Tạo mới</span><span class="av">ĐA</span></div>
+    <div class="pg"><h3>Thiệp của tôi</h3><p>Thiệp đang dùng viền hồng · bấm để sửa, gửi khách, xem ai đã xác nhận</p>
+      <div class="cards"><div class="cd main"><i style="background-image:url(/demo/cover-anhdo-do-do.jpg)"></i><div><b>Đức Anh &amp; Phạm Nga</b><span style="color:#23824f">✓ Đã kích hoạt</span></div></div><div class="cd"><i style="background-image:url(/demo/cover-catdan-do-vintage.jpg)"></i><div><b>Đức Anh &amp; Phạm Nga</b><span class="muted">Bản nháp · Mẫu Đơn</span></div></div><div class="cd"><i style="background-image:url(/demo/cover-denlong-hong-phan.jpg)"></i><div><b>Đức Anh &amp; Phạm Nga</b><span class="muted">Bản nháp · Hoài Niệm</span></div></div><div class="cd"><i style="background-image:url(/demo/cover-cucdai-xanh-reu.jpg)"></i><div><b>Đức Anh &amp; Phạm Nga</b><span class="muted">Bản nháp · Rừng Thông</span></div></div><div class="cd new">＋ Chọn mẫu mới</div></div></div></div>
+  <div class="ph"><div class="hd"><span class="lg">Cưới Nha</span></div>
+    <div class="ct"><h4>Thiệp của tôi</h4>
+      <div class="mc main"><i style="background-image:url(/demo/cover-anhdo-do-do.jpg)"></i><span><b>Đức Anh &amp; Phạm Nga</b><span style="color:#23824f">✓ Đã kích hoạt · Song Hỷ</span></span></div>
+      <div class="mc"><i style="background-image:url(/demo/cover-catdan-do-vintage.jpg)"></i><span><b>Đức Anh &amp; Phạm Nga</b><span class="muted">Bản nháp · Mẫu Đơn</span></span></div>
+      <div class="mc"><i style="background-image:url(/demo/cover-denlong-hong-phan.jpg)"></i><span><b>Đức Anh &amp; Phạm Nga</b><span class="muted">Bản nháp · Hoài Niệm</span></span></div></div>
+    <nav class="bb"><a class="on"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2.5"/><path d="M3.5 6.5 12 13l8.5-6.5"/></svg>Thiệp</a><a><svg viewBox="0 0 24 24"><rect x="4" y="3" width="7" height="9" rx="1.5"/><rect x="13" y="3" width="7" height="6" rx="1.5"/><rect x="4" y="14" width="7" height="7" rx="1.5"/><rect x="13" y="11" width="7" height="10" rx="1.5"/></svg>Mẫu</a><a class="plus">＋</a><a><svg viewBox="0 0 24 24"><rect x="3" y="6" width="13" height="12" rx="2.5"/><path d="m16 10.5 5-3v9l-5-3"/></svg>Video</a><a><span class="avs">ĐA</span>Tôi</a></nav></div>
+</div>
+
+<h2>B · Nút "Thiệp của bạn" trên thanh trên, bấm mở danh sách nhỏ <small>— tab Thiệp chỉ còn kho mẫu; thiệp của bạn luôn một chạm</small></h2>
+<div class="row">
+  <div class="desk" style="padding-bottom:230px;position:relative"><p class="lb">Máy tính · đã bấm nút thiệp</p>
+    <div class="bar"><span class="lg">Cưới Nha</span><span class="t on">Thiệp</span><span class="t">Video</span><span class="t">Sổ tay</span><span class="sp"></span><span class="ic"><svg viewBox="0 0 24 24"><path d="M20 14.5A8 8 0 0 1 9.5 4 8 8 0 1 0 20 14.5z"/></svg></span><span class="bo" style="border-color:var(--primary);color:var(--primary)">💌 Thiệp của bạn <b style="font-size:11px;padding:1px 7px;border-radius:9px;background:var(--primary);color:#fff">5</b> ▾</span><span class="bp">＋ Tạo mới</span><span class="av">ĐA</span>
+      <div class="dd"><div class="it on"><i style="background-image:url(/demo/cover-anhdo-do-do.jpg)"></i><span><b>Đức Anh &amp; Phạm Nga</b><small style="color:#23824f">✓ Đã kích hoạt · Song Hỷ</small></span></div><div class="it"><i style="background-image:url(/demo/cover-catdan-do-vintage.jpg)"></i><span><b>Đức Anh &amp; Phạm Nga</b><small>Bản nháp · Mẫu Đơn</small></span></div><div class="it"><i style="background-image:url(/demo/cover-denlong-hong-phan.jpg)"></i><span><b>Đức Anh &amp; Phạm Nga</b><small>Bản nháp · Hoài Niệm</small></span></div><div class="ft"><span>Xem tất cả (5)</span><span>Quản lý ›</span></div></div></div>
+    <div class="pg"><h3>Mẫu thiệp</h3><p>49 mẫu · bấm để xem thử</p><div class="tpl"><i style="background-image:url(/demo/cover-catdan-do-vintage.jpg)"></i><i style="background-image:url(/demo/cover-anhdo-xanh-dam.jpg)"></i><i style="background-image:url(/demo/cover-denlong-xanh-mint.jpg)"></i><i style="background-image:url(/demo/cover-dentrang-den-trang.jpg)"></i><i style="background-image:url(/demo/cover-bienxanh-xanh-bien.jpg)"></i><i style="background-image:url(/demo/cover-cucdai-vang-cuc.jpg)"></i><i style="background-image:url(/demo/cover-catdan-nau-giay.jpg)"></i></div></div></div>
+  <div class="ph"><div class="hd"><span class="lg">Cưới Nha</span><span class="sp"></span><span class="bo" style="height:32px;font-size:12.5px;border-color:var(--primary);color:var(--primary)">💌 Thiệp của bạn · 5</span></div>
+    <div class="ct"><h4>Mẫu thiệp</h4><div class="mt"><i style="background-image:url(/demo/cover-catdan-do-vintage.jpg)"></i><i style="background-image:url(/demo/cover-anhdo-xanh-dam.jpg)"></i><i style="background-image:url(/demo/cover-denlong-xanh-mint.jpg)"></i><i style="background-image:url(/demo/cover-dentrang-den-trang.jpg)"></i><i style="background-image:url(/demo/cover-bienxanh-xanh-bien.jpg)"></i><i style="background-image:url(/demo/cover-cucdai-vang-cuc.jpg)"></i></div></div>
+    <div class="dim"></div><div class="sheet"><b style="font-size:15px">Thiệp của bạn</b>
+      <div class="mc main" style="margin-top:10px"><i style="background-image:url(/demo/cover-anhdo-do-do.jpg)"></i><span><b>Đức Anh &amp; Phạm Nga</b><span style="color:#23824f">✓ Đã kích hoạt</span></span></div>
+      <div class="mc"><i style="background-image:url(/demo/cover-catdan-do-vintage.jpg)"></i><span><b>Đức Anh &amp; Phạm Nga</b><span class="muted">Bản nháp · Mẫu Đơn</span></span></div>
+      <p style="margin:6px 0 0;text-align:center;font-size:13px;font-weight:600;color:var(--primary)">Xem tất cả (5) ›</p></div></div>
+</div>
+
+<h2>C · Nằm trong menu ảnh đại diện / tab "Tôi" <small>— "Thiệp của tôi" thành một mục trong menu tài khoản; tab Thiệp chỉ là kho mẫu</small></h2>
+<div class="row">
+  <div class="desk" style="padding-bottom:250px;position:relative"><p class="lb">Máy tính · đã bấm ảnh đại diện</p>
+    <div class="bar"><span class="lg">Cưới Nha</span><span class="t on">Thiệp</span><span class="t">Video</span><span class="t">Sổ tay</span><span class="sp"></span><span class="ic"><svg viewBox="0 0 24 24"><path d="M20 14.5A8 8 0 0 1 9.5 4 8 8 0 1 0 20 14.5z"/></svg></span><span class="muted" style="font-size:14px;margin:0 8px">Xem mẫu</span><span class="bp">＋ Tạo mới</span><span class="av" style="box-shadow:0 0 0 2px var(--primary)">ĐA</span>
+      <div class="dd" style="right:0;width:270px"><div style="padding:8px 10px 10px;border-bottom:1px solid var(--line);font-size:13px"><b style="display:block;font-size:14px">Đức Anh Vũ</b><span class="muted">anh…@gmail.com</span></div>
+        <div class="it on" style="margin-top:6px">💌<span><b>Thiệp của tôi</b><small>5 thiệp · 1 đã kích hoạt</small></span></div><div class="it">🎬<span><b>Video của tôi</b></span></div><div class="it">📒<span><b>Sổ tay cưới</b></span></div><div class="it">🌙<span><b>Sáng / tối</b></span></div><div class="it" style="color:#c0392b">↩<span><b>Đăng xuất</b></span></div></div></div>
+    <div class="pg"><h3>Mẫu thiệp</h3><p>49 mẫu · bấm để xem thử</p><div class="tpl"><i style="background-image:url(/demo/cover-catdan-do-vintage.jpg)"></i><i style="background-image:url(/demo/cover-anhdo-xanh-dam.jpg)"></i><i style="background-image:url(/demo/cover-denlong-xanh-mint.jpg)"></i><i style="background-image:url(/demo/cover-dentrang-den-trang.jpg)"></i><i style="background-image:url(/demo/cover-bienxanh-xanh-bien.jpg)"></i></div></div></div>
+  <div class="ph"><div class="hd"><span class="lg">Cưới Nha</span></div>
+    <div class="ct"><h4>Tôi</h4>
+      <div class="mc"><span class="av" style="width:44px;height:44px">ĐA</span><span><b>Đức Anh Vũ</b><span class="muted">anh…@gmail.com</span></span></div>
+      <div class="mc main">💌<span><b>Thiệp của tôi</b><span class="muted">5 thiệp · 1 đã kích hoạt</span></span><span class="sp"></span>›</div>
+      <div class="mc">🎬<span><b>Video của tôi</b></span><span class="sp"></span>›</div>
+      <div class="mc">🌙<span><b>Sáng / tối</b></span></div></div>
+    <nav class="bb"><a><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2.5"/><path d="M3.5 6.5 12 13l8.5-6.5"/></svg>Thiệp</a><a><svg viewBox="0 0 24 24"><rect x="3" y="6" width="13" height="12" rx="2.5"/><path d="m16 10.5 5-3v9l-5-3"/></svg>Video</a><a class="plus">＋</a><a><svg viewBox="0 0 24 24"><path d="M5 4.5A1.5 1.5 0 0 1 6.5 3H19v15H6.5A1.5 1.5 0 0 0 5 19.5z"/><path d="M5 19.5A1.5 1.5 0 0 0 6.5 21H19v-3"/></svg>Sổ tay</a><a class="on"><span class="avs">ĐA</span>Tôi</a></nav></div>
+</div>
+
+<p class="pick">A: điện thoại thanh dưới thành Thiệp · Mẫu · ＋ · Video · Tôi (Sổ tay vào "Tôi" hoặc giữ, bỏ Video — tuỳ bạn). B và C giữ nguyên thanh dưới hiện tại.</p>
+</body></html>
