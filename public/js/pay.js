@@ -58,6 +58,12 @@ const PAY_CSS = `<style>
 </style>`;
 
 window.openPayModal = async function (cardId, onDone, product = 'card') {
+  // kích hoạt là chốt tên + ngày cưới → thiếu thì báo chung một dòng, còn ô thiếu hiện chữ đỏ ngay dưới ô (máy chủ cũng chặn)
+  {
+    let data = null;
+    try { data = (await api(`/api/cards/${cardId}`)).card.data; } catch {}
+    if (data && payMissing(data).length) return;
+  }
   // Màn LED / video mà chủ thiệp còn lượt Trọn bộ → hỏi dùng lượt (miễn phí) trước, mua lẻ là lựa chọn phụ
   if ((product === 'led' || product === 'video') && !openPayModal.skipCredit) {
     try {
@@ -106,20 +112,15 @@ window.openPayModal = async function (cardId, onDone, product = 'card') {
     return ov;
   };
 
+  // kích hoạt xong: không mở màn chúc mừng toàn trang — đóng hộp thanh toán, báo một dòng, ở lại / về màn của sản phẩm vừa kích hoạt
   const paid = () => {
     const o = data.order;
     clearInterval(timer); clearInterval(tick);
+    closeAll();
+    toast(o.product === 'combo' ? 'Đã kích hoạt Trọn bộ ngày cưới 🎉' : `Đã kích hoạt ${lcFirst(o.productName)} 🎉`);
+    const go = o.product === 'led' ? `/sua-led/${cardId}` : o.product === 'video' ? `/sua-video/${cardId}` : '';
+    if (go && !location.pathname.startsWith(go)) { location.href = go; return; } // kích hoạt từ trang khác (Thiệp của tôi) → mở màn LED / video của tôi
     if (onDone) onDone();
-    const el = overlay();
-    el.innerHTML = `${PAY_CSS}<div class="in">
-        <div class="big">🎉</div>
-        <h2>${o.product === 'combo' ? 'Đã kích hoạt Trọn bộ ngày cưới' : `Đã kích hoạt ${esc(lcFirst(o.productName))}`}</h2>
-        ${o.product === 'combo' ? '<p class="muted" style="margin:0 0 6px">Thiệp, <b>màn hình LED</b> và <b>slide / màn hình dạm ngõ</b> của thiệp này đều đã kích hoạt. Chưa làm LED / video thì làm lúc nào cũng được, không phải trả thêm.</p>' : ''}
-        <p class="muted">Đã nhận ${money(o.amount)}. Cảm ơn hai bạn — chúc đám cưới thật vui!</p>
-        <button class="btn lg" id="payDone" style="margin-top:22px">Xong</button>
-      </div>`;
-    $('#payDone', el).onclick = closeAll;
-    $('#payDone', el).focus();
   };
 
   const waiting = () => {
@@ -196,6 +197,15 @@ window.openPayModal = async function (cardId, onDone, product = 'card') {
       <p class="cp-err" id="cpErr" role="alert" hidden></p>
       <p style="font-size:12.5px;text-align:center;margin:14px 0 0;color:var(--ink)">${LOCK_NOTE[p] || LOCK_NOTE.card}</p>
       <p class="muted" style="font-size:12px;text-align:center;margin:6px 0 0">Thanh toán là bạn đồng ý với <a href="/dieu-khoan" target="_blank" rel="noopener" style="color:inherit;text-decoration:underline">Điều khoản</a> và <a href="/hoan-tien" target="_blank" rel="noopener" style="color:inherit;text-decoration:underline">Chính sách hoàn tiền</a>.</p>`;
+    // mã giảm 100%: giá còn 0đ → thay mã QR bằng nút "Xác nhận kích hoạt", bấm mới kích hoạt
+    const qc = $('.qrcard', box);
+    if (qc && o.amount <= 0 && o.coupon && !o.received) {
+      qc.outerHTML = `<div class="qrcard" style="text-align:center;padding:18px 16px"><p style="margin:0 0 12px;font-weight:600">Mã giảm 100% — không cần chuyển khoản</p><button type="button" class="btn" id="cpOk">Xác nhận kích hoạt</button></div>`;
+      $('#cpOk', box).onclick = async (e) => {
+        e.target.disabled = true;
+        try { orders[sel] = (await post(sel, { confirm: true })).order; render(); } catch (err) { e.target.disabled = false; toast(err.message, true); }
+      };
+    }
     modalHead(box); // nút × đứng yên khi cuộn
     $$('[data-sel]', box).forEach((b) => (b.onclick = () => { sel = b.dataset.sel; render(); }));
     $('#cp', box).onsubmit = async (e) => {
@@ -204,7 +214,7 @@ window.openPayModal = async function (cardId, onDone, product = 'card') {
         const o = (await post(sel, { coupon: e.target.c.value })).order; // áp mã cho sản phẩm đang chọn
         orders[sel] = o;
         render();
-        toast(o.status === 'paid' ? 'Mã giảm 100% — đã kích hoạt' : o.coupon ? 'Đã áp dụng mã giảm giá' : 'Đã bỏ mã giảm giá');
+        toast(o.coupon ? 'Đã áp dụng mã giảm giá' : 'Đã bỏ mã giảm giá');
       } catch (err) { // mã sai: báo ngay dưới ô nhập, viền ô đỏ; gõ lại là tắt
         const m = $('#cpErr', box), inp = e.target.c;
         m.textContent = err.message; m.hidden = false; inp.classList.add('bad'); inp.focus();
@@ -283,4 +293,35 @@ function creditModal(cardId, onDone, product, left) {
     };
     $('#buyOne', box).onclick = () => { close(); openPayModal.skipCredit = true; openPayModal(cardId, onDone, product).finally(() => { openPayModal.skipCredit = false; }); };
   });
+}
+
+// Ô bắt buộc trước khi kích hoạt: ô trên trang (trình sửa thiệp data-k, màn LED data-d) hoặc dữ liệu đã lưu
+const PAY_NEED = [['groom.name', 'Chưa nhập tên chú rể'], ['bride.name', 'Chưa nhập tên cô dâu'], ['date', 'Chưa chọn ngày cưới']];
+function payMissing(data) {
+  const inp = (k) => document.querySelector(`[data-k="${k}"],[data-d="${k}"]`);
+  const val = (k) => { const el = inp(k); return el ? el.value.trim() : String(k.split('.').reduce((o, x) => (o || {})[x], data) || '').trim(); };
+  const miss = PAY_NEED.filter(([k]) => !val(k));
+  if (!miss.length) return miss;
+  if (window.onPayMissing) window.onPayMissing(miss.map(([k]) => k)); // trình sửa mở đúng bảng có các ô này
+  let first = null;
+  miss.forEach(([k, msg]) => {
+    const el = inp(k); if (!el) return;
+    first = first || el;
+    el.classList.add('miss');
+    const box = el.closest('.field') || el.parentNode;
+    let m = box.querySelector('.miss-msg');
+    if (!m) { m = document.createElement('small'); m.className = 'miss-msg'; box.appendChild(m); }
+    m.textContent = msg;
+    const clear = () => { if (!el.value.trim()) return; el.classList.remove('miss'); m.remove(); el.removeEventListener('input', clear); el.removeEventListener('change', clear); };
+    el.addEventListener('input', clear); el.addEventListener('change', clear);
+  });
+  if (first) toast('Vui lòng nhập đầy đủ thông tin', true);
+  else toast('Vui lòng nhập đầy đủ thông tin: ' + miss.map(([k]) => ({ 'groom.name': 'tên chú rể', 'bride.name': 'tên cô dâu', date: 'ngày cưới' })[k]).join(', '), true); // trang không có ô nhập (Thiệp của tôi)
+  if (first) { first.scrollIntoView({ block: 'center', behavior: 'smooth' }); setTimeout(() => first.focus({ preventScroll: true }), 300); }
+  if (!document.getElementById('missCss')) {
+    const st = document.createElement('style'); st.id = 'missCss';
+    st.textContent = '.field input.miss,.field textarea.miss{border-color:#d6455d!important;box-shadow:0 0 0 3px rgba(214,69,93,.15)!important}.miss-msg{display:block;margin-top:5px;color:#d6455d;font-size:12.5px;font-weight:600}';
+    document.head.appendChild(st);
+  }
+  return miss;
 }

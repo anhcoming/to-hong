@@ -900,8 +900,8 @@ route('POST', '/api/cards/:id/order', async (req, res, ctx) => {
   // giá đã hạ sau khi tạo đơn (đổi giá trong config.json): đơn đang chờ theo giá mới. Chỉ hạ, không nâng giá đơn khách đã thấy
   // (khách lỡ chuyển theo QR cũ giá cao hơn vẫn được kích hoạt: SePay nhận khi số tiền ≥ giá đơn).
   if (!d && !order.coupon) { const now = P.price(card); if (now < order.amount) order.amount = now; }
-  // mã giảm hết 100% → không cần chuyển khoản, kích hoạt luôn
-  if (order.amount <= 0 && d) markPaid(order, 'coupon');
+  // mã giảm hết 100% → không cần chuyển khoản: khách thấy giá 0đ, bấm "Xác nhận kích hoạt" (b.confirm) mới kích hoạt
+  if (order.amount <= 0 && d && b.confirm === true) markPaid(order, 'coupon');
   // đã chuyển thiếu trước đó mà giá đơn nay hạ (đổi giá, áp mã) xuống còn ≤ số đã nhận → đủ tiền, kích hoạt luôn
   else if (order.status === 'pending' && receivedFor(order) > 0 && receivedFor(order) >= order.amount) markPaid(order, 'sepay');
   save();

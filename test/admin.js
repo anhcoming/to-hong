@@ -196,7 +196,9 @@ const extraCard = (srcId, slug) => {
   await call('admin', 'POST', '/api/admin/discounts', { code: 'TANG', type: 'percent', value: 100, limit: 1, products: ['card', 'combo', 'led', 'video'] });
   const c2 = { id: extraCard(card.id, 'tang-1') };
   r = await call('u2', 'POST', `/api/cards/${c2.id}/order`, { coupon: 'tang' });
-  assert.deepEqual([r.json.order.amount, r.json.order.status], [0, 'paid'], 'giảm 100% → kích hoạt không cần chuyển khoản');
+  assert.deepEqual([r.json.order.amount, r.json.order.status], [0, 'pending'], 'giảm 100% → hiện giá 0đ, chưa kích hoạt');
+  r = await call('u2', 'POST', `/api/cards/${c2.id}/order`, { confirm: true });
+  assert.deepEqual([r.json.order.amount, r.json.order.status], [0, 'paid'], 'bấm Xác nhận kích hoạt → kích hoạt không cần chuyển khoản');
   assert.equal((await call('u2', 'GET', `/api/cards/${c2.id}`)).json.card.paid, true);
   const c3 = { id: extraCard(card.id, 'tang-2') };
   assert.match((await call('u2', 'POST', `/api/cards/${c3.id}/order`, { coupon: 'TANG' })).json.error, /hết lượt/);

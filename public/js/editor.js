@@ -1900,3 +1900,6 @@ function textModal(key) {
     todo.forEach((e, k) => { if (rs[k] && rs[k].pin) { e.mapPin = rs[k].pin; changed = true; } });
   }
 })();
+
+// bấm Kích hoạt mà thiếu tên / ngày cưới (pay.js): mở mục có ô thiếu để hiện chữ đỏ dưới ô
+window.onPayMissing = (keys) => { openSec(keys.some((k) => /\.name$/.test(k)) ? 'info' : 'date', { scroll: false }); };

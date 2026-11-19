@@ -76,7 +76,7 @@ function renderSide() {
       </div></section>` + next('man', 'Tiếp theo: Khung màn');
   else if (curPanel === 'man') h = head('Khung màn hình', 'Hỏi kỹ thuật nhà hàng màn LED ngang hay đứng để chọn đúng — không méo, không viền đen.') + `<section class="group"><div class="opts">${META.led.ratios.map(ratioBox).join('')}</div></section>`;
   else h = head('Trình chiếu', 'Gửi link cho kỹ thuật nhà hàng, mở trên máy nối với màn hình.') + `<section class="group">
-      ${card.led.created ? `<div style="display:grid;gap:8px;margin-bottom:14px"><a class="btn block" target="_blank" href="${esc(card.led.url)}">▶ Mở trình chiếu toàn màn hình</a><button class="btn block soft" id="copyGuide">Chép link + hướng dẫn gửi kỹ thuật</button></div>` : ''}
+      ${card.led.created && card.led.paid ? `<div style="display:grid;gap:8px;margin-bottom:14px"><a class="btn block" target="_blank" href="${esc(card.led.url)}">▶ Mở trình chiếu toàn màn hình</a><button class="btn block soft" id="copyGuide">Chép link + hướng dẫn gửi kỹ thuật</button></div>` : ''}
       <ol class="tips">
         <li>Mở link bằng Chrome hoặc Edge trên máy nối với màn hình.</li>
         <li>Bấm <b>F</b> hoặc nháy đúp chuột để chạy toàn màn hình.</li>
@@ -109,7 +109,8 @@ function renderHeader() {
   $('#chip').innerHTML = !s.created ? '' : s.paid ? '<span class="chip ok">● Đã kích hoạt</span>'
     : '<span class="chip warn">Đang dùng thử</span>';
   // điện thoại: nhãn ngắn (lớp hide-xs / show-xs) để ba nút vừa một hàng
-  $('#acts').innerHTML = s.created ? `<button class="btn sm soft" id="cpLink">Chép link</button><a class="btn sm plain" id="openLed" target="_blank" href="${esc(s.url)}"><span class="hide-xs">Mở trình chiếu</span><span class="show-xs">▶ Trình chiếu</span></a>${s.paid ? '<button class="btn sm" id="mp4Btn">⬇ Tải MP4</button>' : card.credits && card.credits.led > 0 ? '<button class="btn sm" id="payBtn">🎁 Dùng lượt Trọn bộ</button>' : `<button class="btn sm" id="payBtn">Kích hoạt<span class="hide-xs"> · ${money(META.ledPrice)}</span><span class="show-xs"> ${Math.round(META.ledPrice / 1000)}k</span></button>`}`
+  // chưa kích hoạt: chỉ nút Kích hoạt; kích hoạt rồi mới hiện Chép link · Mở trình chiếu · Tải MP4
+  $('#acts').innerHTML = s.created ? `${s.paid ? `<button class="btn sm soft" id="cpLink">Chép link</button><a class="btn sm plain" id="openLed" target="_blank" href="${esc(s.url)}"><span class="hide-xs">Mở trình chiếu</span><span class="show-xs">▶ Trình chiếu</span></a>` : ''}${s.paid ? '<button class="btn sm" id="mp4Btn">⬇ Tải MP4</button>' : card.credits && card.credits.led > 0 ? '<button class="btn sm" id="payBtn">🎁 Dùng lượt Trọn bộ</button>' : `<button class="btn sm" id="payBtn">Kích hoạt<span class="hide-xs"> · ${money(META.ledPrice)}</span><span class="show-xs"> ${Math.round(META.ledPrice / 1000)}k</span></button>`}`
     : '';
   $('#acts').style.gridTemplateColumns = s.created && s.paid ? '1fr 1fr 1fr' : '';
   const mb = $('#mp4Btn'); if (mb) mb.onclick = mp4Dialog;
@@ -532,3 +533,6 @@ function start() {
   // đến từ nút "Tạo màn LED" (/tao-led): bật luôn, không dừng ở màn giới thiệu
   if (new URLSearchParams(location.search).get('tao')) $('#startBtn').click();
 })();
+
+// bấm Kích hoạt mà thiếu tên / ngày cưới (pay.js): về bảng Nội dung để hiện chữ đỏ dưới ô thiếu
+window.onPayMissing = () => { if (curPanel !== 'chu') { curPanel = 'chu'; renderSide(); } };

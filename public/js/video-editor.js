@@ -564,20 +564,20 @@ function renderHeader() {
     : credit ? '<button class="btn sm" id="payBtn">🎁 Dùng lượt Trọn bộ</button>'
     : `<button class="btn sm" id="payBtn">Kích hoạt<span class="xl">&nbsp;· ${money(META.videoPrice)}</span></button>`;
   $('#acts').innerHTML = `${s.paid ? `<a class="btn sm ghost" target="_blank" href="${esc(s.url)}" title="Mở trình chiếu toàn màn hình">▷<span class="xl">&nbsp;Trình chiếu</span></a>` : ''}
-    <span class="shr"><button class="btn sm soft" id="shrBtn" aria-haspopup="menu" aria-expanded="false">Chia sẻ ▾</button>
+    ${s.paid ? `<span class="shr"><button class="btn sm soft" id="shrBtn" aria-haspopup="menu" aria-expanded="false">Chia sẻ ▾</button>
       <span class="shr-m" id="shrM" role="menu" hidden>
         <button role="menuitem" id="cpLink"><i>🔗</i><span>Chép link chiếu TV<small>${s.paid ? 'Mở trên Smart TV, máy chiếu, máy tính nối TV' : 'Cần kích hoạt'}</small></span></button>
         <button role="menuitem" id="goExportM"><i>⬇</i><span>Tải video MP4<small>${s.paid ? 'Full HD · chép vào USB cắm TV' : 'Full HD · cần kích hoạt'}</small></span></button>
-      </span></span>
-    ${main}`;
+      </span></span>` : ''}
+    ${main}`; // chưa kích hoạt: chỉ nút Kích hoạt; kích hoạt rồi mới hiện Trình chiếu · Chia sẻ · Tải MP4
   const m = $('#shrM'), sb = $('#shrBtn');
   const close = () => { m.hidden = true; sb.setAttribute('aria-expanded', 'false'); };
-  sb.onclick = (e) => { e.stopPropagation(); m.hidden = !m.hidden; sb.setAttribute('aria-expanded', String(!m.hidden)); };
+  if (sb) sb.onclick = (e) => { e.stopPropagation(); m.hidden = !m.hidden; sb.setAttribute('aria-expanded', String(!m.hidden)); };
   if (!renderHeader.bound) { renderHeader.bound = true; document.addEventListener('click', (e) => { const mm = $('#shrM'); if (mm && !mm.hidden && !e.target.closest('.shr')) { mm.hidden = true; $('#shrBtn').setAttribute('aria-expanded', 'false'); } }); document.addEventListener('keydown', (e) => { if (e.key === 'Escape') { const mm = $('#shrM'); if (mm) mm.hidden = true; } }); }
   // chưa kích hoạt: link chiếu TV chưa mở được → mời kích hoạt luôn
-  $('#cpLink').onclick = () => { close(); if (!s.paid) return openPayModal(CARD_ID, reload, 'video'); copyText(s.url, 'Đã chép link — mở trên Smart TV hoặc máy tính nối TV'); };
+  if ($('#cpLink')) $('#cpLink').onclick = () => { close(); if (!s.paid) return openPayModal(CARD_ID, reload, 'video'); copyText(s.url, 'Đã chép link — mở trên Smart TV hoặc máy tính nối TV'); };
   const goX = () => { close(); exportModal(); };
-  $('#goExportM').onclick = goX;
+  if ($('#goExportM')) $('#goExportM').onclick = goX;
   const ge = $('#goExport'); if (ge) ge.onclick = goX;
   const pb = $('#payBtn'); if (pb) pb.onclick = () => openPayModal(CARD_ID, reload, 'video');
   // đã chốt hẳn: bố cục xem chi tiết dùng chung với màn LED (public/js/final-view.js) — thẻ đem đi chiếu / gửi người nhà
