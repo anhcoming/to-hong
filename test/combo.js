@@ -125,6 +125,15 @@ const buyCombo = async (id) => { const o = (await call('u', 'POST', `/api/cards/
   await pay(r.json.order);
   lr = await call('x', 'GET', '/led/combo-f');
   assert.ok(lr.status === 200 && !lr.text.includes('Bản dùng thử'), 'kích hoạt xong: chiếu được, hết dòng dùng thử');
+  // kích hoạt xong: tên đôi trên màn LED cố định, sửa tên trên thiệp không đổi màn LED (các chữ khác vẫn sửa được)
+  {
+    const c = await card(f);
+    assert.deepEqual(c.led.names, { groom: 'An', bride: 'Bình' }, 'cố định tên lúc kích hoạt');
+    assert.equal((await call('u', 'PUT', `/api/cards/${f}`, { data: { ...c.data, groom: { ...c.data.groom, name: 'Quang' }, bride: { ...c.data.bride, name: 'Hà' } }, led: { message: 'Cảm ơn cả nhà' } })).status, 200, 'thiệp vẫn sửa tên được');
+    lr = await call('x', 'GET', '/led/combo-f');
+    assert.ok(lr.text.includes('"name":"An"') && lr.text.includes('"name":"Bình"') && !lr.text.includes('Quang'), 'màn LED giữ tên lúc kích hoạt');
+    assert.ok(lr.text.includes('Cảm ơn cả nhà'), 'chữ khác trên màn LED vẫn sửa được');
+  }
 
   // đã tạo đơn thiệp lẻ (chưa trả) rồi trả đơn Trọn bộ → đơn thiệp lẻ tự đóng, không còn nằm ở "Cần xử lý"
   const { db } = require('../lib/db');

@@ -34,7 +34,7 @@ function renderSide() {
   if (!['hieu', 'man'].includes(curPanel)) curPanel = 'hieu';
   $$('#rail [data-panel]').forEach((b) => { b.hidden = !['hieu', 'man'].includes(b.dataset.panel); b.classList.toggle('on', b.dataset.panel === curPanel); });
   let h = '';
-  if (curPanel === 'hieu') h = head('Mẫu màn hình', 'Chọn một mẫu có sẵn. Bấm chữ trên màn để sửa, bật / tắt cảnh ở thanh bên dưới.') + `<section class="group">
+  if (curPanel === 'hieu') h = head('Mẫu màn hình', 'Chọn một mẫu có sẵn. Bấm chữ trên màn để sửa, bật / tắt cảnh ở thanh bên dưới.') + (card.led.names ? `<p class="muted" style="font-size:13px;margin:-4px 0 12px">🔒 Đã kích hoạt: tên <b>${esc(card.led.names.groom)} &amp; ${esc(card.led.names.bride)}</b> cố định trên màn LED. Các chữ khác vẫn sửa thoải mái.</p>` : '') + `<section class="group">
       <div class="lmau">${(META.led.templates || []).map((t) => `<button class="lm ${led.palette === t.palette && led.effect === t.effect ? 'on' : ''}" data-tpl="${t.id}"><i style="background-image:url('/demo/lposter-${t.palette}-${t.effect}.jpg')"></i><b>${esc(t.name)}</b></button>`).join('')}</div>
       <label class="check" style="margin-top:14px"><input type="checkbox" data-l="hy" ${led.hy ? 'checked' : ''}>Chữ 囍 trên cảnh tên đôi</label>
     </section>`;
@@ -217,6 +217,7 @@ function bind() {
     if (m.type === 'led-text') {
       if (m.key === 'led.kicker') led.kicker = m.value.slice(0, 40);
       else if (m.key === 'led.message') led.message = m.value.slice(0, 200);
+      else if (card.led.names && /^(groom|bride)\.name$/.test(m.key)) return; // đã kích hoạt: tên đôi cố định
       else { setP(card.data, m.key, m.value); dataDirty = true; if (/\.name$/.test(m.key)) renderHeader(); }
       schedule(700);
     }

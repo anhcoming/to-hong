@@ -1181,6 +1181,7 @@
     document.body.classList.add('can-edit');
     slidesEl.addEventListener('click', function (e) {
       var t = e.target.closest('[data-e]');
+      if (t && L.names && /^(groom|bride)\.name$/.test(t.getAttribute('data-e'))) t = null; // đã kích hoạt: tên đôi cố định, không sửa
       if (!t) { if (e.target.closest('[data-date]')) { if (!paused) togglePause(); try { window.parent.postMessage({ type: 'led-date' }, location.origin); } catch (er) { /* bỏ qua */ } } return; }
       if (editing === t) return;
       if (!paused) togglePause(); // dừng cảnh trong lúc gõ
@@ -1204,7 +1205,12 @@
     if (e.origin !== location.origin || !e.data) return;
     if (e.data.type === 'led-config') {
       if (editing) return; // đang gõ trên màn: không dựng lại cảnh (mất con trỏ)
-      if (e.data.card) { C.groom = e.data.card.groom; C.bride = e.data.card.bride; if (e.data.card.photo !== undefined) C.photo = e.data.card.photo; }
+      if (e.data.card) {
+        var fx = (e.data.led && e.data.led.names) || L.names; // đã kích hoạt: giữ tên đôi cố định
+        C.groom = fx ? Object.assign({}, e.data.card.groom, { name: fx.groom }) : e.data.card.groom;
+        C.bride = fx ? Object.assign({}, e.data.card.bride, { name: fx.bride }) : e.data.card.bride;
+        if (e.data.card.photo !== undefined) C.photo = e.data.card.photo;
+      }
       apply(e.data.led);
     }
     if (e.data.type === 'led-goto') { show(e.data.index); restartTimer(); }
