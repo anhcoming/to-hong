@@ -31,25 +31,32 @@ body.fv-on .studio>.stagewrap{grid-template-rows:auto;align-content:center}
 .fv-note i{font-style:normal;font-size:18px;line-height:1}
 .fv-help{margin:16px 0 0;text-align:center;font-size:12.5px;color:var(--muted)}.fv-help a{color:var(--primary);font-weight:600;text-decoration:none}
 [data-theme="dark"] .fv-note{background:#1f3329;color:#bfe3cf}[data-theme="dark"] .fv-lock{background:#1f3329;color:#9fd8b8}
-.fvb{width:100%;max-width:980px;display:grid;gap:10px;margin:2px auto 0}
-.fv-play{display:flex;align-items:center;gap:12px;width:100%}
+.fvb{width:100%;max-width:980px;margin:4px auto 0}
+body.fv-on #scrub{display:none!important} /* video: thanh phát cũ thay bằng thanh chia đoạn theo cảnh */
+.fv-play{display:flex;align-items:flex-start;gap:14px;width:100%}
 .fv-play .pp{all:unset;cursor:pointer;flex:none;width:44px;height:44px;border-radius:50%;display:grid;place-items:center;background:var(--primary);color:#fff;font-size:14px;box-shadow:0 8px 18px rgba(214,69,93,.32)}
-.fv-play .trk{position:relative;flex:1;min-width:0;height:22px;display:flex;align-items:center}
-.fv-play input{width:100%;margin:0;accent-color:var(--primary);cursor:pointer}
-.fv-play input:focus{outline:none}.fv-play input:focus-visible{outline:2px solid var(--primary-soft);outline-offset:3px;border-radius:9px}
-.fv-play .mk{position:absolute;left:0;right:0;top:50%;height:0;pointer-events:none}
-.fv-play .mk i{position:absolute;top:-8px;width:2px;height:16px;border-radius:2px;background:rgba(127,127,127,.45)}
-.fv-play .tm{flex:none;font-size:13px;color:var(--muted);font-variant-numeric:tabular-nums}
-.fv-play .fs{all:unset;cursor:pointer;flex:none;width:38px;height:38px;border-radius:12px;display:grid;place-items:center;background:var(--surface,#fff);box-shadow:0 0 0 1px var(--line),0 6px 14px rgba(60,30,40,.08);font-size:15px}
-.fv-ch{display:flex;justify-content:safe center;gap:8px;overflow-x:auto;padding:2px 2px 14px;scrollbar-width:none}.fv-ch::-webkit-scrollbar{display:none}
-.fv-ch button{all:unset;cursor:pointer;flex:none;display:flex;flex-direction:column;gap:1px;padding:8px 14px;border-radius:14px;background:var(--surface,#fff);box-shadow:0 0 0 1px var(--line),0 6px 16px rgba(60,30,40,.08);font-size:13px;font-weight:600;color:var(--ink);max-width:200px}
-.fv-ch button small{font-weight:500;font-size:11.5px;color:var(--muted);font-variant-numeric:tabular-nums}
-.fv-ch button b{font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.fv-ch button.on{background:var(--primary);color:#fff;box-shadow:0 8px 18px rgba(214,69,93,.3)}.fv-ch button.on small{color:rgba(255,255,255,.8)}
-.fv-ch button:focus-visible{outline:2px solid var(--primary);outline-offset:2px}
-.fv-facts{display:flex;flex-wrap:wrap;justify-content:center;gap:8px}
-.fv-facts span{display:inline-flex;align-items:center;gap:6px;padding:6px 12px;border-radius:999px;background:var(--surface,#fff);box-shadow:0 0 0 1px var(--line),0 6px 16px rgba(60,30,40,.08);font-size:12.5px;color:var(--ink)}
-.fv-facts i{font-style:normal}
+.fv-play .pp:focus-visible,.fv-play .fs:focus-visible{outline:2px solid var(--primary);outline-offset:3px}
+.fv-segs{flex:1;min-width:0;display:flex;gap:4px;padding-top:18px}
+.fv-seg{all:unset;flex:var(--w) 1 0;min-width:10px;cursor:pointer}
+.fv-seg .bar{height:8px;border-radius:6px;background:color-mix(in srgb,var(--line) 70%,#cdbfc1);overflow:hidden;transition:height .15s}
+.fv-seg:hover .bar{height:10px;margin-top:-1px}
+.fv-seg .bar i{display:block;height:100%;width:0;background:var(--primary);border-radius:6px}
+.fv-seg b{display:block;margin-top:8px;font-size:12.5px;font-weight:600;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.fv-seg small{display:block;font-size:11px;color:var(--muted);font-variant-numeric:tabular-nums}
+.fv-seg.on b{color:var(--primary)}
+.fv-seg:focus-visible .bar{outline:2px solid var(--primary);outline-offset:2px}
+.fv-play .tm{flex:none;padding-top:13px;font-size:13px;color:var(--muted);font-variant-numeric:tabular-nums}
+.fv-play .fs{all:unset;cursor:pointer;flex:none;width:38px;height:38px;margin-top:3px;border-radius:12px;display:grid;place-items:center;background:var(--surface,#fff);box-shadow:0 0 0 1px var(--line),0 6px 14px rgba(60,30,40,.08);font-size:15px}
+.fv-now{display:none}
+.fv-line{display:flex;flex-wrap:wrap;justify-content:center;gap:6px 18px;margin-top:18px;padding-top:14px;border-top:1px dashed color-mix(in srgb,var(--line) 60%,#d9c8cb);color:var(--muted);font-size:13px}
+.fv-line span{display:inline-flex;align-items:center;gap:6px}.fv-line b{color:var(--ink);font-weight:600}
+@media (max-width:600px){
+  .fv-play{align-items:center;gap:10px}.fv-play .pp{width:40px;height:40px}.fv-play .fs{width:34px;height:34px;margin:0}
+  .fv-segs{gap:3px;padding:0}.fv-seg b,.fv-seg small{display:none}.fv-play .tm{padding:0;font-size:12px}
+  .fv-now{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-top:10px;padding:10px 12px;border-radius:12px;background:var(--surface,#fff);box-shadow:0 0 0 1px var(--line),0 6px 16px rgba(60,30,40,.06);font-size:13px}
+  .fv-now b{color:var(--primary)}.fv-now small{color:var(--muted);font-size:12px;white-space:nowrap;font-variant-numeric:tabular-nums}
+  .fv-line{margin-top:14px;padding-top:12px;gap:6px 14px;font-size:12.5px}
+}
 @media (max-width:980px){
   body.fv-on .studio{display:flex;flex-direction:column;overflow:auto}
   .fv{order:5;border-left:0;overflow:visible;padding:4px 12px 28px;background:none}
@@ -109,59 +116,65 @@ body.fv-on .studio>.stagewrap{grid-template-rows:auto;align-content:center}
       </section>
       <div class="fv-note"><i aria-hidden="true">🔒</i><div>${led ? 'Màn LED' : 'Video'} đã kích hoạt nên đã chốt — tên, ngày, chữ${led ? '' : ', ảnh, nhạc'} giữ nguyên như lúc thanh toán.</div></div>
       ${help ? `<p class="fv-help">Cần sửa gấp? <a href="${esc(help)}" target="_blank" rel="noopener">Nhắn Cưới Nha</a></p>` : ''}`;
-    // dưới khung chiếu: các cảnh (bấm để nhảy tới) + hàng thông tin — đỡ trống, xem nhanh video / màn LED có gì
+    // dưới khung chiếu: thanh phát chia đoạn theo cảnh (tên + mốc giờ dưới từng đoạn, bấm để tua) + một dòng thông tin
     const stage = o.stage && document.querySelector(o.stage);
     let bar = document.getElementById('fvb');
-    if (stage && !bar) { bar = document.createElement('div'); bar.id = 'fvb'; bar.className = 'fvb'; stage.appendChild(bar); bar.addEventListener('click', (e) => { const c = e.target.closest('[data-t]'); if (c && o.onSeek) { o.onSeek(+c.dataset.t); window.finalView.at(+c.dataset.t); } }); }
+    if (stage && !bar) { bar = document.createElement('div'); bar.id = 'fvb'; bar.className = 'fvb'; stage.appendChild(bar); playLoop(bar); }
     if (bar) {
-      const ch = (o.chapters || []).filter((c) => c && c.name);
-      bar.innerHTML = (o.player ? `<div class="fv-play"><button type="button" class="pp" data-pl="pp" aria-label="Tạm dừng">❚❚</button><div class="trk"><input type="range" min="0" max="1000" value="0" aria-label="Tua"><div class="mk"></div></div><span class="tm">0:00 / 0:00</span><button type="button" class="fs" data-pl="fs" title="Xem toàn màn hình" aria-label="Xem toàn màn hình">⛶</button></div>` : '')
-        + (ch.length > 1 ? `<div class="fv-ch" role="list" aria-label="Các cảnh">${ch.map((c) => `<button type="button" role="listitem" data-t="${c.t}"><small>${mmss(c.t)}</small><b>${esc(c.name)}</b></button>`).join('')}</div>` : '')
-        + ((o.facts || []).length ? `<div class="fv-facts">${o.facts.filter((f) => f && f[1]).map(([ic, tx]) => `<span><i aria-hidden="true">${ic}</i>${esc(tx)}</span>`).join('')}</div>` : '');
-      lastOn = -1;
+      bar.innerHTML = `<div class="fv-play"><button type="button" class="pp" data-pl="pp" aria-label="Tạm dừng">❚❚</button><div class="fv-segs" role="group" aria-label="Các cảnh — bấm để tua"></div><span class="tm">0:00 / 0:00</span><button type="button" class="fs" data-pl="fs" title="Xem toàn màn hình" aria-label="Xem toàn màn hình">⛶</button></div>
+        <div class="fv-now" aria-live="polite"><span>Đang chiếu: <b></b></span><small></small></div>
+        ${(o.facts || []).some((f) => f && f[1]) ? `<div class="fv-line">${o.facts.filter((f) => f && f[1]).map(([ic, tx]) => `<span><i aria-hidden="true" style="font-style:normal">${ic}</i><b>${esc(tx)}</b></span>`).join('')}</div>` : ''}`;
+      bar.dataset.key = '';
     }
-    if (bar && o.player && !bar.dataset.pl) { bar.dataset.pl = '1'; playLoop(bar); }
     // nhãn 🔒 Đã chốt ở dòng nhỏ dưới tên (thay chữ "Đã kích hoạt" / "Đã lưu")
     const sv = document.getElementById('saved');
     if (sv && !document.querySelector('.fv-lock')) sv.insertAdjacentHTML('afterend', '<span class="fv-lock">🔒 Đã chốt</span>');
     window.dispatchEvent(new Event('resize')); // khung xem đổi cỡ theo bố cục mới
   };
-  // thanh phát cho khung không tự có (màn LED): o.player() trả { pos, total, seek, paused, toggle, count, seconds } hoặc null
+  // o.player() trả { pos, total, seek, paused, toggle, chapters? } hoặc null (khung chưa sẵn sàng);
+  // các cảnh: player.chapters() (màn LED: theo khung đang chiếu) hoặc o.chapters (video) — [{ name, t }]
   function playLoop(bar) {
-    let drag = false, mkKey = '';
+    const P = () => { try { return (o.player && o.player()) || null; } catch (e) { return null; } };
+    const chs = (p) => { const c = (p.chapters ? p.chapters() : o.chapters) || []; return c.length ? c : [{ name: '', t: 0 }]; };
     bar.addEventListener('click', (e) => {
-      const b = e.target.closest('[data-pl]'); if (!b) return;
-      const p = o.player && o.player(); if (!p) return;
-      if (b.dataset.pl === 'pp') p.toggle();
-      else if (o.onFull) o.onFull();
+      const p = P(); if (!p) return;
+      const b = e.target.closest('[data-pl]');
+      if (b) return b.dataset.pl === 'pp' ? p.toggle() : o.onFull && o.onFull();
+      const sg = e.target.closest('.fv-seg'); if (!sg) return;
+      // bấm vào thanh của đoạn: tua đúng chỗ; bấm chữ dưới đoạn: về đầu cảnh
+      const t0 = +sg.dataset.t, d = +sg.dataset.d, r = sg.querySelector('.bar').getBoundingClientRect();
+      const onBar = e.clientY <= r.bottom + 6;
+      p.seek(onBar ? t0 + Math.max(0, Math.min(1, (e.clientX - r.left) / r.width)) * d : t0);
     });
-    bar.addEventListener('input', (e) => { if (e.target.type !== 'range') return; const p = o.player && o.player(); if (!p) return; drag = true; p.seek(e.target.value / 1000 * p.total()); });
-    bar.addEventListener('change', () => { drag = false; });
     const tick = () => {
       if (!bar.isConnected) return;
-      const p = o.player && o.player(), inp = bar.querySelector('.fv-play input');
-      if (p && inp) {
-        const T = p.total(), t = p.pos();
-        if (!drag) inp.value = Math.round(t / T * 1000);
+      const p = P(), segs = bar.querySelector('.fv-segs');
+      if (p && segs) {
+        const T = p.total(), t = p.pos(), ch = chs(p);
+        const key = T + '|' + ch.map((c) => c.t + c.name).join(',');
+        if (bar.dataset.key !== key) {
+          bar.dataset.key = key;
+          segs.innerHTML = ch.map((c, i) => { const d = Math.max(0.1, (i + 1 < ch.length ? ch[i + 1].t : T) - c.t);
+            return `<button type="button" class="fv-seg" style="--w:${d.toFixed(2)}" data-t="${c.t}" data-d="${d}" data-i="${i}" title="${esc(c.name)} · ${mmss(c.t)}"><div class="bar"><i></i></div><b>${esc(c.name)}</b><small>${mmss(c.t)}</small></button>`; }).join('');
+        }
+        let on = 0;
+        segs.querySelectorAll('.fv-seg').forEach((sg, i) => {
+          const t0 = +sg.dataset.t, d = +sg.dataset.d, f = Math.max(0, Math.min(1, (t - t0) / d));
+          sg.querySelector('i').style.width = (f * 100).toFixed(1) + '%';
+          if (t >= t0 - 0.05) on = i;
+        });
+        segs.querySelectorAll('.fv-seg').forEach((sg, i) => sg.classList.toggle('on', i === on));
         bar.querySelector('.fv-play .tm').textContent = `${mmss(t)} / ${mmss(T)}`;
+        const now = bar.querySelector('.fv-now'), c = ch[on] || {};
+        if (now) { now.querySelector('b').textContent = c.name || ''; now.querySelector('small').textContent = `cảnh ${on + 1}/${ch.length} · ${mmss(c.t || 0)}`; now.hidden = !c.name; }
         const pp = bar.querySelector('.fv-play .pp'), ps = p.paused();
         if (pp.dataset.p !== String(ps)) { pp.dataset.p = String(ps); pp.textContent = ps ? '▶' : '❚❚'; pp.setAttribute('aria-label', ps ? 'Phát' : 'Tạm dừng'); }
-        const n = p.count(), key = n + '|' + T;
-        if (key !== mkKey) { mkKey = key; bar.querySelector('.fv-play .mk').innerHTML = Array.from({ length: Math.max(0, n - 1) }, (_, i) => `<i style="left:${((i + 1) / n * 100).toFixed(2)}%"></i>`).join(''); }
       }
       requestAnimationFrame(tick);
     };
     requestAnimationFrame(tick);
   }
-  // cảnh đang chiếu (trình sửa gọi theo thời gian phát)
-  let lastOn = -1;
-  window.finalView.at = function (t) {
-    const bs = document.querySelectorAll('#fvb [data-t]'); if (!bs.length) return;
-    let k = 0; bs.forEach((b, i) => { if (t >= +b.dataset.t - 0.05) k = i; });
-    if (k === lastOn) return; lastOn = k;
-    bs.forEach((b, i) => b.classList.toggle('on', i === k));
-    const b = bs[k], box = b.parentElement; if (box) box.scrollTo({ left: b.offsetLeft - box.clientWidth / 2 + b.offsetWidth / 2, behavior: 'smooth' });
-  };
+  window.finalView.at = function () {}; // (cũ) trình sửa video gọi theo thời gian phát — thanh chia đoạn tự theo dõi
   // ngày dạng "Chủ Nhật, 14/02/2027"
   const WD = ['Chủ Nhật', 'Thứ Hai', 'Thứ Ba', 'Thứ Tư', 'Thứ Năm', 'Thứ Sáu', 'Thứ Bảy'];
   window.finalView.date = function (iso) {

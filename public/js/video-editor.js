@@ -584,11 +584,12 @@ function renderHeader() {
   if (vFinal()) {
     const names = [info().chu_re, info().co_dau].filter(Boolean).join(' & ');
     const ev = video.event || {}, M = META.music || { tracks: [] }, mu = card.data.music || '';
-    const nShot = (engine ? engine.timeline() : []).filter((c) => c.kind === 'shot').length;
     finalView({ kind: 'video', url: s.url, names, onMp4: exportModal, support: META.support,
-      stage: '.studio > .stage', chapters: vChapters(), onSeek: (t) => engine.seek(t),
+      stage: '.studio > .stage', chapters: vChapters(),
+      // thanh phát chia đoạn theo cảnh (thay thanh tua cũ): dùng chính khung xem video
+      player: () => engine && { pos: () => engine.time(), total: () => engine.duration(), seek: (t) => engine.seek(t), paused: () => engine.paused(), toggle: () => $('#pp').click() },
+      onFull: () => $('#fs').click(),
       facts: [['📅', finalView.date(ev.date || card.data.date)], ['⏰', finalView.time(ev.time || card.data.time)], ['📍', ev.place],
-        ['🎞', `${video.scenes.length + (nShot ? 1 : 0)} cảnh · ${Math.round(engine ? engine.duration() : 0)} giây`],
         ['🎵', !mu || card.data.musicOff ? 'Không nhạc' : ((M.tracks.find((t) => t.file === mu) || {}).name || 'Nhạc của bạn')]],
       guide: `Mời cả nhà xem video ${video.event.kind} ${names}:\n${s.url}\n- Mở trên Smart TV hoặc laptop nối TV, bấm ⛶ để toàn màn hình.` });
   } else finalView.off();
@@ -983,7 +984,6 @@ function bind() {
     const D = engine.duration(), t = engine.time();
     if (!dragging) seekEl.value = Math.round(t / D * 1000);
     $('#tm').textContent = `${fmt(t)} / ${fmt(D)}`;
-    if (vFinal()) finalView.at(t); // đã chốt: tô cảnh đang chiếu dưới khung
     const k = clipAt(t), pl = $('#tls .clip.play');
     if (!pl || +pl.dataset.clip !== k) { if (pl) pl.classList.remove('play'); const nb = $(`#tls [data-clip="${k}"]`); if (nb) { nb.classList.add('play'); if (!engine.paused()) nb.scrollIntoView({ block: 'nearest', inline: 'nearest' }); } }
     requestAnimationFrame(tick);

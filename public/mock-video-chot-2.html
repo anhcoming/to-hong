@@ -1,0 +1,215 @@
+<!doctype html>
+<html lang="vi"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Mock · dưới khung video đã chốt</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&family=Dancing+Script:wght@600;700&family=Fraunces:opsz,wght@9..144,500;9..144,600&display=swap">
+<style>
+:root{--red:#d6455d;--grad:linear-gradient(135deg,#e2586f,#c93a55);--ink:#2b2224;--muted:#8a7d80;--line:#efe4e6;--bg:#f8f3f2;--soft:#fdecef;--card:#fff;--sh:0 1px 0 rgba(255,255,255,.6) inset,0 10px 30px rgba(70,30,40,.08)}
+*{box-sizing:border-box}
+body{margin:0;padding:28px 20px 80px;background:#ebe5e3;font:14px/1.45 'Be Vietnam Pro',sans-serif;color:var(--ink)}
+.top{max-width:980px;margin:0 auto 18px}.top h1{margin:0 0 6px;font-size:22px}.top p{margin:0;color:var(--muted)}
+.opt{max-width:980px;margin:0 auto 34px}
+.opt>h2{margin:0 0 2px;font-size:17px}.opt>p{margin:0 0 12px;color:var(--muted);font-size:13px}
+.frame{background:var(--bg);border-radius:18px;padding:22px 26px 26px;box-shadow:0 20px 50px rgba(0,0,0,.08)}
+.vid{position:relative;aspect-ratio:16/9;border-radius:14px;overflow:hidden;background:#e9e1d6 url('/demo/vposter-polaroid.jpg') center/cover;box-shadow:0 18px 40px rgba(80,40,30,.18)}
+.pp{all:unset;flex:none;width:44px;height:44px;border-radius:50%;display:grid;place-items:center;background:var(--red);color:#fff;font-size:13px;box-shadow:0 8px 18px rgba(214,69,93,.32)}
+.fs{all:unset;flex:none;width:38px;height:38px;border-radius:12px;display:grid;place-items:center;background:#fff;box-shadow:0 0 0 1px var(--line),0 6px 14px rgba(60,30,40,.08)}
+.tm{flex:none;font-size:13px;color:var(--muted);font-variant-numeric:tabular-nums}
+.muted{color:var(--muted)}
+
+/* ===== A: cảnh nằm ngay trên thanh tua ===== */
+.a-play{display:flex;align-items:center;gap:14px;margin-top:16px}
+.segs{flex:1;display:flex;gap:4px;min-width:0}
+.seg{flex:var(--w);min-width:0;cursor:pointer}
+.seg .bar{height:8px;border-radius:6px;background:#e7dcdd;overflow:hidden}
+.seg .bar i{display:block;height:100%;width:var(--p,0%);background:var(--red);border-radius:6px}
+.seg b{display:block;margin-top:8px;font-size:12.5px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.seg small{display:block;font-size:11px;color:var(--muted);font-variant-numeric:tabular-nums}
+.seg.on b{color:var(--red)}
+.a-line{display:flex;flex-wrap:wrap;justify-content:center;gap:6px 18px;margin-top:22px;padding-top:16px;border-top:1px dashed #e3d6d8;color:var(--muted);font-size:13px}
+.a-line span{display:inline-flex;align-items:center;gap:6px}.a-line b{color:var(--ink);font-weight:600}
+
+/* ===== B: thẻ chi tiết hai cột ===== */
+.b-play{display:flex;align-items:center;gap:14px;margin-top:16px}
+.b-trk{flex:1;position:relative;height:6px;border-radius:9px;background:#e7dcdd}
+.b-trk i{position:absolute;inset:0 auto 0 0;width:88%;border-radius:9px;background:var(--red)}
+.b-trk b{position:absolute;left:88%;top:50%;width:18px;height:18px;margin:-9px 0 0 -9px;border-radius:50%;background:var(--red);box-shadow:0 0 0 4px #fff,0 4px 10px rgba(214,69,93,.35)}
+.b-trk em{position:absolute;top:-5px;width:2px;height:16px;background:rgba(127,127,127,.4);border-radius:2px}
+.b-card{display:grid;grid-template-columns:1.25fr 1fr;gap:0;margin-top:20px;border-radius:20px;background:var(--card);box-shadow:var(--sh),0 0 0 1px var(--line)}
+.b-card>div{padding:16px 18px}
+.b-card>div+div{border-left:1px solid var(--line)}
+.b-card h3{margin:0 0 10px;font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+.b-sc{display:grid;gap:4px}
+.b-sc div{display:flex;align-items:center;gap:12px;padding:7px 8px;border-radius:12px}
+.b-sc div.on{background:var(--soft)}
+.b-sc .th{width:64px;aspect-ratio:16/9;border-radius:7px;flex:none;background:#e9e1d6 url('/demo/vposter-polaroid.jpg') center/cover;box-shadow:0 3px 8px rgba(0,0,0,.08)}
+.b-sc .th.p1{background-image:url('/demo/longphung-1.jpg')}.b-sc .th.p2{background-image:url('/demo/longphung-2.jpg')}
+.b-sc b{font-size:13.5px}.b-sc small{margin-left:auto;font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums}
+.b-sc div.on b{color:var(--red)}
+.b-sc div.on small{color:var(--red);font-weight:700}
+.b-info{display:grid;gap:12px}
+.b-info div{display:flex;gap:12px;align-items:flex-start}
+.b-info i{width:34px;height:34px;border-radius:10px;display:grid;place-items:center;font-style:normal;flex:none;background:var(--bg)}
+.b-info small{display:block;font-size:11.5px;color:var(--muted)}.b-info b{font-size:13.5px;font-weight:600}
+
+/* ===== C: dải phim + vé sự kiện ===== */
+.c-play{display:flex;align-items:center;gap:14px;margin-top:16px}
+.film{display:flex;gap:10px;margin-top:18px;overflow-x:auto;padding:4px 2px 12px;scrollbar-width:none}
+.film>div{flex:1;min-width:150px;border-radius:14px;overflow:hidden;background:#fff;box-shadow:0 0 0 1px var(--line),0 8px 20px rgba(60,30,40,.08);position:relative}
+.film .th{display:block;aspect-ratio:16/9;background:#e9e1d6 url('/demo/vposter-polaroid.jpg') center/cover}
+.film .th.p1{background-image:url('/demo/longphung-1.jpg')}.film .th.p2{background-image:url('/demo/longphung-2.jpg')}
+.film .cap{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:8px 10px}
+.film .cap b{font-size:12.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.film .cap small{font-size:11px;color:var(--muted);font-variant-numeric:tabular-nums}
+.film>div.on{box-shadow:0 0 0 2px var(--red),0 10px 24px rgba(214,69,93,.22)}
+.film>div.on .cap b{color:var(--red)}
+.film>div.on::after{content:"Đang chiếu";position:absolute;top:8px;left:8px;padding:3px 8px;border-radius:999px;background:var(--red);color:#fff;font-size:10.5px;font-weight:700}
+.ticket{display:flex;margin-top:14px;border-radius:20px;background:#fff;box-shadow:0 0 0 1px var(--line),0 12px 30px rgba(70,30,40,.08);overflow:hidden}
+.ticket .l{flex:1;padding:18px 22px;background:linear-gradient(135deg,#fff,#fff6f4)}
+.ticket .k{font-size:11.5px;letter-spacing:.18em;text-transform:uppercase;color:var(--red);font-weight:700}
+.ticket .n{font:700 30px/1.15 'Dancing Script',cursive;margin:2px 0 6px}
+.ticket .d{font:600 16px/1.3 'Fraunces',serif}
+.ticket .s{color:var(--muted);font-size:13px;margin-top:2px}
+.ticket .r{width:210px;flex:none;padding:16px 18px;border-left:2px dashed #ecdfe1;position:relative;display:grid;gap:10px;align-content:center}
+.ticket .r::before,.ticket .r::after{content:"";position:absolute;left:-11px;width:20px;height:20px;border-radius:50%;background:var(--bg)}
+.ticket .r::before{top:-10px}.ticket .r::after{bottom:-10px}
+.ticket .r div{display:flex;gap:8px;align-items:center;font-size:13px}.ticket .r i{font-style:normal;width:22px;text-align:center}
+
+.phone{margin-top:16px;display:flex;gap:14px;align-items:flex-start;color:var(--muted);font-size:12.5px}
+.phone b{color:var(--ink)}
+
+/* ===== điện thoại ===== */
+.mob{max-width:1240px;margin:10px auto 0}
+.mob>h2{margin:0 0 4px;font-size:19px}.mob>p{margin:0 0 16px;color:var(--muted);font-size:13px}
+.prow{display:flex;gap:28px;justify-content:center;flex-wrap:wrap}
+.pcol{width:375px}.pcol>h3{margin:0 0 10px;font-size:15px}
+.ph{width:375px;height:812px;overflow:auto;border-radius:34px;background:var(--bg);box-shadow:0 0 0 10px #1f1a1b,0 24px 60px rgba(0,0,0,.25);scrollbar-width:none}
+.ph::-webkit-scrollbar{display:none}
+.ph .phd{position:sticky;top:0;z-index:3;display:flex;align-items:center;gap:6px;padding:12px;background:#fff;border-bottom:1px solid var(--line)}
+.ph .phd button{all:unset;width:30px;text-align:center;font-size:20px}
+.ph .phd b{display:block;font-size:16px}.ph .phd small{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--muted)}
+.ph .lock{padding:2px 8px;border-radius:999px;background:#e6f3ec;color:#2f7d5b;font-weight:700;font-size:11.5px}
+.ph .in{padding:12px}
+.ph .vid{border-radius:12px}
+.ph .pl{display:flex;align-items:center;gap:10px;margin-top:12px}
+.ph .pp{width:40px;height:40px}.ph .fs{width:34px;height:34px}
+.ph .tm{font-size:12px}
+/* A */
+.ph .segs{gap:3px}.ph .seg b{font-size:11.5px;margin-top:6px}.ph .seg small{font-size:10.5px}
+.ph .seg b,.ph .seg small{display:none}
+.ph .a-now{display:flex;justify-content:space-between;align-items:center;margin-top:10px;padding:10px 12px;border-radius:12px;background:#fff;box-shadow:0 0 0 1px var(--line),0 6px 16px rgba(60,30,40,.06);font-size:13px}
+.ph .a-now b{color:var(--red)}.ph .a-now small{color:var(--muted);font-size:12px}
+.ph .a-line{margin-top:16px;padding-top:12px;gap:6px 14px;font-size:12.5px}
+/* B */
+.ph .b-card{grid-template-columns:1fr;margin-top:14px}
+.ph .b-card>div+div{border-left:0;border-top:1px solid var(--line)}
+.ph .b-info{gap:10px}
+.ph .b-info div{align-items:center}
+.ph .b-info i{width:30px;height:30px}
+.ph .b-info div>div{display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex:1}
+.ph .b-info small{font-size:12px}
+/* C */
+.ph .film{margin:14px -12px 0;padding:4px 12px 12px}
+.ph .film>div{flex:0 0 150px;min-width:0}
+.ph .ticket{flex-direction:column}
+.ph .ticket .l{padding:16px 18px}
+.ph .ticket .n{font-size:28px}.ph .ticket .d{font-size:15px}
+.ph .ticket .r{width:auto;border-left:0;border-top:2px dashed #ecdfe1;grid-template-columns:1fr 1fr;padding:14px 18px}
+.ph .ticket .r::before,.ph .ticket .r::after{left:auto;top:-11px;bottom:auto}
+.ph .ticket .r::before{left:-10px}.ph .ticket .r::after{right:-10px}
+/* phần dưới (giữ như hiện tại) */
+.ph .more{margin-top:14px;padding:14px;border-radius:18px;background:#fff;box-shadow:0 0 0 1px var(--line)}
+.ph .more h4{margin:0 0 10px;font-size:14.5px}
+.ph .act{display:flex;gap:12px;align-items:center;padding:12px;border-radius:16px;box-shadow:0 0 0 1px var(--line);margin-bottom:10px}
+.ph .act .ic{width:42px;height:42px;border-radius:12px;display:grid;place-items:center;font-size:20px;background:var(--soft);flex:none}
+.ph .act b{display:block;font-size:14px}.ph .act span{font-size:12px;color:var(--muted)}
+.ph .act a{margin-left:auto;padding:7px 14px;border-radius:999px;font-weight:600;font-size:12.5px;box-shadow:0 0 0 1px var(--line)}
+.ph .act a.m{background:var(--grad);color:#fff;box-shadow:none}
+</style></head><body>
+<div class="top"><h1>Dưới khung video đã chốt — 3 hướng gọn hơn</h1>
+<p>Bản hiện tại: thanh tua + hàng thẻ cảnh + 5 viên thông tin rời rạc → nhiều khối cùng kiểu, rối. Ba hướng dưới gom lại còn 2 khối rõ vai trò. Áp dụng chung cho màn LED (màn LED không có ảnh cưới, phần cảnh dùng tên cảnh).</p></div>
+
+<!-- A -->
+<section class="opt"><h2>A · Cảnh nằm ngay trên thanh tua, thông tin thành một dòng</h2>
+<p>Thanh tua chia đoạn theo cảnh (dài ngắn theo thời lượng), tên cảnh ghi dưới từng đoạn — bấm đoạn để nhảy. Thông tin là một dòng chữ nhẹ, không viên. Gọn nhất.</p>
+<div class="frame">
+  <div class="vid"></div>
+  <div class="a-play"><button class="pp">❚❚</button>
+    <div class="segs">
+      <div class="seg" style="--w:7;--p:100%"><div class="bar"><i></i></div><b>Lễ Dạm Ngõ</b><small>0:00</small></div>
+      <div class="seg" style="--w:24;--p:100%"><div class="bar"><i></i></div><b>Ảnh cưới · 8 ảnh</b><small>0:07</small></div>
+      <div class="seg" style="--w:7;--p:100%"><div class="bar"><i></i></div><b>Lời cảm ơn</b><small>0:31</small></div>
+      <div class="seg on" style="--w:7;--p:30%"><div class="bar"><i></i></div><b>Minh &amp; Hoa</b><small>0:38</small></div>
+    </div>
+    <span class="tm">0:40 / 0:45</span><button class="fs">⛶</button></div>
+  <div class="a-line"><span>📅 <b>Chủ Nhật, 14/02/2027</b></span><span>⏰ <b>9 giờ</b></span><span>📍 <b>Nhà gái, Hải Dương</b></span><span>🎵 Không nhạc</span></div>
+</div>
+<div class="phone"><b>Điện thoại:</b> dòng thông tin xuống 2 hàng; tên cảnh dài bị cắt "…", đoạn ngắn chỉ hiện mốc giờ.</div>
+</section>
+
+<!-- B -->
+<section class="opt"><h2>B · Một thẻ chi tiết hai cột: Các cảnh | Thông tin</h2>
+<p>Dưới thanh tua là một thẻ trắng đổ bóng: trái là danh sách cảnh có ảnh nhỏ (cảnh đang chiếu tô hồng), phải là thông tin có nhãn. Đọc như trang "chi tiết", không còn viên lơ lửng.</p>
+<div class="frame">
+  <div class="vid"></div>
+  <div class="b-play"><button class="pp">❚❚</button><div class="b-trk"><em style="left:15%"></em><em style="left:69%"></em><em style="left:84%"></em><i></i><b></b></div><span class="tm">0:40 / 0:45</span><button class="fs">⛶</button></div>
+  <div class="b-card">
+    <div><h3>Các cảnh · 45 giây</h3>
+      <div class="b-sc">
+        <div><i class="th"></i><b>Lễ Dạm Ngõ</b><small>0:00</small></div>
+        <div><i class="th p1"></i><b>Ảnh cưới · 8 ảnh</b><small>0:07</small></div>
+        <div><i class="th"></i><b>Lời cảm ơn</b><small>0:31</small></div>
+        <div class="on"><i class="th p2"></i><b>Minh &amp; Hoa</b><small>0:38</small></div>
+      </div></div>
+    <div><h3>Thông tin</h3>
+      <div class="b-info">
+        <div><i>📅</i><div><small>Ngày lễ</small><b>Chủ Nhật, 14/02/2027</b></div></div>
+        <div><i>⏰</i><div><small>Giờ</small><b>9 giờ sáng</b></div></div>
+        <div><i>📍</i><div><small>Địa điểm</small><b>Nhà gái, Hải Dương</b></div></div>
+        <div><i>🎵</i><div><small>Nhạc nền</small><b>Không nhạc</b></div></div>
+      </div></div>
+  </div>
+</div>
+<div class="phone"><b>Điện thoại:</b> hai cột thành hai khối chồng nhau (Các cảnh trên, Thông tin dưới).</div>
+</section>
+
+<!-- C -->
+<section class="opt"><h2>C · Dải phim + vé sự kiện</h2>
+<p>Cảnh là dải ảnh nhỏ như cuộn phim (cảnh đang chiếu viền đỏ + nhãn "Đang chiếu"); thông tin gói vào một tấm "vé" có răng cưa — hợp chất cưới, nhìn là thấy ngày giờ nơi tổ chức.</p>
+<div class="frame">
+  <div class="vid"></div>
+  <div class="c-play"><button class="pp">❚❚</button><div class="b-trk" style="flex:1"><em style="left:15%"></em><em style="left:69%"></em><em style="left:84%"></em><i></i><b></b></div><span class="tm">0:40 / 0:45</span><button class="fs">⛶</button></div>
+  <div class="film">
+    <div><i class="th"></i><div class="cap"><b>Lễ Dạm Ngõ</b><small>0:00</small></div></div>
+    <div><i class="th p1"></i><div class="cap"><b>Ảnh cưới · 8</b><small>0:07</small></div></div>
+    <div><i class="th"></i><div class="cap"><b>Lời cảm ơn</b><small>0:31</small></div></div>
+    <div class="on"><i class="th p2"></i><div class="cap"><b>Minh &amp; Hoa</b><small>0:38</small></div></div>
+  </div>
+  <div class="ticket">
+    <div class="l"><div class="k">Lễ Dạm Ngõ</div><div class="n">Minh &amp; Hoa</div><div class="d">Chủ Nhật, 14 tháng 02 năm 2027</div><div class="s">Nhằm ngày 09 tháng Giêng năm Đinh Mùi</div></div>
+    <div class="r"><div><i>⏰</i>9 giờ sáng</div><div><i>📍</i>Nhà gái, Hải Dương</div><div><i>🎞</i>4 cảnh · 45 giây</div><div><i>🎵</i>Không nhạc</div></div>
+  </div>
+</div>
+<div class="phone"><b>Điện thoại:</b> dải phim vuốt ngang; vé xếp dọc (phần răng cưa chuyển thành đường kẻ ngang).</div>
+</section>
+
+<section class="mob"><h2>Trên điện thoại</h2><p>Cùng ba hướng, cuộn trong từng máy để xem tới phần "Đem đi chiếu" (giữ như hiện tại).</p>
+<div class="prow"><div class="pcol"><h3>A · Cảnh trên thanh tua</h3><div class="ph"><div class="phd"><button>←</button><div><b>Lễ Dạm Ngõ · Minh &amp; Hoa</b><small>Polaroid · 16:9 <span class="lock">🔒 Đã chốt</span></small></div></div><div class="in"><div class="vid"></div>
+<div class="pl"><button class="pp">❚❚</button><div class="segs" style="flex:1"><div class="seg short" style="--w:7;--p:100%"><div class="bar"><i></i></div><b>Lễ Dạm Ngõ</b><small>0:00</small></div><div class="seg" style="--w:24;--p:100%"><div class="bar"><i></i></div><b>Ảnh cưới · 8</b><small>0:07</small></div><div class="seg short" style="--w:7;--p:100%"><div class="bar"><i></i></div><b>Lời cảm ơn</b><small>0:31</small></div><div class="seg short on" style="--w:7;--p:30%"><div class="bar"><i></i></div><b>Minh &amp; Hoa</b><small>0:38</small></div></div><span class="tm">0:40 / 0:45</span><button class="fs">⛶</button></div>
+<div class="a-now"><span>Đang chiếu: <b>Minh &amp; Hoa</b></span><small>cảnh 4/4 · 0:38</small></div>
+<div class="a-line"><span>📅 <b>CN, 14/02/2027</b></span><span>⏰ <b>9 giờ</b></span><span>📍 <b>Nhà gái, Hải Dương</b></span><span>🎵 Không nhạc</span></div>
+<div class="more"><h4>Đem đi chiếu</h4>
+  <div class="act"><div class="ic">📺</div><div><b>Chiếu trên TV</b><span>Mở link bằng trình duyệt TV / laptop</span></div><a>Mở</a></div>
+  <div class="act"><div class="ic">💾</div><div><b>Tải MP4 Full HD</b><span>Chép USB cắm TV, không cần mạng</span></div><a class="m">Tải</a></div></div></div></div></div><div class="pcol"><h3>B · Thẻ chi tiết (xếp chồng)</h3><div class="ph"><div class="phd"><button>←</button><div><b>Lễ Dạm Ngõ · Minh &amp; Hoa</b><small>Polaroid · 16:9 <span class="lock">🔒 Đã chốt</span></small></div></div><div class="in"><div class="vid"></div>
+<div class="pl"><button class="pp">❚❚</button><div class="b-trk" style="flex:1"><em style="left:15%"></em><em style="left:69%"></em><em style="left:84%"></em><i></i><b></b></div><span class="tm">0:40 / 0:45</span><button class="fs">⛶</button></div>
+<div class="b-card"><div><h3>Các cảnh · 45 giây</h3><div class="b-sc">
+<div><i class="th"></i><b>Lễ Dạm Ngõ</b><small>0:00</small></div><div><i class="th p1"></i><b>Ảnh cưới · 8 ảnh</b><small>0:07</small></div><div><i class="th"></i><b>Lời cảm ơn</b><small>0:31</small></div><div class="on"><i class="th p2"></i><b>Minh &amp; Hoa</b><small>0:38</small></div></div></div>
+<div><h3>Thông tin</h3><div class="b-info"><div><i>📅</i><div><small>Ngày lễ</small><b>CN, 14/02/2027</b></div></div><div><i>⏰</i><div><small>Giờ</small><b>9 giờ sáng</b></div></div><div><i>📍</i><div><small>Địa điểm</small><b>Nhà gái, Hải Dương</b></div></div><div><i>🎵</i><div><small>Nhạc nền</small><b>Không nhạc</b></div></div></div></div></div>
+<div class="more"><h4>Đem đi chiếu</h4>
+  <div class="act"><div class="ic">📺</div><div><b>Chiếu trên TV</b><span>Mở link bằng trình duyệt TV / laptop</span></div><a>Mở</a></div>
+  <div class="act"><div class="ic">💾</div><div><b>Tải MP4 Full HD</b><span>Chép USB cắm TV, không cần mạng</span></div><a class="m">Tải</a></div></div></div></div></div><div class="pcol"><h3>C · Dải phim + vé</h3><div class="ph"><div class="phd"><button>←</button><div><b>Lễ Dạm Ngõ · Minh &amp; Hoa</b><small>Polaroid · 16:9 <span class="lock">🔒 Đã chốt</span></small></div></div><div class="in"><div class="vid"></div>
+<div class="pl"><button class="pp">❚❚</button><div class="b-trk" style="flex:1"><em style="left:15%"></em><em style="left:69%"></em><em style="left:84%"></em><i></i><b></b></div><span class="tm">0:40 / 0:45</span><button class="fs">⛶</button></div>
+<div class="film"><div><i class="th"></i><div class="cap"><b>Lễ Dạm Ngõ</b><small>0:00</small></div></div><div><i class="th p1"></i><div class="cap"><b>Ảnh cưới · 8</b><small>0:07</small></div></div><div><i class="th"></i><div class="cap"><b>Lời cảm ơn</b><small>0:31</small></div></div><div class="on"><i class="th p2"></i><div class="cap"><b>Minh &amp; Hoa</b><small>0:38</small></div></div></div>
+<div class="ticket"><div class="l"><div class="k">Lễ Dạm Ngõ</div><div class="n">Minh &amp; Hoa</div><div class="d">Chủ Nhật, 14 tháng 02 năm 2027</div><div class="s">Nhằm ngày 09 tháng Giêng năm Đinh Mùi</div></div><div class="r"><div><i>⏰</i>9 giờ sáng</div><div><i>📍</i>Nhà gái, Hải Dương</div><div><i>🎞</i>4 cảnh · 45s</div><div><i>🎵</i>Không nhạc</div></div></div>
+<div class="more"><h4>Đem đi chiếu</h4>
+  <div class="act"><div class="ic">📺</div><div><b>Chiếu trên TV</b><span>Mở link bằng trình duyệt TV / laptop</span></div><a>Mở</a></div>
+  <div class="act"><div class="ic">💾</div><div><b>Tải MP4 Full HD</b><span>Chép USB cắm TV, không cần mạng</span></div><a class="m">Tải</a></div></div></div></div></div></div></section>
+</body></html>
