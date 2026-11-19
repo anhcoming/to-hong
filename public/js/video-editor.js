@@ -1,4 +1,4 @@
-// Trình sửa video cưới: chỉnh nội dung từng cảnh, xem trước trực tiếp trên canvas, quay & xuất MP4.
+// Trình sửa slide cưới / màn hình dạm ngõ: chỉnh nội dung từng cảnh, xem trước trực tiếp trên canvas, quay & xuất MP4.
 const CARD_ID = location.pathname.split('/').pop();
 let card, META, video, engine;
 let saveTimer = null, saving = false, again = false, lastInput = null;
@@ -139,7 +139,7 @@ function renderSide() {
   const head = (t, d) => `<h2 class="phd">${t}</h2>${d ? `<p class="pdesc">${d}</p>` : ''}`;
   const next = (to, label) => `<div class="next"><button class="btn block" data-go="${to}">${label} →</button></div>`;
   $$('#rail [data-panel]').forEach((b) => b.classList.toggle('on', b.dataset.panel === curPanel));
-  // video dạm ngõ (mẫu chữ): chỉ chọn mẫu có sẵn + sửa chữ — không có bảng Ảnh, không dùng ảnh nền
+  // màn hình dạm ngõ (mẫu chữ): chỉ chọn mẫu có sẵn + sửa chữ — không có bảng Ảnh, không dùng ảnh nền
   // Ảnh, Nội dung, Cảnh gộp chung một bảng "Nội dung" (curPanel = 'chu')
   if (curPanel === 'anh' || curPanel === 'canh' || curPanel === 'chu') curPanel = 'mau'; // ảnh + chữ sửa ở thanh dưới / trên video
   $$('#rail [data-panel="anh"],#rail [data-panel="canh"],#rail [data-panel="xuat"],#rail [data-panel="chu"]').forEach((b) => { b.hidden = true; });
@@ -147,7 +147,7 @@ function renderSide() {
   if (!isAlbum() && video.photoBg) video.photoBg = false;
   let h = '';
   if (curPanel === 'mau') {
-    h = head(isAlbum() ? 'Mẫu slide' : 'Mẫu video dạm ngõ', isAlbum() ? 'Đổi mẫu bất cứ lúc nào — ảnh và chữ của bạn giữ nguyên.' : 'Chọn một mẫu có sẵn — bấm chữ trên video để sửa.') + '<p class="mobhint">Chạm vào chữ hoặc ảnh trên video để sửa ngay.</p>' + `
+    h = head(isAlbum() ? 'Mẫu slide' : 'Mẫu màn hình dạm ngõ', isAlbum() ? 'Đổi mẫu bất cứ lúc nào — ảnh và chữ của bạn giữ nguyên.' : 'Chọn một mẫu có sẵn — bấm chữ trên video để sửa.') + '<p class="mobhint">Chạm vào chữ hoặc ảnh trên video để sửa ngay.</p>' + `
       <div class="opts">${META.video.templates.filter((t) => !!t.photos === isAlbum()).map((t) => `<button class="opt ${video.template === t.id ? 'on' : ''}" data-tpl="${t.id}"><i style="background:${SWATCH[t.id] || '#333'};background-image:url('/demo/vposter-${t.id}.jpg')"></i><b>${esc(t.name)}</b><span>${t.photos ? `${t.slots} ảnh` : 'Chữ + ảnh nền'}</span></button>`).join('')}</div>
       `;
   } else if (curPanel === 'chu') {
@@ -972,7 +972,7 @@ function start() {
     const [meta, r] = await Promise.all([fetch('/api/meta').then((x) => x.json()), api(`/api/cards/${CARD_ID}`)]);
     META = meta;
     card = r.card;
-    document.title = 'Video cưới — ' + meta.brand;
+    document.title = 'Slide / màn hình dạm ngõ — ' + meta.brand;
   } catch (e) {
     const nf = e.status === 404;
     $('#ttl').textContent = nf ? 'Không tìm thấy thiệp' : 'Chưa tải được';
@@ -997,7 +997,7 @@ function start() {
   backTo($('#back'), '/sua/' + CARD_ID);
   $('#introBox').innerHTML = `<div class="intro panel">
     <p style="font-size:44px;margin:0">🎬</p>
-    <h2 style="font-family:var(--serif);margin:8px 0">Video cưới chiếu TV</h2>
+    <h2 style="font-family:var(--serif);margin:8px 0">Slide cưới · màn hình dạm ngõ chiếu TV</h2>
     <p class="muted">Chọn mẫu, chèn ảnh cưới và lời chào — video tự dựng chuyển cảnh, ngày âm lịch. Dùng cho dạm ngõ, ăn hỏi, vu quy, thành hôn.</p>
     <p class="muted" style="font-size:14px">Làm và xem trước miễn phí · Kích hoạt ${money(META.videoPrice)} để chiếu TV bằng link và tải MP4 Full HD, không có dòng "Bản dùng thử".</p>
     <button class="btn lg" id="startBtn">Tạo video từ thiệp này</button>

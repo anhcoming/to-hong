@@ -30,7 +30,7 @@ const discounts = require('./lib/discounts');
 
 store.onLoad(() => Wd.migrate()); // dữ liệu từ trước khi có sổ tay cưới → gắn vào đám cưới
 
-// Sản phẩm bán: thiệp, màn LED, video dạm ngõ (đều gắn với một thiệp) và combo "Trọn bộ".
+// Sản phẩm bán: thiệp, màn LED, slide cưới / màn hình dạm ngõ (sản phẩm "video", đều gắn với một thiệp) và combo "Trọn bộ".
 // Trọn bộ = kích hoạt thiệp + cộng vào tài khoản chủ thiệp 1 lượt màn LED và 1 lượt video. Khách nháp bao nhiêu
 // LED / video cũng được, ưng cái nào thì bấm "Dùng lượt Trọn bộ" trên cái đó (POST /api/cards/:id/redeem).
 // Nâng cấp lên Trọn bộ: phần nào của thiệp đã trả (thiệp / màn LED / video) thì trừ đúng giá lẻ phần đó — khách chỉ trả
@@ -42,7 +42,7 @@ const missingRetail = (c) => PARTS.reduce((n, [, paid, price]) => n + (paid(c) ?
 const PRODUCTS = {
   card: { name: 'Thiệp cưới online', price: () => cardPrice(), coupons: true, prefix: 'TH', sub: (c) => c },
   led: { name: 'Màn hình LED tiệc cưới', price: () => config.ledPrice, coupons: false, prefix: 'LD', sub: (c) => c.led },
-  video: { name: 'Video cưới', price: () => config.videoPrice, coupons: false, prefix: 'VD', sub: (c) => c.video },
+  video: { name: 'Slide / màn hình dạm ngõ', price: () => config.videoPrice, coupons: false, prefix: 'VD', sub: (c) => c.video },
   combo: {
     name: 'Trọn bộ ngày cưới', coupons: false, prefix: 'CB',
     price: (c) => (c ? Math.max(0, comboPrice() - comboCredit(c)) : comboPrice()),
@@ -264,7 +264,7 @@ function orderView(o) {
   const card = db.cards.find((c) => c.id === o.cardId);
   const product = o.product || 'card';
   return {
-    product, productName: PRODUCTS[product].name,
+    product, productName: product === 'video' && card ? videoLib.videoName(card.video) : PRODUCTS[product].name,
     code: o.code, amount: o.amount, coupon: o.coupon || null, status: o.status, claimedAt: o.claimedAt || null,
     createdAt: o.createdAt, paidAt: o.paidAt || null, paidVia: o.paidVia || null, bankNote: o.bankNote || null,
     upgrade: !!o.upgrade, ...wasPrice(o, product),
@@ -410,7 +410,7 @@ route('GET', '/api/meta', async (req, res) => {
 // ---------------- thống kê truy cập ----------------
 // Trang giới thiệu gửi về (public/js/site.js): p = đường dẫn, v = lượt đầu trong ngày của trình duyệt này, n = lần đầu ghé,
 // r = nguồn tới, m = điện thoại; hoặc u = bấm "Dùng mẫu" (thiep:<mẫu> | video:<mẫu> | led:<màu>-<hiệu ứng>).
-const TRACK_PAGES = { '/': 'Trang chủ', '/mau-thiep': 'Mẫu thiệp', '/video-dam-ngo': 'Video dạm ngõ', '/slide-cuoi': 'Slide cưới', '/man-hinh-led-dam-cuoi': 'Màn hình LED', '/so-tay-cuoi': 'Sổ tay cưới', '/dang-nhap': 'Đăng nhập', '/goi-y': 'Gợi ý thiệp từ ảnh', '/video': 'Video báo hỷ' };
+const TRACK_PAGES = { '/': 'Trang chủ', '/mau-thiep': 'Mẫu thiệp', '/video-dam-ngo': 'Màn hình dạm ngõ', '/slide-cuoi': 'Slide cưới', '/man-hinh-led-dam-cuoi': 'Màn hình LED', '/so-tay-cuoi': 'Sổ tay cưới', '/dang-nhap': 'Đăng nhập', '/goi-y': 'Gợi ý thiệp từ ảnh', '/video': 'Video báo hỷ' };
 route('POST', '/api/t', async (req, res, ctx) => {
   try {
     if (stats.isBot(req) || stats.isOwner(req, ctx)) throw 0; // bot và máy của chủ web không tính
@@ -1225,7 +1225,7 @@ function videoSamples(t) {
   return Array.from({ length: n }, (_, i) => base[i % base.length]);
 }
 
-// ---------------- video dạm ngõ ----------------
+// ---------------- slide cưới / màn hình dạm ngõ ----------------
 route('GET', '/video/:slug', async (req, res, ctx) => {
   const slug = ctx.params.slug;
   if (slug.includes('.')) return serveStatic(req, res, '/video/' + slug); // engine.js

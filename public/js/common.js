@@ -368,7 +368,7 @@ window.renderTopbar = async function (active) {
     ['/video-cua-toi', 'Video', 'videos', '<rect x="3" y="6" width="13" height="12" rx="2.5"/><path d="m16 10.5 5-3v9l-5-3"/>'],
     ['/so-tay', 'Sổ tay', 'planner', '<path d="M5 4.5A1.5 1.5 0 0 1 6.5 3H19v15H6.5A1.5 1.5 0 0 0 5 19.5z"/><path d="M5 19.5A1.5 1.5 0 0 0 6.5 21H19v-3"/><path d="M9 8h6M9 11.5h4"/>']];
   const ic = (d) => `<svg viewBox="0 0 24 24" aria-hidden="true">${d}</svg>`;
-  const NEW = `<a href="/mau-thiep"><b>Thiệp cưới</b><small>Chọn mẫu, điền tên là xong</small></a><a href="/slide-cuoi"><b>Slide / video cưới</b><small>Ảnh cưới chiếu TV, tải MP4</small></a><a href="/man-hinh-led-dam-cuoi"><b>Màn hình LED</b><small>Trình chiếu tên đôi tại tiệc</small></a>`;
+  const NEW = `<a href="/mau-thiep"><b>Thiệp cưới</b><small>Chọn mẫu, điền tên là xong</small></a><a href="/slide-cuoi"><b>Slide cưới</b><small>Ảnh cưới chiếu TV, tải MP4</small></a><a href="/man-hinh-led-dam-cuoi"><b>Màn hình LED</b><small>Trình chiếu tên đôi tại tiệc</small></a><a href="/video-dam-ngo"><b>Màn hình dạm ngõ</b><small>Chiếu TV ở lễ dạm ngõ, ăn hỏi</small></a>`;
   const ACCT = u ? `<div class="who"><b>${esc(u.name || '')}</b>${esc(u.email)}</div><a href="#" data-tb-theme class="ico"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5z"/></svg>Đổi nền sáng / tối</a><a href="#" id="logoutBtn" class="ico"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 4h3a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-3"/><path d="M10 16l-4-4 4-4M6 12h10"/></svg>Đăng xuất</a>` : '';
   const rank = (c) => (c.combo ? 3 : c.paid ? 2 : c.status === 'published' ? 1 : 0);
   const mine = myCards.slice().sort((a, b) => rank(b) - rank(a));

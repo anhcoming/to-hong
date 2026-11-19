@@ -38,7 +38,7 @@ const eq = (a, b, msg) => { assert.deepEqual(a, b, msg); n++; };
   const pages = {
     '/': [/id="hb"/, /id="heroGo"/, /id="mau"/, /class="hnav"/],
     '/mau-thiep': [/id="fStyle"/],
-    '/video-dam-ngo': [/id="vgal"/, /Video <em>dạm ngõ<\/em>/],
+    '/video-dam-ngo': [/id="vgal"/, /Màn hình <em>dạm ngõ<\/em>/],
     '/slide-cuoi': [/id="vgal"/, /Slide ảnh cưới/],
     '/so-tay-cuoi': [/Sổ tay/],
     '/dang-nhap': [/<form|id="/],
@@ -62,7 +62,7 @@ const eq = (a, b, msg) => { assert.deepEqual(a, b, msg); n++; };
   r = await call('x', 'GET', '/');
   const menu = (r.text.match(/<nav class="menu"[^]*?<\/nav>/) || [''])[0];
   eq((menu.match(/<a /g) || []).length, 6, 'menu trang chủ có 6 mục (thêm Video báo hỷ)');
-  ok(/Thiệp cưới/.test(menu) && /Slide cưới/.test(menu) && /Màn hình LED/.test(menu) && /Video dạm ngõ/.test(menu) && /Sổ tay cưới/.test(menu), 'menu: Thiệp / Slide / Màn LED / Dạm ngõ / Sổ tay');
+  ok(/Thiệp cưới/.test(menu) && /Slide cưới/.test(menu) && /Màn hình LED/.test(menu) && /Màn hình dạm ngõ/.test(menu) && /Sổ tay cưới/.test(menu), 'menu: Thiệp / Slide / Màn LED / Dạm ngõ / Sổ tay');
 
   // đường dẫn cũ /video-cuoi chuyển về trang Video dạm ngõ
   for (const p of ['/video-cuoi']) {

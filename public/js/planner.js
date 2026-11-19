@@ -137,7 +137,7 @@ function renderHome() {
     </div>
     <div class="pmini">
       <button class="pcard" data-cta="card"><i>💌</i><span><b>Thiệp cưới</b><small>${esc(cardTxt)}${gs.invited ? ` · đã mời ${gs.invited} khách` : ''}</small></span></button>
-      <button class="pcard" data-cta="video"><i>🎬</i><span><b>Video cưới</b><small>${esc(vidTxt)}</small></span></button>
+      <button class="pcard" data-cta="video"><i>🎬</i><span><b>Slide / màn hình dạm ngõ</b><small>${esc(vidTxt)}</small></span></button>
       ${c && c.led && c.led.created ? '<button class="pcard" data-cta="led"><i>✨</i><span><b>Màn hình LED</b><small>Mở màn LED</small></span></button>' : ''}
     </div>`;
   const sb = $('#setupBtn');

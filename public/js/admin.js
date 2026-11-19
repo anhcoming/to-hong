@@ -495,7 +495,7 @@ function cardDrawer(c) {
       <div class="sec"><h4>Kích hoạt tay</h4><div style="display:grid;gap:8px" id="csw">
         ${sw('card', 'Thiệp cưới', { paid: c.paid }, true, c.status !== 'published' ? 'Nháp' : c.expired ? 'Hết dùng thử' : 'Đang dùng thử')}
         ${sw('led', 'Màn hình LED', c.led || {}, c.led && c.led.created)}
-        ${sw('video', 'Video cưới', c.video || {}, c.video && c.video.created)}
+        ${sw('video', 'Slide / màn hình dạm ngõ', c.video || {}, c.video && c.video.created)}
       </div><p style="margin:8px 0 0;font-size:12px;color:var(--muted)">Dùng khi tặng khách, nhận tiền mặt hoặc đã hoàn tiền. Mọi thao tác ghi vào nhật ký.</p></div>
     </div>
     <div class="df"><button class="btn plain" id="cblock" ${c.blocked ? '' : 'style="color:var(--danger)"'}>${c.blocked ? 'Khôi phục thiệp' : 'Gỡ thiệp vi phạm'}</button></div>`,
@@ -572,7 +572,7 @@ async function settings() {
         <div class="srow"><div><b>Thiệp cưới</b><small>${s.promoEndsAt && s.listPrice > s.price ? `Giá mở bán đến hết ${ddmm(s.promoEndsAt)}` : 'Không có giá gạch'}</small></div><span class="v">${was(s.listPrice, s.price)}${money(s.price)}</span></div>
         <div class="srow"><div><b>Trọn bộ</b><small>Thiệp + màn LED + video</small></div><span class="v">${was(s.comboListPrice, s.comboPrice)}${money(s.comboPrice)}</span></div>
         <div class="srow"><div><b>Màn hình LED</b></div><span class="v">${money(s.ledPrice)}</span></div>
-        <div class="srow"><div><b>Video cưới</b></div><span class="v">${money(s.videoPrice)}</span></div></div>
+        <div class="srow"><div><b>Slide / màn hình dạm ngõ</b></div><span class="v">${money(s.videoPrice)}</span></div></div>
       <div class="box"><div class="bh"><h3>Dùng thử</h3><button class="btn sm plain" data-ed="trial">Sửa</button></div>
         <div class="srow"><div><b>Số ngày dùng thử</b><small>Tính từ lúc phát hành thiệp</small></div><span class="v">${s.trialDays} ngày</span></div>
         <div class="srow"><div><b>Khách có link riêng</b><small>Khi thiệp chưa kích hoạt</small></div><span class="v">${s.trialGuestLimit} khách</span></div></div>

@@ -148,7 +148,7 @@ const panes = {
         <small>Chỉ dùng chữ không dấu, số và dấu gạch ngang. Ví dụ: minh-ha-2026</small></label>
     </section>
     <section class="group panel" style="display:grid;gap:8px">
-      <a class="btn block plain" href="/sua-video/${CARD_ID}">🎬 Video cưới</a>
+      <a class="btn block plain" href="/sua-video/${CARD_ID}">🎬 Slide / màn hình dạm ngõ</a>
       ${card.led && card.led.created ? `<a class="btn block plain" href="/sua-led/${CARD_ID}">✨ Màn hình LED</a>` : ''}
     </section>
     ${card.status === 'published' ? `<section class="group panel"><h3>Tạm ẩn thiệp</h3><p class="muted" style="margin:-6px 0 12px;font-size:14px">Khách mời sẽ không mở được thiệp cho tới khi bạn phát hành lại.</p><button class="btn danger" id="unpub">Chuyển về bản nháp</button></section>` : ''}`;
@@ -349,7 +349,7 @@ function stLink() {
       <div style="display:flex;gap:8px"><div class="slug" style="flex:1"><span>${esc(META.baseUrl.replace(/^https?:\/\//, ''))}/t/</span><input id="slugIn" value="${esc(card.slug)}" maxlength="40"></div><button class="btn plain" id="slugSave" type="button">Lưu</button></div>
       <small>Chỉ dùng chữ không dấu, số và dấu gạch ngang. Ví dụ: minh-ha-2026</small></label>
     <div style="display:grid;gap:8px;margin-top:6px">
-      <a class="btn block plain" href="/sua-video/${CARD_ID}">🎬 Video cưới</a>
+      <a class="btn block plain" href="/sua-video/${CARD_ID}">🎬 Slide / màn hình dạm ngõ</a>
       ${card.led && card.led.created ? `<a class="btn block plain" href="/sua-led/${CARD_ID}">✨ Màn hình LED</a>` : ''}
       ${card.status === 'published' ? '<button class="btn danger block" id="unpub" type="button">Tạm ẩn thiệp (về bản nháp)</button>' : ''}
     </div>`;

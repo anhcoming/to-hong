@@ -71,9 +71,9 @@ window.openPayModal = async function (cardId, onDone, product = 'card') {
   const data = { get order() { return orders[sel]; }, set order(o) { orders[o.product] = o; } };
   const picker = !!(product !== 'combo' && orders[product] && orders.combo);
   // tên các phần của Trọn bộ: đã có / còn thiếu (đơn nâng cấp)
-  const PART = { card: 'thiệp', led: 'màn LED', video: 'video MP4' };
+  const PART = { card: 'thiệp', led: 'màn LED', video: 'slide / màn hình dạm ngõ' };
   const partsOf = (o) => { const have = o.have || []; return { have: have.map((k) => PART[k]).join(', '), need: Object.keys(PART).filter((k) => !have.includes(k)).map((k) => PART[k]).join(' + ') }; };
-  const ONLY = { card: ['Chỉ thiệp cưới', 'Mời tới 3.000 khách, dùng vĩnh viễn', 'Kích hoạt thiệp'], led: ['Chỉ màn hình LED', 'Trình chiếu ở tiệc, không dòng "Bản dùng thử"', 'Kích hoạt màn LED'], video: ['Chỉ video cưới', 'Chiếu TV bằng link + tải MP4 Full HD', 'Kích hoạt video cưới'] };
+  const ONLY = { card: ['Chỉ thiệp cưới', 'Mời tới 3.000 khách, dùng vĩnh viễn', 'Kích hoạt thiệp'], led: ['Chỉ màn hình LED', 'Trình chiếu ở tiệc, không dòng "Bản dùng thử"', 'Kích hoạt màn LED'], video: ['Chỉ slide / màn hình dạm ngõ', 'Chiếu TV bằng link + tải MP4 Full HD', 'Kích hoạt slide / màn hình dạm ngõ'] };
 
   let timer = null, tick = null, ov = null, box = null, closeModal = null;
   const QR_LIFE = 5 * 60e3; // mã QR hiệu lực 5 phút (đủ để mở app ngân hàng, đăng nhập, xác thực) — hết thì bấm tạo mã mới
@@ -100,7 +100,7 @@ window.openPayModal = async function (cardId, onDone, product = 'card') {
     el.innerHTML = `${PAY_CSS}<div class="in">
         <div class="big">🎉</div>
         <h2>${o.product === 'combo' ? 'Đã kích hoạt Trọn bộ ngày cưới' : `Đã kích hoạt ${esc(o.productName.toLowerCase())}`}</h2>
-        ${o.product === 'combo' ? '<p class="muted" style="margin:0 0 6px">Thiệp, <b>màn hình LED</b> và <b>video cưới</b> của thiệp này đều đã kích hoạt. Chưa làm LED / video thì làm lúc nào cũng được, không phải trả thêm.</p>' : ''}
+        ${o.product === 'combo' ? '<p class="muted" style="margin:0 0 6px">Thiệp, <b>màn hình LED</b> và <b>slide / màn hình dạm ngõ</b> của thiệp này đều đã kích hoạt. Chưa làm LED / video thì làm lúc nào cũng được, không phải trả thêm.</p>' : ''}
         <p class="muted">Đã nhận ${money(o.amount)}. Cảm ơn hai bạn — chúc đám cưới thật vui!</p>
         <button class="btn block lg" id="payDone" style="margin-top:22px">Xong</button>
       </div>`;
@@ -140,7 +140,7 @@ window.openPayModal = async function (cardId, onDone, product = 'card') {
     const until = o.promoEndsAt ? `<span class="chip warn">Giá mở bán đến ${new Date(o.promoEndsAt).toLocaleDateString('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh' })}</span>` : '';
     const note = p === 'video' ? 'Trả một lần · Tải MP4 Full HD · Bỏ dòng "Bản dùng thử"'
       : p === 'led' ? 'Trả một lần · Bỏ dòng "Bản dùng thử" · Trình chiếu không giới hạn thời gian'
-      : p === 'combo' ? 'Trả một lần · Thiệp + màn LED + video MP4, dùng chung ảnh và tên'
+      : p === 'combo' ? 'Trả một lần · Thiệp + màn LED + slide / màn hình dạm ngõ, dùng chung ảnh và tên'
       : 'Trả một lần · Mời tới 3.000 khách · Dùng vĩnh viễn';
     const opt = (k, title, desc, pill) => {
       const x = orders[k];
@@ -149,7 +149,7 @@ window.openPayModal = async function (cardId, onDone, product = 'card') {
     const head = picker ? `
       <div style="text-align:center"><h2>${ONLY[product][2]}</h2><p class="muted" style="margin:0 0 14px">${esc(o.card ? o.card.names || o.card.title : '')}</p></div>
       ${opt(product, ONLY[product][0], ONLY[product][1])}
-      ${opt('combo', orders.combo.upgrade ? 'Nâng lên Trọn bộ' : 'Trọn bộ ngày cưới', orders.combo.upgrade ? `Đã có ${partsOf(orders.combo).have} · thêm ${partsOf(orders.combo).need}` : 'Thiệp + màn LED + video MP4', orders.combo.amount > orders[product].amount ? `Chỉ thêm ${Math.round((orders.combo.amount - orders[product].amount) / 1000)}k` : 'Rẻ hơn')}
+      ${opt('combo', orders.combo.upgrade ? 'Nâng lên Trọn bộ' : 'Trọn bộ ngày cưới', orders.combo.upgrade ? `Đã có ${partsOf(orders.combo).have} · thêm ${partsOf(orders.combo).need}` : 'Thiệp + màn LED + slide / màn hình dạm ngõ', orders.combo.amount > orders[product].amount ? `Chỉ thêm ${Math.round((orders.combo.amount - orders[product].amount) / 1000)}k` : 'Rẻ hơn')}
       <div style="text-align:center;margin-top:4px">${o.wasPrice ? `<div class="muted" style="font-size:15px">${o.retail ? 'Mua lẻ ' : ''}<s>${money(o.wasPrice)}</s></div>` : ''}<div style="font-family:var(--serif);font-size:34px;font-weight:600;color:var(--primary);line-height:1.2">${money(o.amount)}</div>${until}${o.coupon ? ` <span class="chip ok">Đã áp mã ${esc(o.coupon)}</span>` : ''}</div>`
       : `
       <div style="text-align:center">

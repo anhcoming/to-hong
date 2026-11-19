@@ -186,7 +186,7 @@ function stateChip(c) {
 // Đã trả một phần (thiệp / màn LED / video), chưa đủ cả ba: gợi ý nâng lên Trọn bộ — máy chủ tính sẵn phần chênh (c.comboUpgrade)
 function upgradeBar(c) {
   if (isCombo(c) || !c.comboUpgrade) return ''; // Trọn bộ: lượt còn lại hiện trên ô Màn LED / Video
-  const u = c.comboUpgrade, NAME = { card: 'thiệp cưới', led: 'màn LED tiệc cưới', video: 'video MP4' };
+  const u = c.comboUpgrade, NAME = { card: 'thiệp cưới', led: 'màn LED tiệc cưới', video: 'slide / màn hình dạm ngõ' };
   const need = Object.keys(NAME).filter((k) => !u.have.includes(k)).map((k) => NAME[k]).join(' + ');
   return `<div class="upbar"><span>✨ Thêm <b>${need}</b> chỉ <b>${money(u.amount)}</b> <span class="muted">(mua lẻ ${money(u.retail)})</span></span><button class="btn sm" data-a="combo">Nâng lên Trọn bộ</button></div>`;
 }
@@ -265,7 +265,7 @@ const MKI = {
 };
 function prodRow(c, kind) {
   const s = kind === 'led' ? c.led : c.video, left = (c.credits || {})[kind] || 0;
-  const name = kind === 'led' ? 'Màn hình LED' : 'Video cưới';
+  const name = kind === 'led' ? 'Màn hình LED' : s.created ? s.name : 'Slide / màn hình dạm ngõ';
   const href = kind === 'led' ? `/sua-led/${c.id}${s.created ? '' : '?tao=1'}` : `/sua-video/${c.id}`;
   const st = s.paid ? '<span class="ok">● Đã kích hoạt</span>'
     : isCombo(c) ? '<span class="gift">Có trong Trọn bộ</span>'
@@ -345,7 +345,7 @@ function videoChip(v) {
 function loadVideos(cards, el) {
   const vids = cards.filter((c) => c.video.created);
   if (!vids.length) {
-    el.innerHTML = `<div class="panel empty"><p style="font-size:40px;margin:0">🎬</p><h3 style="color:var(--ink)">Bạn chưa có video cưới nào</h3><p>Chọn một mẫu, chèn ảnh và chữ — video tự dựng, xem thử miễn phí.</p><a class="btn" href="/slide-cuoi">Chọn mẫu video</a></div>`;
+    el.innerHTML = `<div class="panel empty"><p style="font-size:40px;margin:0">🎬</p><h3 style="color:var(--ink)">Bạn chưa có slide / màn hình dạm ngõ nào</h3><p>Chọn một mẫu, chèn ảnh và chữ — video tự dựng, xem thử miễn phí.</p><a class="btn" href="/slide-cuoi">Chọn mẫu video</a></div>`;
     return;
   }
   const tname = (id) => ((META.video.templates || []).find((t) => t.id === id) || {}).name || 'Video';
@@ -354,7 +354,7 @@ function loadVideos(cards, el) {
     <article class="item vitem panel" data-id="${c.id}">
       <a class="thumb" href="/sua-video/${c.id}" style="background-image:url('/demo/vposter-${esc(c.video.template || 'sen')}.jpg')" aria-label="Sửa video"></a>
       <div class="info">
-        <h3 class="vt">${esc(c.video.kind || 'Video cưới')} · ${esc(c.names || c.title)}</h3>
+        <h3 class="vt">${esc(c.video.kind || c.video.name)} · ${esc(c.names || c.title)}</h3>
         <div class="vm"><span>Mẫu ${esc(tname(c.video.template))}</span>${videoChip(c.video)}</div>
         <div class="acts">
           <a class="btn sm" href="/sua-video/${c.id}">Sửa video</a>
@@ -410,7 +410,7 @@ window.newCard = function () {
   document.title = (VIDEOS ? 'Video của tôi — ' : 'Thiệp của tôi — ') + meta.brand;
   if (VIDEOS) {
     $('#pageTitle').textContent = 'Video của tôi';
-    $('#pageSub').textContent = 'Video cưới chiếu TV — sửa ảnh, chữ, tải MP4';
+    $('#pageSub').textContent = 'Slide cưới, màn hình dạm ngõ chiếu TV — sửa ảnh, chữ, tải MP4';
     $('#newBtn').textContent = '+ Tạo video mới';
     $('#newBtn').onclick = () => (location.href = '/slide-cuoi');
     $('#newBtn').hidden = false; // trang thiệp không cần: thanh trên đã có "+ Tạo mới"
@@ -424,7 +424,7 @@ window.newCard = function () {
   if (want) {
     // từ trang giới thiệu sản phẩm: dùng thiệp gần nhất, chưa có thì tạo thiệp mới
     const { cards } = await api('/api/cards');
-    // từ trang "Video cưới": mang theo mẫu đã chọn sang trình sửa
+    // từ trang Slide cưới / Màn hình dạm ngõ: mang theo mẫu đã chọn sang trình sửa
     // từ hàng "Top 5 màn hình LED" ở trang chủ: mang theo bảng màu + hiệu ứng đã chọn
     const mau = want === 'sua-video' && q.get('mau') ? `?mau=${encodeURIComponent(q.get('mau'))}`
       : want === 'sua-led' && q.get('palette') ? `?palette=${encodeURIComponent(q.get('palette'))}&effect=${encodeURIComponent(q.get('effect') || '')}` : '';

@@ -21,7 +21,7 @@
   }
   // logo giống trang chủ: chữ viết tay tô gradient, tim nhỏ cuối chữ (CSS .logo .lw / .lh)
   var LOGO = '<span class="lw" data-brand>Cưới Nha</span><svg class="lh" viewBox="0 0 32 30" aria-hidden="true"><path d="M16 28C6.5 21 3 16 3 11.5 3 7.9 5.8 5 9.4 5c2.6 0 4.6 1.4 6.6 3.9C18 6.4 20 5 22.6 5 26.2 5 29 7.9 29 11.5 29 16 25.5 21 16 28z"/></svg>';
-  var MENU = [['/mau-thiep', 'Thiệp cưới', 'tpl'], ['/slide-cuoi', 'Slide cưới', 'slide'], ['/man-hinh-led-dam-cuoi', 'Màn hình LED', 'led'], ['/video-dam-ngo', 'Video dạm ngõ', 'damngo'], ['/so-tay-cuoi', 'Sổ tay cưới', 'planner'], ['/video', 'Video báo hỷ', 'baohy']]; // các chức năng chính
+  var MENU = [['/mau-thiep', 'Thiệp cưới', 'tpl'], ['/slide-cuoi', 'Slide cưới', 'slide'], ['/man-hinh-led-dam-cuoi', 'Màn hình LED', 'led'], ['/video-dam-ngo', 'Màn hình dạm ngõ', 'damngo'], ['/so-tay-cuoi', 'Sổ tay cưới', 'planner'], ['/video', 'Video báo hỷ', 'baohy']]; // các chức năng chính
   var page = document.body.getAttribute('data-page') || '';
 
   // Bảng menu điện thoại (trang chủ và các trang giới thiệu): danh sách chức năng + hàng tài khoản.
@@ -45,7 +45,7 @@
     ['/video', 'clap', 'Video báo hỷ TikTok', 'baohy', 'Miễn phí'],
     ['/slide-cuoi', 'slide', 'Slide cưới', 'slide'],
     ['/man-hinh-led-dam-cuoi', 'led', 'Màn hình LED', 'led'],
-    ['/video-dam-ngo', 'video', 'Video dạm ngõ', 'damngo'],
+    ['/video-dam-ngo', 'video', 'Màn hình dạm ngõ', 'damngo'],
     ['/so-tay-cuoi', 'book', 'Sổ tay cưới', 'planner']
   ];
   function renderMPanel(user) {
@@ -98,8 +98,8 @@
   if (foot) {
     foot.className = 'foot';
     foot.innerHTML = '<div class="wrap"><div class="cols">' +
-      '<div><a class="logo" href="/" style="margin-bottom:10px">' + LOGO + '</a><p style="margin:0;max-width:340px">Thiệp cưới online, video cưới chiếu TV và sổ tay chuẩn bị đám cưới — báo tin vui bằng một đường link.</p></div>' +
-      '<div><h4>Sản phẩm</h4><a href="/mau-thiep">Thiệp cưới online</a><a href="/slide-cuoi">Slide ảnh cưới</a><a href="/man-hinh-led-dam-cuoi">Màn hình LED đám cưới</a><a href="/video-dam-ngo">Video dạm ngõ chiếu TV</a><a href="/so-tay-cuoi">Sổ tay cưới miễn phí</a><a href="/goi-y">Gợi ý thiệp từ ảnh cưới</a></div>' +
+      '<div><a class="logo" href="/" style="margin-bottom:10px">' + LOGO + '</a><p style="margin:0;max-width:340px">Thiệp cưới online, màn hình LED, slide cưới, màn hình dạm ngõ chiếu TV và sổ tay chuẩn bị đám cưới — báo tin vui bằng một đường link.</p></div>' +
+      '<div><h4>Sản phẩm</h4><a href="/mau-thiep">Thiệp cưới online</a><a href="/slide-cuoi">Slide ảnh cưới</a><a href="/man-hinh-led-dam-cuoi">Màn hình LED đám cưới</a><a href="/video-dam-ngo">Màn hình dạm ngõ chiếu TV</a><a href="/so-tay-cuoi">Sổ tay cưới miễn phí</a><a href="/goi-y">Gợi ý thiệp từ ảnh cưới</a></div>' +
       '<div><h4>Hỗ trợ</h4><a href="/#hoi-dap">Câu hỏi thường gặp</a><a href="/#gia">Bảng giá</a><a href="/dieu-khoan">Điều khoản sử dụng</a><a href="/chinh-sach-bao-mat">Chính sách bảo mật</a><a href="/hoan-tien">Thanh toán &amp; hoàn tiền</a><span data-contact hidden style="display:block;margin-bottom:8px">Zalo: <b data-zalo style="color:var(--ink)"></b></span><span data-contact hidden><span data-email></span></span></div>' +
       '</div><div class="copy"><span>© ' + new Date().getFullYear() + ' <span data-brand>Cưới Nha</span></span><span>Làm bằng ♥ tại Việt Nam</span></div></div>';
   }
