@@ -63,6 +63,15 @@
 .kpi b{display:block;font-size:20px;line-height:1.2}.kpi span{font-size:12px;color:var(--muted)}
 .next{font-size:14px;color:var(--muted);margin:0}
 .mk{margin-top:12px;padding:6px 6px 4px}
+/* cột phải, mục "Của bạn": món đã kích hoạt (màn LED, slide) — ảnh nhỏ · tên · ▶ trình chiếu */
+.mine-r{display:flex;align-items:center;gap:12px;padding:10px;border-radius:12px;color:var(--ink);text-decoration:none}
+.mine-r+.mine-r{border-top:1px solid var(--line);border-radius:0}.mine-r:hover{background:var(--primary-soft);border-radius:12px}
+.mine-r i{flex:none;display:grid;place-items:center;width:76px;aspect-ratio:16/9;border-radius:9px;background:#1a1416 center/cover}
+.mine-r i svg{width:22px;height:22px;fill:none;stroke:#fff;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round;opacity:.7}
+.mine-r .t{flex:1;min-width:0;display:flex;flex-direction:column;gap:1px;font-size:15px;font-weight:600}
+.mine-r small{font-size:12.5px;font-weight:600;color:var(--ok)}
+.mine-r .play{flex:none;display:grid;place-items:center;width:36px;height:36px;border-radius:50%;background:var(--grad);color:#fff;font-size:13px;text-decoration:none}
+.mk h4+h4,.mk .mine-r+h4{margin-top:6px;border-top:1px solid var(--line);padding-top:12px}
 .mk h4{margin:0;padding:8px 10px 4px;font-size:11.5px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;color:var(--muted)}
 .mkr{display:flex;align-items:center;gap:12px;width:100%;padding:12px 10px;border:0;border-radius:12px;background:none;color:var(--ink);font:inherit;font-size:15px;font-weight:600;text-align:left;text-decoration:none;cursor:pointer}
 .mkr+.mkr{border-top:1px solid var(--line);border-radius:0}.mkr:hover{background:var(--primary-soft);border-radius:12px}
@@ -281,6 +290,14 @@ function prodRow(c, kind) {
     : s.created ? 'Đang dùng thử' : '';
   return `<a class="mkr" href="${href}">${MKI[kind]}<span class="t">${name}<small>${st}</small></span><i>${s.created ? 'Mở' : 'Tạo'} ›</i></a>`;
 }
+// cột phải, mục "Của bạn": món đã kích hoạt — bấm hàng để mở trình sửa, nút ▶ mở trình chiếu
+function mineRow2(c, kind) {
+  const s = kind === 'led' ? c.led : c.video;
+  const name = kind === 'led' ? 'Màn hình LED' : s.name || 'Slide / màn hình dạm ngõ';
+  const img = kind === 'led' ? (s.palette && s.effect ? `/demo/lposter-${s.palette}-${s.effect}.jpg` : '') : s.template ? `/demo/vposter-${s.template}.jpg` : '';
+  const edit = kind === 'led' ? `/sua-led/${c.id}` : `/sua-video/${c.id}`;
+  return `<div class="mine-r"><a href="${edit}" style="display:contents;color:inherit"><i style="${img ? `background-image:url('${esc(img)}')` : ''}">${img ? '' : MKI[kind]}</i><span class="t">${esc(name)}<small>● Đã kích hoạt</small></span></a><a class="play" target="_blank" rel="noopener" href="${esc(s.url)}" aria-label="Trình chiếu" title="Trình chiếu">▶</a></div>`;
+}
 function heroCard(c) {
   const pub = c.status === 'published', dd = daysTo(c.date);
   return `
@@ -303,7 +320,7 @@ function heroCard(c) {
         </div>
       </div>
     </article>
-    <div class="mk panel" data-id="${c.id}"><h4>Làm thêm cho thiệp này</h4>${prodRow(c, 'led')}${prodRow(c, 'video')}<button type="button" class="mkr" data-a="story">${MKI.clap}<span class="t">Video báo hỷ TikTok<small>Khoe ngày cưới lên TikTok</small></span><em class="free">Miễn phí</em></button><a class="mkr" href="/video-dam-ngo">${MKI.video}<span class="t">Video dạm ngõ<small>Chiếu buổi dạm ngõ, ăn hỏi</small></span><i>›</i></a></div>`;
+    <div class="mk panel" data-id="${c.id}">${c.led.paid || c.video.paid ? `<h4>Của bạn</h4>${c.led.paid ? mineRow2(c, 'led') : ''}${c.video.paid ? mineRow2(c, 'video') : ''}` : ''}<h4>Làm thêm cho thiệp này</h4>${c.led.paid ? '' : prodRow(c, 'led')}${c.video.paid ? '' : prodRow(c, 'video')}<button type="button" class="mkr" data-a="story">${MKI.clap}<span class="t">Video báo hỷ TikTok<small>Khoe ngày cưới lên TikTok</small></span><em class="free">Miễn phí</em></button><a class="mkr" href="/video-dam-ngo">${MKI.video}<span class="t">Video dạm ngõ<small>Chiếu buổi dạm ngõ, ăn hỏi</small></span><i>›</i></a></div>`;
 }
 // thiệp nháp: còn thiếu gì trước khi có link gửi khách
 function draftSteps(c) {

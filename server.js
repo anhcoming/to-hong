@@ -247,7 +247,7 @@ function cardSummary(card) {
     namesFrozen: Wd.namesFrozen(card), // đã kích hoạt / đã qua ngày cưới: tên đôi + ngày cưới cố định
     // nâng lên Trọn bộ: giá phần chênh (đã trừ phần đã trả) và giá mua lẻ phần còn thiếu — null khi không cần gợi ý
     comboUpgrade: !card.combo && comboHave(card).length && comboHave(card).length < 3 ? { amount: PRODUCTS.combo.price(card), retail: missingRetail(card), have: comboHave(card) } : null,
-    led: { ...ledLib.state(card.led), url: `${BASE_URL}/led/${card.slug}` },
+    led: { ...ledLib.state(card.led), url: `${BASE_URL}/led/${card.slug}`, palette: card.led ? card.led.palette : null, effect: card.led ? card.led.effect : null },
     video: { ...videoLib.state(card.video), url: `${BASE_URL}/video/${card.slug}`, template: card.video ? card.video.template : null, kind: card.video ? card.video.event.kind : null },
   };
 }
