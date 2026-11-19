@@ -81,7 +81,7 @@ main.wrap{padding-top:104px} /* không có phần giới thiệu: nội dung n�
 .chon.show{display:block}
 /* điện thoại / máy tính bảng hẹp: ô tìm tràn hàng, chip phong cách cuộn ngang một hàng, chấm màu xuống hàng riêng */
 @media (max-width:860px){
-  .srch{width:100%}
+  .srch{display:none} /* điện thoại: không ô tìm, chỉ thanh tab */
   /* điện thoại: thanh tab gạch chân — chữ xám, mục chọn đậm + gạch hồng, không số, không dòng "49 mẫu" */
   .side{padding-bottom:0;margin-bottom:18px}
   .flist{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;width:100vw;margin:0 -16px;padding:0 16px;box-sizing:border-box;gap:0 20px}
@@ -109,6 +109,7 @@ main.wrap{padding-top:104px} /* không có phần giới thiệu: nội dung n�
 <main class="wrap">
   <p class="chon" id="chon"><b>Chọn một mẫu để tạo thiệp mới</b> — bấm vào mẫu để xem trước, rồi bấm <b>Dùng mẫu</b>.</p>
   <div class="side" id="side" role="search" aria-label="Bộ lọc mẫu">
+    <label class="srch"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#6f6668" stroke-width="2.2" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg><input id="q" type="search" placeholder="Tìm mẫu…" aria-label="Tìm mẫu theo tên"></label>
     <div class="flist" id="fStyle"></div>
   </div>
   <div class="meta"><span id="shown"></span><div class="crumbs" id="crumbs"><span id="crumbList"></span><button class="clear" id="clear" hidden>Xoá bộ lọc</button></div></div>
@@ -177,12 +178,14 @@ main.wrap{padding-top:104px} /* không có phần giới thiệu: nội dung n�
     }).join('') : '<div class="none"><p style="font-size:40px;margin:0">🔍</p><p>Chưa có mẫu khớp bộ lọc.</p><button class="btn btn-ghost" id="clear2">Xoá bộ lọc</button></div>';
     const c2 = $('#clear2'); if (c2) c2.onclick = clear;
   }
-  function clear() { Object.assign(F, { q: '', style: '' }); render(); }
+  function clear() { Object.assign(F, { q: '', style: '' }); $('#q').value = ''; render(); }
 
+  $('#q').value = F.q;
+  $('#q').addEventListener('input', (e) => { F.q = e.target.value; render(); });
   $('#clear').onclick = clear;
   $('#crumbs').addEventListener('click', (e) => {
     const b = e.target.closest('[data-x]'); if (!b) return;
-    F[b.dataset.x] = ''; render();
+    F[b.dataset.x] = ''; if (b.dataset.x === 'q') $('#q').value = ''; render();
   });
   // bấm thẻ (trừ chấm màu) → xem trước (site.js tplView): điện thoại toàn màn, máy tính popup; trong đó tên mẫu + nút Dùng mẫu
   $('#grid').addEventListener('click', (e) => {
