@@ -158,6 +158,12 @@ body{background:var(--bg)}
 @media (max-width:900px){
   .studio{display:flex;flex-direction:column;overflow:auto}
   .studio .stagewrap{order:1;flex:none}
+  /* điện thoại: khung xem + thanh khung màn + thanh phát nằm gọn trong bề ngang màn (không đẩy tràn sang phải) */
+  .studio .stagewrap{grid-template-columns:minmax(0,1fr);padding:10px 10px 8px;justify-items:center}
+  .studio .stagewrap>*{max-width:100%}
+  .rbar{gap:2px;padding:3px}.rbar>span{display:none}
+  .rbar button{height:28px;padding:0 10px;gap:5px;font-size:12px}
+  .fvb{margin-top:2px}
   .rail{order:2;flex-direction:row;overflow-x:auto;border-right:0;border-bottom:1px solid var(--line);padding:6px;position:sticky;top:0;z-index:5}
   .rail button{flex:1;min-width:58px}
   .studio .side{order:3;border-right:0;overflow:visible}
