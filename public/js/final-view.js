@@ -33,25 +33,28 @@ body.fv-on .studio>.stagewrap{grid-template-rows:auto;align-content:center}
 [data-theme="dark"] .fv-note{background:#1f3329;color:#bfe3cf}[data-theme="dark"] .fv-lock{background:#1f3329;color:#9fd8b8}
 .fvb{width:100%;max-width:980px;margin:4px auto 0}
 body.fv-on #scrub{display:none!important} /* video: thanh phát cũ thay bằng thanh chia đoạn theo cảnh */
-.fv-play{display:flex;align-items:flex-start;gap:14px;width:100%}
+.fv-play{display:grid;grid-template-columns:auto minmax(0,1fr) auto auto;column-gap:14px;row-gap:6px;align-items:center;width:100%} /* hàng 1: nút · thanh tua · giờ · toàn màn; hàng 2: tên cảnh dưới đúng từng đoạn */
 .fv-play .pp{all:unset;cursor:pointer;flex:none;width:44px;height:44px;border-radius:50%;display:grid;place-items:center;background:var(--primary);color:#fff;font-size:14px;box-shadow:0 8px 18px rgba(214,69,93,.32)}
 .fv-play .pp:focus-visible,.fv-play .fs:focus-visible{outline:2px solid var(--primary);outline-offset:3px}
-.fv-segs{flex:1;min-width:0;display:flex;gap:4px;padding-top:18px}
-.fv-seg{all:unset;flex:var(--w) 1 0;min-width:10px;cursor:pointer}
+.fv-segs{grid-column:2;grid-row:1;min-width:0;display:flex;gap:4px}
+.fv-labs{grid-column:2;grid-row:2;min-width:0;display:flex;gap:4px}
+.fv-play>.pp{grid-column:1;grid-row:1}.fv-play>.tm{grid-column:3;grid-row:1}.fv-play>.fs{grid-column:4;grid-row:1}
+.fv-lab{all:unset;flex:var(--w) 1 0;min-width:10px;cursor:pointer;overflow:hidden}
+.fv-seg{all:unset;flex:var(--w) 1 0;min-width:10px;cursor:pointer;padding:8px 0}
 .fv-seg .bar{height:8px;border-radius:6px;background:color-mix(in srgb,var(--line) 70%,#cdbfc1);overflow:hidden;transition:height .15s}
 .fv-seg:hover .bar{height:10px;margin-top:-1px}
 .fv-seg .bar i{display:block;height:100%;width:0;background:var(--primary);border-radius:6px}
-.fv-seg b{display:block;margin-top:8px;font-size:12.5px;font-weight:600;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.fv-seg small{display:block;font-size:11px;color:var(--muted);font-variant-numeric:tabular-nums}
-.fv-seg.on b{color:var(--primary)}
+.fv-lab b{display:block;font-size:12.5px;font-weight:600;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.fv-lab small{display:block;font-size:11px;color:var(--muted);font-variant-numeric:tabular-nums}
+.fv-lab.on b{color:var(--primary)}
 .fv-seg:focus-visible .bar{outline:2px solid var(--primary);outline-offset:2px}
-.fv-play .tm{flex:none;padding-top:13px;font-size:13px;color:var(--muted);font-variant-numeric:tabular-nums}
-.fv-play .fs{all:unset;cursor:pointer;flex:none;width:38px;height:38px;margin-top:3px;border-radius:12px;display:grid;place-items:center;background:var(--surface,#fff);box-shadow:0 0 0 1px var(--line),0 6px 14px rgba(60,30,40,.08);font-size:15px}
+.fv-play .tm{flex:none;font-size:13px;color:var(--muted);font-variant-numeric:tabular-nums}
+.fv-play .fs{all:unset;cursor:pointer;flex:none;width:38px;height:38px;border-radius:12px;display:grid;place-items:center;background:var(--surface,#fff);box-shadow:0 0 0 1px var(--line),0 6px 14px rgba(60,30,40,.08);font-size:15px}
 .fv-line{display:flex;flex-wrap:wrap;justify-content:center;gap:6px 18px;margin-top:18px;padding-top:14px;border-top:1px dashed color-mix(in srgb,var(--line) 60%,#d9c8cb);color:var(--muted);font-size:13px}
 .fv-line span{display:inline-flex;align-items:center;gap:6px}.fv-line b{color:var(--ink);font-weight:600}
 @media (max-width:600px){
-  .fv-play{align-items:center;gap:10px}.fv-play .pp{width:40px;height:40px}.fv-play .fs{width:34px;height:34px;margin:0}
-  .fv-segs{gap:3px;padding:0}.fv-seg b,.fv-seg small{display:none}.fv-play .tm{padding:0;font-size:12px}
+  .fv-play{column-gap:10px;row-gap:0}.fv-play .pp{width:40px;height:40px}.fv-play .fs{width:34px;height:34px;margin:0}
+  .fv-segs{gap:3px;padding:0}.fv-labs{display:none}.fv-play .tm{padding:0;font-size:12px}
   .fv-line{margin-top:14px;padding-top:12px;gap:6px 14px;font-size:12.5px}
 }
 @media (max-width:980px){
@@ -118,7 +121,7 @@ body.fv-on #scrub{display:none!important} /* video: thanh phát cũ thay bằng 
     let bar = document.getElementById('fvb');
     if (stage && !bar) { bar = document.createElement('div'); bar.id = 'fvb'; bar.className = 'fvb'; stage.appendChild(bar); playLoop(bar); }
     if (bar) {
-      bar.innerHTML = `<div class="fv-play"><button type="button" class="pp" data-pl="pp" aria-label="Tạm dừng">❚❚</button><div class="fv-segs" role="group" aria-label="Các cảnh — bấm để tua"></div><span class="tm">0:00 / 0:00</span><button type="button" class="fs" data-pl="fs" title="Xem toàn màn hình" aria-label="Xem toàn màn hình">⛶</button></div>
+      bar.innerHTML = `<div class="fv-play"><button type="button" class="pp" data-pl="pp" aria-label="Tạm dừng">❚❚</button><div class="fv-segs" role="group" aria-label="Các cảnh — bấm để tua"></div><span class="tm">0:00 / 0:00</span><button type="button" class="fs" data-pl="fs" title="Xem toàn màn hình" aria-label="Xem toàn màn hình">⛶</button><div class="fv-labs"></div></div>
         ${(o.facts || []).some((f) => f && f[1]) ? `<div class="fv-line">${o.facts.filter((f) => f && f[1]).map(([ic, tx]) => `<span><i aria-hidden="true" style="font-style:normal">${ic}</i><b>${esc(tx)}</b></span>`).join('')}</div>` : ''}`;
       bar.dataset.key = '';
     }
@@ -136,11 +139,11 @@ body.fv-on #scrub{display:none!important} /* video: thanh phát cũ thay bằng 
       const p = P(); if (!p) return;
       const b = e.target.closest('[data-pl]');
       if (b) return b.dataset.pl === 'pp' ? p.toggle() : o.onFull && o.onFull();
+      const lb = e.target.closest('.fv-lab'); if (lb) return p.seek(+lb.dataset.t); // bấm tên cảnh: về đầu cảnh
       const sg = e.target.closest('.fv-seg'); if (!sg) return;
-      // bấm vào thanh của đoạn: tua đúng chỗ; bấm chữ dưới đoạn: về đầu cảnh
+      // bấm vào thanh của đoạn: tua đúng chỗ
       const t0 = +sg.dataset.t, d = +sg.dataset.d, r = sg.querySelector('.bar').getBoundingClientRect();
-      const onBar = e.clientY <= r.bottom + 6;
-      p.seek(onBar ? t0 + Math.max(0, Math.min(1, (e.clientX - r.left) / r.width)) * d : t0);
+      p.seek(t0 + Math.max(0, Math.min(1, (e.clientX - r.left) / r.width)) * d);
     });
     const tick = () => {
       if (!bar.isConnected) return;
@@ -151,7 +154,10 @@ body.fv-on #scrub{display:none!important} /* video: thanh phát cũ thay bằng 
         if (bar.dataset.key !== key) {
           bar.dataset.key = key;
           segs.innerHTML = ch.map((c, i) => { const d = Math.max(0.1, (i + 1 < ch.length ? ch[i + 1].t : T) - c.t);
-            return `<button type="button" class="fv-seg" style="--w:${d.toFixed(2)}" data-t="${c.t}" data-d="${d}" data-i="${i}" title="${esc(c.name)} · ${mmss(c.t)}"><div class="bar"><i></i></div><b>${esc(c.name)}</b><small>${mmss(c.t)}</small></button>`; }).join('');
+            return `<button type="button" class="fv-seg" style="--w:${d.toFixed(2)}" data-t="${c.t}" data-d="${d}" data-i="${i}" title="${esc(c.name)} · ${mmss(c.t)}"><div class="bar"><i></i></div></button>`; }).join('');
+          const labs = bar.querySelector('.fv-labs');
+          if (labs) labs.innerHTML = ch.map((c, i) => { const d = Math.max(0.1, (i + 1 < ch.length ? ch[i + 1].t : T) - c.t);
+            return `<button type="button" class="fv-lab" style="--w:${d.toFixed(2)}" data-t="${c.t}"><b>${esc(c.name)}</b><small>${mmss(c.t)}</small></button>`; }).join('');
         }
         let on = 0;
         segs.querySelectorAll('.fv-seg').forEach((sg, i) => {
@@ -160,6 +166,7 @@ body.fv-on #scrub{display:none!important} /* video: thanh phát cũ thay bằng 
           if (t >= t0 - 0.05) on = i;
         });
         segs.querySelectorAll('.fv-seg').forEach((sg, i) => sg.classList.toggle('on', i === on));
+        bar.querySelectorAll('.fv-lab').forEach((lb, i) => lb.classList.toggle('on', i === on));
         bar.querySelector('.fv-play .tm').textContent = `${mmss(t)} / ${mmss(T)}`;
         const pp = bar.querySelector('.fv-play .pp'), ps = p.paused();
         if (pp.dataset.p !== String(ps)) { pp.dataset.p = String(ps); pp.textContent = ps ? '▶' : '❚❚'; pp.setAttribute('aria-label', ps ? 'Phát' : 'Tạm dừng'); }
@@ -176,7 +183,7 @@ body.fv-on #scrub{display:none!important} /* video: thanh phát cũ thay bằng 
     const stage = o.stage && document.querySelector(o.stage);
     if (!stage || document.getElementById('fvb')) return;
     const bar = document.createElement('div'); bar.id = 'fvb'; bar.className = 'fvb';
-    bar.innerHTML = `<div class="fv-play"><button type="button" class="pp" data-pl="pp" aria-label="Tạm dừng">❚❚</button><div class="fv-segs" role="group" aria-label="Các cảnh — bấm để tua"></div><span class="tm">0:00 / 0:00</span><button type="button" class="fs" data-pl="fs" title="Xem toàn màn hình" aria-label="Xem toàn màn hình">⛶</button></div>`;
+    bar.innerHTML = `<div class="fv-play"><button type="button" class="pp" data-pl="pp" aria-label="Tạm dừng">❚❚</button><div class="fv-segs" role="group" aria-label="Các cảnh — bấm để tua"></div><span class="tm">0:00 / 0:00</span><button type="button" class="fs" data-pl="fs" title="Xem toàn màn hình" aria-label="Xem toàn màn hình">⛶</button><div class="fv-labs"></div></div>`;
     bar.dataset.key = '';
     stage.appendChild(bar); playLoop(bar);
     window.dispatchEvent(new Event('resize'));
