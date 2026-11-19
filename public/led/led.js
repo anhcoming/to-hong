@@ -1236,8 +1236,8 @@
         if (w.parentNode !== stage || w !== stage.lastElementChild) stage.appendChild(w);
         w.style.cssText = 'display:flex!important;visibility:visible!important;opacity:.6!important;transform:none!important;filter:none!important;color:#fff!important;z-index:2147483647!important;clip-path:none!important;pointer-events:auto!important;right:60px!important;bottom:52px!important;left:auto!important;top:auto!important;position:absolute!important';
       }
-      // đã khoá (hết hạn dùng thử / tới ngày cưới): khung xem trước phủ thêm lớp "cần kích hoạt" giữa màn
-      if (C.locked) {
+      // bản chưa kích hoạt chỉ để xem trong khung của trình sửa; bị mở thẳng ra cả trang thì phủ lớp "cần kích hoạt"
+      if (window.top === window) {
         var k = stage.querySelector(':scope > .wm-lock');
         if (!k) { k = document.createElement('div'); k.className = 'wm-lock'; stage.appendChild(k); }
         var KT = 'Cần kích hoạt để trình chiếu';

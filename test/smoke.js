@@ -14,8 +14,8 @@ const config = require('../config.json'); // giá thiệp đọc từ cấu hìn
 
 let base;
 const jar = {};
-async function call(who, method, url, body) {
-  const headers = {};
+async function call(who, method, url, body, extra = {}) {
+  const headers = { ...extra };
   if (jar[who]) headers.cookie = jar[who];
   if (body !== undefined) headers['content-type'] = 'application/json';
   const r = await fetch(base + url, { method, headers, body: body === undefined ? undefined : JSON.stringify(body) });
@@ -173,7 +173,8 @@ async function call(who, method, url, body) {
   assert.equal(r.json.card.ledConfig.effect, 'sao', 'hiệu ứng lạ bị thay bằng mặc định');
   assert.equal(r.json.card.ledConfig.density, 3);
   assert.equal(r.json.card.led.paid, false, 'không tự kích hoạt được qua API sửa');
-  r = await call('anon', 'GET', '/led/tuan-lan');
+  assert.equal((await call('anon', 'GET', '/led/tuan-lan')).status, 403, 'chưa kích hoạt: link trình chiếu khoá');
+  r = await call('u', 'GET', '/led/tuan-lan?preview=1', undefined, { 'sec-fetch-dest': 'iframe' });
   assert.equal(r.status, 200);
   assert.match(r.text, /Bản dùng thử/);
   assert.ok(!r.text.includes('Tuấn <script>'), 'tên trên màn LED phải được escape');

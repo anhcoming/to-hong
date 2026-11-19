@@ -220,7 +220,7 @@ function cardSummary(card) {
     date: card.data.date,
     cover: card.data.cover || card.data.photos.find(Boolean) || '',
     ...cardState(card),
-    led: { ...ledLib.state(card.led, card.data.date), url: `${BASE_URL}/led/${card.slug}` },
+    led: { ...ledLib.state(card.led), url: `${BASE_URL}/led/${card.slug}` },
     video: { ...videoLib.state(card.video), url: `${BASE_URL}/video/${card.slug}`, template: card.video ? card.video.template : null, kind: card.video ? card.video.event.kind : null },
   };
 }
@@ -604,7 +604,7 @@ route('PUT', '/api/cards/:id', async (req, res, ctx) => {
   }
   if (b.data) { card.data = cd.normalize(b.data); Wd.syncFromCard(card); }
   if (b.data && b.slug === undefined && card.userId) autoSlug(card); // thiệp nháp của khách chưa đăng nhập: giữ nguyên
-  if (b.led) { card.led = ledLib.normalize(b.led, card.led); comboUnlock(card, 'led'); } // lần lưu đầu tiên bắt đầu dùng thử màn LED (thiệp Trọn bộ: kích hoạt luôn)
+  if (b.led) { card.led = ledLib.normalize(b.led, card.led); comboUnlock(card, 'led'); } // tạo màn LED (chưa kích hoạt: chỉ xem trước; thiệp Trọn bộ: kích hoạt luôn)
   if (b.video) { card.video = videoLib.normalize(b.video, card.video); comboUnlock(card, 'video'); }
   card.updatedAt = Date.now();
   if (b.data || b.template || b.palette) DRAFTS.delete(card.id);
@@ -1163,17 +1163,16 @@ route('GET', '/led/:slug', async (req, res, ctx) => {
   const isOwner = canManage(ctx.user, card);
   if (!card || !card.led) return html(res, 404, renderNotice('Không tìm thấy màn hình LED', 'Đường dẫn có thể đã bị đổi. Hãy hỏi lại cô dâu chú rể nhé.'));
   if (card.blocked && !isOwner) return html(res, 403, BLOCKED_HTML());
-  const st = ledLib.state(card.led, card.data.date);
-  const preview = isOwner && ctx.query.get('preview') === '1';
-  // chưa kích hoạt mà đã hết hạn dùng thử / tới ngày cưới: khoá trình chiếu với mọi người, kể cả chủ thiệp.
-  // Khung xem trước trong trình sửa vẫn mở (để sửa chữ, chọn mẫu) nhưng phủ lớp "cần kích hoạt" lên giữa màn.
+  const st = ledLib.state(card.led);
+  // khung xem trước của trình sửa: chủ thiệp + ?preview=1 + mở trong khung (trình duyệt tự gửi Sec-Fetch-Dest, trang web không giả được)
+  const preview = isOwner && ctx.query.get('preview') === '1' && req.headers['sec-fetch-dest'] !== 'document';
+  // chưa kích hoạt: không có trình chiếu thật — chỉ xem trước trong trình sửa
   if (st.locked && !preview) {
-    const why = st.weddingDay ? 'Bản dùng thử chỉ để xem trước — đã tới ngày cưới nên cần kích hoạt để trình chiếu.' : 'Thời gian dùng thử đã hết.';
     return html(res, 403, isOwner
-      ? renderNotice('Màn hình LED cần kích hoạt', why + ' Kích hoạt một lần là chiếu được mãi, không còn dòng "Bản dùng thử".', { href: `/sua-led/${card.slug}`, text: 'Kích hoạt màn LED' })
-      : renderNotice('Màn hình LED đang tạm khoá', why + ' Chủ thiệp cần kích hoạt để tiếp tục trình chiếu.'));
+      ? renderNotice('Màn hình LED chưa kích hoạt', 'Bạn vẫn xem trước và sửa màn LED trong trình sửa. Kích hoạt một lần để trình chiếu ở tiệc cưới, không còn dòng "Bản dùng thử".', { href: `/sua-led/${card.slug}`, text: 'Kích hoạt màn LED' })
+      : renderNotice('Màn hình LED chưa sẵn sàng', 'Chủ thiệp chưa kích hoạt màn LED này.'));
   }
-  html(res, 200, ledLib.renderLed(card, card.led, { preview, trial: !st.paid, locked: st.locked }));
+  html(res, 200, ledLib.renderLed(card, card.led, { preview, trial: !st.paid }));
 });
 
 // mẫu album xem thử với một bộ ảnh cưới đầy đủ

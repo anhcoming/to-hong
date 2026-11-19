@@ -78,15 +78,15 @@ function renderHeader() {
   $('#ttl').textContent = 'Màn hình LED · ' + ([card.data.groom.name, card.data.bride.name].filter(Boolean).join(' & ') || card.title);
   backTo($('#back'), '/thiep-cua-toi'); // không có trang trước: về Thiệp của tôi (nơi có danh sách Làm thêm: LED, video…)
   $('#chip').innerHTML = !s.created ? '' : s.paid ? '<span class="chip ok">● Đã kích hoạt</span>'
-    : s.expired ? '<span class="chip red">Hết hạn dùng thử</span>'
-    : s.weddingDay ? '<span class="chip red">Đã tới ngày cưới · cần kích hoạt</span>'
-    : `<span class="chip warn">Dùng thử · còn ${Math.max(0, Math.ceil((s.trialEndsAt - Date.now()) / 864e5))} ngày</span>`;
+    : '<span class="chip warn">Xem trước · chưa kích hoạt</span>';
   // điện thoại: nhãn ngắn (lớp hide-xs / show-xs) để ba nút vừa một hàng
-  $('#acts').innerHTML = s.created ? `<button class="btn sm soft" id="cpLink">Chép link</button><a class="btn sm plain" target="_blank" href="${esc(s.url)}"><span class="hide-xs">Mở trình chiếu</span><span class="show-xs">▶ Trình chiếu</span></a>${s.paid ? '' : card.credits && card.credits.led > 0 ? '<button class="btn sm" id="payBtn">🎁 Dùng lượt Trọn bộ</button>' : `<button class="btn sm" id="payBtn">Kích hoạt<span class="hide-xs"> · ${money(META.ledPrice)}</span><span class="show-xs"> ${Math.round(META.ledPrice / 1000)}k</span></button>`}`
+  $('#acts').innerHTML = s.created ? `<button class="btn sm soft" id="cpLink">Chép link</button><a class="btn sm plain" id="openLed" target="_blank" href="${esc(s.url)}"><span class="hide-xs">Mở trình chiếu</span><span class="show-xs">▶ Trình chiếu</span></a>${s.paid ? '' : card.credits && card.credits.led > 0 ? '<button class="btn sm" id="payBtn">🎁 Dùng lượt Trọn bộ</button>' : `<button class="btn sm" id="payBtn">Kích hoạt<span class="hide-xs"> · ${money(META.ledPrice)}</span><span class="show-xs"> ${Math.round(META.ledPrice / 1000)}k</span></button>`}`
     : '';
   $('#acts').style.gridTemplateColumns = s.created && s.paid ? '1fr 1fr' : '';
-  const cp = $('#cpLink'); if (cp) cp.onclick = () => copyText(s.url, 'Đã chép link màn LED');
   const pb = $('#payBtn'); if (pb) pb.onclick = () => openPayModal(CARD_ID, reload, 'led');
+  // chưa kích hoạt: link trình chiếu chưa mở được → bấm chép / mở link thì mời kích hoạt luôn
+  const cp = $('#cpLink'); if (cp) cp.onclick = () => (pb ? pb.click() : copyText(s.url, 'Đã chép link màn LED'));
+  const ol = $('#openLed'); if (ol && pb) ol.onclick = (e) => { e.preventDefault(); pb.click(); };
 }
 
 function fitScreen() {
@@ -313,7 +313,7 @@ function start() {
     <p style="font-size:44px;margin:0">✨</p>
     <h2 style="font-family:var(--serif);margin:8px 0">Màn hình LED cho tiệc cưới</h2>
     <p class="muted">Trình chiếu tên cô dâu chú rể, ngày cưới (kèm âm lịch), bố mẹ hai bên và lời cảm ơn trên nền hiệu ứng trời sao, đom đóm, cánh hoa… Chỉ cần gửi link cho kỹ thuật nhà hàng.</p>
-    <p class="muted" style="font-size:14px">Dùng thử miễn phí ${META.trialDays} ngày · Kích hoạt ${money(META.ledPrice)} để dùng mãi, bỏ dòng "Bản dùng thử".</p>
+    <p class="muted" style="font-size:14px">Tạo và xem trước miễn phí · Kích hoạt ${money(META.ledPrice)} để trình chiếu ở tiệc cưới, không có dòng "Bản dùng thử".</p>
     <button class="btn lg" id="startBtn">Tạo màn LED từ thiệp này</button>
     <p style="margin:14px 0 0"><a href="/led/demo" target="_blank">Xem màn mẫu ↗</a></p>
   </div>`;
