@@ -24,18 +24,18 @@
    bộ lọc ghi lên URL để gửi link được. Điện thoại: ô tìm tràn hàng, chip cuộn ngang. */
 .sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
 main.wrap{padding-top:104px} /* không có phần giới thiệu: nội dung nằm ngay dưới thanh menu nổi */
-.side{display:flex;flex-wrap:wrap;align-items:center;gap:10px 8px;margin:0 0 18px;border-bottom:1px solid var(--line)}
+.side{display:flex;flex-wrap:wrap;align-items:center;gap:10px 8px;margin:0 0 14px;padding-bottom:16px;border-bottom:1px solid var(--line)}
 .srch{display:flex;flex:none;align-items:center;gap:8px;width:210px;height:40px;padding:0 12px;border:1px solid var(--line);border-radius:999px;background:var(--card)}
 .srch:focus-within{border-color:#f2b6bf}
 .srch input{flex:1;min-width:0;border:0;outline:0;font:14px var(--sans);background:none;color:var(--ink)}
-.flist{display:flex;flex-wrap:wrap;gap:0 24px}
-.flist button{display:inline-flex;align-items:center;padding:12px 0 11px;margin-bottom:-1px;border:0;border-bottom:2.5px solid transparent;border-radius:0;background:none;font:600 15px var(--sans);color:var(--muted);cursor:pointer;white-space:nowrap;transition:color .15s,border-color .15s}
-.flist button:hover{color:var(--ink)}
-.flist button[aria-pressed="true"]{color:var(--ink);border-bottom-color:var(--red)} /* tab đang chọn: chữ đậm màu + gạch hồng */
+.flist{display:flex;flex-wrap:wrap;gap:8px}
+.flist button{display:inline-flex;align-items:center;gap:7px;height:40px;padding:0 14px;border:1px solid var(--line);border-radius:999px;background:var(--card);font:500 14px var(--sans);color:var(--ink);cursor:pointer;white-space:nowrap}
+.flist button:hover{border-color:#f2b6bf}
+.flist button[aria-pressed="true"]{border-color:var(--red);background:#fff0f2;color:var(--red);font-weight:600}
 .flist i{font-style:normal;font-size:11.5px;line-height:1;padding:3px 7px;border-radius:999px;background:var(--bg2);color:var(--muted)}
 .flist button[aria-pressed="true"] i{background:#ffd9df;color:var(--red)}
 .clear{padding:0;border:0;background:none;color:var(--red);font:600 14px var(--sans);cursor:pointer}
-.meta{display:none;justify-content:space-between;align-items:center;gap:10px;margin:0 0 16px;color:var(--muted);font-size:14px;min-height:40px}
+.meta{display:flex;justify-content:space-between;align-items:center;gap:10px;margin:0 0 16px;color:var(--muted);font-size:14px;min-height:40px}
 .meta b{color:var(--ink);font-size:16px}
 #shown{white-space:nowrap}
 .crumbs{display:flex;flex-wrap:wrap;gap:6px 10px;align-items:center}
@@ -82,7 +82,13 @@ main.wrap{padding-top:104px} /* không có phần giới thiệu: nội dung n�
 /* điện thoại / máy tính bảng hẹp: ô tìm tràn hàng, chip phong cách cuộn ngang một hàng, chấm màu xuống hàng riêng */
 @media (max-width:860px){
   .srch{width:100%}
+  /* điện thoại: thanh tab gạch chân — chữ xám, mục chọn đậm + gạch hồng, không số, không dòng "49 mẫu" */
+  .side{padding-bottom:0;margin-bottom:18px}
   .flist{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;width:100vw;margin:0 -16px;padding:0 16px;box-sizing:border-box;gap:0 20px}
+  .flist button,.flist button:hover{height:auto;gap:0;padding:12px 0 11px;margin-bottom:-1px;border:0;border-bottom:2.5px solid transparent;border-radius:0;background:none;font:600 15px var(--sans);color:var(--muted)}
+  .flist button[aria-pressed="true"],[data-theme="dark"] .flist button[aria-pressed="true"]{background:none;color:var(--ink);border-bottom-color:var(--red)}
+  .flist i{display:none}
+  .meta{display:none}
   .flist::-webkit-scrollbar{display:none}
   .grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:20px 12px}
   .tc .txt{left:9px;right:9px;bottom:9px}
@@ -91,7 +97,7 @@ main.wrap{padding-top:104px} /* không có phần giới thiệu: nội dung n�
   .tc .use{height:28px;padding:0 10px;font-size:11px}
 }
 /* nền tối */
-[data-theme="dark"] .chon{background:#3a1f26}
+[data-theme="dark"] .flist button[aria-pressed="true"],[data-theme="dark"] .chon{background:#3a1f26}
 [data-theme="dark"] .srch:focus-within{border-color:#5a3540}
 </style>
 </head>
@@ -133,7 +139,7 @@ main.wrap{padding-top:104px} /* không có phần giới thiệu: nội dung n�
     const used = G.filter((g) => T.some((t) => t.group === g.id));
     const cnt = (k, test) => base(k).filter(test).length;
     $('#fStyle').innerHTML = [{ id: '', name: 'Tất cả', all: true }, ...used].map((g) =>
-      `<button type="button" data-k="style" data-v="${esc(g.id)}" aria-pressed="${F.style === g.id}"><span>${esc(g.name)}</span></button>`).join(''); // thanh gạch chân, không ghi số mẫu
+      `<button type="button" data-k="style" data-v="${esc(g.id)}" aria-pressed="${F.style === g.id}"><span>${esc(g.name)}</span><i>${g.all ? base('style').length : cnt('style', (t) => t.group === g.id)}</i></button>`).join(''); // điện thoại ẩn số (thanh gạch chân)
   }
   $('#side').addEventListener('click', (e) => {
     const b = e.target.closest('[data-k]'); if (!b) return;
