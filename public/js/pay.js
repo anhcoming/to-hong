@@ -3,6 +3,13 @@
 // Cửa sổ hỏi lại trạng thái đơn vài giây một lần; tiền về sớm (chưa bấm nút) thì nhảy thẳng sang "Đã kích hoạt".
 // chữ thường đầu câu nhưng giữ chữ viết hoa sẵn (LED): "Màn hình LED tiệc cưới" → "màn hình LED tiệc cưới"
 const lcFirst = (s) => String(s || '').charAt(0).toLowerCase() + String(s || '').slice(1);
+// Trả tiền là chốt — nói rõ trước khi khách chuyển khoản
+const LOCK_NOTE = {
+  card: '🔒 Kích hoạt là chốt <b>mẫu, tên cô dâu chú rể và ngày cưới</b> — sau đó không đổi được. Bố mẹ, giờ, địa điểm, ảnh, nhạc… vẫn sửa thoải mái.',
+  combo: '🔒 Kích hoạt là chốt <b>mẫu thiệp, tên cô dâu chú rể và ngày cưới</b>. Màn LED và video chốt hẳn (không sửa gì nữa) khi chiếu hoặc tải lần đầu.',
+  led: '🔒 Kích hoạt là <b>chốt hẳn màn LED</b> — sau khi trả tiền không sửa gì được nữa. Kiểm tra kỹ tên, ngày, chữ trên màn trước khi chuyển khoản.',
+  video: '🔒 Kích hoạt là <b>chốt hẳn video</b> — sau khi trả tiền không sửa gì được nữa. Kiểm tra kỹ tên, ngày, chữ, ảnh trước khi chuyển khoản.',
+};
 const PAY_CSS = `<style>
 @keyframes paySpin{to{transform:rotate(360deg)}}
 @keyframes payIn{from{opacity:0}to{opacity:1}}
@@ -187,7 +194,7 @@ window.openPayModal = async function (cardId, onDone, product = 'card') {
         <button class="btn plain">Áp dụng</button>
       </form>
       <p class="cp-err" id="cpErr" role="alert" hidden></p>
-      <p style="font-size:12.5px;text-align:center;margin:14px 0 0;color:var(--ink)">🔒 Kích hoạt là chốt mẫu đang dùng — sau đó không đổi sang mẫu khác được.</p>
+      <p style="font-size:12.5px;text-align:center;margin:14px 0 0;color:var(--ink)">${LOCK_NOTE[p] || LOCK_NOTE.card}</p>
       <p class="muted" style="font-size:12px;text-align:center;margin:6px 0 0">Thanh toán là bạn đồng ý với <a href="/dieu-khoan" target="_blank" rel="noopener" style="color:inherit;text-decoration:underline">Điều khoản</a> và <a href="/hoan-tien" target="_blank" rel="noopener" style="color:inherit;text-decoration:underline">Chính sách hoàn tiền</a>.</p>`;
     modalHead(box); // nút × đứng yên khi cuộn
     $$('[data-sel]', box).forEach((b) => (b.onclick = () => { sel = b.dataset.sel; render(); }));

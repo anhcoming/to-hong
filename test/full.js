@@ -128,6 +128,10 @@ const eq = (a, b, msg) => { assert.deepEqual(a, b, msg); n++; };
   r = await call('a', 'POST', '/api/cards', { template: 'phuonghoang' });
   eq(r.status, 200, 'A tạo thiệp mẫu mới');
   const id = r.json.card.id;
+  { // kích hoạt là chốt tên + ngày cưới → điền trước
+    const c0 = r.json.card;
+    await call('a', 'PUT', `/api/cards/${id}`, { data: { ...c0.data, groom: { ...c0.data.groom, name: 'An' }, bride: { ...c0.data.bride, name: 'Bình' }, date: '2026-12-20' } });
+  }
   r = await call('a', 'PUT', `/api/cards/${id}`, { video: { template: 'polaroid', photos: ['/demo/longphung-1.jpg', '', '/demo/longphung-2.jpg'], event: { kind: '<b>Lễ</b> Ăn Hỏi', date: '2026-11-22', time: '09:00', place: 'Nhà gái' } } });
   eq(r.status, 200, 'A lưu video');
   eq(r.json.card.videoConfig.photos, ['/demo/longphung-1.jpg', '', '/demo/longphung-2.jpg'], 'ô trống được lưu đúng vị trí');

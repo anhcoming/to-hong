@@ -329,7 +329,7 @@ async function call(who, method, url, body, extra = {}) {
   assert.equal(r.json.wedding.budgetTotal, 300000000);
   assert.equal(r.json.stats.actual, 115000000);
   r = await call('u', 'GET', `/api/cards/${id}`);
-  assert.equal(r.json.card.data.groom.name, 'Tuấn Anh', 'sửa ở sổ tay → thiệp đổi theo');
+  assert.notEqual(r.json.card.data.groom.name, 'Tuấn Anh', 'thiệp đã kích hoạt = đã chốt: sửa ở sổ tay không đổi thiệp');
   r = await call('u', 'PUT', `/api/guests/${hung.id}`, { gift: '2.000.000', group: 'Đồng nghiệp' });
   assert.equal(r.json.guest.gift, 2000000);
   r = await call('u', 'GET', '/api/wedding/guests.csv');

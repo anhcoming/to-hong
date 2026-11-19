@@ -19,7 +19,7 @@ const cd = require('./lib/carddata');
 const { renderCard, renderNotice, templates, templateList, groups: templateGroups, DEFAULT_TEMPLATE } = require('./lib/render');
 const banks = require('./lib/banks');
 const ledLib = require('./lib/led');
-const { fixNames } = require('./lib/fixnames');
+const { fixNames, isFinal } = require('./lib/fixnames');
 const videoLib = require('./lib/video');
 const musicLib = require('./lib/music');
 const { execFile } = require('child_process');
@@ -50,6 +50,11 @@ const PRODUCTS = {
   },
 };
 // ---- lượt Trọn bộ (credits) — lưu trên tài khoản chủ thiệp: user.credits = { led, video } ----
+// Trả tiền là chốt (thiệp: lúc kích hoạt; màn LED / video: lúc kích hoạt, hoặc lần đầu chiếu / xuất nếu mở bằng Trọn bộ)
+const LOCKED = {
+  led: 'Màn LED đã kích hoạt nên đã chốt — không sửa được nữa.',
+  video: 'Video đã kích hoạt nên đã chốt — không sửa được nữa.',
+};
 const ownerOf = (card) => db.users.find((u) => u.id === card.userId) || null;
 const creditsOf = (card) => { const u = ownerOf(card); const c = (u && u.credits) || {}; return { led: c.led || 0, video: c.video || 0 }; };
 // các LED / video chưa kích hoạt của chủ thiệp (trên mọi thiệp của họ)
@@ -72,7 +77,7 @@ function comboUnlock(card, kind, at = Date.now()) {
   const t = card[kind];
   if (!card.combo || !t || t.paid) return;
   t.paid = true; t.paidAt = at;
-  fixNames(card);
+  fixNames(card, false); // Trọn bộ mở sẵn: chưa chốt — khách vẫn làm màn LED / video, chốt lúc chiếu thật / xuất MP4 lần đầu
   // ghi thành đơn 0đ để trang quản trị thấy LED / video nào được mở nhờ Trọn bộ
   db.orders.push({ id: rid(12), code: PRODUCTS[kind].prefix + rid(6).toUpperCase(), product: kind, cardId: card.id, userId: card.userId, amount: 0, status: 'paid', paidVia: 'combo', createdAt: at, paidAt: at });
 }
@@ -141,7 +146,9 @@ function claimGuestCards(req, res, user) {
       // tài khoản đã có thiệp: thiệp đó chưa phát hành → chép nội dung + mẫu từ bản nháp vừa làm (giữ trạng thái kích hoạt / Trọn bộ);
       // đã phát hành → giữ thiệp đang chạy. Bản nháp của khách bỏ đi (mỗi tài khoản một thiệp).
       const g = mine.sort((a, b) => b.updatedAt - a.updatedAt)[0];
-      if (g.ledOnly) {
+      if (has.paid) {
+        // thiệp của tài khoản đã kích hoạt = đã chốt: giữ nguyên, không lấy gì từ bản nháp
+      } else if (g.ledOnly) {
         // bản nháp chỉ dùng cho màn LED (vào từ /tao-led): không thay cả thiệp, chỉ điền tên đôi, bố mẹ, ngày giờ vừa gõ
         if (has.status !== 'published') {
           const put = (o, k, v) => { if (v) o[k] = v; };
@@ -152,7 +159,7 @@ function claimGuestCards(req, res, user) {
         Object.assign(has, { data: g.data, template: g.template, palette: g.palette, updatedAt: Date.now() });
       }
       // màn LED làm lúc chưa đăng nhập: mẫu, chữ, cảnh chuyển sang thiệp của tài khoản (giữ trạng thái kích hoạt, tên đã cố định)
-      if (g.led) { has.led = ledLib.normalize(g.led, has.led || {}); comboUnlock(has, 'led'); has.updatedAt = Date.now(); }
+      if (g.led && !isFinal(has.led)) { has.led = ledLib.normalize(g.led, has.led || {}); comboUnlock(has, 'led'); has.updatedAt = Date.now(); }
       const drop = new Set(mine.map((c) => c.id));
       db.cards = db.cards.filter((c) => !drop.has(c.id));
       if (fresh && has.status !== 'published') Wd.syncFromCard(has, true);
@@ -237,7 +244,7 @@ function cardSummary(card) {
     date: card.data.date,
     cover: card.data.cover || card.data.photos.find(Boolean) || '',
     ...cardState(card),
-    namesFrozen: Wd.pastWedding(card),
+    namesFrozen: Wd.namesFrozen(card), // đã kích hoạt / đã qua ngày cưới: tên đôi + ngày cưới cố định
     // nâng lên Trọn bộ: giá phần chênh (đã trừ phần đã trả) và giá mua lẻ phần còn thiếu — null khi không cần gợi ý
     comboUpgrade: !card.combo && comboHave(card).length && comboHave(card).length < 3 ? { amount: PRODUCTS.combo.price(card), retail: missingRetail(card), have: comboHave(card) } : null,
     led: { ...ledLib.state(card.led), url: `${BASE_URL}/led/${card.slug}` },
@@ -620,6 +627,9 @@ route('GET', '/api/cards/:id', async (req, res, ctx) => {
 route('PUT', '/api/cards/:id', async (req, res, ctx) => {
   const card = ownedCard(ctx, ctx.params.id, { guest: true });
   const b = await readJson(req);
+  // trả tiền là chốt: thiệp đã kích hoạt giữ nguyên tên đôi + ngày cưới (Wd.keepFrozen) và mẫu (kiểm tra bên dưới); màn LED / video đã chốt không sửa gì nữa
+  if (b.led && isFinal(card.led)) throw httpError(409, LOCKED.led);
+  if (b.video && isFinal(card.video)) throw httpError(409, LOCKED.video);
   if (!ctx.user) {
     if (b.slug !== undefined || b.video) needUser(ctx); // đường dẫn riêng, video: cần tài khoản (màn LED: nháp xem trước được, lấy link chiếu mới cần đăng nhập)
     rateLimit('gsave:' + ctx.ip, 600, 36e5);
@@ -866,6 +876,8 @@ route('POST', '/api/cards/:id/order', async (req, res, ctx) => {
   if (!target) throw httpError(400, `Hãy tạo ${P.name.toLowerCase()} trước`);
   if (target.paid) throw httpError(400, `${P.name} này đã được kích hoạt`);
   if (product === 'combo' && comboHave(card).length === 3) throw httpError(400, 'Thiệp, màn LED và video của bạn đều đã kích hoạt — không cần mua Trọn bộ nữa');
+  // trả tiền là chốt tên cô dâu chú rể + ngày cưới (màn LED / video: chốt hẳn) → phải có đủ trước khi kích hoạt
+  if (!card.data.groom.name || !card.data.bride.name || !card.data.date) throw httpError(400, 'Điền tên cô dâu, chú rể và ngày cưới trước khi kích hoạt nhé — kích hoạt là chốt, sau đó không đổi được nữa.');
   const isThis = (o) => o.cardId === card.id && (o.product || 'card') === product && o.status === 'pending';
   let order = db.orders.find(isThis);
   if (!order) {

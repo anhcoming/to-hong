@@ -136,6 +136,7 @@ const extraCard = (srcId, slug) => {
   assert.equal(r.json.settings.comboPrice, cfg.comboPrice);
   assert.deepEqual(r.json.settings.coupons, { GIAM10K: 10000 });
   assert.equal(r.json.settings.payment, undefined, 'tài khoản nhận tiền không sửa trên web');
+  await call('u2', 'PUT', '/api/wedding', { couple: { groom: { name: 'An' }, bride: { name: 'Bình' } }, date: '2027-01-01' }); // kích hoạt là chốt tên + ngày → điền trước
   r = await call('u2', 'POST', '/api/cards', { template: 'dodam' });
   r = await call('u2', 'POST', `/api/cards/${r.json.card.id}/order`, {});
   assert.equal(r.json.order.bank.accountNo, require('../config.json').payment.accountNo, 'QR vẫn trỏ tài khoản trong config.json');

@@ -25,8 +25,12 @@ const bank = (id, amount, content) => call('POST', '/api/pay/sepay', { id, trans
   await new Promise((done) => server.listen(0, done));
   base = `http://127.0.0.1:${server.address().port}`;
   await call('POST', '/api/auth/register', { email: 'thieu@test.vn', password: '123456' });
-  const card = (await call('POST', '/api/cards', { template: 'dodam' })).json.card;
+  let card = (await call('POST', '/api/cards', { template: 'dodam' })).json.card;
   await call('PUT', `/api/cards/${card.id}`, { led: {} });
+  // kích hoạt là chốt (thiệp: tên + ngày cưới; màn LED / video: chốt hẳn) → chưa đủ tên + ngày thì chưa cho trả tiền
+  assert.equal((await call('POST', `/api/cards/${card.id}/order`, { product: 'led' })).status, 400, 'chưa có tên + ngày: chưa tạo đơn');
+  assert.equal((await call('POST', `/api/cards/${card.id}/order`, { product: 'card' })).status, 400);
+  await call('PUT', '/api/wedding', { couple: { groom: { name: 'An' }, bride: { name: 'Bình' } }, date: '2027-01-01' }); // sổ tay điền tên + ngày → thiệp theo
   let o = (await call('POST', `/api/cards/${card.id}/order`, { product: 'led' })).json.order;
   const price = config.ledPrice;
   assert.equal(o.amount, price);

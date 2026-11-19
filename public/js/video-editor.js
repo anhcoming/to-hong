@@ -196,7 +196,7 @@ function eventFields() {
       <label class="field"><span>Ngày</span><input type="date" data-e="date" value="${esc(ev.date)}"></label>
       <label class="field"><span>Giờ</span><input type="time" data-e="time" value="${esc(ev.time)}"></label>
     </div>
-    <p class="muted" style="font-size:12px;margin:0">${card.video && card.video.names ? `🔒 Đã kích hoạt: tên <b>${esc(info().chu_re)}</b> &amp; <b>${esc(info().co_dau)}</b> cố định trên video. Bố mẹ lấy từ thiệp — <a href="/sua/${CARD_ID}">sửa ở thiệp</a>.` : `Tên <b>${esc(info().chu_re || '(chưa nhập)')}</b> &amp; <b>${esc(info().co_dau || '(chưa nhập)')}</b>, bố mẹ lấy từ thiệp — <a href="/sua/${CARD_ID}">sửa ở thiệp</a>.`}</p></details>`;
+    <p class="muted" style="font-size:12px;margin:0">${card.video && card.video.final ? `🔒 Video đã kích hoạt nên đã chốt: tên <b>${esc(info().chu_re)}</b> &amp; <b>${esc(info().co_dau)}</b>, chữ, ảnh, nhạc giữ nguyên, không sửa được nữa.` : `Tên <b>${esc(info().chu_re || '(chưa nhập)')}</b> &amp; <b>${esc(info().co_dau || '(chưa nhập)')}</b>, bố mẹ lấy từ thiệp — <a href="/sua/${CARD_ID}">sửa ở thiệp</a>.`}</p></details>`;
 }
 // thẻ chữ: bấm ô chữ ở dòng thời gian
 function openTxPop(si) {
@@ -278,6 +278,7 @@ function musicBox() {
     <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px"><label class="btn sm soft">Tải lên MP3 của bạn<input type="file" accept="audio/mpeg" id="vMusicIn" hidden></label>${cur ? '<button class="btn sm plain" data-mpick="">Không dùng nhạc</button>' : ''}</div>`;
 }
 async function setMusic(url) {
+  if (vFinal()) return lockedNote();
   card.data.music = url;
   if (mPrev) { mPrev.pause(); mPrev = null; }
   renderSide();
@@ -574,7 +575,17 @@ function renderJump() {
 }
 
 // ---------- lưu ----------
+// Trả tiền là chốt: video đã kích hoạt không sửa gì nữa (máy chủ cũng từ chối) — báo khách, bỏ phần vừa chỉnh trên máy
+let lockedAt = 0;
+const vFinal = () => !!(card && card.video && card.video.final);
+function useSnap() { if (vFinal() && card.videoConfig && card.videoConfig.snap) card.data = card.videoConfig.snap; } // dựng / xuất theo dữ liệu lúc chốt
+function lockedNote() {
+  clearTimeout(saveTimer); saveTimer = null;
+  if (Date.now() - lockedAt > 2500) { lockedAt = Date.now(); toast('Video đã kích hoạt nên đã chốt — không sửa được nữa', true); }
+  video = JSON.parse(JSON.stringify(card.videoConfig)); renderSide(); refresh(); status('Đã chốt');
+}
 function schedule(delay = 700) {
+  if (vFinal()) return lockedNote();
   snap();
   status('Chưa lưu…');
   clearTimeout(saveTimer);
@@ -602,6 +613,7 @@ async function save() {
 async function reload() {
   const r = await api(`/api/cards/${CARD_ID}`);
   card = r.card;
+  useSnap();
   renderHeader();
   renderExport();
 }
@@ -973,6 +985,7 @@ function start() {
     const [meta, r] = await Promise.all([fetch('/api/meta').then((x) => x.json()), api(`/api/cards/${CARD_ID}`)]);
     META = meta;
     card = r.card;
+    useSnap();
     document.title = 'Slide / màn hình dạm ngõ — ' + meta.brand;
   } catch (e) {
     const nf = e.status === 404;

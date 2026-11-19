@@ -12,7 +12,7 @@ const FROZEN = /^(groom\.name|bride\.name|date)$/;
 const frozenKey = (k) => !!(card && card.namesFrozen && FROZEN.test(k));
 function f(k, label, o = {}) {
   const v = getP(card.data, k) ?? '';
-  if (frozenKey(k)) o = { ...o, hint: '🔒 Đã qua ngày cưới nên cố định, không sửa được' };
+  if (frozenKey(k)) o = { ...o, hint: card.paid ? '🔒 Thiệp đã kích hoạt nên đã chốt, không đổi được' : '🔒 Đã qua ngày cưới nên cố định, không sửa được' };
   const attrs = `data-k="${k}" ${o.ph ? `placeholder="${esc(o.ph)}"` : ''} ${o.max ? `maxlength="${o.max}"` : ''}${frozenKey(k) ? ' disabled' : ''}`;
   const input = o.type === 'textarea'
     ? `<textarea ${attrs} rows="${o.rows || 3}">${esc(v)}</textarea>`
@@ -273,7 +273,8 @@ function stInfo() {
   const d = card.data;
   const TT = ['Ông', 'Bà', 'Cụ ông', 'Cụ bà'];
   const row = (lab, main, side) => `<div class="frow${side ? '' : ' w2'}"><span class="fl">${lab}</span>${main}${side || ''}</div>`;
-  const ik = (k, ph, max) => `<input class="input" data-k="${k}" value="${esc(getP(d, k) || '')}" placeholder="${esc(ph)}" maxlength="${max}" autocomplete="off">`;
+  // tên đôi đã chốt (thiệp đã kích hoạt / đã qua ngày cưới): khoá ô, rê chuột thấy lý do
+  const ik = (k, ph, max) => `<input class="input" data-k="${k}" value="${esc(getP(d, k) || '')}" placeholder="${esc(ph)}" maxlength="${max}" autocomplete="off"${frozenKey(k) ? ` disabled title="${card.paid ? 'Thiệp đã kích hoạt nên tên đã chốt, không đổi được' : 'Đã qua ngày cưới nên tên cố định'}"` : ''}>`;
   const rsel = (who) => `<select class="input" data-k="${who}.rank" aria-label="Danh xưng"><option value="">Danh xưng</option>${RANKS.filter((r) => (who === 'groom') === /nam|trai/.test(r)).map((r) => `<option${r === d[who].rank ? ' selected' : ''}>${r}</option>`).join('')}</select>`;
   // bố / mẹ: tên + "Ông / Bà" (lưu ghép "Ông Trần Quang Hải" như trước)
   const par = (who, k, lab, def, ph) => {
@@ -535,7 +536,7 @@ async function commit() {
     if (hadDraft) refreshPreview();
     renderHeader();
     shareSoon();
-    toast(kept ? 'Đã lưu — đã qua ngày cưới nên tên cô dâu chú rể và ngày cưới giữ nguyên' : 'Đã lưu thiệp', kept);
+    toast(kept ? `Đã lưu — ${card.paid ? 'thiệp đã kích hoạt' : 'đã qua ngày cưới'} nên tên cô dâu chú rể và ngày cưới giữ nguyên` : 'Đã lưu thiệp', kept);
   } catch (e) {
     unbusy(); setDirty(true);
     status('Lưu thất bại');
@@ -1829,7 +1830,7 @@ window.addEventListener('message', (e) => {
 });
 // hộp sửa một ô chữ trên thiệp: gõ tới đâu thiệp đổi tới đó; Enter (ô một dòng) / Xong để đóng
 function textModal(key) {
-  if (frozenKey(key)) return toast('Đã qua ngày cưới nên tên cô dâu chú rể và ngày cưới cố định, không sửa được', true);
+  if (frozenKey(key)) return toast(card.paid ? 'Thiệp đã kích hoạt nên tên cô dâu chú rể và ngày cưới đã chốt, không đổi được' : 'Đã qua ngày cưới nên tên cô dâu chú rể và ngày cưới cố định, không sửa được', true);
   const cur = getP(card.data, key) || '', long = LONG_FIELDS.test(key);
   const type = /(^|\.)date$/.test(key) ? 'date' : /(^|\.)time$/.test(key) ? 'time' : 'text';
   cardFocus(key);

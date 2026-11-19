@@ -73,18 +73,22 @@ const buyCombo = async (id) => { const o = (await call('u', 'POST', `/api/cards/
   assert.ok(r.json.card.video.paid, 'tạo video trên thiệp Trọn bộ → kích hoạt luôn');
   // video kích hoạt: tên đôi cố định lúc kích hoạt; sửa tên trên thiệp không đổi video; không bỏ được dòng tên
   {
-    assert.deepEqual(r.json.card.video.names, { groom: 'An', bride: 'Bình' }, 'video cố định tên lúc kích hoạt');
+    // Trọn bộ mở sẵn video vừa tạo: chưa chốt (khách còn làm tiếp); chiếu thật / xuất MP4 lần đầu thì chốt hẳn
+    assert.ok(!r.json.card.video.final, 'video mở bằng Trọn bộ chưa chốt ngay lúc tạo');
     const c = r.json.card;
-    await call('u', 'PUT', `/api/cards/${a}`, { data: { ...c.data, groom: { ...c.data.groom, name: 'Quang' }, bride: { ...c.data.bride, name: 'Hà' } } });
-    const vr = await call('x', 'GET', '/video/combo-a');
-    assert.ok(vr.text.includes('"chu_re":"An"') && vr.text.includes('"co_dau":"Bình"') && !vr.text.includes('Quang'), 'video giữ tên lúc kích hoạt');
-    const v = JSON.parse(JSON.stringify(c.videoConfig));
-    v.scenes.forEach((sc) => sc.lines.forEach((l) => { l.text = l.text.replace(/\{chu_re\}/g, 'Người Khác'); }));
-    assert.equal((await call('u', 'PUT', `/api/cards/${a}`, { video: v })).status, 409, 'không thay dòng tên chú rể bằng tên khác được');
     const v2 = JSON.parse(JSON.stringify(c.videoConfig)); v2.event.place = 'Nhà hàng Hoa Sen';
-    assert.equal((await call('u', 'PUT', `/api/cards/${a}`, { video: v2 })).status, 200, 'chữ khác trên video vẫn sửa được');
-    // trả tên thiệp về như cũ cho các bước sau
-    await call('u', 'PUT', `/api/cards/${a}`, { data: c.data });
+    assert.equal((await call('u', 'PUT', `/api/cards/${a}`, { video: v2 })).status, 200, 'chưa chốt: video còn sửa được');
+    const vr = await call('x', 'GET', '/video/combo-a');
+    assert.ok(vr.text.includes('"chu_re":"An"') && vr.text.includes('"co_dau":"Bình"'), 'chiếu theo tên trên thiệp');
+    const cv = (await call('u', 'GET', `/api/cards/${a}`)).json.card;
+    assert.ok(cv.video.final, 'lần đầu chiếu thật: video chốt hẳn');
+    assert.equal((await call('u', 'PUT', `/api/cards/${a}`, { video: cv.videoConfig })).status, 409, 'đã chốt: video không sửa được nữa');
+    // thiệp đã kích hoạt: tên đôi + ngày cưới chốt, gửi tên khác cũng giữ nguyên; video chiếu theo bản chụp lúc chốt
+    r = await call('u', 'PUT', `/api/cards/${a}`, { data: { ...cv.data, groom: { ...cv.data.groom, name: 'Quang' }, bride: { ...cv.data.bride, name: 'Hà' }, date: '2030-01-01' } });
+    assert.deepEqual([r.json.card.data.groom.name, r.json.card.data.bride.name, r.json.card.data.date], ['An', 'Bình', cv.data.date], 'thiệp đã kích hoạt giữ nguyên tên đôi + ngày cưới');
+    r = await call('u', 'PUT', `/api/cards/${a}`, { data: { ...cv.data, groom: { ...cv.data.groom, father: 'Ông Ba' } } });
+    assert.equal(r.json.card.data.groom.father, 'Ông Ba', 'thiệp đã kích hoạt: bố mẹ… vẫn sửa được');
+    assert.ok(!(await call('x', 'GET', '/video/combo-a')).text.includes('Ông Ba'), 'video đã chốt không đổi theo thiệp');
   }
   assert.equal((await call('u', 'POST', `/api/cards/${a}/order`, { product: 'led' })).status, 400, 'không mua lẻ lại LED đã có trong Trọn bộ');
 
@@ -140,14 +144,15 @@ const buyCombo = async (id) => { const o = (await call('u', 'POST', `/api/cards/
   await pay(r.json.order);
   lr = await call('x', 'GET', '/led/combo-f');
   assert.ok(lr.status === 200 && !lr.text.includes('Bản dùng thử'), 'kích hoạt xong: chiếu được, hết dòng dùng thử');
-  // kích hoạt xong: tên đôi trên màn LED cố định, sửa tên trên thiệp không đổi màn LED (các chữ khác vẫn sửa được)
+  // kích hoạt xong: màn LED chốt hẳn (không sửa gì nữa), chiếu theo bản chụp lúc chốt; thiệp chưa kích hoạt vẫn sửa tên được
   {
     const c = await card(f);
-    assert.deepEqual(c.led.names, { groom: 'An', bride: 'Bình' }, 'cố định tên lúc kích hoạt');
-    assert.equal((await call('u', 'PUT', `/api/cards/${f}`, { data: { ...c.data, groom: { ...c.data.groom, name: 'Quang' }, bride: { ...c.data.bride, name: 'Hà' } }, led: { message: 'Cảm ơn cả nhà' } })).status, 200, 'thiệp vẫn sửa tên được');
+    assert.ok(c.led.final, 'kích hoạt xong: màn LED chốt hẳn');
+    assert.deepEqual(c.led.names, { groom: 'An', bride: 'Bình' }, 'chốt tên lúc kích hoạt');
+    assert.equal((await call('u', 'PUT', `/api/cards/${f}`, { led: { message: 'Cảm ơn cả nhà' } })).status, 409, 'đã chốt: không sửa màn LED được nữa');
+    assert.equal((await call('u', 'PUT', `/api/cards/${f}`, { data: { ...c.data, groom: { ...c.data.groom, name: 'Quang' }, bride: { ...c.data.bride, name: 'Hà' } } })).status, 200, 'thiệp chưa kích hoạt vẫn sửa tên được');
     lr = await call('x', 'GET', '/led/combo-f');
-    assert.ok(lr.text.includes('"name":"An"') && lr.text.includes('"name":"Bình"') && !lr.text.includes('Quang'), 'màn LED giữ tên lúc kích hoạt');
-    assert.ok(lr.text.includes('Cảm ơn cả nhà'), 'chữ khác trên màn LED vẫn sửa được');
+    assert.ok(lr.text.includes('"name":"An"') && lr.text.includes('"name":"Bình"') && !lr.text.includes('Quang') && !lr.text.includes('Cảm ơn cả nhà'), 'màn LED chiếu theo bản chụp lúc chốt');
   }
   // đã qua ngày cưới: tên gọi cô dâu chú rể + ngày cưới trên thiệp cố định, các chữ khác vẫn sửa được
   {
