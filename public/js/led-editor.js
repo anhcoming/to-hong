@@ -37,11 +37,12 @@ function renderSide() {
     const [w, hh] = r.split(':').map(Number), s = 13 / Math.max(w, hh);
     return `<button class="${led.ratio === r ? 'on' : ''}" data-set="ratio" data-v="${r}" title="${esc(RATIO_INFO[r][0] + ' — ' + RATIO_INFO[r][1])}"><i style="width:${Math.round(w * s)}px;height:${Math.round(hh * s)}px"></i>${r}</button>`;
   }).join('');
+  // đã kích hoạt: mẫu đã chốt → bỏ hẳn cột chọn mẫu, khung xem trước chiếm cả bề ngang
+  const lay = $('#layout'), lockedNow = !!card.led.paid;
+  if (lay && lay.classList.contains('locked') !== lockedNow) { lay.classList.toggle('locked', lockedNow); requestAnimationFrame(() => { if (typeof fitScreen === 'function' && led) fitScreen(); }); }
   let h = '';
-  if (curPanel === 'hieu') h = head('Mẫu màn hình', 'Chọn một mẫu có sẵn. Bấm chữ trên màn để sửa, bật / tắt cảnh ở thanh bên dưới.') + (card.led.names ? `<p class="muted" style="font-size:13px;margin:-4px 0 12px">🔒 Đã kích hoạt: tên <b>${esc(card.led.names.groom)} &amp; ${esc(card.led.names.bride)}</b> cố định trên màn LED. Các chữ khác vẫn sửa thoải mái.</p>` : '') + `<section class="group">
-      ${card.led.paid ? '<p class="muted" style="font-size:13px;margin:0 0 10px">🔒 Màn LED đã kích hoạt nên mẫu đã chốt — mỗi lần kích hoạt dùng một mẫu.</p>' : ''}
-      <div class="lmau">${(META.led.templates || []).filter((t) => !card.led.paid || (led.palette === t.palette && led.effect === t.effect)).map((t) => `<button class="lm ${led.palette === t.palette && led.effect === t.effect ? 'on' : ''}" data-tpl="${t.id}"><i style="background-image:url('/demo/lposter-${t.palette}-${t.effect}.jpg')"></i><b>${esc(t.name)}</b></button>`).join('')}</div>
-      <label class="check" style="margin-top:14px"><input type="checkbox" data-l="hy" ${led.hy ? 'checked' : ''}>Chữ 囍 trên cảnh tên đôi</label>
+  if (curPanel === 'hieu') h = head('Mẫu màn hình') + `<section class="group">
+      <div class="lmau">${(META.led.templates || []).map((t) => `<button class="lm ${led.palette === t.palette && led.effect === t.effect ? 'on' : ''}" data-tpl="${t.id}"><i style="background-image:url('/demo/lposter-${t.palette}-${t.effect}.jpg')"></i><b>${esc(t.name)}</b></button>`).join('')}</div>
     </section>`;
   else if (curPanel === 'chu') h = head('Nội dung', 'Tên, ngày, bố mẹ dùng chung với thiệp. Chọn các cảnh sẽ lần lượt hiện trên màn.') + `<section class="group">
       <div class="grid2">${fd('groom.name', 'Chú rể', 'text', 'Gia Huy')}${fd('bride.name', 'Cô dâu', 'text', 'Bảo Ngọc')}${fd('date', 'Ngày cưới', 'date')}${fd('time', 'Giờ', 'time')}
@@ -93,9 +94,10 @@ function renderHeader() {
   $('#chip').innerHTML = !s.created ? '' : s.paid ? '<span class="chip ok">● Đã kích hoạt</span>'
     : '<span class="chip warn">Đang dùng thử</span>';
   // điện thoại: nhãn ngắn (lớp hide-xs / show-xs) để ba nút vừa một hàng
-  $('#acts').innerHTML = s.created ? `<button class="btn sm soft" id="cpLink">Chép link</button><a class="btn sm plain" id="openLed" target="_blank" href="${esc(s.url)}"><span class="hide-xs">Mở trình chiếu</span><span class="show-xs">▶ Trình chiếu</span></a>${s.paid ? '' : card.credits && card.credits.led > 0 ? '<button class="btn sm" id="payBtn">🎁 Dùng lượt Trọn bộ</button>' : `<button class="btn sm" id="payBtn">Kích hoạt<span class="hide-xs"> · ${money(META.ledPrice)}</span><span class="show-xs"> ${Math.round(META.ledPrice / 1000)}k</span></button>`}`
+  $('#acts').innerHTML = s.created ? `<button class="btn sm soft" id="cpLink">Chép link</button><a class="btn sm plain" id="openLed" target="_blank" href="${esc(s.url)}"><span class="hide-xs">Mở trình chiếu</span><span class="show-xs">▶ Trình chiếu</span></a>${s.paid ? '<button class="btn sm" id="mp4Btn">⬇ Tải MP4</button>' : card.credits && card.credits.led > 0 ? '<button class="btn sm" id="payBtn">🎁 Dùng lượt Trọn bộ</button>' : `<button class="btn sm" id="payBtn">Kích hoạt<span class="hide-xs"> · ${money(META.ledPrice)}</span><span class="show-xs"> ${Math.round(META.ledPrice / 1000)}k</span></button>`}`
     : '';
-  $('#acts').style.gridTemplateColumns = s.created && s.paid ? '1fr 1fr' : '';
+  $('#acts').style.gridTemplateColumns = s.created && s.paid ? '1fr 1fr 1fr' : '';
+  const mb = $('#mp4Btn'); if (mb) mb.onclick = mp4Dialog;
   const pb = $('#payBtn'); if (pb) pb.onclick = () => openPayModal(CARD_ID, reload, 'led');
   // chưa kích hoạt: link trình chiếu chưa mở được → bấm chép / mở link thì mời kích hoạt luôn
   const cp = $('#cpLink'); if (cp) cp.onclick = () => (pb ? pb.click() : copyText(s.url, 'Đã chép link màn LED'));
@@ -122,7 +124,17 @@ function pushPreview() {
 function reloadPreview() { $('#frame').src = `/led/${card.slug}?preview=1&t=${Date.now()}`; }
 
 // ---------- lưu ----------
+// Trả tiền là chốt: màn LED đã kích hoạt không sửa gì nữa (máy chủ cũng từ chối) — báo khách, bỏ phần vừa chỉnh trên máy
+let lockedAt = 0;
+const ledFinal = () => !!(card && card.led && card.led.final);
+function useSnap() { if (ledFinal() && card.ledConfig && card.ledConfig.snap) card.data = card.ledConfig.snap; } // hiện đúng dữ liệu lúc chốt
+function lockedNote() {
+  clearTimeout(saveTimer); saveTimer = null;
+  if (Date.now() - lockedAt > 2500) { lockedAt = Date.now(); toast('Màn LED đã kích hoạt nên đã chốt — không sửa được nữa', true); }
+  led = JSON.parse(JSON.stringify(card.ledConfig)); renderSide(); reloadPreview(); status('Đã chốt');
+}
 function schedule(delay = 600) {
+  if (ledFinal()) return lockedNote();
   status('Đang chỉnh…');
   clearTimeout(saveTimer);
   saveTimer = setTimeout(save, delay);
@@ -159,10 +171,65 @@ async function askLogin() {
   openLogin({ next: location.pathname + '?xuat=1', sub: 'Đăng nhập để lưu màn LED vào tài khoản và lấy link gửi kỹ thuật nhà hàng — mẫu và chữ bạn vừa sửa được giữ nguyên.' });
 }
 
+let sceneKeys = []; // các cảnh khung xem trước đang có (thanh cảnh cập nhật)
+// ---------- tải MP4: dựng ngay trên máy (public/led/led-export.js chạy trong khung ẩn đúng kích thước gốc màn LED) ----------
+function mp4Name() {
+  const n = [card.data.groom.name, card.data.bride.name].filter(Boolean).join('-') || 'man-hinh-led';
+  return 'led-' + (n.normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[đĐ]/g, 'd').replace(/[^\w]+/g, '-').replace(/^-|-$/g, '').toLowerCase() || 'cuoi') + '.mp4';
+}
+function mp4Dialog() {
+  if (!window.VideoEncoder) return toast('Trình duyệt này chưa xuất được video — mở bằng Chrome hoặc Edge trên máy tính nhé', true);
+  const cycle = (sceneKeys.filter((k) => k !== 'countdown').length || 1) * led.seconds;
+  const rep5 = Math.max(2, Math.round(300 / cycle));
+  openModal(`<h2 style="margin-top:0">Tải màn LED dạng MP4</h2>
+    <p class="muted" style="margin:0 0 14px">Video Full HD dựng ngay trên máy bạn — chép vào USB cắm thẳng màn LED / TV, không cần mạng.</p>
+    <div style="display:grid;gap:8px">
+      <label class="check"><input type="radio" name="mlen" value="1" checked><span><b>Một vòng · ${cycle} giây</b><br><small class="muted">Bật “lặp lại” trên TV / màn LED</small></span></label>
+      <label class="check"><input type="radio" name="mlen" value="${rep5}"><span><b>Khoảng ${Math.round(rep5 * cycle / 60)} phút</b><br><small class="muted">Lặp sẵn ${rep5} vòng, file nặng hơn</small></span></label>
+    </div>
+    ${sceneKeys.includes('countdown') ? '<p class="muted" style="font-size:13px;margin:12px 0 0">Cảnh Đếm ngược không có trong MP4 (số chạy theo giờ thật).</p>' : ''}
+    <div style="display:flex;justify-content:center;margin-top:18px"><button class="btn" id="mp4Go">Bắt đầu dựng</button></div>`, (box, close) => {
+    $('#mp4Go', box).onclick = () => { const loops = +$('input[name=mlen]:checked', box).value; close(); exportLedMp4(loops); };
+  });
+}
+async function exportLedMp4(loops) {
+  if (saveTimer) { clearTimeout(saveTimer); saveTimer = null; await save(); }
+  while (saving) await new Promise((ok) => setTimeout(ok, 100));
+  let closeModal, fr;
+  openModal(`<h2>Đang dựng video…</h2><p class="muted" style="margin:0">Dựng ngay trên máy bạn, giữ trang này mở nhé.</p><div class="bar"><i id="pg"></i></div><p class="muted" id="pgText" style="font-size:13px;margin:0">Chuẩn bị…</p>`, (box, close) => { closeModal = close; });
+  try {
+    const [w, h] = led.ratio.split(':').map(Number), W = w > h ? 1920 : Math.round(1920 * w / h), H = w > h ? Math.round(1920 * h / w) : 1920;
+    fr = document.createElement('iframe');
+    fr.setAttribute('aria-hidden', 'true'); fr.tabIndex = -1;
+    fr.style.cssText = `position:fixed;left:-20000px;top:0;width:${W}px;height:${H}px;border:0;pointer-events:none`;
+    fr.src = `/led/${card.slug}?preview=1&xuat=${Date.now()}`;
+    document.body.appendChild(fr);
+    await new Promise((ok, fail) => { fr.onload = ok; fr.onerror = () => fail(new Error('Không mở được màn LED')); });
+    const fw = fr.contentWindow;
+    for (let i = 0; i < 100 && !fw.__ledApi; i++) await new Promise((ok) => setTimeout(ok, 100));
+    if (!fw.__ledApi) throw new Error('Không mở được màn LED để dựng video');
+    await new Promise((ok, fail) => { const sc = fw.document.createElement('script'); sc.src = '/led/led-export.js?v=' + Date.now(); sc.onload = ok; sc.onerror = () => fail(new Error('Không tải được bộ dựng video')); fw.document.head.appendChild(sc); });
+    const r = await fw.ledExportMp4({ loops, onProgress: (p, label) => { const g = $('#pg'), t = $('#pgText'); if (g) g.style.width = Math.round(p * 100) + '%'; if (t) t.textContent = `${label}… ${Math.round(p * 100)}%`; } });
+    const url = URL.createObjectURL(r.blob);
+    const a = document.createElement('a'); a.href = url; a.download = mp4Name(); document.body.appendChild(a); a.click(); a.remove();
+    closeModal();
+    const mins = r.seconds >= 90 ? Math.round(r.seconds / 60) + ' phút' : Math.round(r.seconds) + ' giây';
+    openModal(`<h2 style="margin-top:0">🎬 Đã tải MP4 về máy</h2><p class="muted">${r.width}×${r.height} · ${mins} · ${(r.blob.size / 1e6).toFixed(1)} MB. Chép vào USB để cắm màn LED / TV.</p>
+      <video src="${url}" controls loop style="width:100%;border-radius:10px;background:#000;margin:8px 0 14px"></video>
+      <div style="display:flex;justify-content:center"><a class="btn" href="${url}" download="${esc(mp4Name())}">⬇ Tải lại về máy</a></div>`);
+  } catch (e) {
+    if (closeModal) closeModal();
+    toast(e.message || 'Dựng video lỗi', true);
+  } finally {
+    if (fr) fr.remove();
+  }
+}
+
 async function reload() {
   const r = await api(`/api/cards/${CARD_ID}`);
   const wasPaid = card.led && card.led.paid;
   card = r.card;
+  useSnap();
   renderHeader();
   if (card.led.paid && !wasPaid) { renderSide(); reloadPreview(); } // vừa kích hoạt: khung xem trước bỏ dòng "Bản dùng thử", tên cố định
 }
@@ -256,7 +323,7 @@ function bind() {
   const SC = [['names', 'names', 'Tên đôi'], ['date', 'date', 'Ngày cưới'], ['countdown', 'countdown', 'Đếm ngược'], ['parents', 'parents', 'Bố mẹ'], ['msg', 'message', 'Lời cảm ơn']];
   let scKey = '', lastScene = { keys: [], index: -1 };
   const drawScenes = (m) => {
-    lastScene = m;
+    lastScene = m; sceneKeys = m.keys;
     const list = $('#scList'), key = m.keys.join() + '|' + SC.map(([, sk]) => +!!led.slides[sk]).join('') + '|' + led.seconds;
     if (key !== scKey) {
       scKey = key;
@@ -327,6 +394,7 @@ function start() {
     const [meta, r] = await Promise.all([fetch('/api/meta').then((x) => x.json()), api(`/api/cards/${CARD_ID}`)]);
     META = meta;
     card = r.card;
+    useSnap();
     document.title = 'Màn hình LED — ' + meta.brand;
   } catch (e) {
     const nf = e.status === 404;

@@ -1058,7 +1058,9 @@
   }
 
   var last = performance.now();
+  var holding = false; // đang xuất MP4 (led-export.js tự vẽ từng khung) → vòng vẽ thường đứng yên
   function frame(now) {
+    if (holding) { last = now; requestAnimationFrame(frame); return; }
     var dt = Math.min(0.05, (now - last) / 1000);
     last = now;
     ctx.setTransform(K, 0, 0, K, 0, 0);
@@ -1352,6 +1354,14 @@
     if (e.data.type === 'led-goto') { if (szBar) { szBar.hidden = true; szEl = null; } show(e.data.index); restartTimer(); }
     if (e.data.type === 'led-pause' && !!e.data.paused !== paused) togglePause();
   });
+
+  // khung xem trước của trình sửa: cho /led/led-export.js (nạp khi bấm Tải MP4) đọc trạng thái và tự vẽ từng khung hình
+  if (C.preview) window.__ledApi = {
+    state: function () { return { W: W, H: H, K: K, L: L, slides: slides, stage: stage, canvas: canvas, ctx: ctx, vbg: vbg, gl: GLFX, slidesEl: slidesEl }; },
+    fx: function () { return isVideo() ? FX.none : FX[L.effect] || FX.sao; },
+    resetFx: resetFx,
+    hold: function (on) { holding = !!on; if (on) paused = true; },
+  };
 
   apply(L);
   show(0);

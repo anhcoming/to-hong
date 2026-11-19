@@ -90,6 +90,8 @@ body{background:var(--bg)}
 .studio{flex:1;min-height:0;display:grid;grid-template-columns:340px minmax(0,1fr)}
 .studio[hidden]{display:none}
 .studio .rail{display:none} /* chỉ còn một bảng (Mẫu) → bỏ cột icon */
+.studio.locked{grid-template-columns:minmax(0,1fr)}.studio.locked .side{display:none} /* đã kích hoạt: mẫu chốt, không cần cột chọn mẫu */
+.bar{height:10px;border-radius:999px;background:var(--line);overflow:hidden;margin:16px 0 8px}.bar i{display:block;height:100%;width:0;background:var(--primary);transition:width .2s} /* thanh tiến độ dựng MP4 */
 /* thanh chọn khung màn ngay trên khung xem trước */
 .studio .stagewrap{grid-template-rows:auto minmax(0,1fr) auto}
 .rbar{display:flex;align-items:center;gap:4px;padding:4px;border-radius:999px;background:var(--surface);box-shadow:0 0 0 1px var(--line);font-size:12.5px}
