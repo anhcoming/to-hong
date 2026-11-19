@@ -170,7 +170,7 @@ async function call(who, method, url, body, extra = {}) {
   assert.equal(r.json.card.led.created, true);
   r = await call('u', 'PUT', `/api/cards/${id}`, { led: { ratio: '9:16', effect: 'xau', density: 99, paid: true } });
   assert.equal(r.json.card.ledConfig.ratio, '9:16');
-  assert.equal(r.json.card.ledConfig.effect, 'sao', 'hiệu ứng lạ bị thay bằng mặc định');
+  assert.equal(r.json.card.ledConfig.effect, 'dembac', 'hiệu ứng lạ bị thay bằng mặc định');
   assert.equal(r.json.card.ledConfig.density, 3);
   assert.equal(r.json.card.led.paid, false, 'không tự kích hoạt được qua API sửa');
   assert.equal((await call('anon', 'GET', '/led/tuan-lan')).status, 403, 'chưa kích hoạt: link trình chiếu khoá');

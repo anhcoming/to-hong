@@ -5,11 +5,11 @@
 <script src="/js/theme.js"></script>
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Màn hình LED đám cưới — trình chiếu tên cô dâu chú rể, ngày cưới | Cưới Nha</title>
-<meta name="description" content="Tạo màn hình LED cho tiệc cưới trong 3 phút: tên cô dâu chú rể, ngày cưới kèm âm lịch, bố mẹ hai bên, lời cảm ơn trên nền trời sao, đom đóm, cánh hoa. Hỗ trợ màn ngang 16:9, 4:3 và cột LED đứng 9:16. Xem trước miễn phí.">
-<meta property="og:title" content="Màn hình LED đám cưới — gửi link là chiếu">
-<meta property="og:description" content="Trình chiếu tên cô dâu chú rể, ngày cưới, bố mẹ hai bên trên nền hiệu ứng đẹp. Xem trước miễn phí.">
-<meta name="theme-color" content="#fffafa">
-<meta property="og:image" content="https://cuoinha.com/demo/lposter-do-sao.jpg">
+<meta name="description" content="Màn hình LED tiệc cưới với các mẫu kim tuyến bạc, sao rơi, sao băng, tuyết rơi, ngân hà, lụa satin: tên cô dâu chú rể, ngày cưới kèm âm lịch, bố mẹ hai bên, lời cảm ơn. Chọn mẫu, sửa chữ, gửi link cho nhà hàng là chiếu. Xem trước miễn phí.">
+<meta property="og:title" content="Màn hình LED đám cưới — chọn mẫu, gửi link là chiếu">
+<meta property="og:description" content="Tên hai bạn toả sáng trên màn tiệc: kim tuyến bạc, sao rơi, tuyết rơi, ngân hà, lụa satin. Xem trước miễn phí.">
+<meta name="theme-color" content="#05070f">
+<meta property="og:image" content="https://cuoinha.com/demo/lposter-bac-dembac.jpg">
 <meta property="og:url" content="https://cuoinha.com/man-hinh-led-dam-cuoi">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="Cưới Nha">
@@ -18,40 +18,91 @@
 <link rel="icon" href="/favicon.ico" sizes="48x48"><link rel="icon" href="/favicon.svg" type="image/svg+xml"><link rel="apple-touch-icon" href="/icons/apple-touch-icon.png">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&amp;family=Dancing+Script:wght@600;700&amp;display=swap">
 <link rel="stylesheet" href="/css/site.css">
+<style>
+/* Phần đầu tối như rạp chiếu: màn xem thử lớn + dải mẫu bấm để đổi */
+.lhero{position:relative;padding:118px 0 64px;color:#eef1fb;background:radial-gradient(1100px 520px at 50% -8%,#1c2746 0%,rgba(10,14,28,0) 70%),linear-gradient(#070a15,#05070f 70%,#090c18);overflow:hidden}
+.lhero::after{content:"";position:absolute;left:0;right:0;bottom:0;height:90px;background:linear-gradient(rgba(5,7,15,0),var(--bg));pointer-events:none}
+.lhero .wrap{position:relative;z-index:1}
+.lhero-top{display:flex;align-items:flex-end;justify-content:space-between;gap:28px;flex-wrap:wrap;max-width:1080px;margin:0 auto}
+.lhero .eyebrow{color:#c9d3f0;border-color:rgba(201,211,240,.25);background:rgba(255,255,255,.04)}
+.lhero h1{font-family:var(--serif);font-weight:800;letter-spacing:-.02em;font-size:clamp(32px,4.4vw,52px);line-height:1.08;margin:14px 0 10px;color:#fff}
+.lhero h1 em{font-family:var(--script);font-style:normal;font-weight:700;font-size:1.12em;letter-spacing:0;background:linear-gradient(120deg,#ffffff,#c7d4ff 60%,#ffd9e0);-webkit-background-clip:text;background-clip:text;color:transparent}
+.lhero .sub{color:#aeb7d3;font-size:17px;max-width:520px;margin:0}
+.lhero-cta{display:flex;gap:10px;flex-wrap:wrap}
+.lhero .btn-ghost{background:rgba(255,255,255,.06);color:#fff;border-color:rgba(255,255,255,.18);box-shadow:none}
+.lhero .btn-ghost:hover{background:rgba(255,255,255,.12)}
+.screen{position:relative;max-width:1080px;margin:30px auto 0;aspect-ratio:16/9;border-radius:16px;padding:8px;background:linear-gradient(#22283a,#0d1019);box-shadow:0 0 0 1px rgba(255,255,255,.06),0 40px 90px rgba(0,0,0,.55),0 0 120px rgba(120,150,255,.12)}
+.screen iframe{width:100%;height:100%;border:0;border-radius:10px;display:block;background:#000}
+.screen .nm{position:absolute;left:24px;bottom:22px;z-index:2;padding:6px 14px;border-radius:999px;background:rgba(5,7,15,.6);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);border:1px solid rgba(255,255,255,.14);font-size:13px;font-weight:600;color:#fff;pointer-events:none}
+.strip{display:grid;grid-template-columns:repeat(7,1fr);gap:12px;max-width:1080px;margin:18px auto 0}
+.strip button{all:unset;cursor:pointer;display:block;border-radius:12px;overflow:hidden;background:#0d1019;outline:2px solid transparent;outline-offset:2px;transition:outline-color .2s,transform .2s}
+.strip button:hover{transform:translateY(-2px)}
+.strip button.on{outline-color:#e6ebff}
+.strip button:focus-visible{outline-color:var(--red)}
+.strip img{display:block;width:100%;aspect-ratio:16/9;object-fit:cover}
+.strip span{display:block;padding:7px 8px 8px;font-size:12px;font-weight:600;color:#cfd6ee;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.strip button.on span{color:#fff}
+@media (max-width:900px){
+  .lhero{padding:104px 0 48px}
+  .lhero-cta .btn-lg{padding:12px 18px;font-size:15px}
+  .strip{display:flex;overflow-x:auto;scroll-snap-type:x mandatory;gap:10px;padding:2px 2px 8px;margin-left:-16px;margin-right:-16px;padding-left:16px;padding-right:16px;scrollbar-width:none}
+  .strip::-webkit-scrollbar{display:none}
+  .strip button{flex:0 0 42%;scroll-snap-align:start}
+  .screen{border-radius:12px;padding:5px}.screen iframe{border-radius:8px}.screen .nm{left:14px;bottom:12px;font-size:12px}
+}
+/* Bộ sưu tập mẫu */
+.gal{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:22px}
+.gc{display:flex;flex-direction:column;border-radius:20px;overflow:hidden;background:var(--card);border:1px solid var(--line);box-shadow:0 14px 34px rgba(120,40,50,.07);transition:transform .25s,box-shadow .25s}
+.gc:hover{transform:translateY(-4px);box-shadow:0 22px 44px rgba(120,40,50,.14)}
+.gc .pic{position:relative;display:block;aspect-ratio:16/9;background:#05070f;cursor:pointer;border:0;padding:0;width:100%}
+.gc .pic img{width:100%;height:100%;object-fit:cover;display:block}
+.gc .pic::after{content:"▶ Xem thử";position:absolute;inset:auto 12px 12px auto;padding:5px 12px;border-radius:999px;background:rgba(5,7,15,.6);color:#fff;font:600 12px var(--sans);opacity:0;transition:opacity .2s}
+.gc:hover .pic::after{opacity:1}
+.gc .bd{display:flex;flex-direction:column;gap:6px;padding:16px 18px 18px;flex:1}
+.gc h3{margin:0;font-size:18px}
+.gc p{margin:0;color:var(--muted);font-size:14px;flex:1}
+.gc .row{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:8px}
+.gc .new{font-size:11px;font-weight:700;color:var(--red);letter-spacing:.06em;text-transform:uppercase}
+/* Ba điểm chính */
+.why{display:grid;grid-template-columns:repeat(3,1fr);gap:20px}
+.why .c{padding:26px;border-radius:20px;background:var(--card);border:1px solid var(--line)}
+.why h3{margin:12px 0 6px;font-size:18px}
+.why p{margin:0;color:var(--muted);font-size:15px}
+.why .ic{width:44px;height:44px;border-radius:12px;display:grid;place-items:center;background:rgba(214,69,93,.08);color:var(--red)}
+.ratios{display:flex;gap:14px;align-items:flex-end;margin-top:14px}
+.ratios i{display:block;border:1.5px solid var(--red);border-radius:3px;opacity:.75}
+.ratios small{display:block;font-size:11px;color:var(--muted);text-align:center;margin-top:4px}
+@media (max-width:900px){.why{grid-template-columns:1fr}.gal{grid-template-columns:1fr}}
+</style>
 </head>
 <body data-page="led">
 <header id="nav"></header>
 
-<section class="phero"><div class="wrap center">
-  <span class="eyebrow">Gửi link là chiếu</span>
-  <h1>Màn hình LED cho <em>tiệc cưới</em></h1>
-  <p class="sub">Tên hai bạn, ngày cưới và lời cảm ơn trên màn tiệc — gửi link cho nhà hàng là chiếu.</p>
-  <div class="cta"><a class="btn btn-main btn-lg" href="/tao-led">Tạo màn LED miễn phí →</a><a class="btn btn-ghost btn-lg" id="full" href="/led/demo?effect=sao&palette=dem" target="_blank">⛶ Xem toàn màn hình</a></div>
-  <div class="tv rv in"><iframe id="demo" src="/led/demo?preview=1&effect=sao&palette=dem" title="Màn hình LED mẫu"></iframe></div>
-  <div class="pick" data-target="#demo" data-path="/led/demo" data-full="#full">
-    <button class="on" data-q="effect=sao&palette=dem">✦ Trời sao</button>
-    <button data-q="effect=domdom&palette=do">✧ Đom đóm</button>
-    <button data-q="effect=hoa&palette=hong">❀ Cánh hoa</button>
-    <button data-q="effect=lua&palette=ngoc">∿ Dải lụa</button>
+<section class="lhero"><div class="wrap">
+  <div class="lhero-top">
+    <div>
+      <span class="eyebrow">Màn hình LED tiệc cưới</span>
+      <h1>Tên hai bạn <em>toả sáng</em> trên màn tiệc</h1>
+      <p class="sub">Chọn mẫu, sửa chữ ngay trên màn, gửi link cho nhà hàng là chiếu suốt buổi tiệc.</p>
+    </div>
+    <div class="lhero-cta"><a class="btn btn-main btn-lg" id="use" href="/tao-led?palette=bac&amp;effect=dembac">Dùng mẫu này →</a><a class="btn btn-ghost btn-lg" id="full" href="/led/demo?palette=bac&amp;effect=dembac" target="_blank" rel="noopener">⛶ Toàn màn hình</a></div>
   </div>
+  <div class="screen"><iframe id="demo" src="/led/demo?preview=1&amp;palette=bac&amp;effect=dembac" title="Màn hình LED mẫu" allow="autoplay"></iframe><span class="nm" id="nm">Đêm kim tuyến bạc</span></div>
+  <div class="strip" id="strip" role="tablist" aria-label="Chọn mẫu màn LED"></div>
 </div></section>
 
 <section class="block"><div class="wrap">
-  <div class="head center rv"><div class="center"><span class="eyebrow">Mọi loại màn</span><h2 class="h2">Vừa khít <em>mọi màn hình</em></h2><p class="lead">Chọn tỉ lệ khớp màn ở sảnh — chữ tự căn, không méo, không viền đen.</p></div></div>
-  <div class="cards c4">
-    <div class="c rv center"><i class="ratio" style="width:96px;height:54px"></i><h3>16:9</h3><p>TV, LED sảnh tiệc — phổ biến nhất</p></div>
-    <div class="c rv center"><i class="ratio" style="width:80px;height:60px"></i><h3>4:3</h3><p>Máy chiếu, màn đời cũ</p></div>
-    <div class="c rv center"><i class="ratio" style="width:40px;height:72px"></i><h3>9:16</h3><p>Cột LED đứng, standee lối vào</p></div>
-    <div class="c rv center"><i class="ratio" style="width:54px;height:72px"></i><h3>3:4</h3><p>Màn dọc cạnh bàn ký tên</p></div>
-  </div>
+  <div class="head center rv"><div class="center"><span class="eyebrow">Bộ sưu tập</span><h2 class="h2">Mẫu màn LED <em>mới nhất</em></h2><p class="lead">Hiệu ứng chạy thật trên màn, không phải ảnh tĩnh. Chữ thanh mảnh, chữ lồng tên hai bạn — trang nhã trên mọi sảnh tiệc.</p></div></div>
+  <div class="gal" id="gal"></div>
 </div></section>
 
 <section class="block alt"><div class="wrap">
-  <div class="head center rv"><div class="center"><span class="eyebrow">Ba bước</span><h2 class="h2">Ba phút là <em>lên sóng</em></h2><p class="lead">Không cần USB, không cần biết thiết kế.</p></div></div>
-  <div class="cards">
-    <div class="c rv"><div class="num grad">01</div><h3>Điền thông tin</h3><p>Tên, ngày giờ, bố mẹ hai bên, ảnh cưới. Đã có thiệp hay sổ tay cưới thì lấy luôn, khỏi nhập lại.</p></div>
-    <div class="c rv"><div class="num grad">02</div><h3>Chọn hiệu ứng & màu</h3><p>Trời sao, đom đóm, cánh hoa, dải lụa — chỉnh mật độ, tốc độ, thời gian mỗi cảnh, xem trước ngay.</p></div>
-    <div class="c rv"><div class="num grad">03</div><h3>Gửi link cho nhà hàng</h3><p>Kỹ thuật mở bằng Chrome, bấm phím F là chạy toàn màn hình suốt buổi tiệc.</p></div>
+  <div class="head center rv"><div class="center"><span class="eyebrow">Dễ dùng</span><h2 class="h2">Ba phút là <em>lên sóng</em></h2><p class="lead">Không cần USB, không cần biết thiết kế.</p></div></div>
+  <div class="why">
+    <div class="c rv"><div class="ic"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/></svg></div><h3>Sửa chữ ngay trên màn</h3><p>Bấm vào chữ trên màn xem trước để sửa. Tên, ngày cưới (kèm âm lịch), bố mẹ hai bên lấy sẵn từ thiệp, khỏi nhập lại.</p></div>
+    <div class="c rv"><div class="ic"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="4" width="20" height="13" rx="2"/><path d="M8 21h8M12 17v4"/></svg></div><h3>Vừa khít mọi màn hình</h3><p>Chọn tỉ lệ khớp màn ở sảnh — chữ tự căn, không méo, không viền đen.</p>
+      <div class="ratios"><div><i style="width:48px;height:27px"></i><small>16:9</small></div><div><i style="width:40px;height:30px"></i><small>4:3</small></div><div><i style="width:20px;height:36px"></i><small>9:16</small></div><div><i style="width:27px;height:36px"></i><small>3:4</small></div></div></div>
+    <div class="c rv"><div class="ic"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.5.5l3-3a5 5 0 0 0-7-7l-1.7 1.7"/><path d="M14 11a5 5 0 0 0-7.5-.5l-3 3a5 5 0 0 0 7 7l1.7-1.7"/></svg></div><h3>Gửi link là chiếu</h3><p>Kỹ thuật nhà hàng mở link bằng Chrome, bấm phím F là chạy toàn màn hình suốt buổi tiệc.</p></div>
   </div>
 </div></section>
 
@@ -59,7 +110,7 @@
   <div class="head center rv"><div class="center"><span class="eyebrow">Bảng giá</span><h2 class="h2">Giá <em>rõ ràng</em></h2><p class="lead">Tạo và xem trước miễn phí, ưng thì kích hoạt để trình chiếu.</p></div></div>
   <div class="prices one">
     <div class="price hot rv" data-tag="Một lần, dùng mãi"><h3>Màn hình LED</h3><div class="amt" data-led-price>49.000đ</div><span class="muted">mỗi màn hình · trả một lần</span>
-      <ul><li>Đủ 11 hiệu ứng, 9 bảng màu, 4 tỉ lệ màn</li><li>Bỏ dòng "Bản dùng thử"</li><li>Trình chiếu không giới hạn thời gian</li><li>Sửa nội dung bất cứ lúc nào</li></ul>
+      <ul><li>Mọi mẫu, đổi mẫu thoải mái</li><li>4 tỉ lệ màn: ngang, đứng, máy chiếu</li><li>Không dòng "Bản dùng thử"</li><li>Trình chiếu không giới hạn thời gian</li></ul>
       <a class="btn btn-main" href="/tao-led">Tạo màn LED ngay</a></div>
   </div>
 </div></section>
@@ -71,6 +122,7 @@
     <details><summary>Mạng ở sảnh yếu thì sao?</summary><p>Màn hình chỉ tải một lần lúc mở. Sau đó hiệu ứng và chuyển cảnh chạy ngay trên máy, không cần mạng liên tục.</p></details>
     <details><summary>Màn hình có bị tắt giữa chừng không?</summary><p>Trang tự giữ cho màn hình không chuyển sang chế độ ngủ trong lúc trình chiếu (trên trình duyệt hỗ trợ).</p></details>
     <details><summary>Tôi chưa làm thiệp online, vẫn dùng màn LED được chứ?</summary><p>Được. Bấm "Tạo màn LED", điền tên và ngày cưới là xong. Sau này muốn làm thiệp thì thông tin đã có sẵn.</p></details>
+    <details><summary>Đổi mẫu sau khi kích hoạt được không?</summary><p>Được. Đổi mẫu, sửa lời cảm ơn, bố mẹ, ngày giờ lúc nào cũng được. Riêng tên cô dâu chú rể cố định từ lúc kích hoạt.</p></details>
   </div>
 </div></section>
 
@@ -83,5 +135,42 @@
 
 <footer id="foot"></footer>
 <script src="/js/site.js"></script>
+<script>
+// Mẫu màn LED (cùng danh sách lib/led.js TEMPLATES) — bấm ở dải dưới màn hoặc thẻ trong bộ sưu tập để xem thử trên màn lớn
+(function () {
+  var T = [
+    ['bac', 'dembac', 'Đêm kim tuyến bạc', 'Trần và sàn kim tuyến bạc, thác hạt rơi chạm sàn lan gợn sáng'],
+    ['lam', 'saoroi', 'Sao rơi', 'Sao rơi xuống sàn đêm ánh lam, mỗi lần chạm toả một vòng sáng'],
+    ['bac', 'saobang', 'Đêm sao băng', 'Dải kim tuyến mờ trên cao, sao băng rơi xuống sàn sáng'],
+    ['dong', 'tuyet', 'Tuyết rơi đêm đông', 'Bông tuyết tinh thể rơi chậm, xoay nhẹ trong đêm xanh'],
+    ['tham', 'thienha', 'Dải ngân hà', 'Dải ngân hà trôi chậm giữa muôn vì sao lấp lánh'],
+    ['sondo', 'satindo', 'Lụa satin đỏ', 'Lụa đỏ gợn sóng mềm, sang trọng và ấm áp'],
+    ['ngabac', 'satinnga', 'Lụa satin ngà', 'Lụa ngà trắng nhẹ nhàng, chữ đỏ rượu thanh lịch'],
+  ];
+  var $ = function (s) { return document.querySelector(s); };
+  var q = function (t) { return 'palette=' + t[0] + '&effect=' + t[1]; };
+  var img = function (t) { return '/demo/lposter-' + t[0] + '-' + t[1] + '.jpg'; };
+  $('#strip').innerHTML = T.map(function (t, i) {
+    return '<button role="tab" data-i="' + i + '" aria-selected="' + (i === 0) + '" class="' + (i === 0 ? 'on' : '') + '"><img src="' + img(t) + '" alt="" loading="lazy"><span>' + t[2] + '</span></button>';
+  }).join('');
+  $('#gal').innerHTML = T.map(function (t, i) {
+    return '<article class="gc rv"><button class="pic" data-i="' + i + '" aria-label="Xem thử mẫu ' + t[2] + '"><img src="' + img(t) + '" alt="Màn hình LED đám cưới mẫu ' + t[2] + '" loading="lazy"></button>' +
+      '<div class="bd"><span class="new">Mẫu mới</span><h3>' + t[2] + '</h3><p>' + t[3] + '</p><div class="row"><a class="btn btn-ghost btn-sm" href="/led/demo?' + q(t) + '" target="_blank" rel="noopener">⛶ Toàn màn hình</a><a class="btn btn-main btn-sm" href="/tao-led?' + q(t) + '">Dùng mẫu</a></div></div></article>';
+  }).join('');
+  if (window.IntersectionObserver) { var io = new IntersectionObserver(function (es) { es.forEach(function (e) { if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); } }); }); document.querySelectorAll('#gal .rv').forEach(function (el) { io.observe(el); }); }
+  else document.querySelectorAll('#gal .rv').forEach(function (el) { el.classList.add('in'); });
+  function show(i, scroll) {
+    var t = T[i];
+    $('#demo').src = '/led/demo?preview=1&' + q(t);
+    $('#full').href = '/led/demo?' + q(t);
+    $('#use').href = '/tao-led?' + q(t);
+    $('#nm').textContent = t[2];
+    document.querySelectorAll('#strip button').forEach(function (b) { var on = +b.dataset.i === i; b.classList.toggle('on', on); b.setAttribute('aria-selected', on); });
+    if (scroll) $('.screen').scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }
+  $('#strip').addEventListener('click', function (e) { var b = e.target.closest('button[data-i]'); if (b) show(+b.dataset.i); });
+  $('#gal').addEventListener('click', function (e) { var b = e.target.closest('.pic[data-i]'); if (b) show(+b.dataset.i, true); });
+})();
+</script>
 </body>
 </html>
