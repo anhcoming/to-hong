@@ -1230,10 +1230,20 @@
     fsBtn.title = on ? 'Thoát toàn màn hình (F / Esc)' : 'Toàn màn hình (F)';
   });
   // nút đóng (X): mở từ trang khác trong web thì lùi đúng trang đó, mở thẳng link thì về trang mặc định
+  // - nằm trong khung xem trước của trang khác (lớp xem mẫu ở trang chủ): báo trang ngoài đóng lớp xem, KHÔNG lùi lịch sử
+  //   (lịch sử của khung dùng chung với trang ngoài → history.back() đưa cả trang về trang trước đó, vd. Mẫu thiệp)
+  // - mở ở tab mới (nút Toàn màn hình, Mở trình chiếu): đóng tab, về lại tab đã mở; trình duyệt không cho đóng thì quay về trang đó
   document.getElementById('back').addEventListener('click', function (e) {
-    var ref = document.referrer;
+    var ref = document.referrer, same = !!ref && ref.indexOf(location.origin + '/') === 0 && ref !== location.href;
     if (document.fullscreenElement) document.exitFullscreen().catch(function () {});
-    if (ref && ref.indexOf(location.origin + '/') === 0 && ref !== location.href && history.length > 1) { e.preventDefault(); history.back(); }
+    if (window.top !== window) { e.preventDefault(); try { parent.postMessage({ type: 'led-close' }, location.origin); } catch (er) { /* khung khác nguồn */ } return; }
+    // - cùng tab: về đúng trang đã mở (không dùng history.back(): khung xem thử đổi mẫu trên trang trước cũng thêm mục lịch sử,
+    //   lùi một bước có khi rơi vào trang khác); mở thẳng link, không có trang trước: về trang mặc định (href)
+    e.preventDefault();
+    var to = same ? ref : this.href;
+    if (history.length > 1) { location.href = to; return; }
+    try { window.close(); } catch (er) { /* không đóng được */ }
+    setTimeout(function () { location.href = to; }, 150); // tab vẫn còn (trình duyệt không cho đóng) thì chuyển trang
   });
   // thanh tua: kéo để tới đúng chỗ (cảnh + giây trong cảnh), thời gian "đã chạy / cả vòng"
   var sk = document.getElementById('seek'), tm = document.getElementById('tm'), drag = false;

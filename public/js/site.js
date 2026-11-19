@@ -274,6 +274,10 @@
     history.pushState({ tv: 1 }, ''); addEventListener('popstate', onPop); addEventListener('keydown', onKey);
     el.querySelector('.x').onclick = function () { shut(); };
     el.addEventListener('click', function (e) { if (e.target === el) shut(); });
+    // nút ✕ bên trong khung xem (màn LED mẫu) báo lên: đóng lớp xem, ở lại trang này
+    var onMsg = function (e) { if (e.origin === location.origin && e.source === fr.contentWindow && e.data && e.data.type === 'led-close') shut(); };
+    addEventListener('message', onMsg);
+    var shut0 = shut; shut = function (p) { removeEventListener('message', onMsg); shut0(p); };
   };
 
   // đã đăng nhập → nút trên thanh đổi thành "Sổ tay của tôi"
