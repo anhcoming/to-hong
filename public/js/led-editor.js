@@ -124,13 +124,19 @@ function renderHeader() {
 
 function fitScreen() {
   const [w, h] = led.ratio.split(':').map(Number);
-  const box = $('#stagewrap').getBoundingClientRect();
+  const wrap = $('#stagewrap'), box = wrap.getBoundingClientRect(), cs = getComputedStyle(wrap);
   // điện thoại: khung xem trước theo bề ngang, cao tối đa ~1/3 màn hình (phần tuỳ chỉnh bên dưới cuộn riêng)
   const phone = matchMedia('(max-width:900px)').matches;
-  const maxW = phone ? innerWidth - 22 : box.width - 48, maxH = phone ? innerHeight * (h > w ? 0.42 : 0.34) : box.height - (ledFinal() ? 48 : 160); // chừa thanh khung màn + thanh cảnh (đã chốt: ẩn cả hai)
-  const s = Math.min(maxW / w, maxH / h);
-  $('#screen').style.width = Math.round(w * s) + 'px';
-  $('#screen').style.height = Math.round(h * s) + 'px';
+  // máy tính: chừa đúng chỗ các thanh đang hiện quanh khung (thanh khung màn, thanh cảnh, thanh phát khi đã chốt…) —
+  // trừ cứng một số px thì khung có thể cao hơn chỗ trống, bị ép thấp lại → lệch tỉ lệ, màn LED bên trong hiện viền đen hai bên
+  const px = (v) => parseFloat(v) || 0;
+  let used = px(cs.paddingTop) + px(cs.paddingBottom);
+  [...wrap.children].forEach((c) => { if (c.id !== 'screen' && getComputedStyle(c).display !== 'none') used += c.offsetHeight + px(cs.rowGap); });
+  const maxW = phone ? innerWidth - 22 : box.width - px(cs.paddingLeft) - px(cs.paddingRight);
+  const maxH = phone ? innerHeight * (h > w ? 0.42 : 0.34) : box.height - used;
+  const s = Math.max(0, Math.min(maxW / w, maxH / h));
+  $('#screen').style.width = Math.floor(w * s) + 'px';
+  $('#screen').style.height = Math.floor(h * s) + 'px';
 }
 
 let localCover = ''; // ảnh cưới vừa chọn, đang tải lên ngầm
