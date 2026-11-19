@@ -96,7 +96,7 @@ function infoFirst() {
 }
 function renderHeader() {
   const s = card.led;
-  $('#ttl').textContent = 'Màn hình LED · ' + ([card.data.groom.name, card.data.bride.name].filter(Boolean).join(' & ') || card.title);
+  $('#ttl').textContent = 'Màn hình LED'; // gọn: chỉ tên sản phẩm, nút bên phải
   backTo($('#back'), card.guest ? '/man-hinh-led-dam-cuoi' : '/thiep-cua-toi'); // không có trang trước: về Thiệp của tôi (nơi có danh sách Làm thêm: LED, video…)
   if (card.guest) {
     // chưa đăng nhập: sửa + xem trước thoải mái trên bản nháp; lấy link chiếu (xuất bản) mới cần tài khoản

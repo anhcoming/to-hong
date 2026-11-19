@@ -172,11 +172,16 @@ body{background:var(--bg)}
 }
 /* điện thoại: thanh trên 2 dòng — dòng 1 ← tên + trạng thái, dòng 2 các nút chia đều (trước đây nút đè lên tên) */
 @media (max-width:600px){
-  .sbar{flex-wrap:wrap;height:auto;padding:8px 10px 10px;row-gap:8px}
-  .sbar .ttl{flex:1}
-  .sbar h1{max-width:78vw}
+  /* điện thoại: một dòng — ← · "Màn hình LED" + trạng thái · nút chính bên phải (nút phụ dồn vào nút chính) */
+  .sbar{flex-wrap:nowrap;height:auto;padding:8px 10px}
+  .sbar .ttl{flex:1;min-width:0}
+  .sbar h1{max-width:100%}
   .sbar .sp{display:none}
-  .sbar #acts:not(:empty){flex-basis:100%}
+  .sbar #acts{flex:none;width:auto;display:flex}
+  .sbar #acts > :not(:last-child){display:none}
+  .sbar #acts .btn{min-height:34px;padding:6px 14px}
+  .sbar #ratioTxt{display:none} /* tỉ lệ đã hiện ở thanh khung màn ngay dưới */
+  .sbar .sub{overflow:hidden;text-overflow:ellipsis}
 }
 </style>
 </head>
