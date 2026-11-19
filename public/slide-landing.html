@@ -20,72 +20,47 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&amp;family=Dancing+Script:wght@600;700&amp;display=swap">
 <link rel="stylesheet" href="/css/site.css">
 <style>
-/* bộ sưu tập mẫu video: ảnh xem trước 16:9, rê chuột thì phát thử ngay trong thẻ */
-.vgal{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:20px;margin-top:8px}
-.vt{display:flex;flex-direction:column;border-radius:18px;overflow:hidden;background:var(--card);border:1px solid var(--line);box-shadow:0 14px 34px rgba(120,40,50,.07);transition:transform .25s,box-shadow .25s}
+/* giống trang Mẫu thiệp: tiêu đề gọn · thanh lọc · lưới mẫu; bấm mẫu → lớp xem mẫu (site.js tplView) chạy thật, trong đó có "Dùng mẫu" */
+.slp{padding:110px 0 70px}
+.thead{margin:0 0 18px}.thead h1{margin:0;font-family:var(--serif);font-weight:800;letter-spacing:-.02em;font-size:32px;line-height:1.2}.thead p{margin:4px 0 0;color:var(--muted);font-size:15px}
+.flist{display:flex;flex-wrap:nowrap;gap:8px;overflow-x:auto;scrollbar-width:none;margin:0 0 20px}.flist::-webkit-scrollbar{display:none}
+.flist button{flex:none;display:inline-flex;align-items:center;gap:7px;height:40px;padding:0 14px;border:1px solid var(--line);border-radius:999px;background:var(--card);font:500 14px var(--sans);color:var(--ink);cursor:pointer;white-space:nowrap}
+.flist button:hover{border-color:#f2b6bf}
+.flist button[aria-pressed="true"]{border-color:var(--red);background:#fff0f2;color:var(--red);font-weight:600}
+[data-theme="dark"] .flist button[aria-pressed="true"]{background:#3a1f26}
+.flist i{font-style:normal;font-size:11.5px;line-height:1;padding:3px 7px;border-radius:999px;background:var(--bg2);color:var(--muted)}
+.flist button[aria-pressed="true"] i{background:#ffd9df;color:var(--red)}
+.vgal{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:20px}
+.vt{all:unset;position:relative;cursor:pointer;display:block;aspect-ratio:16/9;border-radius:18px;overflow:hidden;background:#1a1012;border:1px solid var(--line);box-shadow:0 12px 30px rgba(120,40,50,.07);transition:transform .25s,box-shadow .25s}
 .vt:hover{transform:translateY(-4px);box-shadow:0 22px 44px rgba(120,40,50,.14)}
-.vt .pic{position:relative;display:block;aspect-ratio:16/9;background:#1a1012;overflow:hidden}
-.vt .pic img{width:100%;height:100%;object-fit:cover;display:block}
-.vt .pic iframe{position:absolute;left:0;top:0;width:1280px;height:720px;border:0;pointer-events:none;transform-origin:0 0;opacity:0;transition:opacity .4s}
-.vt .pic iframe.on{opacity:1}
+.vt:focus-visible{outline:2px solid var(--red);outline-offset:3px}
+.vt img{width:100%;height:100%;object-fit:cover;display:block}
+.vt iframe{position:absolute;left:0;top:0;width:1280px;height:720px;border:0;pointer-events:none;transform-origin:0 0;opacity:0;transition:opacity .4s}
+.vt iframe.on{opacity:1}
 .vt .tag{position:absolute;top:12px;left:12px;z-index:2;padding:4px 11px;border-radius:999px;background:var(--red);color:#fff;font-size:12px;font-weight:700}
-.vt .body{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:14px 16px}
-.vt h3{margin:0;font-size:17px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.vt .body .btn{flex:none}
-.vt .tag.soft{background:rgba(0,0,0,.55)}
-.thead{margin:0 0 18px}.thead h1{margin:0;font-family:var(--serif);font-weight:800;letter-spacing:-.02em;font-size:32px;line-height:1.2}.thead p{margin:4px 0 0;color:var(--muted);font-size:15px} /* tiêu đề gọn như trang Mẫu thiệp */
-.slp{padding:110px 0 60px}.slp h2.h2{font:600 15px var(--sans);letter-spacing:0;color:var(--muted);margin:30px 0 10px}.slp h2.h2 small{font-size:14px!important;font-weight:400!important} /* tên nhóm nhỏ, xám — không đè tiêu đề trang */
-@media (max-width:600px){
-  .thead{margin:0 0 6px}.thead h1{font-size:22px}.thead p{display:none} /* điện thoại: tiêu đề một dòng */
-  .slp{padding:86px 0 40px}.slp h2.h2{font-size:14px;margin:14px 0 8px!important}.slp h2.h2 small{display:none} /* điện thoại: tên nhóm một dòng */
+.vt b{position:absolute;z-index:2;left:0;right:0;bottom:0;padding:34px 16px 12px;background:linear-gradient(rgba(0,0,0,0),rgba(0,0,0,.62));color:#fff;font-size:18px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-shadow:0 1px 6px rgba(0,0,0,.35)} /* tên mẫu đè góc dưới ảnh, như thẻ mẫu thiệp */
+@media (max-width:860px){
+  .slp{padding:86px 0 40px}
+  .thead{margin:0 0 2px}.thead h1{font-size:22px}.thead p{display:none} /* điện thoại: tiêu đề một dòng */
+  /* điện thoại: thanh tab gạch chân, không số */
+  .flist{margin:0 -16px 18px;padding:0 16px;gap:0 20px;border-bottom:1px solid var(--line)}
+  .flist button,.flist button:hover{height:auto;gap:0;padding:12px 0 11px;margin-bottom:-1px;border:0;border-bottom:2.5px solid transparent;border-radius:0;background:none;font:600 15px var(--sans);color:var(--muted)}
+  .flist button[aria-pressed="true"],[data-theme="dark"] .flist button[aria-pressed="true"]{background:none;color:var(--ink);border-bottom-color:var(--red)}
+  .flist i{display:none}
 }
-.steps3{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;max-width:900px;margin:0 auto}
-.steps3 div{padding:22px;border-radius:18px;background:var(--card);border:1px solid var(--line);text-align:center}
-.steps3 b{display:grid;place-items:center;width:42px;height:42px;margin:0 auto 10px;border-radius:50%;background:var(--red);color:#fff;font-size:18px}
-.steps3 h3{margin:0 0 4px;font-size:17px}
-.steps3 p{margin:0;color:var(--muted);font-size:14px}
-@media (max-width:720px){.steps3{grid-template-columns:1fr}}
-/* điện thoại: 2 mẫu một hàng, tên + nút xếp dọc cho vừa */
-@media (max-width:600px){.vgal{grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:10px}.vt{border-radius:14px}.vt .body{flex-direction:column;align-items:stretch;gap:8px;padding:10px}.vt h3{font-size:14px}.vt .body .btn{width:100%;justify-content:center;padding:8px 10px;font-size:13px}.vt .tag{top:7px;left:7px;padding:2px 8px;font-size:10.5px}}
+@media (max-width:600px){
+  .vgal{grid-template-columns:1fr;gap:14px} /* mỗi mẫu một hàng cho to */
+  .vt{border-radius:12px}.vt b{padding:30px 14px 11px;font-size:17px}.vt .tag{top:10px;left:10px}
+}
 </style>
 </head>
 <body data-page="slide">
 <header id="nav"></header>
 
 <section class="slp"><div class="wrap">
-  <div class="thead"><h1>Mẫu slide cưới</h1><p>Thả ảnh cưới, tự xếp thành video chiếu màn LED, TV khi khách vào tiệc</p></div>
-  <h2 class="h2" style="margin-top:0;text-align:left">Nền buổi lễ <small style="font-size:15px;color:var(--muted);font-weight:500">· khoảng 2 phút, chiếu lặp suốt tiệc</small></h2>
+  <div class="thead"><h1>Mẫu slide cưới</h1><p>Thả ảnh cưới, tự xếp thành video chiếu màn LED, TV khi khách vào tiệc · bấm mẫu để xem thử</p></div>
+  <div class="flist" id="flist" role="group" aria-label="Lọc mẫu slide"></div>
   <div class="vgal" id="vgal" aria-live="polite"></div>
-  <h2 class="h2" style="text-align:left">Phim kể chuyện <small style="font-size:15px;color:var(--muted);font-weight:500">· ngắn, nhiều hiệu ứng chuyển cảnh</small></h2>
-  <div class="vgal" id="vgal2"></div>
-</div></section>
-
-<section class="block alt"><div class="wrap">
-  <div class="head center rv"><div class="center"><span class="eyebrow">Không cần biết dựng phim</span><h2 class="h2">Ba bước <em>là có video</em></h2></div></div>
-  <div class="steps3">
-    <div class="rv"><b>1</b><h3>Chọn mẫu</h3><p>Nền buổi lễ ngà sáng, xám rêu, đen điện ảnh hay phim kể chuyện — đổi mẫu vẫn giữ nguyên ảnh.</p></div>
-    <div class="rv"><b>2</b><h3>Chèn ảnh &amp; chữ</h3><p>Chọn nhiều ảnh một lúc hoặc kéo thả, ảnh tự xếp vào cảnh. Ít ảnh thì tự lặp cho đủ.</p></div>
-    <div class="rv"><b>3</b><h3>Chiếu hoặc tải về</h3><p>Mở link trên Smart TV, hoặc tải MP4 Full HD chép USB cắm TV.</p></div>
-  </div>
-</div></section>
-
-<section class="block" id="gia"><div class="wrap">
-  <div class="head center rv"><div class="center"><span class="eyebrow">Bảng giá</span><h2 class="h2">Giá <em>rõ ràng</em></h2><p class="lead">Làm và xem thử miễn phí, ưng thì kích hoạt để tải video.</p></div></div>
-  <div class="prices one">
-    <div class="price hot rv" data-tag="Một lần, xuất thoải mái"><h3>Slide ảnh cưới</h3><div class="amt" data-video-price>49.000đ</div><span class="muted">mỗi video · trả một lần</span>
-      <ul><li>Mọi mẫu, đổi mẫu thoải mái</li><li>Tải MP4 Full HD 1920×1080, xuất lại thoải mái</li><li>Bỏ dòng "Bản dùng thử"</li><li>Trình chiếu bằng link không giới hạn</li></ul>
-      <a class="btn btn-main" href="#vgal">Chọn mẫu</a></div>
-  </div>
-</div></section>
-
-<section class="block alt"><div class="wrap">
-  <div class="head center rv"><div class="center"><span class="eyebrow">Hỏi đáp</span><h2 class="h2">Câu hỏi <em>thường gặp</em></h2></div></div>
-  <div class="faq rv">
-    <details><summary>Cần bao nhiêu ảnh?</summary><p>Mẫu nền buổi lễ dùng khoảng 27–34 ảnh, phim kể chuyện 6–12 ảnh — ghi ngay trên ảnh xem trước. Ít ảnh hơn vẫn được, video tự lặp ảnh cho đủ cảnh.</p></details>
-    <details><summary>TV nhà tôi không có mạng thì sao?</summary><p>Kích hoạt rồi tải MP4 về, chép vào USB và cắm vào TV. Hầu hết TV đời mới đều phát được MP4 H.264.</p></details>
-    <details><summary>Có nhạc nền không?</summary><p>Có — chọn trong thư viện nhạc cưới hoặc tải MP3 của hai bạn ở bảng Nhạc trong trình sửa; video MP4 xuất ra kèm nhạc.</p></details>
-    <details><summary>Một video dùng cho cả ăn hỏi và cưới được không?</summary><p>Được. Đổi tên buổi lễ, ngày giờ, địa điểm rồi xuất lại — bạn tải bao nhiêu lần cũng được.</p></details>
-  </div>
 </div></section>
 
 <footer id="foot"></footer>
@@ -93,32 +68,52 @@
 <script>
 (function () {
   var esc = function (s) { return String(s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); };
-  // mẫu video ảnh (chèn nhiều ảnh) đứng đầu, rồi tới các mẫu chữ
+  var G = [{ id: '', name: 'Tất cả' }, { id: 'le', name: 'Nền buổi lễ' }, { id: 'phim', name: 'Phim kể chuyện' }];
+  var cur = '';
   document.addEventListener('meta', function (ev) {
-    var all = (ev.detail.video && ev.detail.video.templates || []);
-    var card = function (t) {
-      // thẻ gọn: ảnh xem trước (bấm để xem toàn màn) + tên mẫu + nút Dùng mẫu
-      return '<article class="vt" data-id="' + t.id + '"><a class="pic" href="/video/demo?template=' + t.id + '" aria-label="Xem thử mẫu ' + esc(t.name) + '">' +
-        '<span class="tag">' + (t.kind === 'le' ? '2:00 · ' : '') + t.slots + ' ảnh</span>' + '<img src="/demo/vposter-' + t.id + '.jpg" alt="Mẫu video ' + esc(t.name) + '" loading="lazy"></a>' +
-        '<div class="body"><h3>' + esc(t.name) + '</h3><a class="btn btn-main btn-sm" href="/tao-video?mau=' + t.id + '">Dùng mẫu</a></div></article>';
-    };
-    var g = document.getElementById('vgal');
-    g.innerHTML = all.filter(function (t) { return t.kind === 'le'; }).map(card).join('');
-    document.getElementById('vgal2').innerHTML = all.filter(function (t) { return t.photos && t.kind !== 'le'; }).map(card).join('');
-    // rê chuột: phát thử video thật trong khung, thu nhỏ từ 1280×720
+    // nền buổi lễ (kind 'le') đứng đầu, rồi phim kể chuyện (mẫu chèn ảnh khác)
+    var all = (ev.detail.video && ev.detail.video.templates || []).filter(function (t) { return t.kind === 'le' || t.photos; });
+    all.sort(function (a, b) { return (b.kind === 'le') - (a.kind === 'le'); });
+    var grp = function (t) { return t.kind === 'le' ? 'le' : 'phim'; };
+    var fl = document.getElementById('flist'), g = document.getElementById('vgal');
+    function draw() {
+      fl.innerHTML = G.map(function (x) {
+        var n = all.filter(function (t) { return !x.id || grp(t) === x.id; }).length;
+        return '<button type="button" data-g="' + x.id + '" aria-pressed="' + (x.id === cur) + '"><span>' + x.name + '</span><i>' + n + '</i></button>';
+      }).join('');
+      g.innerHTML = all.filter(function (t) { return !cur || grp(t) === cur; }).map(function (t) {
+        return '<a class="vt" data-id="' + t.id + '" href="/video/demo?template=' + t.id + '" aria-label="Xem thử mẫu ' + esc(t.name) + '">'
+          + '<span class="tag">' + (t.kind === 'le' ? '2:00 · ' : '') + t.slots + ' ảnh</span>'
+          + '<img src="/demo/vposter-' + t.id + '.jpg" alt="Mẫu slide ảnh cưới ' + esc(t.name) + '" loading="lazy"><b>' + esc(t.name) + '</b></a>';
+      }).join('');
+    }
+    fl.addEventListener('click', function (e) { var b = e.target.closest('[data-g]'); if (!b) return; cur = b.dataset.g; draw(); });
+    // bấm mẫu: lớp xem mẫu chạy thật, xem xong mới bấm "Dùng mẫu"
+    g.addEventListener('click', function (e) {
+      var a = e.target.closest('.vt'); if (!a || !window.tplView || e.metaKey || e.ctrlKey) return;
+      e.preventDefault();
+      var t = all.find(function (x) { return x.id === a.dataset.id; });
+      tplView({ name: t.name, wide: true, src: '/video/demo?preview=1&template=' + t.id, use: '/tao-video?mau=' + t.id });
+    });
+    draw();
+    // rê chuột (máy tính): phát thử video thật trong thẻ, thu nhỏ từ 1280×720
     if (!matchMedia('(hover:hover)').matches) return;
-    document.querySelectorAll('.vt').forEach(function (c) {
-      var pic = c.querySelector('.pic'), f = null, tm = 0;
-      c.addEventListener('mouseenter', function () {
-        tm = setTimeout(function () {
-          f = document.createElement('iframe');
-          f.src = '/video/demo?preview=1&template=' + c.dataset.id; f.tabIndex = -1; f.title = 'Xem trước';
-          f.style.transform = 'scale(' + pic.clientWidth / 1280 + ')';
-          f.onload = function () { setTimeout(function () { if (f) f.classList.add('on'); }, 300); };
-          pic.appendChild(f);
-        }, 250);
-      });
-      c.addEventListener('mouseleave', function () { clearTimeout(tm); if (f) { f.remove(); f = null; } });
+    var f = null, tm = 0;
+    g.addEventListener('mouseover', function (e) {
+      var c = e.target.closest('.vt'); if (!c || c.contains(e.relatedTarget)) return;
+      clearTimeout(tm);
+      tm = setTimeout(function () {
+        if (f) f.remove();
+        f = document.createElement('iframe');
+        f.src = '/video/demo?preview=1&template=' + c.dataset.id; f.tabIndex = -1; f.title = 'Xem trước';
+        f.style.transform = 'scale(' + c.clientWidth / 1280 + ')';
+        var me = f; f.onload = function () { setTimeout(function () { me.classList.add('on'); }, 300); };
+        c.insertBefore(f, c.querySelector('.tag'));
+      }, 250);
+    });
+    g.addEventListener('mouseout', function (e) {
+      var c = e.target.closest('.vt'); if (!c || c.contains(e.relatedTarget)) return;
+      clearTimeout(tm); if (f) { f.remove(); f = null; }
     });
   });
 })();
