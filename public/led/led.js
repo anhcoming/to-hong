@@ -1359,14 +1359,14 @@
       // chỉ sửa khi thật sự bị ẩn (tránh tự kích hoạt lại bộ theo dõi thay đổi)
       var cs = getComputedStyle(w), r = w.getBoundingClientRect();
       // bị che bởi phần tử khác / chữ trong suốt / bộ lọc làm mờ đều tính là bị ẩn
-      var hit = r.width > 0 ? document.elementFromPoint(r.left + r.width * 0.7, r.top + r.height / 2) : null;
+      var hit = r.width > 0 ? document.elementFromPoint(r.left + r.width / 2, r.top + r.height / 2) : null; // tâm ruy băng (nằm trong góc màn)
       var covered = !!hit && !w.contains(hit) && !(hit.closest && hit.closest('#ctl,#back'));
       if (w.hidden || cs.display === 'none' || cs.visibility !== 'visible' || +cs.opacity < 0.4 || r.width < 20 || r.height < 5
         || (cs.filter && cs.filter !== 'none') || /rgba\(.*,\s*0(\.0*)?\)$|transparent/.test(cs.color) || covered
         || r.right < 0 || r.bottom < 0 || r.left > innerWidth || r.top > innerHeight) {
         w.hidden = false;
         if (w.parentNode !== stage || w !== stage.lastElementChild) stage.appendChild(w);
-        w.style.cssText = 'display:flex!important;visibility:visible!important;opacity:.6!important;transform:none!important;filter:none!important;color:#fff!important;z-index:2147483647!important;clip-path:none!important;pointer-events:auto!important;right:60px!important;bottom:52px!important;left:auto!important;top:auto!important;position:absolute!important';
+        w.style.cssText = 'display:block!important;visibility:visible!important;opacity:1!important;transform:rotate(38deg)!important;filter:none!important;color:#fff!important;background:linear-gradient(90deg,#c8364f,#ef7d8d)!important;z-index:2147483647!important;clip-path:none!important;pointer-events:auto!important;top:62px!important;right:-120px!important;left:auto!important;bottom:auto!important;width:500px!important;position:absolute!important';
       }
       // bản chưa kích hoạt chỉ để xem trong khung của trình sửa; bị mở thẳng ra cả trang thì phủ lớp "cần kích hoạt"
       if (window.top === window) {
