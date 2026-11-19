@@ -51,8 +51,10 @@ function renderSide() {
     // A · bảng nhập: điền vào ô → màn đổi ngay; bấm vào ô nào thì màn chuyển tới cảnh có chữ đó và đứng yên (data-sc)
     const fixed = !!card.led.names; // đã kích hoạt: tên đôi cố định
     const f = (k, label, sc, ph = '', type = 'text') => `<label class="field"><span>${label}</span><input data-d="${k}" data-sc="${sc}" type="${type}" value="${esc(getP(d, k) || '')}" placeholder="${esc(ph)}"${fixed && /\.name$/.test(k) ? ' disabled' : ''}></label>`;
-    h = tabs + `<p class="pdesc">Điền vào ô — màn bên cạnh đổi ngay. Bấm vào chữ trên màn cũng sửa được.</p>
+    h = tabs + `<p class="pdesc">Điền vào ô — màn bên cạnh đổi ngay, chỗ vừa đổi sáng viền hồng.</p>
       <section class="group cform">
+        <p class="clab">Cỡ chữ</p>
+        <div class="fsz">${[['nho', 'Nhỏ'], ['vua', 'Vừa'], ['lon', 'Lớn']].map(([v, n]) => `<button type="button" data-fs="${v}" class="${(led.fs || 'vua') === v ? 'on' : ''}">${n}</button>`).join('')}</div>
         <p class="clab">Tên đôi</p>
         <div class="grid2">${f('groom.name', 'Chú rể', 'names', 'Gia Huy')}${f('bride.name', 'Cô dâu', 'names', 'Bảo Ngọc')}</div>
         ${fixed ? '<p class="muted" style="font-size:12px;margin:-4px 0 8px">🔒 Đã kích hoạt: tên đôi cố định</p>' : ''}
@@ -286,6 +288,8 @@ function bind() {
   });
   side.addEventListener('click', (e) => {
     const g = e.target.closest('[data-go]'); if (g) { curPanel = g.dataset.go; return renderSide(); }
+    const fz = e.target.closest('[data-fs]');
+    if (fz) { led.fs = fz.dataset.fs; side.querySelectorAll('[data-fs]').forEach((x) => x.classList.toggle('on', x === fz)); pushPreview(); return schedule(300); }
     const tp = e.target.closest('[data-tpl]');
     if (tp) { const t = META.led.templates.find((x) => x.id === tp.dataset.tpl); led.palette = t.palette; led.effect = t.effect; led.slides.photo = false; renderSide(); pushPreview(); return schedule(300); }
     const b = e.target.closest('[data-set]');

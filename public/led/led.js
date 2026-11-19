@@ -1128,8 +1128,8 @@
   function applySz() {
     Array.prototype.forEach.call(slidesEl.querySelectorAll('.' + SZ.join(',.')), function (el) {
       el.style.fontSize = '';
-      var k = (L.sz || {})[szOf(el)];
-      if (k && k !== 1) el.style.fontSize = (parseFloat(getComputedStyle(el).fontSize) * k) + 'px';
+      var k = ((L.sz || {})[szOf(el)] || 1) * ({ nho: 0.85, lon: 1.15 }[L.fs] || 1); // cỡ từng dòng × cỡ chữ toàn màn
+      if (k !== 1) el.style.fontSize = (parseFloat(getComputedStyle(el).fontSize) * k) + 'px';
     });
   }
   function fitAll() {
@@ -1279,7 +1279,8 @@
   // ---------- trình sửa: bấm chữ trên màn để gõ sửa tại chỗ (chỉ khung xem trước) ----------
   // gõ tới đâu báo trình sửa tới đó (led-text); bấm ngày cưới → trình sửa mở ô chọn ngày giờ (led-date)
   var editing = null;
-  if (C.preview && window.parent !== window && !C.final) { // màn LED đã chốt: chỉ xem, không sửa chữ / cỡ chữ
+  // trình sửa: khung xem trước chỉ để xem — sửa chữ, cỡ chữ ở bảng Nội dung bên trái (không bấm sửa trực tiếp trên màn nữa)
+  if (false && C.preview && window.parent !== window && !C.final) {
     document.body.classList.add('can-edit');
     // thanh cỡ chữ nổi trên dòng vừa bấm: A− · 100% · A+ (giữ nguyên con trỏ đang gõ)
     var szBar = document.createElement('div'), szEl = null;
