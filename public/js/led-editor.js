@@ -108,10 +108,12 @@ function renderHeader() {
   if (ledFinal() && led) { // lần gọi đầu (chưa nạp cấu hình màn LED) bỏ qua, start() gọi lại
     const names = [card.data.groom.name, card.data.bride.name].filter(Boolean).join(' & ');
     const tp = (META.led.templates || []).find((t) => t.palette === led.palette && t.effect === led.effect);
-    const nSc = ['names', 'date', 'countdown', 'parents', 'message'].filter((k) => led.slides && led.slides[k]).length;
     finalView({ kind: 'led', url: s.url, names, onMp4: mp4Dialog, support: META.support, stage: '#stagewrap',
+      // thanh phát (phát / dừng, tua, thời gian, toàn màn hình) — khung xem trước tự chạy, thanh cảnh đã ẩn
+      player: () => { try { const w = $('#frame').contentWindow; return (w && w.__ledApi && w.__ledApi.play) || null; } catch (e) { return null; } },
+      onFull: () => { const f = $('#frame'); if (f.requestFullscreen) f.requestFullscreen().catch(() => window.open(s.url, '_blank')); else window.open(s.url, '_blank'); },
       facts: [['📅', finalView.date(card.data.date)], ['⏰', finalView.time(card.data.time)], ['✨', tp ? tp.name : ''],
-        ['🖥', (RATIO_INFO[led.ratio] || [led.ratio])[0]], ['🎞', `${nSc} cảnh · mỗi cảnh ${led.seconds} giây`]],
+        ['🖥', (RATIO_INFO[led.ratio] || [led.ratio])[0]], ['⏱', `Mỗi cảnh ${led.seconds} giây`]], // số cảnh / độ dài: xem trên thanh phát (cảnh chưa có nội dung tự bỏ qua)
       guide: `Nhờ anh/chị bật màn hình LED cho tiệc cưới ${names}:\n${s.url}\n- Mở bằng Chrome/Edge, bấm phím F (hoặc nháy đúp) để toàn màn hình.\n- Tỉ lệ đã chọn: ${led ? led.ratio : ''}.` });
   } else finalView.off();
 }

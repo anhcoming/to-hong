@@ -1361,6 +1361,8 @@
     fx: function () { return isVideo() ? FX.none : FX[L.effect] || FX.sao; },
     resetFx: resetFx,
     hold: function (on) { holding = !!on; if (on) paused = true; },
+    // trình sửa (màn LED đã chốt) dựng thanh phát riêng: phát / dừng, tua, thời gian
+    play: { pos: position, total: total, seek: function (t) { seekTo(t); tell(); }, paused: function () { return paused; }, toggle: togglePause, count: function () { return slides.length; }, seconds: function () { return L.seconds; } },
   };
 
   apply(L);

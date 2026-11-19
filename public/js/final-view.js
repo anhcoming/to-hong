@@ -32,14 +32,23 @@ body.fv-on .studio>.stagewrap{grid-template-rows:auto;align-content:center}
 .fv-help{margin:16px 0 0;text-align:center;font-size:12.5px;color:var(--muted)}.fv-help a{color:var(--primary);font-weight:600;text-decoration:none}
 [data-theme="dark"] .fv-note{background:#1f3329;color:#bfe3cf}[data-theme="dark"] .fv-lock{background:#1f3329;color:#9fd8b8}
 .fvb{width:100%;max-width:980px;display:grid;gap:10px;margin:2px auto 0}
-.fv-ch{display:flex;justify-content:safe center;gap:8px;overflow-x:auto;padding:2px;scrollbar-width:none}.fv-ch::-webkit-scrollbar{display:none}
-.fv-ch button{all:unset;cursor:pointer;flex:none;display:flex;flex-direction:column;gap:1px;padding:8px 14px;border-radius:14px;background:var(--surface,#fff);box-shadow:0 0 0 1px var(--line);font-size:13px;font-weight:600;color:var(--ink);max-width:200px}
+.fv-play{display:flex;align-items:center;gap:12px;width:100%}
+.fv-play .pp{all:unset;cursor:pointer;flex:none;width:44px;height:44px;border-radius:50%;display:grid;place-items:center;background:var(--primary);color:#fff;font-size:14px;box-shadow:0 8px 18px rgba(214,69,93,.32)}
+.fv-play .trk{position:relative;flex:1;min-width:0;height:22px;display:flex;align-items:center}
+.fv-play input{width:100%;margin:0;accent-color:var(--primary);cursor:pointer}
+.fv-play input:focus{outline:none}.fv-play input:focus-visible{outline:2px solid var(--primary-soft);outline-offset:3px;border-radius:9px}
+.fv-play .mk{position:absolute;left:0;right:0;top:50%;height:0;pointer-events:none}
+.fv-play .mk i{position:absolute;top:-8px;width:2px;height:16px;border-radius:2px;background:rgba(127,127,127,.45)}
+.fv-play .tm{flex:none;font-size:13px;color:var(--muted);font-variant-numeric:tabular-nums}
+.fv-play .fs{all:unset;cursor:pointer;flex:none;width:38px;height:38px;border-radius:12px;display:grid;place-items:center;background:var(--surface,#fff);box-shadow:0 0 0 1px var(--line),0 6px 14px rgba(60,30,40,.08);font-size:15px}
+.fv-ch{display:flex;justify-content:safe center;gap:8px;overflow-x:auto;padding:2px 2px 14px;scrollbar-width:none}.fv-ch::-webkit-scrollbar{display:none}
+.fv-ch button{all:unset;cursor:pointer;flex:none;display:flex;flex-direction:column;gap:1px;padding:8px 14px;border-radius:14px;background:var(--surface,#fff);box-shadow:0 0 0 1px var(--line),0 6px 16px rgba(60,30,40,.08);font-size:13px;font-weight:600;color:var(--ink);max-width:200px}
 .fv-ch button small{font-weight:500;font-size:11.5px;color:var(--muted);font-variant-numeric:tabular-nums}
 .fv-ch button b{font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.fv-ch button.on{background:var(--primary);color:#fff;box-shadow:none}.fv-ch button.on small{color:rgba(255,255,255,.8)}
+.fv-ch button.on{background:var(--primary);color:#fff;box-shadow:0 8px 18px rgba(214,69,93,.3)}.fv-ch button.on small{color:rgba(255,255,255,.8)}
 .fv-ch button:focus-visible{outline:2px solid var(--primary);outline-offset:2px}
 .fv-facts{display:flex;flex-wrap:wrap;justify-content:center;gap:8px}
-.fv-facts span{display:inline-flex;align-items:center;gap:6px;padding:6px 12px;border-radius:999px;background:var(--surface,#fff);box-shadow:0 0 0 1px var(--line);font-size:12.5px;color:var(--ink)}
+.fv-facts span{display:inline-flex;align-items:center;gap:6px;padding:6px 12px;border-radius:999px;background:var(--surface,#fff);box-shadow:0 0 0 1px var(--line),0 6px 16px rgba(60,30,40,.08);font-size:12.5px;color:var(--ink)}
 .fv-facts i{font-style:normal}
 @media (max-width:980px){
   body.fv-on .studio{display:flex;flex-direction:column;overflow:auto}
@@ -106,15 +115,44 @@ body.fv-on .studio>.stagewrap{grid-template-rows:auto;align-content:center}
     if (stage && !bar) { bar = document.createElement('div'); bar.id = 'fvb'; bar.className = 'fvb'; stage.appendChild(bar); bar.addEventListener('click', (e) => { const c = e.target.closest('[data-t]'); if (c && o.onSeek) { o.onSeek(+c.dataset.t); window.finalView.at(+c.dataset.t); } }); }
     if (bar) {
       const ch = (o.chapters || []).filter((c) => c && c.name);
-      bar.innerHTML = (ch.length > 1 ? `<div class="fv-ch" role="list" aria-label="Các cảnh">${ch.map((c) => `<button type="button" role="listitem" data-t="${c.t}"><small>${mmss(c.t)}</small><b>${esc(c.name)}</b></button>`).join('')}</div>` : '')
+      bar.innerHTML = (o.player ? `<div class="fv-play"><button type="button" class="pp" data-pl="pp" aria-label="Tạm dừng">❚❚</button><div class="trk"><input type="range" min="0" max="1000" value="0" aria-label="Tua"><div class="mk"></div></div><span class="tm">0:00 / 0:00</span><button type="button" class="fs" data-pl="fs" title="Xem toàn màn hình" aria-label="Xem toàn màn hình">⛶</button></div>` : '')
+        + (ch.length > 1 ? `<div class="fv-ch" role="list" aria-label="Các cảnh">${ch.map((c) => `<button type="button" role="listitem" data-t="${c.t}"><small>${mmss(c.t)}</small><b>${esc(c.name)}</b></button>`).join('')}</div>` : '')
         + ((o.facts || []).length ? `<div class="fv-facts">${o.facts.filter((f) => f && f[1]).map(([ic, tx]) => `<span><i aria-hidden="true">${ic}</i>${esc(tx)}</span>`).join('')}</div>` : '');
       lastOn = -1;
     }
+    if (bar && o.player && !bar.dataset.pl) { bar.dataset.pl = '1'; playLoop(bar); }
     // nhãn 🔒 Đã chốt ở dòng nhỏ dưới tên (thay chữ "Đã kích hoạt" / "Đã lưu")
     const sv = document.getElementById('saved');
     if (sv && !document.querySelector('.fv-lock')) sv.insertAdjacentHTML('afterend', '<span class="fv-lock">🔒 Đã chốt</span>');
     window.dispatchEvent(new Event('resize')); // khung xem đổi cỡ theo bố cục mới
   };
+  // thanh phát cho khung không tự có (màn LED): o.player() trả { pos, total, seek, paused, toggle, count, seconds } hoặc null
+  function playLoop(bar) {
+    let drag = false, mkKey = '';
+    bar.addEventListener('click', (e) => {
+      const b = e.target.closest('[data-pl]'); if (!b) return;
+      const p = o.player && o.player(); if (!p) return;
+      if (b.dataset.pl === 'pp') p.toggle();
+      else if (o.onFull) o.onFull();
+    });
+    bar.addEventListener('input', (e) => { if (e.target.type !== 'range') return; const p = o.player && o.player(); if (!p) return; drag = true; p.seek(e.target.value / 1000 * p.total()); });
+    bar.addEventListener('change', () => { drag = false; });
+    const tick = () => {
+      if (!bar.isConnected) return;
+      const p = o.player && o.player(), inp = bar.querySelector('.fv-play input');
+      if (p && inp) {
+        const T = p.total(), t = p.pos();
+        if (!drag) inp.value = Math.round(t / T * 1000);
+        bar.querySelector('.fv-play .tm').textContent = `${mmss(t)} / ${mmss(T)}`;
+        const pp = bar.querySelector('.fv-play .pp'), ps = p.paused();
+        if (pp.dataset.p !== String(ps)) { pp.dataset.p = String(ps); pp.textContent = ps ? '▶' : '❚❚'; pp.setAttribute('aria-label', ps ? 'Phát' : 'Tạm dừng'); }
+        const n = p.count(), key = n + '|' + T;
+        if (key !== mkKey) { mkKey = key; bar.querySelector('.fv-play .mk').innerHTML = Array.from({ length: Math.max(0, n - 1) }, (_, i) => `<i style="left:${((i + 1) / n * 100).toFixed(2)}%"></i>`).join(''); }
+      }
+      requestAnimationFrame(tick);
+    };
+    requestAnimationFrame(tick);
+  }
   // cảnh đang chiếu (trình sửa gọi theo thời gian phát)
   let lastOn = -1;
   window.finalView.at = function (t) {
