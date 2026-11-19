@@ -902,6 +902,84 @@
   // ---------------- nền video quay sẵn (lib/led.js → VIDEOS) ----------------
   // Hai thẻ <video> thay phiên: gần hết video thì bản kia phát lại từ đầu và hiện dần lên → chỗ nối vòng lặp không bị giật.
   var FADE = 1.4, vbg = null;
+  // Tuyết rơi: bông tuyết tinh thể 6 cánh (12 dáng, nét kính trong) rơi chậm, xoay + chao nhẹ, 4 tầng xa gần
+  // (xa hẳn: chấm li ti, xa: tinh thể nhỏ, giữa: vừa, gần: to + nhoè, vẽ đè lên chữ ở canvas riêng #fxtop),
+  // bắt sáng khi quay chính diện, vào màn mờ dần ở mép trên, thỉnh thoảng một cơn gió rất nhẹ, sương lạnh mờ dưới đáy.
+  FX.tuyet = {
+    crystal: function (seed) {
+      var S = 192, c = document.createElement('canvas'); c.width = c.height = S;
+      var g = c.getContext('2d'), R = S * 0.42, rs = seed, segs = [], arm = [];
+      var r2 = function () { rs = (rs * 9301 + 49297) % 233280; return rs / 233280; };
+      var kind = seed % 4; // 0 nhánh dày, 1 nhánh thưa dài, 2 bản lục giác + nhánh ngắn, 3 hình sao đơn giản
+      var nb = kind === 3 ? 1 : kind === 1 ? 3 : kind === 2 ? 2 : 4 + Math.floor(r2() * 2);
+      arm.push([0, 0, 0, -R, 1]);
+      for (var k = 0; k < nb; k++) {
+        var tt = 0.3 + 0.6 * (k + r2() * 0.4) / nb, len = R * (kind === 1 ? 0.42 : 0.34) * (1.05 - tt * 0.75) * (0.8 + r2() * 0.4), ang = Math.PI / 3 * (0.9 + r2() * 0.2);
+        var bx = Math.sin(ang) * len, by = -R * tt - Math.cos(ang) * len;
+        arm.push([0, -R * tt, bx, by, 0.75]); arm.push([0, -R * tt, -bx, by, 0.75]);
+        if (kind === 0 && len > R * 0.18) { var sx = bx * 0.55, sy = -R * tt + (by + R * tt) * 0.55, sl = len * 0.38; arm.push([sx, sy, sx, sy - sl, 0.5]); arm.push([-sx, sy, -sx, sy - sl, 0.5]); }
+      }
+      if (kind === 2) for (var h = 0; h < 6; h++) { var a1 = h * Math.PI / 3, a2 = (h + 1) * Math.PI / 3, rr = R * 0.24; segs.push([Math.sin(a1) * rr, -Math.cos(a1) * rr, Math.sin(a2) * rr, -Math.cos(a2) * rr, 0.8]); }
+      for (var m = 0; m < 6; m++) { var A = m * Math.PI / 3, ca = Math.cos(A), sa = Math.sin(A);
+        arm.forEach(function (q) { segs.push([q[0] * ca - q[1] * sa, q[0] * sa + q[1] * ca, q[2] * ca - q[3] * sa, q[2] * sa + q[3] * ca, q[4]]); }); }
+      var W0 = S * 0.034;
+      g.translate(S / 2, S / 2); g.lineCap = 'round'; g.lineJoin = 'round'; g.shadowColor = 'rgba(190,210,255,.9)';
+      var pass = function (wm, style, blur) { g.strokeStyle = style; g.shadowBlur = blur || 0;
+        segs.forEach(function (q) { g.lineWidth = Math.max(1, W0 * q[4] * wm); g.beginPath(); g.moveTo(q[0], q[1]); g.lineTo(q[2], q[3]); g.stroke(); }); };
+      pass(1.6, 'rgba(200,215,255,.35)', S * 0.05); pass(1, 'rgba(245,248,255,.95)'); pass(0.45, 'rgba(120,135,165,.75)'); pass(0.15, 'rgba(255,255,255,.95)');
+      g.shadowBlur = 0; g.fillStyle = 'rgba(255,255,255,.9)'; g.beginPath(); g.arc(0, 0, W0 * 0.9, 0, 7); g.fill();
+      return c;
+    },
+    sprites: function () {
+      if (this.SP) return;
+      this.SP = []; this.SPB = [];
+      for (var q = 1; q <= 12; q++) { var cr = this.crystal(q * 7919), bl = document.createElement('canvas'); bl.width = bl.height = cr.width;
+        var bx = bl.getContext('2d'); bx.filter = 'blur(' + (cr.width * 0.018) + 'px)'; bx.drawImage(cr, 0, 0); this.SP.push(cr); this.SPB.push(bl); }
+      var d = this.DOT = document.createElement('canvas'); d.width = d.height = 32; var dg = d.getContext('2d'), gr = dg.createRadialGradient(16, 16, 0, 16, 16, 16);
+      gr.addColorStop(0, 'rgba(255,255,255,1)'); gr.addColorStop(0.4, 'rgba(235,242,255,.7)'); gr.addColorStop(1, 'rgba(220,232,255,0)'); dg.fillStyle = gr; dg.fillRect(0, 0, 32, 32);
+    },
+    make: function (init) {
+      var z = Math.random(), Lr = z < 0.68 ? 0 : z < 0.93 ? 1 : 2, u = H / 700, dot = Lr === 0 && Math.random() < 0.45;
+      return { L: Lr, dot: dot, x: rnd(-0.1, 1.1) * W, y: init ? rnd(-0.1, 1) * H : rnd(-0.15, -0.02) * H,
+        r: (dot ? rnd(0.6, 1.3) : [rnd(2.2, 4.5), rnd(5, 10), rnd(13, 21)][Lr]) * u,
+        vy: [rnd(14, 24), rnd(26, 40), rnd(48, 70)][Lr] * u, ph: rnd(0, 6.28), sw: rnd(0.4, 1.1), amp: rnd(6, 22) * (Lr + 1) * u,
+        a: [rnd(0.45, 0.75), rnd(0.55, 0.85), rnd(0.4, 0.6)][Lr], si: Math.floor(Math.random() * 12), rot: rnd(0, 6.28), vr: rnd(-0.5, 0.5), tilt: rnd(0, 6.28) };
+    },
+    init: function () {
+      this.sprites();
+      var top = document.getElementById('fxtop');
+      if (!top) { top = document.createElement('canvas'); top.id = 'fxtop'; stage.insertBefore(top, slidesEl.nextSibling); }
+      this.top = top; this.tc = top.getContext('2d');
+      var n = Math.round(170 * L.density * AREA);
+      for (var i = 0; i < n; i++) parts.push(this.make(true));
+    },
+    draw: function (dt, t) {
+      var tc = this.tc, top = this.top, u = H / 700, sp = L.speed;
+      if (top.width !== canvas.width || top.height !== canvas.height) { top.width = canvas.width; top.height = canvas.height; }
+      tc.setTransform(K, 0, 0, K, 0, 0); tc.clearRect(0, 0, W, H);
+      // sương lạnh mờ dưới đáy
+      var gb = ctx.createLinearGradient(0, H * 0.72, 0, H); gb.addColorStop(0, 'rgba(160,185,235,0)'); gb.addColorStop(1, 'rgba(160,185,235,.12)');
+      ctx.globalAlpha = 1; ctx.fillStyle = gb; ctx.fillRect(0, H * 0.72, W, H * 0.28);
+      // gió: lắc nhẹ thường xuyên + thỉnh thoảng một cơn rất nhẹ
+      var gx = Math.sin(t * 0.17) * 0.7 + Math.sin(t * 0.053 + 1.3) * 0.3, gust = Math.sin(t * 0.23) * 0.6 + Math.sin(t * 0.071) * 0.4 + Math.max(0, Math.min(1, (gx - 0.55) / 0.3)) * 0.9;
+      for (var i = 0; i < parts.length; i++) {
+        var p = parts[i];
+        p.y += p.vy * dt * sp; p.x += gust * 6 * (p.L + 1) * u * dt * sp;
+        if (p.y > H + 30) { parts[i] = this.make(false); continue; }
+        var x = p.x + Math.sin(t * p.sw * sp + p.ph) * p.amp;
+        if (x < -30) p.x += W + 60; else if (x > W + 30) p.x -= W + 60;
+        var c2 = p.L === 2 ? tc : ctx, edge = Math.max(0, Math.min(1, (p.y + H * 0.04) / (H * 0.12)));
+        if (p.dot) { var s0 = p.r * 2.6; c2.globalAlpha = p.a * edge; c2.drawImage(this.DOT, x - s0, p.y - s0, s0 * 2, s0 * 2); continue; }
+        p.rot += p.vr * dt * sp;
+        var cz = Math.cos(t * 0.8 * sp + p.tilt), sq = 0.75 + 0.25 * cz, s1 = p.r * 2.4, ca = Math.cos(p.rot), sa = Math.sin(p.rot);
+        c2.globalAlpha = Math.min(1, p.a * edge * (0.85 + 0.35 * Math.pow(Math.max(0, cz), 12))); // bắt sáng khi quay chính diện
+        c2.setTransform(K * ca, K * sa, -K * sa * sq, K * ca * sq, K * x, K * p.y);
+        c2.drawImage(p.L === 2 ? this.SPB[p.si] : this.SP[p.si], -s1, -s1, s1 * 2, s1 * 2);
+        c2.setTransform(K, 0, 0, K, 0, 0);
+      }
+      ctx.globalAlpha = tc.globalAlpha = 1;
+    },
+  };
   FX.none = { init: function () {}, draw: function () {} };
   // Dải ngân hà: dải mây sao chạy chéo màn (WebGL); máy không có WebGL dùng hiệu ứng "Ngân hà" vẽ bằng canvas
   FX.thienha = {
@@ -974,6 +1052,7 @@
   function resetFx() {
     parts = []; extra = [];
     if (!/^(dembac|saoroi|saobang|thienha|satindo|satinnga)$/.test(L.effect)) GLFX.stop();
+    if (L.effect !== 'tuyet') { var tp = document.getElementById('fxtop'); if (tp) tp.remove(); } // lớp tuyết gần (đè lên chữ) chỉ của hiệu ứng Tuyết rơi
     setupVideo();
     (isVideo() ? FX.none : FX[L.effect] || FX.sao).init();
   }
