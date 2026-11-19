@@ -19,56 +19,26 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&amp;family=Dancing+Script:wght@600;700&amp;display=swap">
 <link rel="stylesheet" href="/css/site.css">
 <style>
-/* Phần đầu gọn: tiêu đề → màn xem thử → dải mẫu → một nút */
-.lp{padding:110px 0 56px}
-.lp h1{margin:0 0 4px}.lp h1 em{white-space:nowrap}
-.lp .tv{margin-top:26px}
-.lp-cta{margin-top:26px}
-.tv .fs{position:absolute;right:22px;top:20px;z-index:2;width:38px;height:38px;border-radius:50%;display:grid;place-items:center;background:rgba(5,7,15,.55);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);border:1px solid rgba(255,255,255,.16);color:#fff;transition:background .2s}
-.tv .fs:hover{background:rgba(5,7,15,.8)}
-@media (max-width:900px){.lp{padding:96px 0 40px}.lp h1{font-size:30px}.tv .fs{right:12px;top:10px;width:32px;height:32px}}
-/* Phần đầu: cùng kiểu các trang khác (nền sáng theo giao diện) — màn xem thử + dải mẫu bấm để đổi */
-.phero .tv{position:relative;max-width:1000px}
-.tv .nm{position:absolute;left:24px;bottom:22px;z-index:2;padding:6px 14px;border-radius:999px;background:rgba(5,7,15,.55);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);border:1px solid rgba(255,255,255,.14);font-size:13px;font-weight:600;color:#fff;pointer-events:none}
-.strip{display:grid;grid-template-columns:repeat(7,1fr);gap:12px;max-width:1000px;margin:20px auto 0}
-.strip button{all:unset;cursor:pointer;display:block;border-radius:12px;overflow:hidden;background:var(--card);border:1px solid var(--line);outline:2px solid transparent;outline-offset:2px;transition:outline-color .2s,transform .2s}
-.strip button:hover{transform:translateY(-2px)}
-.strip button.on{outline-color:var(--red)}
-.strip button:focus-visible{outline-color:var(--red)}
-.strip img{display:block;width:100%;aspect-ratio:16/9;object-fit:cover;background:#05070f}
-.strip span{display:block;padding:7px 8px 8px;font-size:12px;font-weight:600;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-align:center}
-.strip button.on span{color:var(--ink)}
-@media (max-width:900px){
-  .strip{display:flex;overflow-x:auto;scroll-snap-type:x mandatory;gap:10px;padding:4px 16px 8px;margin-left:-16px;margin-right:-16px;scrollbar-width:none}
-  .strip::-webkit-scrollbar{display:none}
-  .strip button{flex:0 0 42%;scroll-snap-align:start}
-  .tv .nm{left:14px;bottom:12px;font-size:12px}
-}
-/* điện thoại: gọn — màn xem thử căn giữa viền mỏng, dải mẫu nhỏ hơn, nút vừa tay, bớt khoảng trống */
+/* Trang chỉ còn danh sách mẫu: bấm mẫu → lớp xem mẫu (site.js tplView) chạy thật, xem xong mới bấm "Dùng mẫu này" */
+.lp{padding:110px 0 70px}
+.lp h1{margin:0 0 6px}.lp h1 em{white-space:nowrap}
+.lgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:20px;max-width:1080px;margin:30px auto 0;text-align:left}
+.lcard{all:unset;cursor:pointer;display:flex;flex-direction:column;border-radius:18px;overflow:hidden;background:var(--card);border:1px solid var(--line);box-shadow:0 12px 30px rgba(120,40,50,.07);transition:transform .25s,box-shadow .25s}
+.lcard:hover{transform:translateY(-4px);box-shadow:0 22px 44px rgba(120,40,50,.14)}
+.lcard:focus-visible{outline:2px solid var(--red);outline-offset:3px}
+.lcard .pic{position:relative;aspect-ratio:16/9;background:#05070f}
+.lcard .pic img{width:100%;height:100%;object-fit:cover;display:block}
+.lcard .pic::after{content:"▶";position:absolute;left:50%;top:50%;width:46px;height:46px;margin:-23px 0 0 -23px;border-radius:50%;display:grid;place-items:center;background:rgba(5,7,15,.55);color:#fff;font-size:15px;opacity:0;transition:opacity .2s}
+.lcard:hover .pic::after{opacity:1}
+.lcard b{display:block;padding:12px 14px;font-size:15px;text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+@media (max-width:900px){.lp{padding:96px 0 50px}.lp h1{font-size:30px}}
 @media (max-width:600px){
-  .lp{padding:86px 0 20px}
-  .lp h1{font-size:26px}
-  .lp .tv{width:100%;margin:18px 0 0;padding:4px;border-radius:12px;box-shadow:0 14px 30px rgba(120,40,50,.18)}
-  .lp .tv iframe{border-radius:9px}
-  .tv .nm{display:none}
-  .tv .fs{right:10px;top:10px;width:30px;height:30px}
-  .strip{margin:14px -20px 0;padding:4px 20px 8px;scroll-padding:0 20px} /* thẻ đầu thẳng hàng với khung xem */
-  .strip button{flex:0 0 34%;border-radius:10px}
-  .strip span{padding:5px 6px 6px;font-size:11px}
-  .lp-cta{margin-top:16px}
-  .lp-cta .btn-lg{padding:12px 24px;font-size:15px}
-  .lp + .block{padding-top:44px}
+  .lp{padding:86px 0 40px}.lp h1{font-size:26px}
+  .lgrid{grid-template-columns:1fr 1fr;gap:10px;margin-top:18px}
+  .lcard{border-radius:12px}
+  .lcard b{padding:8px 6px;font-size:12.5px}
+  .lcard .pic::after{display:none}
 }
-/* Ba điểm chính */
-.why{display:grid;grid-template-columns:repeat(3,1fr);gap:20px}
-.why .c{padding:26px;border-radius:20px;background:var(--card);border:1px solid var(--line)}
-.why h3{margin:12px 0 6px;font-size:18px}
-.why p{margin:0;color:var(--muted);font-size:15px}
-.why .ic{width:44px;height:44px;border-radius:12px;display:grid;place-items:center;background:rgba(214,69,93,.08);color:var(--red)}
-.ratios{display:flex;gap:14px;align-items:flex-end;margin-top:14px}
-.ratios i{display:block;border:1.5px solid var(--red);border-radius:3px;opacity:.75}
-.ratios small{display:block;font-size:11px;color:var(--muted);text-align:center;margin-top:4px}
-@media (max-width:900px){.why{grid-template-columns:1fr}}
 </style>
 </head>
 <body data-page="led">
@@ -76,78 +46,34 @@
 
 <section class="phero lp"><div class="wrap center">
   <h1>Màn hình LED <em>tiệc cưới</em></h1>
-  <div class="tv rv in"><iframe id="demo" src="/led/demo?preview=1&amp;palette=bac&amp;effect=dembac" title="Màn hình LED mẫu"></iframe><span class="nm" id="nm">Đêm kim tuyến bạc</span><a class="fs" id="full" href="/led/demo?palette=bac&amp;effect=dembac" target="_blank" rel="noopener" aria-label="Xem toàn màn hình" title="Xem toàn màn hình"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg></a></div>
-  <div class="strip" id="strip" role="tablist" aria-label="Chọn mẫu màn LED"></div>
-  <div class="cta lp-cta"><a class="btn btn-main btn-lg" id="use" href="/tao-led?palette=bac&amp;effect=dembac">Dùng mẫu này →</a></div>
-</div></section>
-
-<section class="block alt"><div class="wrap">
-  <div class="head center rv"><div class="center"><span class="eyebrow">Dễ dùng</span><h2 class="h2">Ba phút là <em>lên sóng</em></h2><p class="lead">Không cần USB, không cần biết thiết kế.</p></div></div>
-  <div class="why">
-    <div class="c rv"><div class="ic"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/></svg></div><h3>Sửa chữ ngay trên màn</h3><p>Bấm vào chữ trên màn xem trước để sửa. Tên, ngày cưới (kèm âm lịch), bố mẹ hai bên lấy sẵn từ thiệp, khỏi nhập lại.</p></div>
-    <div class="c rv"><div class="ic"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="4" width="20" height="13" rx="2"/><path d="M8 21h8M12 17v4"/></svg></div><h3>Vừa khít mọi màn hình</h3><p>Chọn tỉ lệ khớp màn ở sảnh — chữ tự căn, không méo, không viền đen.</p>
-      <div class="ratios"><div><i style="width:48px;height:27px"></i><small>16:9</small></div><div><i style="width:40px;height:30px"></i><small>4:3</small></div><div><i style="width:20px;height:36px"></i><small>9:16</small></div><div><i style="width:27px;height:36px"></i><small>3:4</small></div></div></div>
-    <div class="c rv"><div class="ic"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.5.5l3-3a5 5 0 0 0-7-7l-1.7 1.7"/><path d="M14 11a5 5 0 0 0-7.5-.5l-3 3a5 5 0 0 0 7 7l1.7-1.7"/></svg></div><h3>Gửi link là chiếu</h3><p>Kỹ thuật nhà hàng mở link bằng Chrome, bấm phím F là chạy toàn màn hình suốt buổi tiệc.</p></div>
-  </div>
-</div></section>
-
-<section class="block" id="gia"><div class="wrap">
-  <div class="head center rv"><div class="center"><span class="eyebrow">Bảng giá</span><h2 class="h2">Giá <em>rõ ràng</em></h2><p class="lead">Tạo và xem trước miễn phí, ưng thì kích hoạt để trình chiếu.</p></div></div>
-  <div class="prices one">
-    <div class="price hot rv" data-tag="Một lần, dùng mãi"><h3>Màn hình LED</h3><div class="amt" data-led-price>49.000đ</div><span class="muted">mỗi màn hình · trả một lần</span>
-      <ul><li>Mọi mẫu, đổi mẫu thoải mái</li><li>4 tỉ lệ màn: ngang, đứng, máy chiếu</li><li>Không dòng "Bản dùng thử"</li><li>Trình chiếu không giới hạn thời gian</li></ul>
-      <a class="btn btn-main" href="/tao-led">Tạo màn LED ngay</a></div>
-  </div>
-</div></section>
-
-<section class="block alt"><div class="wrap">
-  <div class="head center rv"><div class="center"><span class="eyebrow">Hỏi đáp</span><h2 class="h2">Câu hỏi <em>thường gặp</em></h2></div></div>
-  <div class="faq rv">
-    <details><summary>Nhà hàng cần chuẩn bị gì?</summary><p>Chỉ cần một máy tính có mạng nối với màn hình LED/TV và trình duyệt Chrome hoặc Edge. Mở link, bấm phím F (hoặc nháy đúp chuột) để toàn màn hình.</p></details>
-    <details><summary>Mạng ở sảnh yếu thì sao?</summary><p>Màn hình chỉ tải một lần lúc mở. Sau đó hiệu ứng và chuyển cảnh chạy ngay trên máy, không cần mạng liên tục.</p></details>
-    <details><summary>Màn hình có bị tắt giữa chừng không?</summary><p>Trang tự giữ cho màn hình không chuyển sang chế độ ngủ trong lúc trình chiếu (trên trình duyệt hỗ trợ).</p></details>
-    <details><summary>Tôi chưa làm thiệp online, vẫn dùng màn LED được chứ?</summary><p>Được. Bấm "Tạo màn LED", điền tên và ngày cưới là xong. Sau này muốn làm thiệp thì thông tin đã có sẵn.</p></details>
-    <details><summary>Đổi mẫu sau khi kích hoạt được không?</summary><p>Được. Đổi mẫu, sửa lời cảm ơn, bố mẹ, ngày giờ lúc nào cũng được. Riêng tên cô dâu chú rể cố định từ lúc kích hoạt.</p></details>
-  </div>
-</div></section>
-
-<section class="final"><div class="wrap">
-  <span class="eyebrow">Sảnh tiệc lung linh</span>
-  <h2 class="h2">Để tên hai bạn <em>toả sáng</em></h2>
-  <p class="lead" style="margin:0 auto 30px">Xem trước miễn phí, không cần thẻ thanh toán.</p>
-  <a class="btn btn-main btn-lg" href="/tao-led">Tạo màn LED →</a>
+  <div class="lgrid" id="lgrid" aria-label="Mẫu màn LED — bấm để xem"></div>
 </div></section>
 
 <footer id="foot"></footer>
 <script src="/js/site.js"></script>
 <script>
-// Mẫu màn LED (cùng danh sách lib/led.js TEMPLATES) — bấm ở dải dưới màn hoặc thẻ trong bộ sưu tập để xem thử trên màn lớn
+// Mẫu màn LED (cùng danh sách lib/led.js TEMPLATES) — bấm mẫu: lớp xem mẫu chạy thật, trong đó có nút "Dùng mẫu này"
 (function () {
   var T = [
-    ['bac', 'dembac', 'Đêm kim tuyến bạc', 'Trần và sàn kim tuyến bạc, thác hạt rơi chạm sàn lan gợn sáng'],
-    ['lam', 'saoroi', 'Sao rơi', 'Sao rơi xuống sàn đêm ánh lam, mỗi lần chạm toả một vòng sáng'],
-    ['bac', 'saobang', 'Đêm sao băng', 'Dải kim tuyến mờ trên cao, sao băng rơi xuống sàn sáng'],
-    ['dong', 'tuyet', 'Tuyết rơi đêm đông', 'Bông tuyết tinh thể rơi chậm, xoay nhẹ trong đêm xanh'],
-    ['tham', 'thienha', 'Dải ngân hà', 'Dải ngân hà trôi chậm giữa muôn vì sao lấp lánh'],
-    ['sondo', 'satindo', 'Lụa satin đỏ', 'Lụa đỏ gợn sóng mềm, sang trọng và ấm áp'],
-    ['ngabac', 'satinnga', 'Lụa satin ngà', 'Lụa ngà trắng nhẹ nhàng, chữ đỏ rượu thanh lịch'],
+    ['bac', 'dembac', 'Đêm kim tuyến bạc'],
+    ['lam', 'saoroi', 'Sao rơi'],
+    ['bac', 'saobang', 'Đêm sao băng'],
+    ['dong', 'tuyet', 'Tuyết rơi đêm đông'],
+    ['tham', 'thienha', 'Dải ngân hà'],
+    ['sondo', 'satindo', 'Lụa satin đỏ'],
+    ['ngabac', 'satinnga', 'Lụa satin ngà'],
   ];
-  var $ = function (s) { return document.querySelector(s); };
   var q = function (t) { return 'palette=' + t[0] + '&effect=' + t[1]; };
-  var img = function (t) { return '/demo/lposter-' + t[0] + '-' + t[1] + '.jpg'; };
-  $('#strip').innerHTML = T.map(function (t, i) {
-    return '<button role="tab" data-i="' + i + '" aria-selected="' + (i === 0) + '" class="' + (i === 0 ? 'on' : '') + '"><img src="' + img(t) + '" alt="" loading="lazy"><span>' + t[2] + '</span></button>';
+  var g = document.getElementById('lgrid');
+  g.innerHTML = T.map(function (t, i) {
+    return '<a class="lcard" data-i="' + i + '" href="/led/demo?' + q(t) + '" aria-label="Xem mẫu ' + t[2] + '"><span class="pic"><img src="/demo/lposter-' + t[0] + '-' + t[1] + '.jpg" alt="Màn hình LED đám cưới mẫu ' + t[2] + '" loading="lazy"></span><b>' + t[2] + '</b></a>';
   }).join('');
-  function show(i, scroll) {
-    var t = T[i];
-    $('#demo').src = '/led/demo?preview=1&' + q(t);
-    $('#full').href = '/led/demo?' + q(t);
-    $('#use').href = '/tao-led?' + q(t);
-    $('#nm').textContent = t[2];
-    document.querySelectorAll('#strip button').forEach(function (b) { var on = +b.dataset.i === i; b.classList.toggle('on', on); b.setAttribute('aria-selected', on); });
-    if (scroll) $('.tv').scrollIntoView({ behavior: 'smooth', block: 'center' });
-  }
-  $('#strip').addEventListener('click', function (e) { var b = e.target.closest('button[data-i]'); if (b) show(+b.dataset.i); });
+  g.addEventListener('click', function (e) {
+    var a = e.target.closest('.lcard'); if (!a || !window.tplView || e.metaKey || e.ctrlKey) return; // không có lớp xem: mở trang xem như link thường
+    e.preventDefault();
+    var t = T[+a.dataset.i];
+    tplView({ name: t[2], wide: true, src: '/led/demo?preview=1&' + q(t), use: '/tao-led?' + q(t) });
+  });
 })();
 </script>
 </body>

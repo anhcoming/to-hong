@@ -228,10 +228,10 @@
   window.tplView = function (o) {
     if (!document.getElementById('tvCss')) {
       var c = document.createElement('style'); c.id = 'tvCss';
-      c.textContent = '.tv{position:fixed;inset:0;z-index:10060;display:flex;align-items:center;justify-content:center;background:rgba(20,10,14,.62);animation:tvIn .2s ease}'
+      c.textContent = '.tv{position:fixed;inset:0;z-index:10060;display:flex;align-items:center;justify-content:center;background:rgba(20,10,14,.62);animation:tvIn .2s ease;max-width:none;width:auto;margin:0;aspect-ratio:auto;padding:0;border:0;border-radius:0;box-shadow:none}' // gỡ kiểu khung TV .tv của site.css (trùng tên) — trước đây làm lớp xem bị bẹp 16:9 trên điện thoại
         + '@keyframes tvIn{from{opacity:0}}'
-        + '.tv .box{position:relative;display:flex;flex-direction:column;overflow:hidden;border-radius:22px;background:#fff;box-shadow:0 30px 80px rgba(0,0,0,.35)}'
-        + '.tv .vw{position:relative;overflow:hidden;background:#1a1214}.tv .vw iframe{position:absolute;left:0;top:0;border:0;transform-origin:0 0;background:#fff}'
+        + '.tv .box{position:relative;display:flex;flex-direction:column;overflow:hidden;border-radius:22px;background:#fff;padding:0;border:0;max-width:none;box-shadow:0 30px 80px rgba(0,0,0,.35)}'
+        + '.tv .vw{position:relative;overflow:hidden;background:#1a1214}.tv .vw iframe{position:absolute;left:0;top:0;border:0;border-radius:0;transform-origin:0 0;background:#fff}'
         + '.tv .nm{position:absolute;top:10px;left:10px;z-index:3;max-width:calc(100% - 70px);padding:0 16px;height:40px;line-height:40px;border-radius:999px;background:rgba(0,0,0,.5);color:#fff;font-size:15px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}'
         + '.tv .box::after{content:"";position:absolute;left:0;right:0;bottom:0;height:120px;z-index:2;pointer-events:none;background:linear-gradient(0deg,rgba(0,0,0,.45),transparent)}'
         + '.tv .go{position:absolute;left:16px;right:16px;bottom:16px;z-index:3;display:flex;align-items:center;justify-content:center;gap:8px;height:52px;border-radius:999px;background:linear-gradient(135deg,#d6455d,#ef7d8d);color:#fff;font-weight:700;font-size:16px;text-decoration:none;box-shadow:0 10px 26px rgba(214,69,93,.45)}'
