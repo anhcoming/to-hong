@@ -1120,10 +1120,21 @@
   }
 
   // thu nhỏ chữ cho vừa khung (tên dài, màn đứng)
+  // cỡ chữ từng dòng người dùng chỉnh (L.sz = { lớp: hệ số }) — áp trước khi co chữ cho vừa màn
+  var SZ = ['kicker', 'names', 'wd', 'bigdate', 'time', 'lunar', 'cd', 'cd-sub', 'title', 'lb', 'pp', 'ad', 'msg', 'sign'];
+  var szOf = function (el) { for (var i = 0; i < SZ.length; i++) if (el.classList.contains(SZ[i])) return SZ[i]; return ''; };
+  function applySz() {
+    Array.prototype.forEach.call(slidesEl.querySelectorAll('.' + SZ.join(',.')), function (el) {
+      el.style.fontSize = '';
+      var k = (L.sz || {})[szOf(el)];
+      if (k && k !== 1) el.style.fontSize = (parseFloat(getComputedStyle(el).fontSize) * k) + 'px';
+    });
+  }
   function fitAll() {
     var max = W - 2 * 110;
+    applySz();
     Array.prototype.forEach.call(slidesEl.querySelectorAll('[data-fit]'), function (el) {
-      el.style.fontSize = '';
+      if (!szOf(el)) el.style.fontSize = '';
       el.style.transform = '';
       var w = el.scrollWidth;
       if (w > max) {
@@ -1258,10 +1269,45 @@
   var editing = null;
   if (C.preview && window.parent !== window) {
     document.body.classList.add('can-edit');
+    // thanh cỡ chữ nổi trên dòng vừa bấm: A− · 100% · A+ (giữ nguyên con trỏ đang gõ)
+    var szBar = document.createElement('div'), szEl = null;
+    szBar.className = 'szbar'; szBar.hidden = true;
+    szBar.innerHTML = '<button data-d="-1" title="Chữ nhỏ hơn">A−</button><output></output><button data-d="1" title="Chữ to hơn">A+</button>';
+    document.body.appendChild(szBar);
+    var szShow = function () {
+      // cảnh vừa dựng lại (trình sửa gửi cấu hình mới): tìm lại đúng dòng đó trên cảnh đang chiếu
+      if (szEl && !szEl.isConnected) szEl = slides[cur] ? slides[cur].querySelector('.' + szOf(szEl)) : null;
+      if (!szEl) { szBar.hidden = true; return; }
+      var k = (L.sz || {})[szOf(szEl)] || 1, r = szEl.getBoundingClientRect();
+      szBar.querySelector('output').textContent = Math.round(k * 100) + '%';
+      szBar.hidden = false;
+      var bw = szBar.offsetWidth, bh = szBar.offsetHeight;
+      szBar.style.left = Math.max(6, Math.min(innerWidth - bw - 6, r.left + r.width / 2 - bw / 2)) + 'px';
+      szBar.style.top = (r.top - bh - 8 >= 6 ? r.top - bh - 8 : Math.min(innerHeight - bh - 6, r.bottom + 8)) + 'px';
+    };
+    szBar.addEventListener('mousedown', function (e) { e.preventDefault(); }); // không làm mất chữ đang gõ
+    szBar.addEventListener('click', function (e) {
+      var b = e.target.closest('[data-d]'); if (!b || !szEl) return;
+      var key = szOf(szEl), sz = Object.assign({}, L.sz || {});
+      var k = Math.round(Math.min(1.8, Math.max(0.6, (sz[key] || 1) + 0.1 * +b.getAttribute('data-d'))) * 10) / 10;
+      sz[key] = k; L.sz = sz;
+      fitAll(); szShow();
+      try { window.parent.postMessage({ type: 'led-size', key: key, value: k }, location.origin); } catch (er) { /* bỏ qua */ }
+    });
+    document.addEventListener('click', function (e) {
+      if (e.target.closest('.szbar')) return;
+      var t = e.target.closest('.slide *'), el = null;
+      while (t && t !== slidesEl) { if (szOf(t)) { el = t; break; } t = t.parentElement; }
+      szEl = el;
+      if (el && !paused) togglePause(); // dừng cảnh trong lúc chỉnh
+      szShow();
+    }, true);
+    window.addEventListener('resize', function () { szBar.hidden = true; szEl = null; });
     slidesEl.addEventListener('click', function (e) {
       var t = e.target.closest('[data-e]');
       if (t && L.names && /^(groom|bride)\.name$/.test(t.getAttribute('data-e'))) t = null; // đã kích hoạt: tên đôi cố định, không sửa
-      if (!t) { if (e.target.closest('[data-date]')) { if (!paused) togglePause(); try { window.parent.postMessage({ type: 'led-date' }, location.origin); } catch (er) { /* bỏ qua */ } } return; }
+      // bấm ngày / giờ → ô chọn ngày giờ; thứ, âm lịch chỉ chỉnh cỡ chữ
+      if (!t) { if (e.target.closest('.bigdate, .time')) { if (!paused) togglePause(); try { window.parent.postMessage({ type: 'led-date' }, location.origin); } catch (er) { /* bỏ qua */ } } return; }
       if (editing === t) return;
       if (!paused) togglePause(); // dừng cảnh trong lúc gõ
       editing = t; try { t.contentEditable = 'plaintext-only'; } catch (er) { t.contentEditable = 'true'; } if (t.contentEditable !== 'plaintext-only') t.contentEditable = 'true';
@@ -1291,8 +1337,9 @@
         if (e.data.card.photo !== undefined) C.photo = e.data.card.photo;
       }
       apply(e.data.led);
+      if (szBar && szEl) szShow();
     }
-    if (e.data.type === 'led-goto') { show(e.data.index); restartTimer(); }
+    if (e.data.type === 'led-goto') { if (szBar) { szBar.hidden = true; szEl = null; } show(e.data.index); restartTimer(); }
     if (e.data.type === 'led-pause' && !!e.data.paused !== paused) togglePause();
   });
 

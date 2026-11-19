@@ -66,6 +66,13 @@ body.can-edit [data-e]:hover{outline-color:rgba(255,255,255,.75)}
 body.can-edit [data-e][contenteditable=true],body.can-edit [data-e][contenteditable=plaintext-only]{outline:2px dashed #ef7d8d;caret-color:currentColor}
 body.can-edit [data-e]:empty::before{content:'Bấm để nhập';opacity:.45}
 body.can-edit [data-date]{cursor:pointer}
+/* thanh cỡ chữ (khung xem trước của trình sửa): nằm ngoài sân khấu nên không bị thu nhỏ theo màn */
+.szbar{position:fixed;z-index:50;display:flex;align-items:center;gap:2px;padding:3px;border-radius:999px;background:#fff;box-shadow:0 6px 20px rgba(0,0,0,.35);font:600 13px/1 system-ui,sans-serif;color:#2a1b1e}
+.szbar[hidden]{display:none}
+.szbar button{width:34px;height:30px;border:0;border-radius:999px;background:none;color:inherit;font:700 13px/1 system-ui,sans-serif;cursor:pointer}
+.szbar button:hover{background:#f6e3e6;color:#c23a52}
+.szbar output{min-width:42px;text-align:center;font-variant-numeric:tabular-nums;color:#7a6266}
+body.can-edit .slide [class]:not(.slide):not(.amp):not(i):hover{cursor:pointer}
 body.can-edit [data-date]:hover .bigdate{outline:2px dashed rgba(255,255,255,.75);outline-offset:8px;border-radius:10px}
 
 .ctl{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);display:flex;gap:8px;padding:8px;border-radius:999px;background:rgba(0,0,0,.55);backdrop-filter:blur(6px);opacity:0;transition:opacity .3s;z-index:5}

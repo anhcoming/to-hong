@@ -1,6 +1,8 @@
 // Hộp thoại kích hoạt thiệp (dùng ở trang quản lý và trình sửa)
 // Luồng: mã QR (hiệu lực 5 phút, có vạch quét chạy; hết hạn thì bấm tạo mã mới) → khách chuyển khoản → SePay báo tiền về → "Đã kích hoạt" tự hiện.
 // Cửa sổ hỏi lại trạng thái đơn vài giây một lần; tiền về sớm (chưa bấm nút) thì nhảy thẳng sang "Đã kích hoạt".
+// chữ thường đầu câu nhưng giữ chữ viết hoa sẵn (LED): "Màn hình LED tiệc cưới" → "màn hình LED tiệc cưới"
+const lcFirst = (s) => String(s || '').charAt(0).toLowerCase() + String(s || '').slice(1);
 const PAY_CSS = `<style>
 @keyframes paySpin{to{transform:rotate(360deg)}}
 @keyframes payIn{from{opacity:0}to{opacity:1}}
@@ -99,10 +101,10 @@ window.openPayModal = async function (cardId, onDone, product = 'card') {
     const el = overlay();
     el.innerHTML = `${PAY_CSS}<div class="in">
         <div class="big">🎉</div>
-        <h2>${o.product === 'combo' ? 'Đã kích hoạt Trọn bộ ngày cưới' : `Đã kích hoạt ${esc(o.productName.toLowerCase())}`}</h2>
+        <h2>${o.product === 'combo' ? 'Đã kích hoạt Trọn bộ ngày cưới' : `Đã kích hoạt ${esc(lcFirst(o.productName))}`}</h2>
         ${o.product === 'combo' ? '<p class="muted" style="margin:0 0 6px">Thiệp, <b>màn hình LED</b> và <b>slide / màn hình dạm ngõ</b> của thiệp này đều đã kích hoạt. Chưa làm LED / video thì làm lúc nào cũng được, không phải trả thêm.</p>' : ''}
         <p class="muted">Đã nhận ${money(o.amount)}. Cảm ơn hai bạn — chúc đám cưới thật vui!</p>
-        <button class="btn block lg" id="payDone" style="margin-top:22px">Xong</button>
+        <button class="btn lg" id="payDone" style="margin-top:22px">Xong</button>
       </div>`;
     $('#payDone', el).onclick = closeAll;
     $('#payDone', el).focus();
@@ -115,7 +117,7 @@ window.openPayModal = async function (cardId, onDone, product = 'card') {
     el.innerHTML = `${PAY_CSS}<div class="in" role="status" aria-live="polite">
         <div class="ring" aria-hidden="true"></div>
         <h2>Đang chờ thanh toán…</h2>
-        <p class="muted" style="margin:0">Ngân hàng báo tiền về là ${esc(o.productName.toLowerCase())} tự kích hoạt — thường chỉ vài giây. Đừng tắt trang này nhé.</p>
+        <p class="muted" style="margin:0">Ngân hàng báo tiền về là ${esc(lcFirst(o.productName))} tự kích hoạt — thường chỉ vài giây. Đừng tắt trang này nhé.</p>
         <div class="amt">${money(o.amount)}</div>
         <div class="meta"><span>Nội dung <b style="color:var(--ink)">${esc(o.code)}</b></span><span id="payClock">0:00</span></div>
         ${slow ? `<p class="slow">Hơi lâu rồi — có thể ngân hàng đang chậm. Bạn có thể đóng trang, Cưới Nha sẽ kiểm tra và kích hoạt giúp trong ít phút.</p>` : ''}
@@ -153,7 +155,7 @@ window.openPayModal = async function (cardId, onDone, product = 'card') {
       <div style="text-align:center;margin-top:4px">${o.wasPrice ? `<div class="muted" style="font-size:15px">${o.retail ? 'Mua lẻ ' : ''}<s>${money(o.wasPrice)}</s></div>` : ''}<div style="font-family:var(--serif);font-size:34px;font-weight:600;color:var(--primary);line-height:1.2">${money(o.amount)}</div>${until}${o.coupon ? ` <span class="chip ok">Đã áp mã ${esc(o.coupon)}</span>` : ''}</div>`
       : `
       <div style="text-align:center">
-        <h2>${p === 'combo' && o.upgrade ? 'Nâng lên Trọn bộ' : `Kích hoạt ${esc(o.productName.toLowerCase())}`}</h2>
+        <h2>${p === 'combo' && o.upgrade ? 'Nâng lên Trọn bộ' : `Kích hoạt ${esc(lcFirst(o.productName))}`}</h2>
         <p class="muted" style="margin:0 0 6px">${p === 'combo' && o.upgrade ? `Đã có ${partsOf(o).have} · thêm ${partsOf(o).need}` : esc(o.card ? o.card.names || o.card.title : '')}</p>
         ${o.wasPrice ? `<div class="muted" style="font-size:16px;margin-top:4px">${o.retail ? 'Mua lẻ ' : ''}<s>${money(o.wasPrice)}</s></div>` : ''}
         <div style="font-family:var(--serif);font-size:36px;font-weight:600;color:var(--primary)">${money(o.amount)}</div>

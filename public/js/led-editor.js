@@ -31,8 +31,12 @@ function renderSide() {
 
   const head = (t, dsc) => `<h2 class="phd">${t}</h2>${dsc ? `<p class="pdesc">${dsc}</p>` : ''}`;
   const next = (to, label) => `<div class="next"><button class="btn block" data-go="${to}">${label} →</button></div>`;
-  if (!['hieu', 'man'].includes(curPanel)) curPanel = 'hieu';
-  $$('#rail [data-panel]').forEach((b) => { b.hidden = !['hieu', 'man'].includes(b.dataset.panel); b.classList.toggle('on', b.dataset.panel === curPanel); });
+  // chỉ còn bảng Mẫu (cột icon đã ẩn); khung màn là thanh nhỏ ngay trên khung xem trước
+  curPanel = 'hieu';
+  $('#rbar').innerHTML = `<span>Khung màn</span>` + META.led.ratios.map((r) => {
+    const [w, hh] = r.split(':').map(Number), s = 13 / Math.max(w, hh);
+    return `<button class="${led.ratio === r ? 'on' : ''}" data-set="ratio" data-v="${r}" title="${esc(RATIO_INFO[r][0] + ' — ' + RATIO_INFO[r][1])}"><i style="width:${Math.round(w * s)}px;height:${Math.round(hh * s)}px"></i>${r}</button>`;
+  }).join('');
   let h = '';
   if (curPanel === 'hieu') h = head('Mẫu màn hình', 'Chọn một mẫu có sẵn. Bấm chữ trên màn để sửa, bật / tắt cảnh ở thanh bên dưới.') + (card.led.names ? `<p class="muted" style="font-size:13px;margin:-4px 0 12px">🔒 Đã kích hoạt: tên <b>${esc(card.led.names.groom)} &amp; ${esc(card.led.names.bride)}</b> cố định trên màn LED. Các chữ khác vẫn sửa thoải mái.</p>` : '') + `<section class="group">
       <div class="lmau">${(META.led.templates || []).map((t) => `<button class="lm ${led.palette === t.palette && led.effect === t.effect ? 'on' : ''}" data-tpl="${t.id}"><i style="background-image:url('/demo/lposter-${t.palette}-${t.effect}.jpg')"></i><b>${esc(t.name)}</b></button>`).join('')}</div>
@@ -60,7 +64,7 @@ function renderSide() {
         <li>Mở link bằng Chrome hoặc Edge trên máy nối với màn hình.</li>
         <li>Bấm <b>F</b> hoặc nháy đúp chuột để chạy toàn màn hình.</li>
         <li>Phím ← → chuyển cảnh, phím cách để tạm dừng.</li>
-        <li>Khung màn đã chọn: <b>${esc(led.ratio)}</b> — đổi ở bảng "Khung màn" nếu chưa khớp.</li>
+        <li>Khung màn đã chọn: <b>${esc(led.ratio)}</b> — đổi ở thanh "Khung màn" trên khung xem trước nếu chưa khớp.</li>
       </ol></section>`;
   $('#side').innerHTML = h;
   const rt = $('#ratioTxt'); if (rt) rt.textContent = (RATIO_INFO[led.ratio] || [led.ratio])[0] + ' ·';
@@ -102,7 +106,7 @@ function fitScreen() {
   const box = $('#stagewrap').getBoundingClientRect();
   // điện thoại: khung xem trước theo bề ngang, cao tối đa ~1/3 màn hình (phần tuỳ chỉnh bên dưới cuộn riêng)
   const phone = matchMedia('(max-width:900px)').matches;
-  const maxW = phone ? innerWidth - 22 : box.width - 48, maxH = phone ? innerHeight * (h > w ? 0.42 : 0.34) : box.height - 110;
+  const maxW = phone ? innerWidth - 22 : box.width - 48, maxH = phone ? innerHeight * (h > w ? 0.42 : 0.34) : box.height - 160; // chừa thanh khung màn + thanh cảnh
   const s = Math.min(maxW / w, maxH / h);
   $('#screen').style.width = Math.round(w * s) + 'px';
   $('#screen').style.height = Math.round(h * s) + 'px';
@@ -147,7 +151,7 @@ async function save() {
 }
 
 // ---------- khách chưa đăng nhập: bấm "Lấy link chiếu" → đăng nhập; xong quay lại đúng màn này (bản nháp về tài khoản) và mở luôn bước kích hoạt ----------
-function askLogin() {
+async function askLogin() {
   const next = encodeURIComponent(location.pathname + '?xuat=1');
   openModal(`<h2 style="margin-top:0">Lấy link chiếu màn LED</h2>
     <p class="muted" style="margin:0 0 16px">Đăng nhập để lưu màn LED vào tài khoản và lấy link gửi kỹ thuật nhà hàng. Mẫu và chữ bạn vừa sửa được giữ nguyên.</p>
@@ -178,6 +182,10 @@ async function reload() {
 function bind() {
   const side = $('#side');
   $('#rail').addEventListener('click', (e) => { const b = e.target.closest('[data-panel]'); if (!b) return; curPanel = b.dataset.panel; renderSide(); });
+  $('#rbar').addEventListener('click', (e) => {
+    const b = e.target.closest('[data-set]'); if (!b) return;
+    led.ratio = b.dataset.v; renderSide(); fitScreen(); pushPreview(); schedule(300);
+  });
   side.addEventListener('click', (e) => {
     const g = e.target.closest('[data-go]'); if (g) { curPanel = g.dataset.go; return renderSide(); }
     const tp = e.target.closest('[data-tpl]');
@@ -252,6 +260,7 @@ function bind() {
       schedule(700);
     }
     if (m.type === 'led-text-done') pushPreview();
+    if (m.type === 'led-size') { led.sz = { ...(led.sz || {}), [m.key]: m.value }; schedule(500); } // nút A− / A+ trên màn xem trước
     if (m.type === 'led-date') datePop();
   });
   // ---------- thanh cảnh: bấm để xem, ✕ / ＋ để ẩn / hiện cảnh, tốc độ ở cuối thanh ----------
@@ -305,7 +314,9 @@ function datePop() {
   p.id = 'datePop'; p.className = 'datepop';
   p.innerHTML = `<b>Ngày giờ cưới</b><div class="grid2"><label class="field"><span>Ngày</span><input type="date" id="dpD" value="${esc(d.date || '')}"></label><label class="field"><span>Giờ</span><input type="time" id="dpT" value="${esc(d.time || '')}"></label></div><p class="muted" style="font-size:12px;margin:0">Dùng chung với thiệp. Ngày âm lịch tự tính.</p>`;
   document.body.appendChild(p);
-  p.style.left = Math.round(r.left + r.width / 2 - 150) + 'px'; p.style.top = Math.round(r.top + r.height / 2 - 70) + 'px';
+  // ngay dưới khung xem trước (không che chữ ngày và thanh cỡ chữ đang hiện trên màn)
+  p.style.left = Math.round(Math.max(8, Math.min(innerWidth - 308, r.left + r.width / 2 - 150))) + 'px';
+  p.style.top = Math.round(Math.min(innerHeight - p.offsetHeight - 8, r.bottom + 10)) + 'px';
   const set = () => { d.date = $('#dpD', p).value; d.time = $('#dpT', p).value; dataDirty = true; needReload = true; schedule(400); };
   $('#dpD', p).addEventListener('change', set); $('#dpT', p).addEventListener('change', set);
 }

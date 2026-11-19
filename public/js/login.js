@@ -42,7 +42,7 @@
     var wrap = document.createElement('div');
     wrap.className = 'lgm'; wrap.setAttribute('role', 'dialog'); wrap.setAttribute('aria-modal', 'true'); wrap.setAttribute('aria-label', 'Đăng nhập');
     var q = '?next=' + encodeURIComponent(next);
-    var sub = /^\/sua/.test(next) ? 'Đăng nhập để lưu thiệp bạn vừa làm — nội dung đã sửa được giữ nguyên.' : 'Lưu thiệp, video và sổ tay cưới của bạn. Chưa có tài khoản cũng bấm luôn.';
+    var sub = o.sub ? o.sub : /^\/sua/.test(next) ? 'Đăng nhập để lưu thiệp bạn vừa làm — nội dung đã sửa được giữ nguyên.' : 'Lưu thiệp, video và sổ tay cưới của bạn. Chưa có tài khoản cũng bấm luôn.';
     wrap.innerHTML = '<div class="lgm-b"><button class="lgm-x" aria-label="Đóng">✕</button>'
       + '<h2>Đăng nhập</h2><p>' + sub + '</p>'
       + '<div class="lgm-ia" hidden>Bạn đang mở trong ứng dụng ' + inApp + ' — Google không cho đăng nhập ở đây. Bấm <b>⋯</b> → <b>Mở bằng trình duyệt</b>.</div>'
