@@ -541,7 +541,7 @@ function renderHeader() {
   // tình trạng: dòng chữ nhỏ cạnh "Đã lưu" (không chiếm chỗ trên thanh)
   const chip = $('#chip');
   chip.className = s.paid ? 'ok' : 'warn';
-  chip.textContent = s.paid ? '· đã kích hoạt' : '· xem trước · chưa kích hoạt';
+  chip.textContent = s.paid ? '· đã kích hoạt' : '· đang dùng thử';
   if (engOpts) engOpts.trial = !s.paid; // khung xem trước: dòng "Bản dùng thử" vẽ thẳng lên hình cho tới khi kích hoạt
   // một nút đỏ duy nhất: Kích hoạt (chưa trả) / Tải MP4 (đã trả); chép link + tải MP4 gom vào menu Chia sẻ
   const credit = !s.paid && card.credits && card.credits.video > 0;

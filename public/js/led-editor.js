@@ -91,7 +91,7 @@ function renderHeader() {
     return;
   }
   $('#chip').innerHTML = !s.created ? '' : s.paid ? '<span class="chip ok">● Đã kích hoạt</span>'
-    : '<span class="chip warn">Xem trước · chưa kích hoạt</span>';
+    : '<span class="chip warn">Đang dùng thử</span>';
   // điện thoại: nhãn ngắn (lớp hide-xs / show-xs) để ba nút vừa một hàng
   $('#acts').innerHTML = s.created ? `<button class="btn sm soft" id="cpLink">Chép link</button><a class="btn sm plain" id="openLed" target="_blank" href="${esc(s.url)}"><span class="hide-xs">Mở trình chiếu</span><span class="show-xs">▶ Trình chiếu</span></a>${s.paid ? '' : card.credits && card.credits.led > 0 ? '<button class="btn sm" id="payBtn">🎁 Dùng lượt Trọn bộ</button>' : `<button class="btn sm" id="payBtn">Kích hoạt<span class="hide-xs"> · ${money(META.ledPrice)}</span><span class="show-xs"> ${Math.round(META.ledPrice / 1000)}k</span></button>`}`
     : '';
