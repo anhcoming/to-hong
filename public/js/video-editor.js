@@ -7,8 +7,8 @@ const SWATCH = { ngoc: 'linear-gradient(135deg,#f6f0e6,#e2d6c3)', diudang: 'line
 
 function info() {
   const fam = (p) => [p.father, p.mother].filter(Boolean).join(' – ');
-  const d = card.data;
-  return { chu_re: d.groom.name, co_dau: d.bride.name, bo_me_trai: fam(d.groom), bo_me_gai: fam(d.bride) };
+  const d = card.data, fx = card.video && card.video.names; // đã kích hoạt: tên đôi cố định lúc kích hoạt
+  return { chu_re: fx ? fx.groom : d.groom.name, co_dau: fx ? fx.bride : d.bride.name, bo_me_trai: fam(d.groom), bo_me_gai: fam(d.bride) };
 }
 function status(t) { $('#saved').textContent = t; const sb = $('#subl'); if (sb) sb.classList.toggle('ok', /Đã lưu|Đã khôi phục/.test(t)); }
 // trình sửa kiểu CapCut: cột icon chọn bảng (curPanel), dòng thời gian chọn cảnh (selClip), hoàn tác / làm lại (hist)
@@ -195,7 +195,7 @@ function eventFields() {
       <label class="field"><span>Ngày</span><input type="date" data-e="date" value="${esc(ev.date)}"></label>
       <label class="field"><span>Giờ</span><input type="time" data-e="time" value="${esc(ev.time)}"></label>
     </div>
-    <p class="muted" style="font-size:12px;margin:0">Tên <b>${esc(info().chu_re || '(chưa nhập)')}</b> &amp; <b>${esc(info().co_dau || '(chưa nhập)')}</b>, bố mẹ lấy từ thiệp — <a href="/sua/${CARD_ID}">sửa ở thiệp</a>.</p></details>`;
+    <p class="muted" style="font-size:12px;margin:0">${card.video && card.video.names ? `🔒 Đã kích hoạt: tên <b>${esc(info().chu_re)}</b> &amp; <b>${esc(info().co_dau)}</b> cố định trên video. Bố mẹ lấy từ thiệp — <a href="/sua/${CARD_ID}">sửa ở thiệp</a>.` : `Tên <b>${esc(info().chu_re || '(chưa nhập)')}</b> &amp; <b>${esc(info().co_dau || '(chưa nhập)')}</b>, bố mẹ lấy từ thiệp — <a href="/sua/${CARD_ID}">sửa ở thiệp</a>.`}</p></details>`;
 }
 // thẻ chữ: bấm ô chữ ở dòng thời gian
 function openTxPop(si) {
@@ -585,7 +585,9 @@ async function save() {
   status('Đang lưu…');
   try {
     const r = await api(`/api/cards/${CARD_ID}`, { method: 'PUT', body: { video }, quiet: true });
+    const was = card.video && card.video.names;
     card.video = r.card.video;
+    if (!was && card.video.names) refresh(); // vừa kích hoạt: dùng tên đã cố định
     upStatus();
     renderHeader();
   } catch (e) {

@@ -19,6 +19,7 @@ const cd = require('./lib/carddata');
 const { renderCard, renderNotice, templates, templateList, groups: templateGroups, DEFAULT_TEMPLATE } = require('./lib/render');
 const banks = require('./lib/banks');
 const ledLib = require('./lib/led');
+const { fixNames } = require('./lib/fixnames');
 const videoLib = require('./lib/video');
 const musicLib = require('./lib/music');
 const { execFile } = require('child_process');
@@ -55,7 +56,7 @@ function useCredit(card, kind, via = 'credit') {
   if (target.paid) throw httpError(400, 'Đã kích hoạt rồi');
   u.credits[kind] -= 1;
   target.paid = true; target.paidAt = Date.now();
-  ledLib.fixNames(card);
+  fixNames(card);
   // ghi lại thành đơn 0đ để trang quản trị thấy lượt nào dùng ở đâu
   db.orders.push({ id: rid(12), code: PRODUCTS[kind].prefix + rid(6).toUpperCase(), product: kind, cardId: card.id, userId: card.userId, amount: 0, status: 'paid', paidVia: via, createdAt: target.paidAt, paidAt: target.paidAt });
 }
@@ -66,7 +67,7 @@ function comboUnlock(card, kind, at = Date.now()) {
   const t = card[kind];
   if (!card.combo || !t || t.paid) return;
   t.paid = true; t.paidAt = at;
-  ledLib.fixNames(card);
+  fixNames(card);
   // ghi thành đơn 0đ để trang quản trị thấy LED / video nào được mở nhờ Trọn bộ
   db.orders.push({ id: rid(12), code: PRODUCTS[kind].prefix + rid(6).toUpperCase(), product: kind, cardId: card.id, userId: card.userId, amount: 0, status: 'paid', paidVia: 'combo', createdAt: at, paidAt: at });
 }
@@ -605,10 +606,18 @@ route('PUT', '/api/cards/:id', async (req, res, ctx) => {
     card.oldSlugs = [...(card.oldSlugs || []).filter((x) => x !== s), card.slug].slice(-5); // link đã gửi vẫn mở được
     card.slug = s;
   }
-  if (b.data) { ledLib.fixNames(card); card.data = Wd.keepFrozen(card, cd.normalize(b.data)); Wd.syncFromCard(card); } // đã qua ngày cưới: tên đôi + ngày cưới giữ nguyên // màn LED kích hoạt từ trước: cố định tên trước khi đổi
+  if (b.data) { fixNames(card); card.data = Wd.keepFrozen(card, cd.normalize(b.data)); Wd.syncFromCard(card); } // đã qua ngày cưới: tên đôi + ngày cưới giữ nguyên // màn LED kích hoạt từ trước: cố định tên trước khi đổi
   if (b.data && b.slug === undefined && card.userId) autoSlug(card); // thiệp nháp của khách chưa đăng nhập: giữ nguyên
   if (b.led) { card.led = ledLib.normalize(b.led, card.led); comboUnlock(card, 'led'); } // tạo màn LED (chưa kích hoạt: chỉ xem trước; thiệp Trọn bộ: kích hoạt luôn)
-  if (b.video) { card.video = videoLib.normalize(b.video, card.video); comboUnlock(card, 'video'); }
+  if (b.video) {
+    const nv = videoLib.normalize(b.video, card.video);
+    // video đã kích hoạt: tên đôi cố định — không được bỏ chỗ hiện tên ({chu_re} / {co_dau}) để gõ tên khác vào
+    if (card.video && card.video.paid) {
+      const cnt = (v, k) => v.scenes.reduce((n, s) => n + s.lines.reduce((m, l) => m + l.text.split(k).length - 1, 0), 0);
+      if (['{chu_re}', '{co_dau}'].some((k) => cnt(nv, k) < Math.min(1, cnt(card.video, k)))) throw httpError(409, 'Video đã kích hoạt nên tên cô dâu chú rể cố định — không xoá hay thay được dòng tên. Bấm Hoàn tác để lấy lại nhé.');
+    }
+    card.video = nv; comboUnlock(card, 'video');
+  }
   card.updatedAt = Date.now();
   if (b.data || b.template || b.palette) DRAFTS.delete(card.id);
   save();
@@ -882,7 +891,7 @@ function markPaid(o, via) {
   if (card && o.product === 'combo') activateCombo(card, o.paidAt);
   else {
     const target = card && PRODUCTS[o.product || 'card'].sub(card);
-    if (target) { target.paid = true; target.paidAt = o.paidAt; ledLib.fixNames(card); }
+    if (target) { target.paid = true; target.paidAt = o.paidAt; fixNames(card); }
   }
   closeCovered(o);
 }
