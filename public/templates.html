@@ -23,7 +23,8 @@
 /* Trang bộ sưu tập mẫu: thanh lọc ngang trên lưới — ô tìm + chip phong cách kèm số mẫu; bộ lọc đang áp hiện thành thẻ × cạnh số mẫu;
    bộ lọc ghi lên URL để gửi link được. Điện thoại: ô tìm tràn hàng, chip cuộn ngang. */
 .sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
-main.wrap{padding-top:104px} /* không có phần giới thiệu: nội dung nằm ngay dưới thanh menu nổi */
+main.wrap{padding-top:104px}
+.thead{margin:0 0 18px}.thead h1{margin:0;font-family:var(--serif);font-weight:800;letter-spacing:-.02em;font-size:32px;line-height:1.2}.thead p{margin:4px 0 0;color:var(--muted);font-size:15px} /* không có phần giới thiệu: nội dung nằm ngay dưới thanh menu nổi */
 .side{display:flex;flex-wrap:wrap;align-items:center;gap:10px 8px;margin:0 0 14px;padding-bottom:16px;border-bottom:1px solid var(--line)}
 .srch{display:flex;flex:none;align-items:center;gap:8px;width:210px;height:40px;padding:0 12px;border:1px solid var(--line);border-radius:999px;background:var(--card)}
 .srch:focus-within{border-color:#f2b6bf}
@@ -82,6 +83,7 @@ main.wrap{padding-top:104px} /* không có phần giới thiệu: nội dung n�
 /* điện thoại / máy tính bảng hẹp: ô tìm tràn hàng, chip phong cách cuộn ngang một hàng, chấm màu xuống hàng riêng */
 @media (max-width:860px){
   .srch{display:none} /* điện thoại: không ô tìm, chỉ thanh tab */
+  .thead{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);margin:0} /* điện thoại: ẩn tiêu đề (chỉ cho Google), giữ gọn */
   /* điện thoại: thanh tab gạch chân — chữ xám, mục chọn đậm + gạch hồng, không số, không dòng "49 mẫu" */
   .side{padding-bottom:0;margin-bottom:18px}
   .flist{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;width:100vw;margin:0 -16px;padding:0 16px;box-sizing:border-box;gap:0 20px}
@@ -104,9 +106,9 @@ main.wrap{padding-top:104px} /* không có phần giới thiệu: nội dung n�
 <body data-page="tpl">
 <header id="nav"></header>
 
-<h1 class="sr">Mẫu thiệp cưới online</h1>
 
 <main class="wrap">
+  <div class="thead"><h1>Mẫu thiệp cưới online</h1><p>Bấm vào mẫu để xem trước, ưng thì bấm Dùng mẫu</p></div>
   <p class="chon" id="chon"><b>Chọn một mẫu để tạo thiệp mới</b> — bấm vào mẫu để xem trước, rồi bấm <b>Dùng mẫu</b>.</p>
   <div class="side" id="side" role="search" aria-label="Bộ lọc mẫu">
     <label class="srch"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#6f6668" stroke-width="2.2" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg><input id="q" type="search" placeholder="Tìm mẫu…" aria-label="Tìm mẫu theo tên"></label>
