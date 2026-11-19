@@ -1372,7 +1372,7 @@
     resetFx: resetFx,
     hold: function (on) { holding = !!on; if (on) paused = true; },
     // trình sửa (màn LED đã chốt) dựng thanh phát riêng: phát / dừng, tua, thời gian
-    play: { pos: position, total: total, seek: function (t) { seekTo(t); tell(); }, paused: function () { return paused; }, toggle: togglePause, count: function () { return slides.length; }, seconds: function () { return L.seconds; }, keys: function () { return slides.map(function (s) { return s.getAttribute('data-k') || ''; }); } },
+    play: { pos: position, total: total, seek: function (t) { var de = document.documentElement; de.classList.add('still'); seekTo(t); tell(); requestAnimationFrame(function () { requestAnimationFrame(function () { de.classList.remove('still'); }); }); }, /* tua: chuyển cảnh ngay, không hiệu ứng */ paused: function () { return paused; }, toggle: togglePause, count: function () { return slides.length; }, seconds: function () { return L.seconds; }, keys: function () { return slides.map(function (s) { return s.getAttribute('data-k') || ''; }); } },
   };
 
   apply(L);

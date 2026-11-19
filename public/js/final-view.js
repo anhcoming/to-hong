@@ -36,10 +36,14 @@ body.fv-on #scrub{display:none!important} /* video: thanh phát cũ thay bằng 
 .fv-play{display:grid;grid-template-columns:auto minmax(0,1fr) auto auto;column-gap:14px;row-gap:6px;align-items:center;width:100%} /* hàng 1: nút · thanh tua · giờ · toàn màn; hàng 2: tên cảnh dưới đúng từng đoạn */
 .fv-play .pp{all:unset;cursor:pointer;flex:none;width:44px;height:44px;border-radius:50%;display:grid;place-items:center;background:var(--primary);color:#fff;font-size:14px;box-shadow:0 8px 18px rgba(214,69,93,.32)}
 .fv-play .pp:focus-visible,.fv-play .fs:focus-visible{outline:2px solid var(--primary);outline-offset:3px}
-.fv-segs{grid-column:2;grid-row:1;min-width:0;display:flex;gap:4px}
-.fv-labs{grid-column:2;grid-row:2;min-width:0;display:flex;gap:4px}
+.fv-segs{grid-column:2;grid-row:1;min-width:0;padding:10px 0;cursor:pointer;touch-action:none}
+.fv-track{position:relative;height:8px;border-radius:6px;background:color-mix(in srgb,var(--line) 70%,#cdbfc1)}
+.fv-track .fill{position:absolute;left:0;top:0;bottom:0;width:0;border-radius:6px;background:var(--primary)}
+.fv-track .tk{position:absolute;top:0;bottom:0;width:2px;margin-left:-1px;background:var(--surface,#fff)}
+.fv-track .knob{position:absolute;top:50%;width:14px;height:14px;margin:-7px 0 0 -7px;border-radius:50%;background:var(--primary);box-shadow:0 1px 4px rgba(0,0,0,.25)}
+.fv-labs{grid-column:2;grid-row:2;position:relative;min-width:0;height:32px}
 .fv-play>.pp{grid-column:1;grid-row:1}.fv-play>.tm{grid-column:3;grid-row:1}.fv-play>.fs{grid-column:4;grid-row:1}
-.fv-lab{all:unset;flex:var(--w) 1 0;min-width:10px;cursor:pointer;overflow:hidden}
+.fv-lab{all:unset;position:absolute;top:0;max-width:34%;cursor:pointer;overflow:hidden}
 .fv-seg{all:unset;flex:var(--w) 1 0;min-width:10px;cursor:pointer;padding:8px 0}
 .fv-seg .bar{height:8px;border-radius:6px;background:color-mix(in srgb,var(--line) 70%,#cdbfc1);overflow:hidden;transition:height .15s}
 .fv-seg:hover .bar{height:10px;margin-top:-1px}
@@ -54,7 +58,7 @@ body.fv-on #scrub{display:none!important} /* video: thanh phát cũ thay bằng 
 .fv-line span{display:inline-flex;align-items:center;gap:6px}.fv-line b{color:var(--ink);font-weight:600}
 @media (max-width:600px){
   .fv-play{column-gap:10px;row-gap:0}.fv-play .pp{width:40px;height:40px}.fv-play .fs{width:34px;height:34px;margin:0}
-  .fv-segs{gap:3px;padding:0}.fv-labs{display:none}.fv-play .tm{padding:0;font-size:12px}
+  .fv-segs{padding:8px 0}.fv-labs{display:none}.fv-play .tm{padding:0;font-size:12px}
   .fv-line{margin-top:14px;padding-top:12px;gap:6px 14px;font-size:12.5px}
 }
 @media (max-width:980px){
@@ -140,11 +144,13 @@ body.fv-on #scrub{display:none!important} /* video: thanh phát cũ thay bằng 
       const b = e.target.closest('[data-pl]');
       if (b) return b.dataset.pl === 'pp' ? p.toggle() : o.onFull && o.onFull();
       const lb = e.target.closest('.fv-lab'); if (lb) return p.seek(+lb.dataset.t); // bấm tên cảnh: về đầu cảnh
-      const sg = e.target.closest('.fv-seg'); if (!sg) return;
-      // bấm vào thanh của đoạn: tua đúng chỗ
-      const t0 = +sg.dataset.t, d = +sg.dataset.d, r = sg.querySelector('.bar').getBoundingClientRect();
-      p.seek(t0 + Math.max(0, Math.min(1, (e.clientX - r.left) / r.width)) * d);
     });
+    // bấm hoặc kéo trên thanh tua: nhảy ngay tới đúng thời điểm
+    const at = (e) => { const p = P(), tr = bar.querySelector('.fv-track'); if (!p || !tr) return; const r = tr.getBoundingClientRect(); p.seek(Math.max(0, Math.min(1, (e.clientX - r.left) / r.width)) * p.total()); };
+    let drag = false;
+    bar.addEventListener('pointerdown', (e) => { if (!e.target.closest('.fv-segs')) return; drag = true; e.preventDefault(); at(e); });
+    addEventListener('pointermove', (e) => { if (drag) at(e); });
+    addEventListener('pointerup', () => { drag = false; });
     const tick = () => {
       if (!bar.isConnected) return;
       const p = P(), segs = bar.querySelector('.fv-segs');
@@ -153,19 +159,16 @@ body.fv-on #scrub{display:none!important} /* video: thanh phát cũ thay bằng 
         const key = T + '|' + ch.map((c) => c.t + c.name).join(',');
         if (bar.dataset.key !== key) {
           bar.dataset.key = key;
-          segs.innerHTML = ch.map((c, i) => { const d = Math.max(0.1, (i + 1 < ch.length ? ch[i + 1].t : T) - c.t);
-            return `<button type="button" class="fv-seg" style="--w:${d.toFixed(2)}" data-t="${c.t}" data-d="${d}" data-i="${i}" title="${esc(c.name)} · ${mmss(c.t)}"><div class="bar"><i></i></div></button>`; }).join('');
+          const pc = (x) => (T > 0 ? Math.max(0, Math.min(100, x / T * 100)) : 0).toFixed(2) + '%';
+          segs.innerHTML = `<div class="fv-track"><i class="fill"></i>${ch.slice(1).map((c) => `<i class="tk" style="left:${pc(c.t)}"></i>`).join('')}<i class="knob"></i></div>`;
           const labs = bar.querySelector('.fv-labs');
-          if (labs) labs.innerHTML = ch.map((c, i) => { const d = Math.max(0.1, (i + 1 < ch.length ? ch[i + 1].t : T) - c.t);
-            return `<button type="button" class="fv-lab" style="--w:${d.toFixed(2)}" data-t="${c.t}"><b>${esc(c.name)}</b><small>${mmss(c.t)}</small></button>`; }).join('');
+          if (labs) labs.innerHTML = ch.map((c) => `<button type="button" class="fv-lab" style="left:${pc(c.t)}" data-t="${c.t}" title="${esc(c.name)} · ${mmss(c.t)}"><b>${esc(c.name)}</b><small>${mmss(c.t)}</small></button>`).join('');
         }
-        let on = 0;
-        segs.querySelectorAll('.fv-seg').forEach((sg, i) => {
-          const t0 = +sg.dataset.t, d = +sg.dataset.d, f = Math.max(0, Math.min(1, (t - t0) / d));
-          sg.querySelector('i').style.width = (f * 100).toFixed(1) + '%';
-          if (t >= t0 - 0.05) on = i;
-        });
-        segs.querySelectorAll('.fv-seg').forEach((sg, i) => sg.classList.toggle('on', i === on));
+        const f = T > 0 ? Math.max(0, Math.min(1, t / T)) * 100 : 0;
+        const fill = segs.querySelector('.fill'), knob = segs.querySelector('.knob');
+        if (fill) fill.style.width = f.toFixed(2) + '%';
+        if (knob) knob.style.left = f.toFixed(2) + '%';
+        let on = 0; ch.forEach((c, i) => { if (t >= c.t - 0.05) on = i; });
         bar.querySelectorAll('.fv-lab').forEach((lb, i) => lb.classList.toggle('on', i === on));
         bar.querySelector('.fv-play .tm').textContent = `${mmss(t)} / ${mmss(T)}`;
         const pp = bar.querySelector('.fv-play .pp'), ps = p.paused();
