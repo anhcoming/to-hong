@@ -13,7 +13,7 @@ const RATIO_INFO = {
 const getP = (o, p) => p.split('.').reduce((a, k) => (a == null ? a : a[k]), o);
 const setP = (o, p, v) => { const ks = p.split('.'); let a = o; ks.slice(0, -1).forEach((k) => (a = a[k])); a[ks[ks.length - 1]] = v; };
 
-function status(t) { $('#saved').textContent = card && card.guest && t === 'Đã lưu ✓' ? 'Bản nháp trên máy này' : t; }
+function status(t) { $('#saved').textContent = card && card.guest && t === 'Đã lưu ✓' ? 'Bản nháp trên máy này' : card && card.led && card.led.final && t === 'Đã lưu ✓' ? 'Đã chốt' : t; }
 // trình sửa kiểu CapCut: cột icon chọn bảng
 let curPanel = 'hieu';
 
@@ -40,6 +40,8 @@ function renderSide() {
   // đã kích hoạt: mẫu đã chốt → bỏ hẳn cột chọn mẫu, khung xem trước chiếm cả bề ngang
   const lay = $('#layout'), lockedNow = !!card.led.paid;
   if (lay && lay.classList.contains('locked') !== lockedNow) { lay.classList.toggle('locked', lockedNow); requestAnimationFrame(() => { if (typeof fitScreen === 'function' && led) fitScreen(); }); }
+  // đã chốt hẳn (trả tiền là chốt): ẩn mọi nút chỉnh — khung màn, ẩn / hiện cảnh, tốc độ; chỉ còn xem và chuyển cảnh
+  if (lay && lay.classList.contains('final') !== ledFinal()) { lay.classList.toggle('final', ledFinal()); requestAnimationFrame(() => { if (typeof fitScreen === 'function' && led) fitScreen(); }); }
   let h = '';
   if (curPanel === 'hieu') h = head('Mẫu màn hình') + `<section class="group">
       <div class="lmau">${(META.led.templates || []).map((t) => `<button class="lm ${led.palette === t.palette && led.effect === t.effect ? 'on' : ''}" data-tpl="${t.id}"><i style="background-image:url('/demo/lposter-${t.palette}-${t.effect}.jpg')"></i><b>${esc(t.name)}</b></button>`).join('')}</div>
@@ -109,7 +111,7 @@ function fitScreen() {
   const box = $('#stagewrap').getBoundingClientRect();
   // điện thoại: khung xem trước theo bề ngang, cao tối đa ~1/3 màn hình (phần tuỳ chỉnh bên dưới cuộn riêng)
   const phone = matchMedia('(max-width:900px)').matches;
-  const maxW = phone ? innerWidth - 22 : box.width - 48, maxH = phone ? innerHeight * (h > w ? 0.42 : 0.34) : box.height - 160; // chừa thanh khung màn + thanh cảnh
+  const maxW = phone ? innerWidth - 22 : box.width - 48, maxH = phone ? innerHeight * (h > w ? 0.42 : 0.34) : box.height - (ledFinal() ? 110 : 160); // chừa thanh khung màn (đã chốt: ẩn) + thanh cảnh
   const s = Math.min(maxW / w, maxH / h);
   $('#screen').style.width = Math.round(w * s) + 'px';
   $('#screen').style.height = Math.round(h * s) + 'px';

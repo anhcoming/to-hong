@@ -1279,7 +1279,7 @@
   // ---------- trình sửa: bấm chữ trên màn để gõ sửa tại chỗ (chỉ khung xem trước) ----------
   // gõ tới đâu báo trình sửa tới đó (led-text); bấm ngày cưới → trình sửa mở ô chọn ngày giờ (led-date)
   var editing = null;
-  if (C.preview && window.parent !== window) {
+  if (C.preview && window.parent !== window && !C.final) { // màn LED đã chốt: chỉ xem, không sửa chữ / cỡ chữ
     document.body.classList.add('can-edit');
     // thanh cỡ chữ nổi trên dòng vừa bấm: A− · 100% · A+ (giữ nguyên con trỏ đang gõ)
     var szBar = document.createElement('div'), szEl = null;

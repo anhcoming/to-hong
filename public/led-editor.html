@@ -91,6 +91,7 @@ body{background:var(--bg)}
 .studio[hidden]{display:none}
 .studio .rail{display:none} /* chỉ còn một bảng (Mẫu) → bỏ cột icon */
 .studio.locked{grid-template-columns:minmax(0,1fr)}.studio.locked .side{display:none} /* đã kích hoạt: mẫu chốt, không cần cột chọn mẫu */
+.studio.final .rbar,.studio.final .sc b,.studio.final .sc.off,.studio.final .scspd{display:none} /* đã chốt hẳn: ẩn nút chỉnh, chỉ còn xem / chuyển cảnh */
 .bar{height:10px;border-radius:999px;background:var(--line);overflow:hidden;margin:16px 0 8px}.bar i{display:block;height:100%;width:0;background:var(--primary);transition:width .2s} /* thanh tiến độ dựng MP4 */
 /* thanh chọn khung màn ngay trên khung xem trước */
 .studio .stagewrap{grid-template-rows:auto minmax(0,1fr) auto}
