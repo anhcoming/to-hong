@@ -1123,12 +1123,12 @@
 
   // thu nhỏ chữ cho vừa khung (tên dài, màn đứng)
   // cỡ chữ từng dòng người dùng chỉnh (L.sz = { lớp: hệ số }) — áp trước khi co chữ cho vừa màn
-  var SZ = ['kicker', 'names', 'wd', 'bigdate', 'time', 'lunar', 'cd', 'cd-sub', 'title', 'lb', 'pp', 'ad', 'msg', 'sign'];
+  var SZ = ['kicker', 'names', 'wd', 'bigdate', 'time', 'lunar', 'cd', 'cd-sub', 'title', 'lb', 'pp', 'ad', 'msg', 'sign', 'mono', 'hy']; // mono / hy: chữ lồng, chữ 囍 (theo cỡ chữ toàn màn)
   var szOf = function (el) { for (var i = 0; i < SZ.length; i++) if (el.classList.contains(SZ[i])) return SZ[i]; return ''; };
   function applySz() {
     Array.prototype.forEach.call(slidesEl.querySelectorAll('.' + SZ.join(',.')), function (el) {
       el.style.fontSize = '';
-      var k = ((L.sz || {})[szOf(el)] || 1) * ({ nho: 0.85, lon: 1.15 }[L.fs] || 1); // cỡ từng dòng × cỡ chữ toàn màn
+      var k = ((L.sz || {})[szOf(el)] || 1) * (typeof L.fs === 'number' ? L.fs : { nho: 0.85, lon: 1.15 }[L.fs] || 1); // cỡ từng dòng × cỡ chữ toàn màn
       if (k !== 1) el.style.fontSize = (parseFloat(getComputedStyle(el).fontSize) * k) + 'px';
     });
   }

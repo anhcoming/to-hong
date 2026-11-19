@@ -1,0 +1,114 @@
+<!doctype html>
+<html lang="vi"><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Mock — chỉnh cỡ chữ màn LED</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Ephesis&family=Cormorant+Garamond:wght@500;600&family=Be+Vietnam+Pro:wght@400;500;600;700;800&display=swap">
+<style>
+:root{--red:#d6455d;--ink:#1f1a1b;--muted:#6f6668;--line:#efe3e4;--bg:#faf6f6;--soft:#fff1f3}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);font-family:'Be Vietnam Pro',system-ui,sans-serif;color:var(--ink);padding:24px}
+h1{font-size:20px;margin:0 0 4px}p.d{margin:0 0 20px;color:var(--muted);font-size:14px}
+.row{display:grid;grid-template-columns:340px 1fr;gap:20px;align-items:center;margin-bottom:26px}
+.card{background:#fff;border:1px solid var(--line);border-radius:16px;padding:16px}
+.card h2{margin:0 0 2px;font-size:15px}.card small{display:block;color:var(--muted);font-size:12.5px;margin-bottom:12px}
+.lab{font-size:12px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--red);margin:0 0 8px}
+/* màn xem trước */
+.scr{position:relative;aspect-ratio:16/9;border-radius:12px;overflow:hidden;container-type:inline-size;
+  background:radial-gradient(ellipse 90% 60% at 50% 100%,rgba(190,205,255,.2),transparent 60%),radial-gradient(ellipse 80% 50% at 50% 0%,rgba(190,205,255,.12),transparent 60%),#05070f;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;color:#fff;text-align:center;box-shadow:0 14px 34px rgba(40,10,20,.16)}
+.scr .in{transform-origin:center;transition:transform .15s}
+.mono{font:400 calc(8cqw*var(--k));line-height:1;font-family:'Ephesis';text-shadow:0 0 2cqw rgba(200,215,255,.5)}
+.kick{font:600 calc(2cqw*var(--k))/1 'Cormorant Garamond';letter-spacing:.3em;text-transform:uppercase;margin:.6cqw 0 1.4cqw}
+.nm{font:400 calc(6.4cqw*var(--k))/1.1 'Ephesis';text-shadow:0 0 2cqw rgba(200,215,255,.45);white-space:nowrap}
+.nm .amp{font-size:.55em;margin:0 .3em}
+/* 1. năm nấc */
+.seg{display:flex;gap:3px;padding:4px;border-radius:12px;background:var(--bg);border:1px solid var(--line)}
+.seg button{flex:1;border:0;background:none;border-radius:9px;padding:9px 0;font:700 13px/1 inherit;color:var(--muted);cursor:pointer;white-space:nowrap}
+.seg button.on{background:#fff;color:var(--red);box-shadow:0 1px 4px rgba(120,40,50,.12)}
+/* 2. thanh trượt A … A */
+.sl{display:flex;align-items:center;gap:10px}
+.sl b{font-family:Georgia,serif;color:var(--muted)}.sl b.s{font-size:12px}.sl b.l{font-size:22px}
+.sl input{flex:1;accent-color:var(--red)}
+.sl output{min-width:46px;text-align:right;font-weight:800;font-size:14px;color:var(--ink)}
+/* 3. A− 100% A+ */
+.stp{display:flex;align-items:center;justify-content:space-between;border:1px solid var(--line);border-radius:12px;padding:4px;background:#fff}
+.stp button{width:46px;height:40px;border:0;border-radius:9px;background:var(--bg);font:800 16px/1 Georgia,serif;color:var(--ink);cursor:pointer}
+.stp button:hover{background:var(--soft);color:var(--red)}
+.stp output{font-weight:800;font-size:15px}
+.stp .rs{border:0;background:none;color:var(--muted);font:600 12px inherit;cursor:pointer;text-decoration:underline;width:auto;height:auto;padding:0 8px}
+/* 4. thanh trượt có nấc + chữ */
+.tk{position:relative;padding-bottom:22px}
+.tk input{width:100%;accent-color:var(--red)}
+.tk .lb{position:absolute;left:0;right:0;bottom:0;display:flex;justify-content:space-between;font-size:11.5px;color:var(--muted);padding:0 2px}
+.tk .lb span.on{color:var(--red);font-weight:800}
+/* 5. thu phóng nguyên khối chữ (zoom) */
+.zm{display:flex;align-items:center;gap:8px}
+.zm button{width:36px;height:36px;border-radius:50%;border:1px solid var(--line);background:#fff;font:700 18px/1 inherit;cursor:pointer}
+.zm input{flex:1;accent-color:var(--red)}
+.zm output{min-width:46px;text-align:right;font-weight:800}
+@media (max-width:820px){.row{grid-template-columns:1fr}}
+</style></head><body>
+<h1>Chỉnh cỡ chữ màn LED — các kiểu</h1>
+<p class="d">Mỗi hàng: ô chỉnh bên trái (đúng như sẽ nằm trong bảng Nội dung) · màn xem trước bên phải. Kéo / bấm thử — dải cỡ đều từ 60% tới 140% (nhỏ hơn hẳn mức "Nhỏ" hiện tại 85%).</p>
+
+<div class="row" data-r>
+  <div class="card"><h2>1 · Năm nấc</h2><small>Bấm là xong, không phải kéo. Thêm "Rất nhỏ" 65% và "Rất lớn" 135%.</small>
+    <p class="lab">Cỡ chữ</p>
+    <div class="seg" data-ctl="seg"><button data-k="0.65">Rất nhỏ</button><button data-k="0.8">Nhỏ</button><button data-k="1" class="on">Vừa</button><button data-k="1.15">Lớn</button><button data-k="1.35">Rất lớn</button></div></div>
+  <div class="scr"><div class="in"></div></div>
+</div>
+
+<div class="row" data-r>
+  <div class="card"><h2>2 · Thanh trượt A — A</h2><small>Kéo mượt từ 60% tới 140%, chữ A nhỏ / A to hai đầu cho dễ hiểu.</small>
+    <p class="lab">Cỡ chữ</p>
+    <div class="sl"><b class="s">A</b><input type="range" min="60" max="140" step="5" value="100" data-ctl="sl"><b class="l">A</b><output>100%</output></div></div>
+  <div class="scr"><div class="in"></div></div>
+</div>
+
+<div class="row" data-r>
+  <div class="card"><h2>3 · Nút A− / A+</h2><small>Mỗi lần bấm nhỏ / to 5%, có nút "Về mặc định". Gọn nhất.</small>
+    <p class="lab">Cỡ chữ</p>
+    <div class="stp" data-ctl="stp"><button data-d="-5">A−</button><output>100%</output><button data-d="5">A+</button><button class="rs" data-d="0">Mặc định</button></div></div>
+  <div class="scr"><div class="in"></div></div>
+</div>
+
+<div class="row" data-r>
+  <div class="card"><h2>4 · Thanh trượt có nấc</h2><small>Kéo như thanh trượt nhưng dừng đúng 5 nấc có tên — vừa mượt vừa rõ đang ở cỡ nào.</small>
+    <p class="lab">Cỡ chữ</p>
+    <div class="tk"><input type="range" min="0" max="4" step="1" value="2" data-ctl="tk"><div class="lb"><span>Rất nhỏ</span><span>Nhỏ</span><span class="on">Vừa</span><span>Lớn</span><span>Rất lớn</span></div></div></div>
+  <div class="scr"><div class="in"></div></div>
+</div>
+
+<div class="row" data-r>
+  <div class="card"><h2>5 · Thu phóng cả khối chữ (zoom)</h2><small>Phóng to / thu nhỏ cả cụm chữ như zoom ảnh: chữ lồng, tiêu đề, tên to nhỏ đều nhau, giữ nguyên tỉ lệ.</small>
+    <p class="lab">Thu phóng chữ</p>
+    <div class="zm"><button data-d="-10">−</button><input type="range" min="50" max="150" step="5" value="100" data-ctl="zm"><button data-d="10">+</button><output>100%</output></div></div>
+  <div class="scr"><div class="in"></div></div>
+</div>
+
+<script>
+(function () {
+  var html = '<div class="mono">H N</div><div class="kick">Lễ Thành Hôn</div><div class="nm">Gia Huy<span class="amp">&amp;</span>Bảo Ngọc</div>';
+  document.querySelectorAll('.scr .in').forEach(function (el) { el.innerHTML = html; el.parentNode.style.setProperty('--k', 1); });
+  var TK = [0.65, 0.8, 1, 1.15, 1.35];
+  function set(row, k, zoom) {
+    var scr = row.querySelector('.scr'), inn = scr.querySelector('.in');
+    if (zoom) { scr.style.setProperty('--k', 1); inn.style.transform = 'scale(' + k + ')'; }
+    else { scr.style.setProperty('--k', k); inn.style.transform = ''; }
+  }
+  document.querySelectorAll('[data-r]').forEach(function (row) {
+    var c = row.querySelector('[data-ctl]'), t = c.getAttribute('data-ctl');
+    if (t === 'seg') c.addEventListener('click', function (e) { var b = e.target.closest('button'); if (!b) return; c.querySelectorAll('button').forEach(function (x) { x.classList.toggle('on', x === b); }); set(row, +b.dataset.k); });
+    if (t === 'sl') c.addEventListener('input', function () { c.nextElementSibling.nextElementSibling.textContent = c.value + '%'; set(row, c.value / 100); });
+    if (t === 'stp') { var v = 100; c.addEventListener('click', function (e) { var b = e.target.closest('button'); if (!b) return; var d = +b.dataset.d; v = d ? Math.max(60, Math.min(140, v + d)) : 100; c.querySelector('output').textContent = v + '%'; set(row, v / 100); }); }
+    if (t === 'tk') c.addEventListener('input', function () { var lb = c.nextElementSibling.children; Array.prototype.forEach.call(lb, function (s, i) { s.classList.toggle('on', i === +c.value); }); set(row, TK[+c.value]); });
+    if (t === 'zm') {
+      var out = row.querySelector('.zm output'), go = function () { out.textContent = c.value + '%'; set(row, c.value / 100, true); };
+      c.addEventListener('input', go);
+      row.querySelectorAll('.zm button').forEach(function (b) { b.onclick = function () { c.value = Math.max(50, Math.min(150, +c.value + +b.dataset.d)); go(); }; });
+    }
+  });
+})();
+</script>
+</body></html>
