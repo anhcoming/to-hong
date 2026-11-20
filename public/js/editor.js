@@ -968,12 +968,11 @@ async function loadGuests() {
       ${limit ? `<p class="muted" style="font-size:13px;margin:12px 0 0">Bản dùng thử: ${limit} khách đầu danh sách có link mang tên riêng. <a href="#" id="gPay">Kích hoạt để gửi link riêng cho tất cả</a></p>` : ''}
     </section>
     <section class="group panel"><h3>Danh sách <small>${opened}/${guests.length} đã mở thiệp</small></h3>
-      ${guests.length ? `<div style="overflow-x:auto"><table class="tbl"><thead><tr><th>Khách</th><th>Trạng thái</th><th></th></tr></thead><tbody>
-        ${guests.map((g) => `<tr data-g="${g.id}">
-          <td><b>${esc(g.name)}</b><br><span class="muted" style="font-size:12px">${g.side === 'trai' ? 'Nhà trai' : g.side === 'gai' ? 'Nhà gái' : ''}</span></td>
-          <td>${g.rsvp ? (g.rsvp.attending === 'yes' ? `<span class="chip ok">Sẽ đến · ${g.rsvp.count} người</span>` : '<span class="chip red">Không đến</span>') : g.opens ? `<span class="chip warn">Đã mở ${g.opens} lần</span>` : '<span class="chip">Chưa mở</span>'}</td>
-          <td style="white-space:nowrap;text-align:right">${g.locked ? '<button class="btn sm plain" data-glock>🔒 Kích hoạt để gửi</button>' : `<button class="btn sm soft" data-gc="${esc(g.url)}" data-gn="${esc(g.name)}">Chép lời mời</button>`} <button class="btn sm danger" data-gd="${g.id}" title="Xoá">×</button></td>
-        </tr>`).join('')}</tbody></table></div>` : '<p class="empty">Chưa có khách nào. Thêm tên ở trên để tạo link riêng cho từng người.</p>'}
+      ${guests.length ? `<ul class="glist">
+        ${guests.map((g) => `<li data-g="${g.id}">
+          <div class="gm"><b>${esc(g.name)}</b><div class="gs">${g.rsvp ? (g.rsvp.attending === 'yes' ? `<span class="chip ok">Sẽ đến · ${g.rsvp.count} người</span>` : '<span class="chip red">Không đến</span>') : g.opens ? `<span class="chip warn">Đã mở ${g.opens} lần</span>` : '<span class="chip">Chưa mở</span>'}${g.side === 'trai' ? '<span>Nhà trai</span>' : g.side === 'gai' ? '<span>Nhà gái</span>' : ''}</div></div>
+          <div class="ga">${g.locked ? '<button class="btn sm plain" data-glock>🔒 Kích hoạt để gửi</button>' : `<button class="btn sm soft" data-gc="${esc(g.url)}" data-gn="${esc(g.name)}">Chép lời mời</button>`}<button class="btn sm danger" data-gd="${g.id}" title="Xoá" aria-label="Xoá ${esc(g.name)}">×</button></div>
+        </li>`).join('')}</ul>` : '<p class="empty">Chưa có khách nào. Thêm tên ở trên để tạo link riêng cho từng người.</p>'}
     </section>`;
   $('#gForm').onsubmit = async (e) => {
     e.preventDefault();
@@ -1009,9 +1008,10 @@ async function loadResponses() {
       <div class="sum panel"><b>${wishes.length}</b><span>lời chúc</span></div>
     </div>
     <section class="group panel"><h3 style="display:flex;justify-content:space-between;align-items:center">Xác nhận tham dự ${rsvps.length ? `<a class="btn sm plain" href="/api/cards/${CARD_ID}/rsvps.csv">Tải Excel (CSV)</a>` : ''}</h3>
-      ${rsvps.length ? `<div style="overflow-x:auto"><table class="tbl"><thead><tr><th>Tên</th><th>Tham dự</th><th>Nhà</th><th>Ghi chú</th><th>Lúc</th></tr></thead><tbody>
-        ${rsvps.map((r) => `<tr><td><b>${esc(r.name)}</b></td><td>${r.attending === 'yes' ? `<span class="chip ok">${r.count} người</span>` : '<span class="chip red">Không</span>'}</td><td>${r.side === 'gai' ? 'Gái' : 'Trai'}</td><td>${esc(r.note)}</td><td class="muted">${fmtDateTime(r.createdAt)}</td></tr>`).join('')}
-      </tbody></table></div>` : '<p class="empty">Chưa có ai xác nhận.</p>'}
+      ${rsvps.length ? `<ul class="glist">
+        ${rsvps.map((r) => `<li><div class="gm"><b>${esc(r.name)}</b><div class="gs"><span>${r.side === 'gai' ? 'Nhà gái' : 'Nhà trai'}</span><span>${fmtDateTime(r.createdAt)}</span></div>${r.note ? `<p class="gn">${esc(r.note)}</p>` : ''}</div>
+          <div class="ga">${r.attending === 'yes' ? `<span class="chip ok">${r.count} người</span>` : '<span class="chip red">Không đến</span>'}</div></li>`).join('')}
+      </ul>` : '<p class="empty">Chưa có ai xác nhận.</p>'}
     </section>
     <section class="group panel"><h3>Lời chúc</h3>
       ${wishes.length ? wishes.map((w) => `<div style="padding:12px 0;border-bottom:1px solid var(--line);display:flex;gap:12px;justify-content:space-between;${w.hidden ? 'opacity:.5' : ''}">
