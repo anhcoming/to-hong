@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<title>FB 23/11 bài 1 — 5 mẫu thiệp đỏ cho cưới cuối năm (Reels)</title>
+<!-- Reels/TikTok 1080×1920 không nhạc, dựng đúng kịch bản đã duyệt trên trang duyệt bài (6 cảnh × 3 giây + màn kết).
+     Ảnh là ảnh bìa thật của mẫu trên web (public/demo/cover-<mẫu>-<bảng màu>.jpg).
+     Xuất: node marketing/quang-cao/render.js --trang=../../public/mock-fb-2026-11-23-bai-1.html <ra.mp4> --im --khong-nhac --bitrate=4 -->
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;600;700;800;900&family=Dancing+Script:wght@700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/marketing/quang-cao/op/chung.css">
+<style>
+.lay img{width:100%;height:100%;object-fit:cover;object-position:top}
+.sub{position:absolute;left:60px;right:60px;top:1838px;text-align:center;font-weight:800;font-size:40px;color:var(--rose);opacity:0;z-index:20}
+.so{position:absolute;right:70px;top:470px;z-index:22;width:112px;height:112px;border-radius:50%;background:var(--rose);color:#fff;font-weight:900;font-size:58px;display:grid;place-items:center;opacity:0;box-shadow:0 14px 34px rgba(214,69,93,.35)}
+</style>
+</head>
+<body>
+<div id="stage">
+  <div class="blob b1"></div><div class="blob b2"></div><div id="tim"></div>
+  <div class="tt" id="h0" style="top:150px;font-size:70px"><span>Cưới cuối năm?</span><br><span>Thiệp <span class="r">đỏ</span> mới đủ vị 🔴</span></div>
+  <div class="tt" id="h1" style="top:190px"><span>Song Hỷ Đỏ</span></div>
+  <div class="tt" id="h2" style="top:190px"><span>Long Phụng</span></div>
+  <div class="tt" id="h3" style="top:190px"><span>Phượng Hoàng</span></div>
+  <div class="tt" id="h4" style="top:190px"><span>Lụa Đỏ</span></div>
+  <div class="tt" id="h5" style="top:150px;font-size:66px"><span>Hồng Hỷ</span><br><span>hai bạn chọn <span class="r">mẫu số mấy?</span></span></div>
+  <div class="sub" id="p0">5 mẫu đang được chọn nhiều</div>
+  <div class="sub" id="p1">Truyền thống, rực rỡ</div>
+  <div class="sub" id="p2">Sang trọng, đúng chất cưới</div>
+  <div class="sub" id="p3">Nổi bật, quyền quý</div>
+  <div class="sub" id="p4">Hiện đại, mềm mại</div>
+  <div class="sub" id="p5">Bình luận số mẫu nha 👇</div>
+  <div class="so" id="n1">1</div><div class="so" id="n2">2</div><div class="so" id="n3">3</div><div class="so" id="n4">4</div><div class="so" id="n5">5</div>
+  <div class="phone" id="phone"><div class="scr">
+    <div class="isl"></div>
+    <div class="lay" id="s0"><img src="/public/demo/cover-songhy2-do-son.jpg" alt=""></div>
+    <div class="lay" id="s1"><img src="/public/demo/cover-songhy2-do-son.jpg" alt=""></div>
+    <div class="lay" id="s2"><img src="/public/demo/cover-longphung-do-tham.jpg" alt=""></div>
+    <div class="lay" id="s3"><img src="/public/demo/cover-phuonghoang-do-son.jpg" alt=""></div>
+    <div class="lay" id="s4"><img src="/public/demo/cover-mhredflow-goc.jpg" alt=""></div>
+    <div class="lay" id="s5"><img src="/public/demo/cover-mhhb02-goc.jpg" alt=""></div>
+  </div></div>
+</div>
+<script src="/marketing/quang-cao/op/chung.js"></script>
+<script>
+$('#stage').insertAdjacentHTML('beforeend', KET_HTML('Làm thiệp<br>thử miễn phí', '49 mẫu · dùng thử 7 ngày · kích hoạt 99k'));
+window.DURATION = 21.5;
+timBay();
+A('#phone', [{ opacity: 0, transform: 'translateY(300px) rotate(4deg)' }, { opacity: 1, transform: 'rotate(-1.5deg)' }], 0, .8);
+const T = [0, 3, 6, 9, 12, 15], END = 18;
+T.forEach((t0, i) => {
+  const t1 = i < T.length - 1 ? T[i + 1] : END;
+  chu('#h' + i, t0 + .1, t1 - .05);
+  chu('#p' + i, t0 + .35, t1 - .05);
+  man('#s' + i, t0 + (i ? 0 : .5), t1, i ? 'zoom' : 'fade');
+  if (i) A('#n' + i, [{ opacity: 0, transform: 'scale(.5)' }, { opacity: 1, transform: 'scale(1.15)', offset: .12 }, { opacity: 1, transform: 'scale(1)', offset: .2 }, { opacity: 1, offset: .94 }, { opacity: 0 }], t0 + .15, t1 - t0 - .15, 'linear');
+});
+ket(END);
+xong();
+</script>
+</body>
+</html>
