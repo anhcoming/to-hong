@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<title>FB 30/11 bài 4 — Cưới tháng 12 chọn ngày nào? A hay B (Reels hỏi)</title>
+<!-- Reels 1080×1920 không nhạc. Ảnh thiệp là ảnh bìa mẫu thật (public/demo/cover-*.jpg).
+     Ngày theo lịch dân gian: xemlicham.com và Sforum (cellphones.com.vn/sforum/ngay-dep-thang-12), xem 20/11/2026.
+     Xuất: node marketing/quang-cao/render.js --trang=../../public/mock-fb-2026-11-30-bai-4.html <ra.mp4> --im --khong-nhac -->
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;600;700;800;900&family=Dancing+Script:wght@700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/marketing/quang-cao/op/chung.css">
+<style>
+.card{position:absolute;top:560px;width:450px;height:1000px;border-radius:44px;background:#fff;box-shadow:0 40px 90px rgba(120,40,50,.25);overflow:hidden;opacity:0;z-index:10}
+.card img{width:100%;height:620px;object-fit:cover;display:block}
+.card .l{position:absolute;left:24px;top:24px;width:110px;height:110px;border-radius:50%;background:var(--rose);color:#fff;font-size:68px;font-weight:900;display:grid;place-items:center;box-shadow:0 10px 24px rgba(0,0,0,.25)}
+.card .tx{padding:30px 26px;text-align:center}
+.card .d{font-size:84px;font-weight:900;letter-spacing:-2px;color:var(--ink)}
+.card .w{font-size:40px;font-weight:700;color:var(--rose);margin-top:6px}
+.card .am{font-size:34px;color:var(--muted);margin-top:10px}
+#cA{left:60px;transform:rotate(-2deg)}#cB{right:60px;transform:rotate(2deg)}
+.note{position:absolute;left:60px;right:60px;bottom:120px;text-align:center;font-size:32px;color:var(--muted);opacity:0}
+.vs{position:absolute;left:50%;top:1000px;width:130px;height:130px;margin-left:-65px;border-radius:50%;background:var(--ink);color:#fff;font-size:52px;font-weight:900;display:grid;place-items:center;z-index:12;opacity:0}
+</style>
+</head>
+<body>
+<div id="stage">
+  <div class="blob b1"></div><div class="blob b2"></div><div id="tim"></div>
+  <div class="tt" id="h0" style="top:150px;font-size:68px"><span>Cưới tháng 12</span><br><span>chọn ngày nào? 💍</span></div>
+  <div class="tt" id="h1" style="top:150px;font-size:68px"><span>Bình luận</span><br><span><span class="r">A</span> hay <span class="r">B</span> nha 👇</span></div>
+  <div class="card" id="cA"><img src="/public/demo/cover-dodam-do-ruou.jpg"><div class="l">A</div><div class="tx"><div class="d">12 · 12</div><div class="w">Thứ Bảy</div><div class="am">4/11 âm lịch</div></div></div>
+  <div class="card" id="cB"><img src="/public/demo/cover-songhy-do.jpg"><div class="l">B</div><div class="tx"><div class="d">24 · 12</div><div class="w">Thứ Năm</div><div class="am">16/11 âm lịch</div></div></div>
+  <div class="vs" id="vs">hay</div>
+  <p class="note" id="nt">Theo lịch dân gian · nhớ xem thêm tuổi hai bạn nha</p>
+</div>
+<script src="/marketing/quang-cao/op/chung.js"></script>
+<script>
+$('#stage').insertAdjacentHTML('beforeend', KET_HTML('Thiệp tự ghi<br>ngày âm lịch', '49 mẫu · dùng thử 7 ngày · 99k'));
+window.DURATION = 15;
+timBay();
+chu('#h0', .1, 5.6);
+A('#cA', [{ opacity: 0, transform: 'translateY(260px) rotate(-8deg)' }, { opacity: 1, transform: 'rotate(-2deg)' }], 1.2, .7, BACK);
+A('#cB', [{ opacity: 0, transform: 'translateY(260px) rotate(8deg)' }, { opacity: 1, transform: 'rotate(2deg)' }], 2.6, .7, BACK);
+pop('#vs', 3.6);
+A('#nt', [{ opacity: 0 }, { opacity: 1 }], 4.2, .5, 'linear');
+chu('#h1', 5.8, 10.6);
+A('#cA', [{ transform: 'rotate(-2deg) scale(1)' }, { transform: 'rotate(-2deg) scale(1.06)' }, { transform: 'rotate(-2deg) scale(1)' }], 6.4, .8, 'ease-in-out');
+A('#cB', [{ transform: 'rotate(2deg) scale(1)' }, { transform: 'rotate(2deg) scale(1.06)' }, { transform: 'rotate(2deg) scale(1)' }], 7.4, .8, 'ease-in-out');
+ket(10.6);
+xong();
+</script>
+</body>
+</html>

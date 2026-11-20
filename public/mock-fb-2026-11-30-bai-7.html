@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<title>TikTok 30/11 — 9 bài nhạc chiếu ở tiệc cưới (video từ 5 ảnh)</title>
+<!-- Video TikTok 1080×1920 không nhạc (chủ kênh gắn nhạc trong app). Ghép 5 ảnh 1080×1350 xuất từ mock-fb-2026-11-30-anh.html?k=nhac-1..5.
+     Xuất: node marketing/quang-cao/render.js --trang=../../public/mock-fb-2026-11-30-bai-7.html <ra.mp4> --im --khong-nhac -->
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;600;700;800;900&family=Dancing+Script:wght@700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/marketing/quang-cao/op/chung.css">
+<style>
+.pic{position:absolute;left:0;top:285px;width:1080px;height:1350px;opacity:0;box-shadow:0 30px 80px rgba(120,40,50,.18)}
+.foot{position:absolute;left:0;right:0;bottom:120px;text-align:center;font:700 64px 'Dancing Script';color:var(--rose)}
+</style>
+</head>
+<body>
+<div id="stage">
+  <div class="blob b1"></div><div class="blob b2"></div>
+  <div class="tt" id="h0" style="top:90px;font-size:60px"><span>Lưu lại cho ngày cưới 📌</span></div>
+  <img class="pic" id="p1" src="/marketing/facebook/tuan/2026-11-30/tt-nhac-1.png">
+  <img class="pic" id="p2" src="/marketing/facebook/tuan/2026-11-30/tt-nhac-2.png">
+  <img class="pic" id="p3" src="/marketing/facebook/tuan/2026-11-30/tt-nhac-3.png">
+  <img class="pic" id="p4" src="/marketing/facebook/tuan/2026-11-30/tt-nhac-4.png">
+  <img class="pic" id="p5" src="/marketing/facebook/tuan/2026-11-30/tt-nhac-5.png">
+  <div class="foot">cuoinha.com</div>
+</div>
+<script src="/marketing/quang-cao/op/chung.js"></script>
+<script>
+window.DURATION = 17;
+chu('#h0', .1, 16.8);
+[1, 2, 3, 4, 5].forEach((n, i) => {
+  const t = i * 3.3;
+  A('#p' + n, [{ opacity: 0, transform: 'translateX(160px)' }, { opacity: 1, transform: 'none' }], t + .05, .45);
+});
+xong();
+</script>
+</body>
+</html>

@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<title>FB 30/11 bài 3 — Tháng Chạp, mở Zalo ra là thiệp (Reels vui)</title>
+<!-- Reels/TikTok 1080×1920 không nhạc. Danh sách tin nhắn là giao diện chat chung chung (không phải ứng dụng nào); tên khách là tên giả.
+     Màn cuối là ảnh THẬT khách mở thiệp (marketing/quang-cao/canh/mo-thiep/khach-hoang.jpg).
+     Xuất: node marketing/quang-cao/render.js --trang=../../public/mock-fb-2026-11-30-bai-3.html <ra.mp4> --im --khong-nhac -->
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;600;700;800;900&family=Dancing+Script:wght@700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/marketing/quang-cao/op/chung.css">
+<style>
+#list{background:#fff;opacity:1;isolation:isolate}
+.top{position:absolute;left:0;right:0;top:0;height:190px;background:#fff;padding:96px 34px 0;font-size:44px;font-weight:900;border-bottom:2px solid #f0eef0;z-index:5}
+.row{position:absolute;left:0;right:0;height:150px;display:flex;align-items:center;gap:22px;padding:0 28px;border-bottom:2px solid #f5f3f4;opacity:0;background:#fff}
+.row img{width:96px;height:96px;border-radius:50%;object-fit:cover;flex:none}
+.row div{flex:1;min-width:0}.row b{display:block;font-size:31px}.row span{display:block;font-size:26px;color:#7b7f8a;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.row i{font-style:normal;background:#e8384f;color:#fff;font-size:22px;font-weight:800;border-radius:99px;padding:4px 12px}
+.cnt{position:absolute;right:70px;top:470px;z-index:22;background:var(--ink);color:#fff;font-weight:900;font-size:46px;padding:14px 34px;border-radius:999px;opacity:0;box-shadow:0 14px 34px rgba(0,0,0,.25)}
+</style>
+</head>
+<body>
+<div id="stage">
+  <div class="blob b1"></div><div class="blob b2"></div><div id="tim"></div>
+  <div class="tt" id="h0" style="top:140px;font-size:66px"><span>Tháng Chạp,</span><br><span>mở Zalo ra là… 📩</span></div>
+  <div class="tt" id="h1" style="top:140px;font-size:66px"><span>Thiệp thứ 5</span><br><span class="r">trong tuần</span> 😵‍💫</div>
+  <div class="tt" id="h2" style="top:140px;font-size:66px"><span>Lương tháng 12:</span><br><span>“tạm biệt nha” 🫠</span></div>
+  <div class="tt" id="h3" style="top:140px;font-size:62px"><span>Đến lượt mình cưới:</span><br><span>mời lại đủ 5 người, <span class="r">có tên</span> 😌</span></div>
+  <div class="cnt" id="c">1 / 5</div>
+  <div class="phone" id="phone"><div class="scr">
+    <div class="isl"></div>
+    <div class="lay" id="list">
+      <div class="top">Tin nhắn</div>
+      <div class="row" id="r1" style="top:200px"><img src="/public/demo/cover-songhy-do.jpg"><div><b>Lan Anh</b><span>💌 Thân mời bạn tới dự lễ cưới…</span></div><i>1</i></div>
+      <div class="row" id="r2" style="top:350px"><img src="/public/demo/cover-senhong-hong-sen.jpg"><div><b>Anh Tuấn (công ty)</b><span>💌 Trân trọng kính mời em…</span></div><i>1</i></div>
+      <div class="row" id="r3" style="top:500px"><img src="/public/demo/cover-tapchi-xanh-la.jpg"><div><b>Hùng cấp 3</b><span>💌 Ê, cuối tháng tao cưới nha…</span></div><i>1</i></div>
+      <div class="row" id="r4" style="top:650px"><img src="/public/demo/cover-maunuoc-hong-phan.jpg"><div><b>Chị Mai (họ hàng)</b><span>💌 Mời cả nhà em sang chung vui…</span></div><i>1</i></div>
+      <div class="row" id="r5" style="top:800px"><img src="/public/demo/cover-dodam-do-ruou.jpg"><div><b>Đức Minh</b><span>💌 Thân mời Anh Hoàng & Người thương…</span></div><i>1</i></div>
+    </div>
+    <div class="lay" id="s1"><img src="/marketing/quang-cao/canh/mo-thiep/khach-hoang.jpg"><div class="ring" id="k1" style="left:50px;top:675px;width:460px;height:110px"></div></div>
+  </div></div>
+</div>
+<script src="/marketing/quang-cao/op/chung.js"></script>
+<script>
+$('#stage').insertAdjacentHTML('beforeend', KET_HTML('Làm thiệp<br>thử miễn phí', '49 mẫu · dùng thử 7 ngày · kích hoạt 99k'));
+window.DURATION = 21;
+timBay();
+A('#phone', [{ opacity: 0, transform: 'translateY(300px) rotate(4deg)' }, { opacity: 1, transform: 'rotate(-1.5deg)' }], 0, .8);
+chu('#h0', .1, 5.6);
+['#r1', '#r2', '#r3', '#r4', '#r5'].forEach((s, i) => {
+  const t = .9 + i * 1.0;
+  A(s, [{ opacity: 0, transform: 'translateX(120px)' }, { opacity: 1, transform: 'none' }], t, .4, BACK);
+  if (i) A('#c', [{ opacity: 1, transform: 'scale(1.25)' }, { opacity: 1, transform: 'scale(1)' }], t, .35, BACK);
+});
+A('#c', [{ opacity: 0, transform: 'scale(.6)' }, { opacity: 1, transform: 'scale(1)' }], .9, .35, BACK);
+const cnt = $('#c');
+chu('#h1', 5.8, 9.0);
+A('#c', [{ opacity: 1 }, { opacity: 0 }], 12.3, .3, 'linear');
+chu('#h2', 9.2, 12.4);
+chu('#h3', 12.6, 16.6);
+cham(300, 600, 13.2);
+man('#s1', 13.5, 16.8, 'zoom');
+A('#k1', [{ opacity: 0, transform: 'scale(1.15)' }, { opacity: 1, transform: 'scale(1)', offset: .25 }, { opacity: .4, offset: .55 }, { opacity: 1, offset: .8 }, { opacity: 0 }], 14.0, 2.6, 'linear');
+ket(16.8);
+xong();
+// bộ đếm 1/5 → 5/5 theo giây (seek đồng bộ)
+const s0 = window.seek;
+window.seek = (t) => { s0(t); cnt.textContent = Math.max(1, Math.min(5, Math.floor((t - .9) / 1.0) + 1)) + ' / 5'; };
+</script>
+</body>
+</html>

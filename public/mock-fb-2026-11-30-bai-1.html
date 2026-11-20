@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<title>FB 30/11 bài 1 — Cưới là phải có màn sao (Reels màn LED sao rơi)</title>
+<!-- Reels/TikTok 1080×1920, không nhạc (nhạc gắn khi đăng). Nền là video THẬT xuất từ màn LED "Sao rơi" của web
+     (bộ xuất MP4 public/led/led-export.js, khổ 9:16) → marketing/facebook/tuan/2026-11-30/src/led-saoroi-916.mp4.
+     Xuất: node marketing/quang-cao/render.js --trang=../../public/mock-fb-2026-11-30-bai-1.html <ra.mp4> --im --khong-nhac -->
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;600;700;800;900&family=Dancing+Script:wght@700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/marketing/quang-cao/op/chung.css">
+<style>
+#stage{background:#05070f}
+#led{position:absolute;left:0;top:0;width:1080px;height:1920px;object-fit:cover}
+.shade{position:absolute;left:0;right:0;top:0;height:520px;background:linear-gradient(rgba(0,0,0,.55),rgba(0,0,0,0));z-index:5}
+.shade.b{top:auto;bottom:0;height:560px;background:linear-gradient(rgba(0,0,0,0),rgba(0,0,0,.6))}
+.tag{position:absolute;left:50%;bottom:150px;transform:translateX(-50%);z-index:21;background:rgba(255,255,255,.95);color:var(--rose);font-weight:900;font-size:50px;padding:18px 44px;border-radius:999px;white-space:nowrap;opacity:0;box-shadow:0 18px 40px rgba(0,0,0,.35)}
+</style>
+</head>
+<body>
+<div id="stage">
+  <video id="led" muted playsinline preload="auto"></video>
+  <div class="shade"></div><div class="shade b"></div>
+  <div class="tt" id="h0" style="top:150px"><span>Cưới là phải có</span><br><span class="r">màn sao</span> ✨</div>
+  <div class="tt" id="h1" style="top:150px;font-size:66px"><span>Tên hai bạn lấp lánh</span><br><span>trên màn LED sân khấu</span></div>
+  <div class="tt" id="h2" style="top:150px;font-size:66px"><span>Gửi link cho nhà hàng</span><br><span class="r">là chiếu</span> 🖥️</div>
+  <div class="tt" id="h3" style="top:150px;font-size:66px"><span>Không mở được link?</span><br><span>Tải MP4, chép USB 📲</span></div>
+  <div class="tag" id="t1">Mẫu “Sao rơi” · cuoinha.com</div>
+</div>
+<script src="/marketing/quang-cao/op/chung.js"></script>
+<script>
+$('#stage').insertAdjacentHTML('beforeend', KET_HTML('Màn LED<br>tiệc cưới', '7 mẫu · xem thử miễn phí · 49k'));
+$$('#end .fan img').forEach((im, i) => { im.src = '/public/demo/' + ['lposter-bac-dembac', 'lposter-tham-thienha', 'lposter-bac-saobang', 'lposter-sondo-satindo', 'lposter-lam-saoroi'][i] + '.jpg'; });
+window.DURATION = 19;
+chu('#h0', .1, 3.6);
+chu('#h1', 3.8, 8.0);
+chu('#h2', 8.2, 11.6);
+chu('#h3', 11.8, 15.2);
+A('#t1', [{ opacity: 0, transform: 'translateX(-50%) translateY(40px)' }, { opacity: 1, transform: 'translateX(-50%)' }], 1.0, .6);
+A('#t1', [{ opacity: 1 }, { opacity: 0 }], 14.8, .4, 'linear');
+ket(15.2);
+xong();
+// video nền: tua theo t (render.js chờ seek xong mới chụp khung)
+const v = $('#led'), V0 = 0; // giây bắt đầu trong video LED (cảnh tên dâu rể)
+const vReady = fetch('/marketing/facebook/tuan/2026-11-30/src/led-saoroi-916.mp4').then((r) => r.blob()).then((b) => new Promise((ok) => {
+  v.addEventListener('loadeddata', ok, { once: true }); v.src = URL.createObjectURL(new Blob([b], { type: 'video/mp4' }));
+}));
+window.ready = Promise.all([window.ready, vReady]);
+const seek0 = window.seek;
+window.seek = (t) => {
+  seek0(t);
+  if (!v.duration) return;
+  const tt = Math.min(v.duration - .05, V0 + Math.min(t, 15.6));
+  if (Math.abs(v.currentTime - tt) < .001) return;
+  return new Promise((ok) => { v.addEventListener('seeked', ok, { once: true }); v.currentTime = tt; });
+};
+</script>
+</body>
+</html>
