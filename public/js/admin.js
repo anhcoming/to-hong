@@ -2,7 +2,7 @@
 // Tạo / sửa / xác nhận mở popup (modal, ask); bấm một dòng mở bảng chi tiết bên phải (drawer); thao tác phụ ở nút ⋯ (menu).
 const A = { page: 'home', f: {}, meta: null, me: null };
 const PROD = { card: 'Thiệp', combo: 'Trọn bộ', led: 'Màn LED', video: 'Video' };
-const TITLES = { home: 'Tổng quan', orders: 'Đơn hàng', discounts: 'Mã giảm giá', users: 'Người dùng', cards: 'Thiệp & sản phẩm', mxh: 'Duyệt bài MXH', traffic: 'Truy cập', settings: 'Cài đặt', audit: 'Nhật ký' };
+const TITLES = { home: 'Tổng quan', orders: 'Đơn hàng', discounts: 'Mã giảm giá', users: 'Người dùng', cards: 'Thiệp & sản phẩm', traffic: 'Truy cập', settings: 'Cài đặt', audit: 'Nhật ký' };
 const num = (n) => Number(n || 0).toLocaleString('vi-VN');
 const pct = (a, b) => (b ? Math.round((a / b) * 1000) / 10 + '%' : '—');
 const ago = (t) => {
@@ -630,7 +630,7 @@ async function audit() {
 }
 
 // ================= điều hướng =================
-const VIEWS = { home, orders, discounts, users, cards, mxh, traffic, settings, audit };
+const VIEWS = { home, orders, discounts, users, cards, traffic, settings, audit };
 async function render() {
   closeMenu();
   try { await VIEWS[A.page](); } catch (e) {
@@ -700,5 +700,4 @@ function loginForm(msg) {
   addEventListener('hashchange', () => { const h = location.hash.slice(1); if (h !== A.page && VIEWS[h]) go(h); });
   go(VIEWS[location.hash.slice(1)] ? location.hash.slice(1) : 'home');
   if (A.page !== 'home' && A.page !== 'orders') api('/api/admin/orders?status=pending').then((d) => badge(d.total)).catch(() => {});
-  if (A.page !== 'mxh') api('/api/admin/mxh?trangThai=cho-duyet', { quiet: true }).then((d) => mxBadge(d.waiting)).catch(() => {});
 })();

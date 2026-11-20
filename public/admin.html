@@ -202,75 +202,6 @@ body{background:var(--bg)}
   .tb td.empty{grid-column:1/-1}
   .kv{grid-template-columns:100px 1fr}
 }
-
-/* ---- Duyệt bài MXH (/admin#mxh): danh sách bài | xem trước | chi tiết ---- */
-.mx{--wait:var(--warn);--wait-bg:var(--warn-soft);--redo:#6b45b8;--redo-bg:#efe8fb;--info:#2862a8;--info-bg:#e3eefb;display:grid;grid-template-columns:250px minmax(0,370px) minmax(0,1fr);gap:18px;align-items:start}
-:root[data-theme="dark"] .mx{--redo:#b79bf0;--redo-bg:#2a2140;--info:#8db8ef;--info-bg:#172a42}
-.s-cho-duyet{--c:var(--warn);--cb:var(--warn-soft)}.s-lam-lai,.s-dang-lam{--c:#6b45b8;--cb:#efe8fb}.s-da-duyet,.s-da-hen-gio{--c:#2862a8;--cb:#e3eefb}.s-da-dang{--c:var(--ok);--cb:var(--ok-soft)}.s-bo{--c:var(--muted);--cb:var(--bg)}
-:root[data-theme="dark"] :is(.s-lam-lai,.s-dang-lam){--c:#b79bf0;--cb:#2a2140}:root[data-theme="dark"] :is(.s-da-duyet,.s-da-hen-gio){--c:#8db8ef;--cb:#172a42}
-.mx-chips{display:flex;flex-wrap:wrap;gap:6px}
-.mx-pill,.mx-head .mx-pill{display:inline-block;font-size:12.5px;font-weight:700;padding:3px 11px;border-radius:999px;background:var(--cb);color:var(--c)}
-.mx-kch{font-size:12px;font-weight:600;color:var(--muted)}
-.mx-rail{position:sticky;top:12px;display:flex;flex-direction:column;gap:2px;max-height:calc(100vh - 24px);overflow-y:auto;padding:6px;background:var(--surface);border:1px solid var(--line);border-radius:14px}
-.mx-rail .day{padding:10px 8px 4px;font-size:11.5px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--muted)}
-.mx-rail .day:first-child{padding-top:4px}
-.mx-rail .it{display:grid;grid-template-columns:44px minmax(0,1fr);gap:10px;align-items:center;padding:6px;border-radius:10px;border:0;background:none;text-align:left;cursor:pointer;color:var(--ink);font:inherit}
-.mx-rail .it:hover{background:var(--bg)}
-.mx-rail .it.on{background:var(--primary-soft)}
-.mx-rail .th{width:44px;height:55px;border-radius:7px;object-fit:cover;background:var(--bg);display:grid;place-items:center;font-size:12px;color:var(--muted)}
-.mx-rail .t1{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums}
-.mx-rail .t1 .stt{color:var(--c);font-weight:600}
-.mx-rail .dd{display:none}
-.mx-rail .dot{width:8px;height:8px;border-radius:50%;flex:none;background:var(--c)}
-.mx-rail .t2{font-size:13.5px;font-weight:600;line-height:1.3;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
-.mx-pv{position:sticky;top:12px;display:flex;flex-direction:column;gap:8px;align-items:flex-start}
-.mx-pv .phone{width:100%;background:#fff;color:#050505;border-radius:18px;border:1px solid var(--line);overflow:hidden;box-shadow:var(--shadow)}
-.mx-pv .fbh{display:flex;align-items:center;gap:10px;padding:12px 14px 8px}
-.mx-pv .fbh svg{width:38px;height:38px;flex:none}
-.mx-pv .fbh b{display:block;font-size:14px}.mx-pv .fbh small{color:#65676b;font-size:12px}
-.mx-pv .fbc{padding:0 14px 10px;font-size:14px;line-height:1.4;overflow-wrap:anywhere}
-.mx-pv .stage{position:relative;background:#000}
-.mx-pv .stage img,.mx-pv .stage video{display:block;width:100%;max-height:62vh;object-fit:contain;background:#000}
-.mx-pv .arr{position:absolute;top:50%;transform:translateY(-50%);width:32px;height:32px;border-radius:50%;border:0;background:rgba(255,255,255,.92);color:#000;font-size:18px;cursor:pointer}
-.mx-pv .arr.l{left:8px}.mx-pv .arr.r{right:8px}
-.mx-pv .idx{position:absolute;top:8px;right:8px;background:rgba(0,0,0,.6);color:#fff;font-size:12px;padding:2px 8px;border-radius:999px}
-.mx-pv .fbf{display:flex;justify-content:space-around;padding:8px 6px;border-top:1px solid #e4e6eb;color:#65676b;font-size:13px;font-weight:600}
-.mx-pv .tt{position:relative;background:#000;aspect-ratio:9/16;max-height:72vh;margin:0 auto}
-.mx-pv .tt video,.mx-pv .tt img{width:100%;height:100%;object-fit:cover;display:block}
-.mx-pv .tt .ov{position:absolute;left:0;right:50px;bottom:44px;padding:12px;color:#fff;font-size:13px;line-height:1.4;white-space:pre-wrap;overflow-wrap:anywhere;max-height:30%;overflow:hidden;pointer-events:none;text-shadow:0 1px 2px rgba(0,0,0,.6)}
-.mx-pv .tt .ov b{display:block;margin-bottom:4px}
-.mx-pv .empty-m{padding:40px 20px;color:#65676b;font-size:14px;white-space:pre-wrap;line-height:1.5}
-.mx-dt{display:flex;flex-direction:column;gap:14px;min-width:0}
-.mx-card{padding:16px}
-.mx-head{display:flex;flex-wrap:wrap;align-items:center;gap:8px}
-.mx-head h2{flex-basis:100%;margin:2px 0 0;font-size:21px;line-height:1.3;text-wrap:balance}
-.mx-nv{margin-left:auto;display:flex;align-items:center;gap:2px;font-size:13px}
-.mx-nv .btn{padding:4px 10px;min-height:0}
-.mx-facts{display:grid;grid-template-columns:max-content minmax(0,1fr);gap:6px 16px;font-size:14px;margin:12px 0 0}
-.mx-facts dt{color:var(--muted)}.mx-facts dd{margin:0;overflow-wrap:anywhere}
-.mx-fb{margin-top:12px;font-size:14px;padding:10px 12px;border-radius:10px;background:var(--cb,var(--bg))}
-.mx-foot{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:16px;padding-top:14px;border-top:1px solid var(--line)}
-.mx-redo{flex-basis:100%;display:grid;gap:8px}
-.mx-redo p{margin:0;font-size:13px}
-.mx-acts{display:flex;flex-wrap:wrap;gap:8px}
-.mx-lbl{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:8px;font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
-.mx-lbl .btn{text-transform:none;letter-spacing:0;padding:4px 10px;min-height:0}
-.mx-cap{white-space:pre-wrap;overflow-wrap:anywhere;font-size:14.5px;line-height:1.6;max-width:68ch}
-.mx-hist{margin:0;padding-left:18px;font-size:13px;color:var(--muted);display:grid;gap:3px}
-@media (max-width:1180px){.mx{grid-template-columns:220px minmax(0,1fr)}.mx-rail{grid-row:1/span 2}.mx-pv{position:static}.mx-pv .phone{max-width:380px}}
-@media (max-width:760px){
-  .mx{grid-template-columns:minmax(0,1fr)}
-  .mx-rail,.mx-pv,.mx-dt{grid-row:auto;position:static}
-  .mx-rail{flex-direction:row;overflow-x:auto;max-height:none}
-  .mx-rail .day,.mx-rail .stt{display:none}
-  .mx-rail .dd{display:inline}
-  .mx-rail .it{grid-template-columns:44px;width:104px;flex:none;justify-items:center;text-align:center}
-  .mx-rail .t1{justify-content:center;gap:4px;font-size:11.5px;white-space:nowrap}
-  .ph .r:has(.mx-chips){flex-wrap:wrap;margin-left:0;width:100%}
-  .mx-chips{flex-basis:100%}
-  .mx-rail .t2{font-size:12px}
-  .mx-pv .phone{max-width:100%}
-}
 </style>
 </head>
 <body>
@@ -282,7 +213,6 @@ body{background:var(--bg)}
     <button class="nv" data-p="discounts"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.6 13.4l-7.2 7.2a2 2 0 0 1-2.8 0L3 13V3h10l7.6 7.6a2 2 0 0 1 0 2.8z"/><circle cx="7.5" cy="7.5" r="1.5"/></svg>Mã giảm giá</button>
     <button class="nv" data-p="users"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="9" cy="8" r="4"/><path d="M2 21a7 7 0 0 1 14 0M17 11a3 3 0 1 0 0-6M22 21a6 6 0 0 0-4-5.6"/></svg>Người dùng</button>
     <button class="nv" data-p="cards"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16v16H4zM4 9h16"/><path d="M12 13.5c-1-1.4-3-1-3 .6 0 1.4 3 3.4 3 3.4s3-2 3-3.4c0-1.6-2-2-3-.6z"/></svg>Thiệp & sản phẩm</button>
-    <button class="nv" data-p="mxh"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M8 2v4M16 2v4M3 10h18M9 15l2 2 4-4"/></svg>Duyệt bài MXH<span class="n" id="mxhBadge" hidden></span></button>
     <button class="nv" data-p="traffic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 20h18M6 16v-5M11 16V7M16 16v-8M21 16V4"/></svg>Truy cập</button>
     <div class="sep"></div>
     <button class="nv" data-p="settings"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 21v-7M4 10V3M12 21v-9M12 8V3M20 21v-5M20 12V3M1 14h6M9 8h6M17 16h6"/></svg>Cài đặt</button>
@@ -296,7 +226,6 @@ body{background:var(--bg)}
 </div>
 <main class="wrap" id="gate"><div class="pageload" role="status"><i></i>Đang mở trang quản trị…</div></main>
 <script src="/js/common.js"></script>
-<script src="/js/admin-mxh.js"></script>
 <script src="/js/admin.js"></script>
 </body>
 </html>
