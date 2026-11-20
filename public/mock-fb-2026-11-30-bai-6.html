@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<title>TikTok 30/11 bài 6 — Top ngày cưới đẹp cuối năm 2026</title>
+<!-- TikTok 1080×1920 không nhạc. Ngày lấy từ xemlicham.com, chogia.vn, ngaydep.com (tra 20/11/2026): chỉ giữ ngày có ít nhất 2/3 trang chấm tốt cho cưới hỏi.
+     Thứ và ngày âm đã tự kiểm bằng lib/lunar.js. 13/12 (CN) bỏ vì rơi vào mùng 5 (Nguyệt kỵ).
+     Xuất: node marketing/quang-cao/render.js --trang=../../public/mock-fb-2026-11-30-bai-6.html <ra.mp4> --im --khong-nhac --bitrate=4 -->
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;600;700;800;900&family=Dancing+Script:wght@700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/marketing/quang-cao/op/chung.css">
+<style>
+.hook{position:absolute;left:0;right:0;top:330px;text-align:center;opacity:0;z-index:20}
+.hook .cal{font-size:190px;line-height:1}
+.hook .tt{position:static;opacity:1;font-size:96px;line-height:1.3;margin-top:40px}
+.hook .tt.nho{font-size:58px;margin-top:50px}
+.hd{top:150px;font-size:68px}
+.card{position:absolute;left:70px;right:70px;height:330px;background:#fff;border-radius:44px;display:flex;align-items:center;gap:44px;padding:0 44px;opacity:0;z-index:15;
+  box-shadow:0 24px 60px rgba(120,40,50,.14);border:3px solid #ffe0e5}
+.card .d{flex:none;width:280px;height:250px;border-radius:34px;background:linear-gradient(160deg,#d6455d,#ef7d8d);color:#fff;text-align:center;display:flex;flex-direction:column;justify-content:center}
+.card .d b{font-size:82px;font-weight:900;letter-spacing:-3px;line-height:1}
+.card .d i{font-style:normal;font-size:36px;font-weight:700;opacity:.9;margin-top:10px}
+.card .t{flex:1;min-width:0}
+.card .w{font-size:60px;font-weight:900;line-height:1.1}
+.card .am{font-size:40px;font-weight:600;color:var(--muted);margin-top:12px}
+.card .tag{display:inline-block;margin-top:18px;font-size:34px;font-weight:800;padding:8px 22px;border-radius:999px;background:#fff1c9;color:#8a5a00}
+.card .tag.we{background:#d6455d;color:#fff}
+.foot{position:absolute;left:60px;right:60px;top:1600px;text-align:center;line-height:1.6;font-size:40px;font-weight:700;color:var(--ink);opacity:0;z-index:20}
+.foot span{background:rgba(255,255,255,.92);padding:10px 28px;border-radius:999px;box-shadow:0 8px 24px rgba(120,40,50,.1)}
+.luu{position:absolute;left:0;right:0;top:600px;text-align:center;opacity:0;z-index:20}
+.luu .tt{position:static;opacity:1;font-size:76px}
+.luu .tt.nho{font-size:54px;margin-top:60px;line-height:1.45}
+</style>
+</head>
+<body>
+<div id="stage">
+  <div class="blob b1"></div><div class="blob b2"></div><div id="tim"></div>
+
+  <div class="hook" id="hook">
+    <div class="cal">💍</div>
+    <div class="tt"><span>Top ngày cưới đẹp</span><br><span class="r">cuối năm 2026</span> ✨</div>
+    <div class="tt nho"><span>Lưu lại kẻo lỡ nha 📌</span></div>
+  </div>
+
+  <div class="tt hd" id="h1"><span>Tháng 12/2026</span></div>
+  <div class="card" id="c1" style="top:470px"><div class="d"><b>7/12</b><i>2026</i></div><div class="t"><div class="w">Thứ Hai</div><div class="am">Âm lịch 29/10</div><span class="tag">Cả 3 trang lịch đều gợi ý</span></div></div>
+  <div class="card" id="c2" style="top:840px"><div class="d"><b>12/12</b><i>2026</i></div><div class="t"><div class="w">Thứ Bảy</div><div class="am">Âm lịch 4/11</div><span class="tag we">Cuối tuần · khách dễ đi 🎉</span></div></div>
+  <div class="card" id="c3" style="top:1210px"><div class="d"><b>24/12</b><i>2026</i></div><div class="t"><div class="w">Thứ Năm</div><div class="am">Âm lịch 16/11</div><span class="tag">Đêm Noel 🎄</span></div></div>
+
+  <div class="tt hd" id="h2"><span>Tháng Chạp</span><br><span class="r">(tháng 1/2027)</span></div>
+  <div class="card" id="c4" style="top:560px"><div class="d"><b>8/1</b><i>2027</i></div><div class="t"><div class="w">Thứ Sáu</div><div class="am">Âm lịch mùng 1 Chạp</div><span class="tag">Mở đầu tháng Chạp</span></div></div>
+  <div class="card" id="c5" style="top:930px"><div class="d"><b>24/1</b><i>2027</i></div><div class="t"><div class="w">Chủ nhật</div><div class="am">Âm lịch 17 tháng Chạp</div><span class="tag we">Cuối tuần · khách dễ đi 🎉</span></div></div>
+
+  <div class="tt hd" id="h3"><span>Sát Tết Đinh Mùi</span> 🧧</div>
+  <div class="card" id="c6" style="top:560px"><div class="d"><b>31/1</b><i>2027</i></div><div class="t"><div class="w">Chủ nhật</div><div class="am">Âm lịch 24 tháng Chạp</div><span class="tag we">Cuối tuần · khách dễ đi 🎉</span></div></div>
+  <div class="card" id="c7" style="top:930px"><div class="d"><b>1/2</b><i>2027</i></div><div class="t"><div class="w">Thứ Hai</div><div class="am">Âm lịch 25 tháng Chạp</div><span class="tag">Cả 3 trang lịch đều gợi ý</span></div></div>
+
+  <div class="foot" id="foot"><span>Tham khảo lịch dân gian</span><br><span>nên xem thêm tuổi hai bạn</span></div>
+
+  <div class="luu" id="luu">
+    <div class="tt"><span>Chốt được ngày chưa?</span> 👀</div>
+    <div class="tt nho"><span>Lịch dân gian chỉ để tham khảo,</span><br><span class="r">nhớ xem thêm tuổi hai bạn</span><br><span>rồi hẵng báo hỷ nha 💌</span></div>
+  </div>
+</div>
+<script src="/marketing/quang-cao/op/chung.js"></script>
+<script>
+$('#stage').insertAdjacentHTML('beforeend', KET_HTML('Có ngày rồi?<br>Làm thiệp thôi', '49 mẫu · dùng thử 7 ngày · kích hoạt 99k'));
+window.DURATION = 22;
+timBay();
+// móc: 0 – 2.8s
+A('#hook', [{ opacity: 0, transform: 'scale(.75)', offset: 0 }, { opacity: 1, transform: 'scale(1.03)', offset: .1 }, { opacity: 1, transform: 'scale(1)', offset: .2 },
+  { opacity: 1, transform: 'scale(1)', offset: .93 }, { opacity: 0, transform: 'scale(1)', offset: 1 }], 0, 2.9, 'linear');
+// mỗi màn: tiêu đề + thẻ trượt vào lần lượt, rồi cả màn tắt
+const manNgay = (h, cards, t0, t1) => {
+  chu(h, t0, t1);
+  cards.forEach((c, i) => {
+    const t = t0 + .25 + i * .45, d = t1 - t;
+    A(c, [{ opacity: 0, transform: 'translateX(160px)', offset: 0 }, { opacity: 1, transform: 'none', offset: .45 / d }, { opacity: 1, transform: 'none', offset: 1 - .2 / d }, { opacity: 0, transform: 'none', offset: 1 }], t, d, 'linear');
+  });
+};
+manNgay('#h1', ['#c1', '#c2', '#c3'], 3.0, 8.0);
+manNgay('#h2', ['#c4', '#c5'], 8.2, 12.0);
+manNgay('#h3', ['#c6', '#c7'], 12.2, 16.0);
+// nhấn thẻ cuối tuần
+[['#c2', 4.6], ['#c5', 9.6], ['#c6', 13.2]].forEach(([c, t]) => A(c + ' .tag.we', [{ transform: 'scale(1)' }, { transform: 'scale(1.12)' }, { transform: 'scale(1)' }], t, .6, 'ease-in-out'));
+show('#foot', 3.1, 15.9);
+A('#luu', [{ opacity: 0, transform: 'translateY(60px)', offset: 0 }, { opacity: 1, transform: 'none', offset: .12 }, { opacity: 1, transform: 'none', offset: .94 }, { opacity: 0, transform: 'none', offset: 1 }], 16.2, 2.8, 'linear');
+ket(19.0);
+xong();
+</script>
+</body>
+</html>
