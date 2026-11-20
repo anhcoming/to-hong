@@ -1070,6 +1070,7 @@ route('POST', '/api/admin/orders/:id/confirm', async (req, res, ctx) => {
   json(res, 200, { ok: true });
 });
 adminLib.routes({ route, needAdmin, PRODUCTS, orderView, cardSummary, BASE_URL });
+require('./lib/mxh').routes({ route, needAdmin, audit: adminLib.audit }); // duyệt bài Facebook / TikTok (/admin#mxh)
 
 // Thiệp bị quản trị viên gỡ: khách mở link thấy thông báo (chủ thiệp vẫn xem trước được)
 const BLOCKED_HTML = () => renderNotice('Thiệp tạm thời không khả dụng', 'Thiệp này đang được đội ngũ hỗ trợ kiểm tra. Bạn vui lòng liên hệ cô dâu chú rể nhé.');
