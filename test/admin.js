@@ -167,6 +167,12 @@ const extraCard = (srcId, slug) => {
   r = await call('admin', 'GET', '/api/admin/orders?status=pending');
   const ord = r.json.orders.find((o) => o.code === r.json.orders[0].code);
   assert.equal(ord.email, 'khach@test.vn');
+  // khách chưa chuyển, chưa báo đã chuyển → nằm ở "Khách chưa chuyển", không ở "Cần xem"
+  assert.ok((await call('admin', 'GET', '/api/admin/orders?status=waiting')).json.orders.some((o) => o.id === ord.id), 'đơn chưa chuyển ở mục chờ khách');
+  assert.ok(!(await call('admin', 'GET', '/api/admin/orders?status=review')).json.orders.some((o) => o.id === ord.id), 'đơn chưa chuyển không cần xem');
+  await call('u2', 'POST', `/api/orders/${ord.code}/claim`);
+  assert.ok((await call('admin', 'GET', '/api/admin/orders?status=review')).json.orders.some((o) => o.id === ord.id), 'khách báo đã chuyển → cần xem');
+  assert.equal((await call('admin', 'GET', '/api/admin/stats?days=7')).json.totals.review, 1);
   assert.equal((await call('admin', 'PUT', `/api/admin/orders/${ord.id}`, { note: 'đã gọi khách' })).status, 200);
   assert.equal((await call('admin', 'POST', `/api/admin/orders/${ord.id}/cancel`)).status, 200);
   assert.equal((await call('admin', 'POST', `/api/admin/orders/${ord.id}/cancel`)).status, 400, 'đơn đã huỷ không huỷ lại');

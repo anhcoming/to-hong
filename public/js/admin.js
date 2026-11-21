@@ -134,22 +134,22 @@ function barsSvg(series, key, fmt) {
 }
 async function home() {
   const [d, po, ds, tr] = await Promise.all([
-    api('/api/admin/stats?days=30'), api('/api/admin/orders?status=pending'), api('/api/admin/discounts'),
+    api('/api/admin/stats?days=30'), api('/api/admin/orders?status=review'), api('/api/admin/discounts'),
     api('/api/admin/traffic?days=7').catch(() => null),
   ]);
   const t = d.totals, sum = (k) => d.series.reduce((n, s) => n + s[k], 0);
-  badge(t.pending);
+  badge(t.review);
   const h = new Date().getHours();
   // việc cần làm: đơn có tiền về lệch / khách báo đã chuyển trước, rồi mã sắp hết hạn hoặc sắp hết lượt
   const orders = po.orders.slice().sort((a, b) => (!!b.bankNote - !!a.bankNote) || (!!b.claimedAt - !!a.claimedAt));
   const soon = Date.now() + 7 * 864e5;
   const disc = ds.discounts.filter((x) => x.active && !x.expired && ((x.expiresAt && Date.parse(x.expiresAt + 'T23:59:59+07:00') < soon) || (x.limit && x.uses >= x.limit - 2)));
   const todo = [
-    ...orders.slice(0, 6).map((o) => `<li data-k="o:${o.id}"><span class="ic ${o.bankNote || o.claimedAt ? '' : 'g'}">${o.bankNote ? '!' : o.claimedAt ? '⏳' : '·'}</span><div><b><span class="code">${esc(o.code)}</span> · ${esc(o.bankNote || (o.claimedAt ? 'khách báo đã chuyển' : 'chờ thanh toán'))}</b><small>${esc(o.email)} · ${PROD[o.product] || ''} · ${ago(o.claimedAt || o.createdAt)}</small></div><span class="v">${money(o.amount)}</span></li>`),
+    ...orders.slice(0, 6).map((o) => `<li data-k="o:${o.id}"><span class="ic ${o.bankNote || o.claimedAt ? '' : 'g'}">${o.bankNote ? '!' : o.claimedAt ? '⏳' : '·'}</span><div><b><span class="code">${esc(o.code)}</span> · ${esc(o.bankNote || (o.claimedAt ? 'khách báo đã chuyển, kiểm tra ngân hàng' : 'chờ thanh toán'))}</b><small>${esc(o.email)} · ${PROD[o.product] || ''} · ${ago(o.claimedAt || o.createdAt)}</small></div><span class="v">${money(o.amount)}</span></li>`),
     ...disc.map((x) => `<li data-k="d:${esc(x.code)}"><span class="ic p">%</span><div><b>Mã ${esc(x.code)} ${x.limit && x.uses >= x.limit - 2 ? 'sắp hết lượt' : 'sắp hết hạn'}</b><small>${x.expiresAt ? 'Hết hạn ' + ddmm(x.expiresAt) + ' · ' : ''}đã dùng ${x.uses}${x.limit ? '/' + x.limit : ''} lượt</small></div></li>`),
   ];
   $('#view').innerHTML = `${page(h < 11 ? 'Chào buổi sáng 👋' : h < 18 ? 'Chào buổi chiều 👋' : 'Chào buổi tối 👋',
-    `${new Date().toLocaleDateString('vi-VN', { weekday: 'long', day: '2-digit', month: '2-digit', year: 'numeric' })} · ${po.total ? po.total + ' đơn đang chờ' : 'không có đơn nào đang chờ'}`)}
+    `${new Date().toLocaleDateString('vi-VN', { weekday: 'long', day: '2-digit', month: '2-digit', year: 'numeric' })} · ${po.total ? po.total + ' đơn cần bạn xem' : 'không có đơn nào cần bạn xem'}`)}
     <div class="kp">
       <div class="box"><span>Doanh thu 30 ngày</span><b>${money(sum('revenue'))}</b><small>7 ngày: ${money(t.revenueWeek)}</small></div>
       <div class="box"><span>Đơn đã thanh toán</span><b>${num(sum('orders'))}</b><small>30 ngày · ${num(t.paidOrders)} từ trước tới nay</small></div>
@@ -158,7 +158,7 @@ async function home() {
     </div>
     <div class="g2">
       <div class="box"><div class="bh"><h3>Doanh thu 30 ngày</h3><button class="lk" data-go="orders">Xem đơn →</button></div><div class="chart">${barsSvg(d.series, 'revenue', money)}</div></div>
-      <div class="box"><div class="bh"><h3>Cần xử lý</h3>${po.total > 6 ? `<button class="lk" data-go="orders">Tất cả ${po.total} →</button>` : ''}</div>
+      <div class="box"><div class="bh"><h3>Cần bạn xem</h3>${po.total > 6 ? `<button class="lk" data-go="orders">Tất cả ${po.total} →</button>` : ''}</div>
         <ul class="todo" id="todo">${todo.join('') || '<li class="empty">Không có việc gì cần xử lý 🎉</li>'}</ul></div>
     </div>
     <div class="g2">
@@ -182,16 +182,19 @@ function badge(n) { const b = $('#pendBadge'); b.hidden = !n; b.textContent = n;
 // ================= đơn hàng =================
 const SP = { paid: ['ok', 'Đã nhận đủ'], underpaid: ['warn', 'Nhận thiếu'], 'already-paid': ['red', 'Nhận thêm'] };
 const orderPill = (o) => (o.status === 'paid' ? pill('ok', 'Đã thanh toán') : o.status === 'cancelled' ? pill('', 'Đã huỷ')
-  : o.bankNote ? pill('warn', o.bankNote) : o.claimedAt ? pill('warn', 'Khách báo đã chuyển') : pill('', 'Chờ thanh toán'));
+  : o.bankNote ? pill('warn', o.bankNote) : o.claimedAt ? pill('warn', 'Khách báo đã chuyển') : pill('', 'Khách chưa chuyển tiền'));
+// đơn bạn phải xem (giống needsReview ở lib/admin.js)
+const isReview = (o) => (o.status === 'pending' ? !!(o.claimedAt || o.bankNote) : o.status === 'paid' && /hoàn tiền|thiếu/.test(o.bankNote || ''));
 const viaText = (o) => (o.paidVia === 'sepay' ? 'tự động qua SePay' : o.paidVia === 'coupon' ? 'mã giảm 100%' : 'xác nhận tay');
 async function orders() {
-  const f = A.f.orders = A.f.orders || { q: '', seg: 'pending', sel: '' };
-  $('#view').innerHTML = `${page('Đơn hàng', 'Đơn chuyển đúng mã, đủ tiền được SePay kích hoạt tự động — "Cần xử lý" chỉ còn đơn bạn phải xem.')}
-    ${filterBar('orders', { ph: 'Tìm mã đơn, email, tên đôi…', segs: [['pending', 'Cần xử lý'], ['paid', 'Đã thanh toán'], ['cancelled', 'Đã huỷ'], ['', 'Tất cả']], select: [['', 'Mọi sản phẩm'], ...Object.entries(PROD)] })}
+  const f = A.f.orders = A.f.orders || { q: '', seg: 'review', sel: '' };
+  if (f.seg === 'pending') f.seg = 'review';
+  $('#view').innerHTML = `${page('Đơn hàng', 'Khách chuyển đúng mã, đủ tiền thì SePay tự kích hoạt, bạn không cần làm gì. Chỉ xem mục "Cần xem": khách báo đã chuyển mà chưa kích hoạt, hoặc tiền về bị lệch.')}
+    ${filterBar('orders', { ph: 'Tìm mã đơn, email, tên đôi…', segs: [['review', 'Cần xem'], ['waiting', 'Khách chưa chuyển'], ['paid', 'Đã thanh toán'], ['cancelled', 'Đã huỷ'], ['', 'Tất cả']], select: [['', 'Mọi sản phẩm'], ...Object.entries(PROD)] })}
     <div class="box"><table class="tb"><thead><tr><th>Đơn</th><th>Khách</th><th class="hm">Sản phẩm</th><th class="num">Số tiền</th><th>Trạng thái</th><th></th></tr></thead><tbody id="list"></tbody></table></div>`;
   const load = async () => {
     const d = await api('/api/admin/orders?' + new URLSearchParams({ status: f.seg, product: f.sel, q: f.q }));
-    if (f.seg === 'pending') badge(d.total);
+    if (f.seg === 'review') badge(d.total);
     $('#fcnt').textContent = d.total + ' đơn';
     const rows = Object.fromEntries(d.orders.map((o) => [o.id, o]));
     $('#list').innerHTML = d.orders.length ? d.orders.map((o) => {
@@ -202,11 +205,12 @@ async function orders() {
         <td class="hm">${PROD[o.product] || esc(o.product)}${o.coupon ? `<span class="s">mã ${esc(o.coupon)}</span>` : ''}</td>
         <td class="num"><b>${money(o.amount)}</b></td>
         <td>${orderPill(o)}${t ? `<span class="s">SePay: ${(SP[t.result] || ['', t.result])[1].toLowerCase()} ${money(t.amount)}</span>` : o.status === 'paid' ? `<span class="s">${viaText(o)}</span>` : ''}</td>
-        <td class="act">${o.status === 'pending' ? '<button class="btn sm" data-a="ok">Xác nhận</button>' : '<button class="dots" data-a="menu" aria-label="Thêm">⋯</button>'}</td></tr>`;
-    }).join('') : `<tr><td colspan="6" class="empty">${f.seg === 'pending' && !f.q ? 'Không còn đơn nào cần xử lý 🎉' : 'Không có đơn nào khớp.'}</td></tr>`;
+        <td class="act">${o.status === 'pending' && isReview(o) ? '<button class="btn sm" data-a="ok">Đã nhận tiền</button>' : '<button class="dots" data-a="menu" aria-label="Thêm">⋯</button>'}</td></tr>`;
+    }).join('') : `<tr><td colspan="6" class="empty">${f.q ? 'Không có đơn nào khớp.' : f.seg === 'review' ? 'Không có đơn nào cần bạn xem 🎉 Đơn chuyển đúng mã đã được SePay tự kích hoạt.' : f.seg === 'waiting' ? 'Không có đơn nào đang chờ khách chuyển tiền.' : 'Không có đơn nào.'}</td></tr>`;
     bindRows($('#list'), rows, orderDrawer, (a, o, b) => {
       if (a === 'ok') return confirmOrder(o);
-      menu(b, [['Xem chi tiết', () => orderDrawer(o)], o.site && ['Mở thiệp ↗', () => open(`/t/${o.site.slug}?preview=1`, '_blank')], ['Ghi chú', () => orderDrawer(o, true)]]);
+      menu(b, [['Xem chi tiết', () => orderDrawer(o)], o.site && ['Mở thiệp ↗', () => open(`/t/${o.site.slug}?preview=1`, '_blank')], ['Ghi chú', () => orderDrawer(o, true)],
+        o.status === 'pending' && '-', o.status === 'pending' && ['Đã nhận tiền, kích hoạt tay', () => confirmOrder(o)], o.status === 'pending' && ['Huỷ đơn', () => cancelOrder(o), 'd']]);
     });
   };
   A.reload = load;
@@ -221,10 +225,18 @@ function confirmOrder(o) {
     run: async () => { await api(`/api/admin/orders/${o.id}/confirm`, { method: 'POST' }); toast('Đã kích hoạt ' + o.code); closeDrawer(); refresh(); },
   });
 }
+function cancelOrder(o) {
+  ask({
+    title: `Huỷ đơn ${esc(o.code)}?`, text: 'Khách vẫn tạo được đơn mới khi muốn thanh toán lại.', ok: 'Huỷ đơn', danger: true,
+    run: async () => { await api(`/api/admin/orders/${o.id}/cancel`, { method: 'POST' }); toast('Đã huỷ đơn'); closeDrawer(); refresh(); },
+  });
+}
 function orderDrawer(o, focusNote) {
   drawer(`${dhead(`<span class="code" style="font-size:18px">${esc(o.code)}</span>`, `${PROD[o.product] || ''} · tạo ${fmtDateTime(o.createdAt)}`)}
     <div class="db">
       <div>${orderPill(o)}</div>
+      ${o.status === 'pending' && !isReview(o) ? '<p class="muted" style="margin:0">Khách đã tạo đơn nhưng chưa chuyển tiền. Bạn không cần làm gì: khách chuyển đúng mã thì SePay tự kích hoạt. Chỉ bấm "Đã nhận tiền" khi chính bạn thấy tiền đã vào tài khoản.</p>' : ''}
+      ${o.status === 'pending' && o.claimedAt && !o.bankNote ? '<p class="muted" style="margin:0">Khách báo đã chuyển nhưng SePay chưa thấy tiền khớp mã đơn. Mở app ngân hàng kiểm tra: thấy tiền thì bấm "Đã nhận tiền".</p>' : ''}
       <dl class="kv">
         <dt>Khách</dt><dd>${esc(o.email)}</dd>
         <dt>Đôi</dt><dd>${esc(o.card ? o.card.names || o.card.title : '(thiệp đã xoá)')}</dd>
@@ -239,7 +251,7 @@ function orderDrawer(o, focusNote) {
       <div class="sec"><h4>Ghi chú</h4><label class="fl"><textarea id="onote" placeholder="VD: đã gọi khách, chuyển thiếu…">${esc(o.note)}</textarea></label>
         <button class="btn sm plain" id="onoteSave" style="margin-top:8px">Lưu ghi chú</button></div>
     </div>
-    ${o.status === 'pending' ? '<div class="df"><button class="btn plain" id="ocancel">Huỷ đơn</button><button class="btn" id="ook">Xác nhận đã nhận tiền</button></div>' : ''}`,
+    ${o.status === 'pending' ? '<div class="df"><button class="btn plain" id="ocancel">Huỷ đơn</button><button class="btn" id="ook">Đã nhận tiền, kích hoạt</button></div>' : ''}`,
   (box) => {
     $('#onoteSave', box).onclick = async () => {
       try { await api(`/api/admin/orders/${o.id}`, { method: 'PUT', body: { note: $('#onote', box).value } }); o.note = $('#onote', box).value; toast('Đã lưu ghi chú'); } catch (e) { err(e); }
@@ -247,10 +259,7 @@ function orderDrawer(o, focusNote) {
     if (focusNote) $('#onote', box).focus();
     if ($('#ook', box)) $('#ook', box).onclick = () => confirmOrder(o);
     if ($('#ocancel', box)) {
-      $('#ocancel', box).onclick = () => ask({
-        title: `Huỷ đơn ${esc(o.code)}?`, text: 'Khách vẫn tạo được đơn mới khi muốn thanh toán lại.', ok: 'Huỷ đơn', danger: true,
-        run: async () => { await api(`/api/admin/orders/${o.id}/cancel`, { method: 'POST' }); toast('Đã huỷ đơn'); closeDrawer(); refresh(); },
-      });
+      $('#ocancel', box).onclick = () => cancelOrder(o);
     }
   });
 }
@@ -639,7 +648,7 @@ async function render() {
   }
 }
 // tải lại danh sách đang xem (sau khi sửa trong popup / bảng chi tiết)
-function refresh() { (A.reload && A.page !== 'home' && A.page !== 'traffic' && A.page !== 'settings' ? A.reload() : render()).catch(err); api('/api/admin/orders?status=pending').then((d) => badge(d.total)).catch(() => {}); }
+function refresh() { (A.reload && A.page !== 'home' && A.page !== 'traffic' && A.page !== 'settings' ? A.reload() : render()).catch(err); api('/api/admin/orders?status=review').then((d) => badge(d.total)).catch(() => {}); }
 function go(p) {
   if (!VIEWS[p]) p = 'home';
   A.page = p; A.reload = null;
@@ -699,5 +708,5 @@ function loginForm(msg) {
   $$('.nv').forEach((b) => (b.onclick = () => go(b.dataset.p)));
   addEventListener('hashchange', () => { const h = location.hash.slice(1); if (h !== A.page && VIEWS[h]) go(h); });
   go(VIEWS[location.hash.slice(1)] ? location.hash.slice(1) : 'home');
-  if (A.page !== 'home' && A.page !== 'orders') api('/api/admin/orders?status=pending').then((d) => badge(d.total)).catch(() => {});
+  if (A.page !== 'home' && A.page !== 'orders') api('/api/admin/orders?status=review').then((d) => badge(d.total)).catch(() => {});
 })();
