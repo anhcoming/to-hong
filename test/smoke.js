@@ -180,7 +180,7 @@ async function call(who, method, url, body, extra = {}) {
   assert.ok(!r.text.includes('Tuấn <script>'), 'tên trên màn LED phải được escape');
   assert.equal((await call('u', 'POST', `/api/cards/${id}/order`, { product: 'led', coupon: 'GIAMRIENG' })).status, 400, 'mã giảm giá chỉ cho thiệp');
   r = await call('u', 'POST', `/api/cards/${id}/order`, { product: 'led' });
-  assert.equal(r.json.order.amount, 49000);
+  assert.equal(r.json.order.amount, 69000);
   assert.match(r.json.order.code, /^LD/);
   r = await call('qt', 'GET', '/api/admin/overview');
   const ledOrder = r.json.orders.find((o) => o.product === 'led');

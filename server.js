@@ -956,7 +956,7 @@ function productPaid(o) {
   const target = card && PRODUCTS[o.product || 'card'].sub(card);
   return !!(target && target.paid);
 }
-// Đơn đang chờ mà sản phẩm của nó đã được trả bằng đơn khác (vd. tạo đơn thiệp 99k rồi trả đơn Trọn bộ 149k) → tự đóng,
+// Đơn đang chờ mà sản phẩm của nó đã được trả bằng đơn khác (vd. tạo đơn thiệp 99k rồi trả đơn Trọn bộ 169k) → tự đóng,
 // khỏi nằm mãi ở "Cần xử lý" và khỏi bị trả nhầm lần nữa. `by`: đơn vừa trả (không có = dọn dữ liệu cũ lúc nạp kho).
 function closeCovered(by) {
   let n = 0;
