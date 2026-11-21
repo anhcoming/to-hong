@@ -158,7 +158,7 @@ async function home() {
     </div>
     <div class="g2">
       <div class="box"><div class="bh"><h3>Doanh thu 30 ngày</h3><button class="lk" data-go="orders">Xem đơn →</button></div><div class="chart">${barsSvg(d.series, 'revenue', money)}</div></div>
-      <div class="box"><div class="bh"><h3>Cần bạn xem</h3>${po.total > 6 ? `<button class="lk" data-go="orders">Tất cả ${po.total} →</button>` : ''}</div>
+      <div class="box"><div class="bh"><h3>Cần bạn xem</h3>${po.total > 6 ? `<button class="lk" id="goReview">Tất cả ${po.total} →</button>` : ''}</div>
         <ul class="todo" id="todo">${todo.join('') || '<li class="empty">Không có việc gì cần xử lý 🎉</li>'}</ul></div>
     </div>
     <div class="g2">
@@ -170,6 +170,7 @@ async function home() {
           <li><span class="ic g">✎</span><div><b>Sổ tay cưới</b><small>${num(t.guests)} khách mời đã nhập · ${num(t.rsvps)} lượt xác nhận dự</small></div><span class="v">${num(t.weddings)}</span></li>
         </ul></div>
     </div>`;
+  if ($('#goReview')) $('#goReview').onclick = () => { A.f.orders = { q: '', seg: 'review', sel: '' }; go('orders'); };
   $('#todo').onclick = (e) => {
     const li = e.target.closest('[data-k]'); if (!li) return;
     const [k, id] = [li.dataset.k.slice(0, 1), li.dataset.k.slice(2)];
@@ -187,7 +188,7 @@ const orderPill = (o) => (o.status === 'paid' ? pill('ok', 'Đã thanh toán') :
 const isReview = (o) => (o.status === 'pending' ? !!(o.claimedAt || o.bankNote) : o.status === 'paid' && /hoàn tiền|thiếu/.test(o.bankNote || ''));
 const viaText = (o) => (o.paidVia === 'sepay' ? 'tự động qua SePay' : o.paidVia === 'coupon' ? 'mã giảm 100%' : 'xác nhận tay');
 async function orders() {
-  const f = A.f.orders = A.f.orders || { q: '', seg: 'review', sel: '' };
+  const f = A.f.orders = A.f.orders || { q: '', seg: '', sel: '' }; // mở trang lần đầu: xem tất cả đơn
   if (f.seg === 'pending') f.seg = 'review';
   $('#view').innerHTML = `${page('Đơn hàng', 'Khách chuyển đúng mã, đủ tiền thì SePay tự kích hoạt, bạn không cần làm gì. Chỉ xem mục "Cần xem": khách báo đã chuyển mà chưa kích hoạt, hoặc tiền về bị lệch.')}
     ${filterBar('orders', { ph: 'Tìm mã đơn, email, tên đôi…', segs: [['review', 'Cần xem'], ['waiting', 'Khách chưa chuyển'], ['paid', 'Đã thanh toán'], ['cancelled', 'Đã huỷ'], ['', 'Tất cả']], select: [['', 'Mọi sản phẩm'], ...Object.entries(PROD)] })}
