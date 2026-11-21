@@ -121,9 +121,10 @@ main.wrap{padding-top:112px;padding-bottom:64px;max-width:1120px}
   /* đã có ảnh: trang thành một màn — thanh gọn, thiệp lớn chiếm phần còn lại, dải mẫu + nút ở đáy */
   body.gy-on #nav,body.gy-on #foot,body.gy-on .gy-head,body.gy-on .after{display:none}
   body.gy-on main.wrap{padding:0;max-width:none}
-  /* chừa chỗ cho thanh 5 nút dưới cùng (site.js, cao 62px + lề 12px) — không thì dải mẫu bị che */
-  body.gy-on #work{display:flex;flex-direction:column;height:calc(100vh - 86px);height:calc(100dvh - 86px - env(safe-area-inset-bottom))}
-  body.gy-on{padding-bottom:calc(86px + env(safe-area-inset-bottom))!important}
+  /* màn gợi ý: ẩn thanh 5 nút dưới cùng (site.js) để thiệp + dải mẫu chiếm trọn màn hình */
+  body.gy-on .sbar{display:none!important}
+  body.gy-on #work{display:flex;flex-direction:column;height:100vh;height:calc(100dvh - env(safe-area-inset-bottom))}
+  body.gy-on{padding-bottom:env(safe-area-inset-bottom)!important}
   body.gy-on #msg{margin:8px 14px 0}
   .mrow{display:flex;flex:none;align-items:center;gap:10px;padding:10px 14px 0}
   .mrow{justify-content:space-between}
