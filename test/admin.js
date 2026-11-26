@@ -223,6 +223,17 @@ const extraCard = (srcId, slug) => {
   await call('admin', 'POST', `/api/admin/cards/${card.id}/product`, { product: 'card', paid: true, reason: 'tặng' });
   assert.equal((await call('u2', 'GET', `/api/cards/${card.id}`)).json.card.paid, true, 'kích hoạt tay');
   assert.equal((await call('admin', 'POST', `/api/admin/cards/${card.id}/product`, { product: 'led', paid: true })).status, 400, 'chưa tạo màn LED');
+  // màn LED đã chốt: quản trị viên xem, mở khoá rồi sửa giúp khách
+  assert.equal((await call('u2', 'PUT', `/api/cards/${card.id}`, { led: {} })).status, 200);
+  await call('admin', 'POST', `/api/admin/cards/${card.id}/product`, { product: 'led', paid: true });
+  assert.equal((await call('x', 'GET', '/led/an-binh')).status, 200, 'chiếu thật → chốt');
+  assert.equal((await call('admin', 'PUT', `/api/cards/${card.id}`, { led: { kicker: 'Tiệc Cưới' } })).status, 409, 'đã chốt');
+  assert.equal((await call('admin', 'GET', `/api/cards/${card.id}`)).status, 200, 'quản trị viên mở được thiệp của khách');
+  assert.equal((await call('u2', 'POST', `/api/admin/cards/${card.id}/led-unlock`)).status, 403);
+  assert.equal((await call('admin', 'POST', `/api/admin/cards/${card.id}/led-unlock`)).status, 200);
+  r = await call('admin', 'PUT', `/api/cards/${card.id}`, { led: { kicker: 'Tiệc Cưới' } });
+  assert.equal(r.status, 200, 'mở khoá rồi sửa được');
+  assert.equal(r.json.card.led.paid, true, 'vẫn đã kích hoạt');
   await call('admin', 'POST', `/api/admin/cards/${card.id}/block`, { blocked: true, reason: 'nội dung xấu' });
   r = await call('x', 'GET', '/t/an-binh');
   assert.equal(r.status, 403);

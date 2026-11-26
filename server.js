@@ -182,6 +182,7 @@ const movedNext = (next, moved) => (moved ? next.replace(/^\/(sua|sua-led|sua-vi
 // Thiệp của mình, hoặc thiệp trong đám cưới mà mình là thành viên (người yêu, bố mẹ cùng sửa).
 // opts.guest: cho phép cả khách chưa đăng nhập đang giữ thiệp nháp này.
 function ownedCard(ctx, id, opts = {}) {
+  if (ctx.admin) { const c = db.cards.find((x) => x.id === id); if (c) return c; } // quản trị viên: mở / sửa được thiệp, màn LED, video của khách
   if (!ctx.user && opts.guest) {
     const c = db.cards.find((x) => x.id === id);
     if (guestOwns(ctx, c)) return c;
@@ -1069,6 +1070,17 @@ route('POST', '/api/admin/orders/:id/confirm', async (req, res, ctx) => {
   adminLib.audit(ctx, 'Xác nhận đơn', o.code, `${o.amount}đ`);
   json(res, 200, { ok: true });
 });
+// Quản trị viên mở khoá màn LED đã chốt để sửa giúp khách (vẫn giữ đã kích hoạt). Lần chiếu thật kế tiếp tự chốt lại theo tên mới.
+route('POST', '/api/admin/cards/:id/led-unlock', async (req, res, ctx) => {
+  needAdmin(ctx);
+  const card = db.cards.find((c) => c.id === ctx.params.id);
+  if (!card || !card.led) throw httpError(404, 'Không tìm thấy màn LED');
+  if (card.led.snap) {
+    delete card.led.snap; delete card.led.names; card.updatedAt = Date.now(); save();
+    adminLib.audit(ctx, 'Mở khoá màn LED', card.slug, '');
+  }
+  json(res, 200, { ok: true });
+});
 adminLib.routes({ route, needAdmin, PRODUCTS, orderView, cardSummary, BASE_URL });
 
 // Thiệp bị quản trị viên gỡ: khách mở link thấy thông báo (chủ thiệp vẫn xem trước được)
@@ -1232,7 +1244,7 @@ route('GET', '/led/:slug', async (req, res, ctx) => {
     return html(res, 200, ledLib.renderLed(card, led, { demo: true, preview: q.preview === '1' }));
   }
   const card = cardBySlug(slug);
-  const isOwner = canManage(ctx.user, card) || guestOwns(ctx, card);
+  const isOwner = canManage(ctx.user, card) || guestOwns(ctx, card) || ctx.admin;
   if (!card || !card.led) return html(res, 404, renderNotice('Không tìm thấy màn hình LED', 'Đường dẫn có thể đã bị đổi. Hãy hỏi lại cô dâu chú rể nhé.'));
   if (card.blocked && !isOwner) return html(res, 403, BLOCKED_HTML());
   const st = ledLib.state(card.led);

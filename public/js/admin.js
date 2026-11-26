@@ -210,13 +210,24 @@ async function orders() {
     }).join('') : `<tr><td colspan="6" class="empty">${f.q ? 'Không có đơn nào khớp.' : f.seg === 'review' ? 'Không có đơn nào cần bạn xem 🎉 Đơn chuyển đúng mã đã được SePay tự kích hoạt.' : f.seg === 'waiting' ? 'Không có đơn nào đang chờ khách chuyển tiền.' : 'Không có đơn nào.'}</td></tr>`;
     bindRows($('#list'), rows, orderDrawer, (a, o, b) => {
       if (a === 'ok') return confirmOrder(o);
-      menu(b, [['Xem chi tiết', () => orderDrawer(o)], o.site && ['Mở thiệp ↗', () => open(`/t/${o.site.slug}?preview=1`, '_blank')], ['Ghi chú', () => orderDrawer(o, true)],
+      menu(b, [['Xem chi tiết', () => orderDrawer(o)], ...ledActs(o), o.site && o.product !== 'led' && ['Mở thiệp ↗', () => open(`/t/${o.site.slug}?preview=1`, '_blank')], ['Ghi chú', () => orderDrawer(o, true)],
         o.status === 'pending' && '-', o.status === 'pending' && ['Đã nhận tiền, kích hoạt tay', () => confirmOrder(o)], o.status === 'pending' && ['Huỷ đơn', () => cancelOrder(o), 'd']]);
     });
   };
   A.reload = load;
   bindBar('orders', () => load().catch(err));
   await load();
+}
+// đơn có màn LED: xem màn khách làm + sửa giúp (đã chốt thì mở khoá trước)
+const hasLed = (o) => o.site && o.card && /led|combo/.test(o.product);
+const ledActs = (o) => (hasLed(o) ? [['Mở màn LED ↗', () => open(`/led/${o.site.slug}`, '_blank')], ['Sửa màn LED', () => editLed(o)]] : []);
+function editLed(o) {
+  ask({
+    title: 'Sửa màn LED của khách?',
+    text: `Mở trình sửa màn LED của ${esc(o.card.names || o.email)}. Màn đã kích hoạt sẽ được mở khoá để sửa (vẫn giữ đã kích hoạt); lần chiếu thật tiếp theo tự chốt lại.`,
+    ok: 'Mở trình sửa',
+    run: async () => { await api(`/api/admin/cards/${o.card.id}/led-unlock`, { method: 'POST' }); open(`/sua-led/${o.card.id}`, '_blank'); },
+  });
 }
 function confirmOrder(o) {
   ask({
@@ -246,6 +257,7 @@ function orderDrawer(o, focusNote) {
         ${o.status === 'paid' ? `<dt>Kích hoạt</dt><dd>${fmtDateTime(o.paidAt)} · ${viaText(o)}</dd>` : ''}
         ${o.cancelledAt ? `<dt>Huỷ lúc</dt><dd>${fmtDateTime(o.cancelledAt)}</dd>` : ''}
       </dl>
+      ${hasLed(o) ? `<div class="sec"><h4>Màn LED</h4><a class="lnk" href="/led/${esc(o.site.slug)}" target="_blank" rel="noopener"><span>/led/${esc(o.site.slug)}</span> ↗</a><button class="btn sm plain" id="oledit" style="margin-top:8px">Sửa màn LED</button></div>` : ''}
       ${o.site ? `<div class="sec"><h4>Thiệp web</h4><a class="lnk" href="/t/${esc(o.site.slug)}?preview=1" target="_blank" rel="noopener" title="${esc(o.site.url)}"><span>/t/${esc(o.site.slug)}</span><small>${o.site.published ? 'đã phát hành' : 'nháp'}</small> ↗</a></div>` : ''}
       <div class="sec"><h4>SePay</h4>${o.sepay.length ? `<ul class="tl">${o.sepay.map((t) => { const [c, l] = SP[t.result] || ['', t.result]; return `<li>${pill(c, `${l} ${money(t.amount)}`)}<small>${ago(t.at)}</small></li>`; }).join('')}</ul>` : `<p>${o.status === 'paid' ? 'Không qua SePay.' : 'Chưa nhận được tiền nào cho đơn này.'}</p>`}
         ${o.bankNote ? `<p style="margin-top:8px;color:var(--danger)">🏦 ${esc(o.bankNote)}</p>` : ''}</div>
@@ -258,6 +270,7 @@ function orderDrawer(o, focusNote) {
       try { await api(`/api/admin/orders/${o.id}`, { method: 'PUT', body: { note: $('#onote', box).value } }); o.note = $('#onote', box).value; toast('Đã lưu ghi chú'); } catch (e) { err(e); }
     };
     if (focusNote) $('#onote', box).focus();
+    if ($('#oledit', box)) $('#oledit', box).onclick = () => editLed(o);
     if ($('#ook', box)) $('#ook', box).onclick = () => confirmOrder(o);
     if ($('#ocancel', box)) {
       $('#ocancel', box).onclick = () => cancelOrder(o);
