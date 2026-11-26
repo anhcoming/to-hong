@@ -1,0 +1,154 @@
+<!doctype html>
+<html lang="vi"><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Mock — trả tiền theo đám cưới + một màn thanh toán</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&family=Dancing+Script:wght@700&display=swap">
+<style>
+:root{--red:#d6455d;--red2:#ef7d8d;--ink:#1f1a1b;--muted:#7a6e70;--line:#efe3e4;--bg:#fdf8f8;--ok:#1f8a5b;--okbg:#e6f5ec}
+*{box-sizing:border-box}
+body{margin:0;background:#efe8e9;font-family:'Be Vietnam Pro',system-ui,sans-serif;color:var(--ink);padding:24px}
+h1.t{font-size:20px;margin:0 0 4px}p.d{margin:0 0 6px;color:var(--muted);font-size:14px;max-width:980px;line-height:1.55}
+.rule{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0 22px}.rule span{background:#fff;border-radius:999px;padding:7px 14px;font-size:13px;box-shadow:0 0 0 1px var(--line)}.rule b{color:var(--red)}
+.row{display:flex;gap:26px;flex-wrap:wrap}
+.ph{width:340px;flex:none}
+.ph h2{font-size:14px;margin:0 0 8px}.ph h2 small{display:block;font-weight:400;color:var(--muted);font-size:12.5px;margin-top:2px;line-height:1.45}
+.scr{height:860px;overflow:hidden;border-radius:28px;background:var(--bg);border:8px solid #1d1718;position:relative}
+.top{margin:10px 10px 0;height:48px;border-radius:999px;background:#fff;box-shadow:0 8px 24px rgba(120,40,50,.1);display:flex;align-items:center;gap:8px;padding:0 6px 0 14px}
+.lg{white-space:nowrap;font:700 22px 'Dancing Script',cursive;color:var(--red)}.sp{flex:1}
+.my{height:34px;padding:0 12px;border-radius:999px;background:var(--red);color:#fff;font-size:12px;font-weight:700;display:flex;align-items:center;gap:6px;white-space:nowrap}
+.body{padding:14px 14px 80px}
+.wed{background:linear-gradient(135deg,#d6455d,#ef7d8d);color:#fff;border-radius:18px;padding:14px 16px;position:relative}
+.wed .n{font:700 24px/1.2 'Dancing Script',cursive}.wed .dt{font-size:12.5px;opacity:.95;margin-top:3px}
+.wed .lk{display:inline-block;margin-top:8px;font-size:10.5px;background:rgba(255,255,255,.22);padding:3px 8px;border-radius:999px}
+.chip{display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:700;border-radius:999px;padding:3px 9px}
+.chip.ok{background:var(--okbg);color:var(--ok)}.chip.no{background:#f4eeee;color:var(--muted)}.chip.w{background:#fff1e0;color:#b4630c}
+.sec{font-size:11.5px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--red);margin:16px 2px 8px;display:flex;justify-content:space-between;align-items:center}
+.sec a{font-size:12px;text-transform:none;letter-spacing:0;font-weight:700}
+.it{display:flex;gap:11px;align-items:center;background:#fff;border-radius:14px;padding:9px;box-shadow:0 0 0 1px var(--line);margin-bottom:8px}
+.it .th{width:48px;height:64px;border-radius:9px;background:#ddd center/cover;flex:none}
+.it .th.w{width:64px;height:40px}
+.it .tx{flex:1;min-width:0}.it .tx b{display:block;font-size:13.5px}.it .tx small{display:block;color:var(--muted);font-size:11.5px;margin:2px 0 4px}
+.lnk{font-size:12px;font-weight:700;color:var(--red);white-space:nowrap}
+.add{border:1.5px dashed #e7c3c9;border-radius:14px;padding:11px;text-align:center;font-size:13px;font-weight:700;color:var(--red);background:#fff8f9}
+.btn{display:inline-flex;align-items:center;justify-content:center;height:44px;padding:0 22px;border-radius:999px;background:linear-gradient(135deg,var(--red),var(--red2));color:#fff;font-weight:700;font-size:14px;box-shadow:0 8px 20px rgba(214,69,93,.3)}
+.btn.soft{background:#fbe5e9;color:var(--red);box-shadow:none}
+.ctr{text-align:center;margin-top:14px}
+.bot{position:absolute;left:10px;right:10px;bottom:10px;height:56px;border-radius:999px;background:rgba(255,255,255,.95);box-shadow:0 0 0 1px var(--line),0 10px 24px rgba(120,40,50,.15);display:flex;justify-content:space-around;align-items:center;font-size:10px;font-weight:600;color:var(--muted)}
+.bot b{display:flex;flex-direction:column;align-items:center;gap:2px;font-weight:600}.bot b i{font-style:normal;font-size:17px;filter:grayscale(1)}
+/* lớp phủ + bảng trượt */
+.dim{position:absolute;inset:0;background:rgba(30,15,18,.45)}
+.sheet{position:absolute;left:0;right:0;bottom:0;background:#fff;border-radius:22px 22px 0 0;padding:18px 16px 22px}
+.sheet h4{margin:0 0 4px;font-size:16.5px}.sheet p{margin:0 0 12px;color:var(--muted);font-size:12.5px;line-height:1.5}
+.sheet .x{position:absolute;right:14px;top:12px;width:30px;height:30px;border-radius:50%;background:#f6eff0;display:grid;place-items:center;font-size:14px;color:var(--muted)}
+.opt{display:flex;gap:10px;align-items:center;border-radius:14px;padding:11px;box-shadow:0 0 0 1px var(--line);margin-bottom:8px}
+.opt.on{box-shadow:0 0 0 2px var(--red);background:#fff7f8}
+.opt .th{width:40px;height:54px;border-radius:8px;background:#ddd center/cover;flex:none}
+.opt b{display:block;font-size:13.5px}.opt small{display:block;color:var(--muted);font-size:11.5px;margin-top:2px;line-height:1.4}
+.ck{width:22px;height:22px;border-radius:7px;border:2px solid #d9c6c9;flex:none;display:grid;place-items:center;color:#fff;font-size:13px;font-weight:800}
+.ck.on{background:var(--red);border-color:var(--red)}.ck.lock{background:#cfc3c5;border-color:#cfc3c5}
+.pr{margin-left:auto;font-weight:800;font-size:13.5px;white-space:nowrap;text-align:right}.pr s{display:block;color:var(--muted);font-weight:500;font-size:11px}
+.save{background:#fff4d9;border-radius:12px;padding:9px 11px;font-size:12.5px;color:#8a5a00;margin:4px 0 12px;line-height:1.45}
+.tot{display:flex;justify-content:space-between;align-items:baseline;border-top:1px dashed var(--line);padding-top:12px;margin-top:4px}
+.tot b{font-size:22px;color:var(--red)}
+.fine{font-size:11.5px;color:var(--muted);line-height:1.5;margin-top:10px}
+.qr{width:180px;height:180px;margin:6px auto 10px;border-radius:14px;background:#fff;box-shadow:0 0 0 1px var(--line);display:grid;place-items:center}
+.kv{font-size:13px;background:#faf5f5;border-radius:12px;padding:10px 12px;line-height:1.8}.kv b{float:right}
+.toast{position:absolute;left:14px;right:14px;top:66px;background:#1f1a1b;color:#fff;border-radius:14px;padding:11px 14px;font-size:12.5px;line-height:1.45;box-shadow:0 12px 30px rgba(0,0,0,.25)}
+.note{font-size:12.5px;color:var(--muted);margin-top:10px;line-height:1.55}
+.note b{color:var(--ink)}
+</style></head><body>
+<h1 class="t">Ý 1 + ý 3 — trả tiền theo đám cưới, một màn thanh toán chung</h1>
+<p class="d">Gom mọi thứ của một cặp đôi vào <b>"Đám cưới của bạn"</b>. Kích hoạt là trả cho <b>đám cưới này</b>: chốt <b>tên hai bạn + ngày cưới</b> (chống mua một lần dùng cho đám khác), còn mẫu thiệp, màu, ảnh, chữ <b>đổi thoải mái</b>, làm thêm bao nhiêu thiệp cũng được (nhà trai / nhà gái / bạn bè). Mua thêm màn LED, slide cũng ở cùng một màn, quét một mã QR.</p>
+<div class="rule"><span>🔒 Chốt khi trả tiền: <b>tên đôi + ngày cưới</b></span><span>✏️ Không chốt: <b>mẫu, màu, ảnh, chữ, số thiệp</b></span><span>💳 Một màn thanh toán, tick món cần mua</span><span>🎁 Tick đủ 3 món tự thành <b>Trọn bộ 169k</b></span></div>
+
+<div class="row">
+
+  <!-- A · trung tâm đám cưới -->
+  <div class="ph"><h2>A · "Đám cưới của bạn" (thay "Thiệp của tôi")<small>Một chỗ thấy hết: đã có gì, còn thiếu gì. Thiệp có thể nhiều cái, đổi mẫu tự do.</small></h2>
+    <div class="scr">
+      <div class="top"><span class="lg">Cưới Nha</span><span class="sp"></span><span class="my">Đám cưới của tôi ˅</span></div>
+      <div class="body">
+        <div class="wed"><div class="n">Thành Hưng &amp; Thùy Dương</div><div class="dt">Thứ Bảy 28/11/2026 · Tức ngày 20 tháng 10 năm Bính Ngọ</div><span class="lk">🔒 Tên + ngày cưới đã chốt</span></div>
+        <div class="sec">Thiệp cưới <span class="chip ok">● Đã kích hoạt</span></div>
+        <div class="it"><div class="th" style="background-image:url(/demo/cover-songhy-do.jpg)"></div><div class="tx"><b>Thiệp nhà trai</b><small>Song Hỷ · Lễ Thành Hôn · 124 lượt xem</small><span class="lnk">Sửa · Đổi mẫu · Gửi link</span></div></div>
+        <div class="it"><div class="th" style="background-image:url(/demo/cover-dodam-do-ruou.jpg)"></div><div class="tx"><b>Thiệp nhà gái</b><small>Đỏ Đậm · Lễ Vu Quy · 37 lượt xem</small><span class="lnk">Sửa · Đổi mẫu · Gửi link</span></div></div>
+        <div class="add">＋ Làm thêm thiệp (miễn phí, cùng đám cưới)</div>
+        <div class="sec">Màn hình LED <span class="chip no">Chưa có</span></div>
+        <div class="it"><div class="th w" style="background-image:url(/demo/lposter-bac-dembac.jpg)"></div><div class="tx"><b>Màn LED sân khấu</b><small>Đang làm thử · có dòng "Bản dùng thử"</small><span class="lnk">Sửa · Thêm 69k</span></div></div>
+        <div class="sec">Slide cưới <span class="chip no">Chưa có</span></div>
+        <div class="add">＋ Làm slide ảnh cưới</div>
+        <div class="ctr"><span class="btn">Thêm LED + slide · 70k</span></div>
+      </div>
+      <div class="bot"><b><i>💌</i>Thiệp</b><b><i>🎁</i>Báo hỷ</b><b><i>🖥️</i>Màn LED</b><b><i>🎞️</i>Slide</b><b><i>📒</i>Sổ tay</b></div>
+    </div>
+    <p class="note">Đã mua thiệp 99k → nút nâng cấp chỉ tính phần chênh: lên Trọn bộ 169k là <b>thêm 70k</b> (rẻ hơn mua lẻ LED 69k + slide 49k = 118k).</p>
+  </div>
+
+  <!-- B · chọn mẫu khác khi đã kích hoạt -->
+  <div class="ph"><h2>B · Đã kích hoạt mà bấm "Dùng thiệp này" ở mẫu khác<small>Không còn dải đỏ báo lỗi. Hỏi nhẹ: đổi mẫu thiệp đang có, hay làm thêm một thiệp nữa.</small></h2>
+    <div class="scr" style="background:#efe7e0 url(/demo/cover-hoamoc-xanh-la.jpg) center/cover">
+      <div class="top"><span class="lg">Cưới Nha</span><span class="sp"></span><span class="my">Đám cưới của tôi ˅</span></div>
+      <div class="dim"></div>
+      <div class="sheet"><span class="x">✕</span>
+        <h4>Dùng mẫu Hoa Mộc cho…</h4>
+        <p>Đám cưới Thành Hưng &amp; Thùy Dương đã kích hoạt. Đổi mẫu hay làm thêm thiệp đều miễn phí — chữ, ảnh, ngày giờ giữ nguyên.</p>
+        <div class="opt on"><div class="th" style="background-image:url(/demo/cover-songhy-do.jpg)"></div><div><b>Đổi mẫu thiệp nhà trai</b><small>Song Hỷ → Hoa Mộc · link đã gửi khách vẫn dùng được</small></div><span class="ck on" style="margin-left:auto">✓</span></div>
+        <div class="opt"><div class="th" style="background-image:url(/demo/cover-dodam-do-ruou.jpg)"></div><div><b>Đổi mẫu thiệp nhà gái</b><small>Đỏ Đậm → Hoa Mộc</small></div><span class="ck" style="margin-left:auto"></span></div>
+        <div class="opt"><div class="th" style="background:#fbe5e9;display:grid;place-items:center;color:var(--red);font-weight:800">＋</div><div><b>Làm thêm một thiệp mới</b><small>Ví dụ thiệp mời bạn bè · đã có trong gói</small></div><span class="ck" style="margin-left:auto"></span></div>
+        <div class="ctr"><span class="btn">Dùng mẫu này</span></div>
+      </div>
+    </div>
+    <p class="note">Chưa kích hoạt thì như bây giờ: bấm là đổi mẫu luôn, không hỏi.</p>
+  </div>
+
+  <!-- C · một màn thanh toán -->
+  <div class="ph"><h2>C · Một màn thanh toán chung<small>Thay 3 nút "Kích hoạt" riêng ở thiệp / LED / slide. Mở từ bất kỳ đâu, tick món cần mua.</small></h2>
+    <div class="scr">
+      <div class="top"><span class="lg">Cưới Nha</span><span class="sp"></span><span class="my">Đám cưới của tôi ˅</span></div>
+      <div class="dim"></div>
+      <div class="sheet" style="top:70px;border-radius:22px 22px 0 0"><span class="x">✕</span>
+        <h4>Kích hoạt đám cưới</h4>
+        <p>Thành Hưng &amp; Thùy Dương · 28/11/2026</p>
+        <div class="opt on"><span class="ck on">✓</span><div><b>Thiệp cưới online</b><small>Không giới hạn số thiệp, đổi mẫu thoải mái</small></div><span class="pr">99.000đ</span></div>
+        <div class="opt on"><span class="ck on">✓</span><div><b>Màn hình LED</b><small>Link chiếu ở tiệc + tải MP4</small></div><span class="pr">69.000đ</span></div>
+        <div class="opt on"><span class="ck on">✓</span><div><b>Slide ảnh cưới</b><small>Dựng video từ ảnh, tải MP4 Full HD</small></div><span class="pr">49.000đ</span></div>
+        <div class="save">🎁 Đủ 3 món = <b>Trọn bộ</b>, giảm 48.000đ so với mua lẻ</div>
+        <div class="tot"><span style="font-size:13px;color:var(--muted)">Tổng <s style="margin-left:4px">217.000đ</s></span><b>169.000đ</b></div>
+        <div style="font-size:12.5px;margin-top:10px;color:var(--muted)">Mã giảm giá <span style="color:var(--red);font-weight:700">· Nhập mã</span></div>
+        <div class="fine">🔒 Trả tiền là chốt <b>tên hai bạn và ngày cưới</b> (không đổi sang đám cưới khác được). Mẫu thiệp, màu, ảnh, chữ vẫn sửa thoải mái.</div>
+        <div class="ctr"><span class="btn">Thanh toán 169.000đ</span></div>
+      </div>
+    </div>
+    <p class="note">Bỏ tick LED + slide → tổng 99k. Chỉ tick LED → 69k (không bắt mua thiệp). Món đã mua hiện ✓ xám, không tính tiền lại.</p>
+  </div>
+
+  <!-- D · QR -->
+  <div class="ph"><h2>D · Quét một mã QR → mở hết<small>Như bây giờ (SePay tự xác nhận), chỉ khác là một lần trả cho cả đám cưới.</small></h2>
+    <div class="scr">
+      <div class="top"><span class="lg">Cưới Nha</span><span class="sp"></span><span class="my">Đám cưới của tôi ˅</span></div>
+      <div class="dim"></div>
+      <div class="sheet" style="top:70px"><span class="x">✕</span>
+        <h4>Chuyển khoản 169.000đ</h4>
+        <p>Quét mã bằng app ngân hàng. Tiền về là tự kích hoạt, không cần chờ.</p>
+        <div class="qr"><svg width="150" height="150" viewBox="0 0 21 21" shape-rendering="crispEdges"><path fill="#1f1a1b" d="M0 0h7v7H0zM14 0h7v7h-7zM0 14h7v7H0zM2 2v3h3V2zM16 2v3h3V2zM2 16v3h3v-3zM9 1h2v2H9zM12 3h1v3h-1zM8 5h3v1H8zM9 8h3v2H9zM1 9h3v1H1zM5 9h2v3H5zM14 9h2v1h-2zM17 8h3v3h-3zM9 12h1v3H9zM12 12h4v1h-4zM15 14h2v2h-2zM18 13h2v4h-2zM11 15h3v2h-3zM8 18h4v2H8zM14 18h3v1h-3zM19 19h2v2h-2z"/></svg></div>
+        <div class="kv">Số tiền<b>169.000đ</b><br>Nội dung<b>CN8K2Q7M</b><br>Gồm<b>Thiệp + LED + slide</b></div>
+        <div class="ctr"><span class="btn soft">Tôi đã chuyển khoản</span></div>
+      </div>
+    </div>
+    <p class="note">Xong → thông báo "Đã kích hoạt đám cưới 🎉" rồi về màn A, các món vừa mua chuyển sang <span class="chip ok">● Đã kích hoạt</span>.</p>
+  </div>
+
+</div>
+
+<h2 style="font-size:16px;margin:30px 0 6px">Khác gì bây giờ</h2>
+<table style="border-collapse:collapse;font-size:13.5px;background:#fff;border-radius:14px;overflow:hidden;box-shadow:0 0 0 1px var(--line);max-width:980px">
+<tr style="background:#faf3f4"><th style="text-align:left;padding:10px 14px">Chuyện</th><th style="text-align:left;padding:10px 14px">Bây giờ</th><th style="text-align:left;padding:10px 14px">Đề xuất</th></tr>
+<tr><td style="padding:9px 14px;border-top:1px solid var(--line)">Trả tiền xong đổi mẫu</td><td style="padding:9px 14px;border-top:1px solid var(--line)">Bị chặn, dải đỏ báo lỗi</td><td style="padding:9px 14px;border-top:1px solid var(--line)">Đổi thoải mái</td></tr>
+<tr><td style="padding:9px 14px;border-top:1px solid var(--line)">Thiệp nhà trai + nhà gái</td><td style="padding:9px 14px;border-top:1px solid var(--line)">Mỗi tài khoản 1 thiệp</td><td style="padding:9px 14px;border-top:1px solid var(--line)">Bao nhiêu thiệp cũng được, cùng một lần trả</td></tr>
+<tr><td style="padding:9px 14px;border-top:1px solid var(--line)">Chống dùng cho đám khác</td><td style="padding:9px 14px;border-top:1px solid var(--line)">Chốt mẫu + tên + ngày</td><td style="padding:9px 14px;border-top:1px solid var(--line)">Chốt tên + ngày (đủ chặn)</td></tr>
+<tr><td style="padding:9px 14px;border-top:1px solid var(--line)">Mua LED / slide</td><td style="padding:9px 14px;border-top:1px solid var(--line)">Nút kích hoạt riêng ở mỗi trình sửa</td><td style="padding:9px 14px;border-top:1px solid var(--line)">Một màn, tick món, tự thành Trọn bộ</td></tr>
+<tr><td style="padding:9px 14px;border-top:1px solid var(--line)">Nâng cấp lên Trọn bộ</td><td style="padding:9px 14px;border-top:1px solid var(--line)">Có nhưng khó thấy</td><td style="padding:9px 14px;border-top:1px solid var(--line)">Nút "Thêm LED + slide · 70k" ngay ở màn A</td></tr>
+</table>
+<p class="note" style="max-width:980px">Màn LED / slide đã kích hoạt vẫn chốt nội dung như hiện tại (chống đổi tên dùng lại). Quản trị viên vẫn sửa giúp được.</p>
+</body></html>
