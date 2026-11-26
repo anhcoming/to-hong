@@ -286,6 +286,8 @@
   // ---------- sự kiện ----------
   drawTen();
   var tb = document.getElementById('tenBtn'); if (tb) tb.onclick = tenForm;
+  // điện thoại: nút tên nằm ở khối dưới (trên dải mẫu); nút Dùng thiệp này ở góc trên
+  if (tb && matchMedia('(max-width:760px)').matches) { var ps = document.querySelector('.pside'); if (ps) ps.insertBefore(tb, ps.firstChild); }
   var dirty = false; // đang có ảnh xem dở → máy tính hỏi lại khi rời trang (điện thoại: đã có bản lưu tạm)
   window.addEventListener('beforeunload', function (e) { if (dirty && photos.length) { e.preventDefault(); e.returnValue = ''; } });
   elFile.addEventListener('change', function () { dirty = true; addFiles(elFile.files); elFile.value = ''; });

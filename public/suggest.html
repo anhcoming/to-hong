@@ -133,10 +133,12 @@ main.wrap{padding-top:112px;padding-bottom:64px;max-width:1120px}
   body.gy-on #work{position:relative}
   .mrow{position:absolute;z-index:6;top:calc(10px + env(safe-area-inset-top));left:10px;right:10px;display:flex;align-items:center;gap:8px;padding:0;pointer-events:none}
   .mrow>*{pointer-events:auto}
-  .mrow #useBtnM{display:none}
-  #tenBtn{margin-left:auto;display:inline-flex;align-items:center;gap:5px;max-width:60%;height:34px;padding:0 13px;border:0;border-radius:999px;background:rgba(0,0,0,.5);backdrop-filter:blur(6px);color:#fff;font:600 13px var(--sans);cursor:pointer;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-  #tenBtn b{font:700 16px var(--script)}
-  .pcta{display:block}
+  /* nút "Dùng thiệp này" lên góc trên phải (thiệp được thêm chỗ); nút tên xuống khối dưới, ngay trên dải mẫu */
+  .mrow #useBtnM{margin-left:auto;height:38px;padding:0 16px;font-size:14px;border:0;border-radius:999px;color:#fff;background:var(--grad);box-shadow:0 8px 20px rgba(214,69,93,.35)}
+  .pside #tenBtn{align-self:flex-start;display:inline-flex;align-items:center;gap:5px;max-width:calc(100% - 28px);height:30px;margin:0 14px;padding:0 12px;border:0;border-radius:999px;background:#fff0f2;color:var(--red);font:600 12.5px var(--sans);cursor:pointer;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .pside #tenBtn b{font:700 15px var(--script)}
+  .pcta{display:none!important}
+  .strip{padding-bottom:calc(12px + env(safe-area-inset-bottom))!important}
   .strip{padding-bottom:10px!important}
   #mPh{display:flex;align-items:center;gap:6px;border:0;border-radius:999px;background:rgba(255,255,255,.94);box-shadow:0 4px 14px rgba(0,0,0,.18);padding:4px 11px 4px 4px;font:600 12.5px var(--sans);color:var(--ink);cursor:pointer}
   #mPh i{display:flex}
