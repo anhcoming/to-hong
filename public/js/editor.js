@@ -225,8 +225,8 @@ function studioPane() {
   const sec = (s) => `<details class="st-sec" data-kw="${esc(ST_KW[s.k] || '')}" data-sec="${s.k}"${stOpen === s.k ? ' open' : ''}${off(s) ? ' hidden' : ''}><summary class="st-h">${stHead(s)}</summary><div class="st-b">${s.body()}</div></details>`;
   const grp = (t, ks) => `<h5 class="st-g">${t}</h5>${L.filter((s) => ks.includes(s.k)).map(sec).join('')}`;
   const offs = L.filter(off);
-  return `<div class="st-top"><div class="sprog"><div><i style="width:${Math.round((done / Math.max(1, on.length)) * 100)}%"></i></div><b>${done}/${on.length} mục đã xong</b></div></div>
-    ${grp('Nội dung chính', ST_MAIN)}
+  void done; // thanh tiến độ đã bỏ — mục xong có dấu ✓
+  return `${grp('Nội dung chính', ST_MAIN)}
     ${grp('Phần thêm', ST_EXTRA.concat('music'))}
     ${offs.length ? `<div class="st-add"><span>+ Thêm phần</span>${offs.map((s) => `<button type="button" data-addsec="${s.k}">${esc(s.n.replace(/ \(.*\)$/, ''))}</button>`).join('')}</div>` : ''}
     ${grp('Gửi đi', ['share', 'guests', 'link'])}`;
@@ -650,7 +650,7 @@ function renderHeader() {
   }
   // hồ sơ cưới (sổ tay): tên, danh xưng, các lễ, tài khoản mừng cưới dùng chung cho thiệp mới, màn LED, video
   // dòng nhỏ dưới tên (giống trình sửa video): mẫu · trạng thái lưu · hồ sơ cưới dùng chung
-  pl.innerHTML = `· <button class="prof-chip" id="profBtn" type="button" title="Tên, danh xưng, các lễ, số tài khoản dùng chung cho thiệp mới, màn LED, video và sổ tay cưới">✓ hồ sơ cưới dùng chung</button>`;
+  pl.innerHTML = ''; // gọn: bỏ chip "hồ sơ cưới dùng chung" (sửa tên / các lễ ở mục Thông tin)
   // nút: Xem trước (nhẹ) · Lưu (viền, chỉ khi có thay đổi) · một nút đỏ duy nhất: Phát hành / Kích hoạt (đã phát hành thì Chia sẻ thành nút chính khi đã kích hoạt)
   const pv = `<a class="btn sm ghost" href="/t/${esc(card.slug)}?preview=1" target="_blank" rel="noopener" title="Xem thiệp như khách mời">▷<span class="xl">&nbsp;Xem trước</span></a>`;
   const sv = dirty ? '<button class="btn sm soft" id="saveBtn" title="Lưu (⌘/Ctrl+S)">Lưu</button>' : ''; // đã lưu: chỉ còn chữ "Đã lưu ✓" ở dòng dưới tên
@@ -661,7 +661,7 @@ function renderHeader() {
     pa.innerHTML = pv + sv + (card.paid ? '' : '<button class="btn sm" id="payBtn">Kích hoạt</button>');
   }
   const svb = $('#saveBtn'); if (svb) svb.onclick = () => commit();
-  $('#profBtn').onclick = () => quickStart('info');
+
   const pb = $('#pubBtn'); if (pb) pb.onclick = publish;
   const sb = $('#shareBtn'); if (sb) sb.onclick = shareModal;
   const yb = $('#payBtn'); if (yb) yb.onclick = () => openPayModal(CARD_ID, reloadCard);
@@ -962,15 +962,14 @@ async function loadGuests() {
   const { guests, limit } = await api(`/api/cards/${CARD_ID}/guests`);
   const opened = guests.filter((g) => g.opens).length;
   box.innerHTML = `
-    ${card.status !== 'published' ? '<div class="panel group" style="background:var(--warn-soft);border-color:transparent">Thiệp đang là <b>bản nháp</b> — khách chưa mở được link. Bấm <b>Phát hành thiệp</b> ở góc trên khi đã sẵn sàng.</div>' : ''}
-    <section class="group panel"><h3>Thêm khách mời <small>${guests.length} khách · dùng chung với <a href="/so-tay#guests">Sổ tay cưới</a></small></h3>
+    <section class="group panel"><h3>Thêm khách mời</h3>
       <form id="gForm">
         <label class="field"><span>Mỗi dòng một tên — hiện đúng như vậy trên thiệp</span><textarea name="names" rows="4" placeholder="Anh Hùng & người thương&#10;Cô chú Tư và gia đình&#10;Bạn Lan Anh"></textarea></label>
-        <div style="display:flex;gap:8px;flex-wrap:wrap"><select name="side" class="input" style="width:auto"><option value="">Khách chung</option><option value="trai">Khách nhà trai</option><option value="gai">Khách nhà gái</option></select><button class="btn">Thêm khách</button></div>
+        <div style="display:flex;justify-content:center"><button class="btn">Thêm khách</button></div>
       </form>
       ${limit ? `<p class="muted" style="font-size:13px;margin:12px 0 0">Bản dùng thử: ${limit} khách đầu danh sách có link mang tên riêng. <a href="#" id="gPay">Kích hoạt để gửi link riêng cho tất cả</a></p>` : ''}
     </section>
-    <section class="group panel"><h3>Danh sách <small>${opened}/${guests.length} đã mở thiệp</small></h3>
+    <section class="group panel"><h3>Danh sách <small>${guests.length} khách${guests.length ? ` · ${opened} đã mở` : ''}</small></h3>
       ${guests.length ? `<ul class="glist">
         ${guests.map((g) => `<li data-g="${g.id}">
           <div class="gm"><b>${esc(g.name)}</b><div class="gs">${g.rsvp ? (g.rsvp.attending === 'yes' ? `<span class="chip ok">Sẽ đến · ${g.rsvp.count} người</span>` : '<span class="chip red">Không đến</span>') : g.opens ? `<span class="chip warn">Đã mở ${g.opens} lần</span>` : '<span class="chip">Chưa mở</span>'}${g.side === 'trai' ? '<span>Nhà trai</span>' : g.side === 'gai' ? '<span>Nhà gái</span>' : ''}</div></div>
@@ -980,7 +979,7 @@ async function loadGuests() {
   $('#gForm').onsubmit = async (e) => {
     e.preventDefault();
     try {
-      const r = await api(`/api/cards/${CARD_ID}/guests`, { method: 'POST', body: { names: e.target.names.value, side: e.target.side.value } });
+      const r = await api(`/api/cards/${CARD_ID}/guests`, { method: 'POST', body: { names: e.target.names.value, side: '' } });
       toast(`Đã thêm ${r.added} khách`);
       loadGuests();
     } catch (err) { toast(err.message, true); }
@@ -1004,12 +1003,7 @@ async function loadResponses() {
   const people = yes.reduce((n, r) => n + r.count, 0);
   const side = (s) => yes.filter((r) => r.side === s).reduce((n, r) => n + r.count, 0);
   box.innerHTML = `
-    <div class="sumrow">
-      <div class="sum panel"><b>${people}</b><span>người sẽ đến</span></div>
-      <div class="sum panel"><b>${side('trai')} / ${side('gai')}</b><span>nhà trai / nhà gái</span></div>
-      <div class="sum panel"><b>${rsvps.length - yes.length}</b><span>không đến được</span></div>
-      <div class="sum panel"><b>${wishes.length}</b><span>lời chúc</span></div>
-    </div>
+    ${(void people, void side, '')}
     <section class="group panel"><h3 style="display:flex;justify-content:space-between;align-items:center">Xác nhận tham dự ${rsvps.length ? `<a class="btn sm plain" href="/api/cards/${CARD_ID}/rsvps.csv">Tải Excel (CSV)</a>` : ''}</h3>
       ${rsvps.length ? `<ul class="glist">
         ${rsvps.map((r) => `<li><div class="gm"><b>${esc(r.name)}</b><div class="gs"><span>${r.side === 'gai' ? 'Nhà gái' : 'Nhà trai'}</span><span>${fmtDateTime(r.createdAt)}</span></div>${r.note ? `<p class="gn">${esc(r.note)}</p>` : ''}</div>
@@ -1278,7 +1272,7 @@ function bind() {
   // nút công cụ: bấm lần nữa (hoặc ×, hoặc nền mờ trên điện thoại) để đóng bảng
   secsBind(); sideBind();
   const fold = (s) => String(s).toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/đ/g, 'd');
-  $('#stQ').addEventListener('input', (e) => {
+  if ($('#stQ')) $('#stQ').addEventListener('input', (e) => {
     const q = fold(e.target.value.trim());
     document.body.classList.toggle('st-find', !!q);
     if (!q) { rerender(); return; }
@@ -1287,7 +1281,7 @@ function bind() {
       dt.hidden = !txt.includes(q);
     });
   });
-  $('#stQ').addEventListener('keydown', (e) => { // Enter: mở mục đầu tiên khớp
+  if ($('#stQ')) $('#stQ').addEventListener('keydown', (e) => { // Enter: mở mục đầu tiên khớp
     if (e.key === 'Escape') { e.target.value = ''; e.target.dispatchEvent(new Event('input')); return; }
     if (e.key !== 'Enter') return;
     const dt = $$('#panes details.st-sec').find((x) => !x.hidden); if (!dt) return;
