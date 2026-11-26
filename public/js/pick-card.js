@@ -44,8 +44,9 @@
       document.body.appendChild(ov);
     });
   }
-  window.useTemplate = function (template, palette, tplName, beforeSheet) {
-    return post({ template: template, palette: palette }).then(function (r) { return r.card; }, function (e) {
+  window.useTemplate = function (template, palette, tplName, beforeSheet, extra) {
+    var ex = function (b) { for (var k in (extra || {})) b[k] = extra[k]; return b; }; // tên đôi + ngày khách gõ lúc xem mẫu
+    return post(ex({ template: template, palette: palette })).then(function (r) { return r.card; }, function (e) {
       if (!e.choose) throw e;
       if (beforeSheet) beforeSheet(); // trang gợi ý mở sẵn tab mới: đóng lại để khách thấy bảng chọn
       return Promise.all([
@@ -57,7 +58,7 @@
         return sheet(template, palette, cards, tplName || nm(template));
       }).then(function (target) {
         if (!target) return null;
-        return post(target === 'new' ? { template: template, palette: palette, new: true } : { template: template, palette: palette, target: target }).then(function (r) { return r.card; });
+        return post(ex(target === 'new' ? { template: template, palette: palette, new: true } : { template: template, palette: palette, target: target })).then(function (r) { return r.card; });
       });
     });
   };

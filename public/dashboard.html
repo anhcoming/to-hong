@@ -245,6 +245,7 @@ async function load() {
   if (sel) { // màn quản lý một thiệp: số liệu, gửi link, kích hoạt, màn LED / video
     document.querySelector('.head').hidden = true; $('#mine').innerHTML = '';
     el.innerHTML = `<a class="back" href="/thiep-cua-toi">‹ Quay lại</a><div class="dash">${heroCard(sel)}</div>`;
+    if (q.get('mua')) { history.replaceState(null, '', location.pathname + '?thiep=' + sel.id); setTimeout(() => openPayModal(sel.id, load, 'card'), 50); } // "Lấy cả bộ": mở thanh toán tick đủ 3 món
   } else if (main) { // "Đám cưới của bạn": thiệp chính + màn LED / slide; các thiệp khác của đám cưới (nhà trai, nhà gái…) bên dưới
     $('#mine').innerHTML = '';
     document.querySelector('.head').hidden = true;
@@ -428,8 +429,12 @@ async function act(a, id, c) {
 
 async function create(template, palette) {
   // đã có thiệp đã kích hoạt / nhiều thiệp: hỏi đổi mẫu thiệp nào hay làm thêm (public/js/pick-card.js); đóng bảng → về Thiệp của tôi
-  const card = await useTemplate(template, palette);
+  const q = new URLSearchParams(location.search);
+  const names = { groom: q.get('groom') || '', bride: q.get('bride') || '', date: q.get('date') || '' }; // tên gõ lúc xem mẫu
+  const card = await useTemplate(template, palette, '', null, names);
   if (!card) { location.replace('/thiep-cua-toi'); return; }
+  // "Lấy cả bộ" (khung xem mẫu): tạo thiệp xong mở thanh toán tick sẵn thiệp + màn LED + slide
+  if (q.get('bo')) { location.replace(`/thiep-cua-toi?thiep=${card.id}&mua=1`); return; }
   // replace: bấm Quay lại từ trình sửa không quay về link ?tao= (sẽ tạo thêm một thiệp trùng)
   location.replace('/sua/' + card.id);
 }

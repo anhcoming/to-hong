@@ -108,6 +108,7 @@
   var money = function (n) { return Number(n || 0).toLocaleString('vi-VN') + 'đ'; };
   var k = function (n) { return Math.round((n || 0) / 1000) + 'k'; };
   fetch('/api/meta').then(function (r) { return r.json(); }).then(function (m) {
+    window.CN_META = m;
     window.META = m;
     var set = function (sel, v) { document.querySelectorAll(sel).forEach(function (e) { e.textContent = v; }); };
     set('[data-brand]', m.brand);
@@ -203,6 +204,12 @@
   // Điện thoại: toàn màn hình, tên mẫu góc trên trái, ✕ góc trên phải, dưới cùng nút Dùng mẫu liền khối (nút Back của máy cũng đóng).
   // Máy tính: popup giữa màn (thiệp: khung điện thoại; video / LED: khung 16:9), cùng bố cục.
   // o = { src, name, use, wide }
+  // "Thấy đám cưới của mình": tên đôi + ngày cưới khách gõ trong khung xem mẫu, lưu trong máy (localStorage cnTen),
+  // gắn vào link xem thử (?groom=&bride=&date=) và link Dùng mẫu (thiệp tạo ra có sẵn tên + ngày)
+  var TEN = function () { try { return JSON.parse(localStorage.getItem('cnTen') || 'null') || {}; } catch (e) { return {}; } };
+  var tenQS = function (t) { return ['groom', 'bride', 'date'].filter(function (k) { return t[k]; }).map(function (k) { return k + '=' + encodeURIComponent(t[k]); }).join('&'); };
+  var addQS = function (u, qs) { return qs ? u + (u.indexOf('?') < 0 ? '?' : '&') + qs : u; };
+  window.cnTen = { get: TEN, qs: function () { return tenQS(TEN()); } };
   window.tplView = function (o) {
     if (!document.getElementById('tvCss')) {
       var c = document.createElement('style'); c.id = 'tvCss';
@@ -216,16 +223,70 @@
         + '.tv .go:active{transform:scale(.98)}'
         + '.tv .x{position:absolute;top:10px;right:10px;z-index:3;width:40px;height:40px;border:0;border-radius:50%;background:rgba(0,0,0,.5);color:#fff;font-size:20px;line-height:1;display:grid;place-items:center;cursor:pointer}'
         + '.tv .ld{position:absolute;inset:0;display:grid;place-items:center;color:#f3c9d0;font-size:13px}'
-        + '@media (max-width:600px){.tv{background:#000}.tv .box{width:100%;height:100%;border-radius:0}.tv .x,.tv .nm{top:max(10px,env(safe-area-inset-top))}.tv .go{bottom:max(16px,calc(env(safe-area-inset-bottom) + 8px))}}';
+        + '.tv .bt{position:absolute;left:16px;right:16px;bottom:16px;z-index:3;display:flex;flex-direction:column;align-items:stretch;gap:10px}'
+        + '.tv .bt .go{position:static;left:auto;right:auto;bottom:auto;flex:1}'
+        + '.tv .row{display:flex;gap:8px}.tv .row .soft{flex:none;display:flex;align-items:center;height:52px;padding:0 18px;border-radius:999px;border:0;background:rgba(255,255,255,.92);color:#d6455d;font:700 15px inherit;font-family:inherit;cursor:pointer}'
+        + '.tv .tn{align-self:center;display:inline-flex;align-items:center;gap:6px;max-width:100%;height:34px;padding:0 14px;border:0;border-radius:999px;background:rgba(0,0,0,.5);backdrop-filter:blur(6px);color:#fff;font:600 13.5px inherit;font-family:inherit;cursor:pointer;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}'
+        + '.tv .tn b{font-family:"Dancing Script",cursive;font-size:17px;font-weight:700}'
+        + '.tv .pn{position:absolute;left:0;right:0;bottom:0;z-index:5;max-height:86%;overflow:auto;padding:18px 16px max(18px,env(safe-area-inset-bottom));border-radius:20px 20px 0 0;background:#fff;color:#1f1a1b;box-shadow:0 -10px 30px rgba(0,0,0,.25);animation:tvUp .2s ease}@keyframes tvUp{from{transform:translateY(30px);opacity:0}}'
+        + '.tv .pn h4{margin:0 30px 4px 0;font-size:17px}.tv .pn p{margin:0 0 12px;color:#7a6e70;font-size:13px;line-height:1.5}.tv .pn .px{position:absolute;right:12px;top:12px;width:32px;height:32px;border:0;border-radius:50%;background:#f6eff0;color:#7a6e70;font-size:15px;cursor:pointer}'
+        + '.tv .pn .g2{display:grid;grid-template-columns:1fr auto 1fr;gap:8px;align-items:center}.tv .pn input{width:100%;box-sizing:border-box;height:44px;padding:0 12px;border:1.5px solid #efe3e4;border-radius:12px;font:500 15px inherit;font-family:inherit;color:#1f1a1b;background:#fff}.tv .pn input:focus{outline:0;border-color:#d6455d}'
+        + '.tv .pn .amp{font:700 20px "Dancing Script",cursive;color:#d6455d}.tv .pn label{display:block;margin-top:10px;font-size:12.5px;color:#7a6e70}.tv .pn .ok{display:flex;justify-content:center;margin-top:14px}.tv .pn .ok button{height:46px;padding:0 26px;border:0;border-radius:999px;background:linear-gradient(135deg,#d6455d,#ef7d8d);color:#fff;font:700 15px inherit;font-family:inherit;cursor:pointer}'
+        + '.tv .pn .it{display:flex;gap:12px;align-items:center;padding:10px;border-radius:14px;box-shadow:0 0 0 1px #efe3e4;margin-bottom:8px}.tv .pn .it .im{flex:none;width:132px;aspect-ratio:16/9;border-radius:9px;overflow:hidden;background:#1a1214 center top/cover;position:relative}.tv .pn .it .im.tall{width:70px;aspect-ratio:3/4.3}'
+        + '.tv .pn .it .im iframe{position:absolute;left:0;top:0;width:1280px;height:720px;border:0;transform-origin:0 0;pointer-events:none}'
+        + '.tv .pn .it b{display:block;font-size:14px}.tv .pn .it small{display:block;color:#7a6e70;font-size:12px;margin-top:2px}.tv .pn .it em{font-style:normal;color:#d6455d;font-weight:700;font-size:13.5px}'
+        + '.tv .pn .sum{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-top:6px;padding-top:12px;border-top:1px dashed #efe3e4}.tv .pn .sum b{display:block;color:#d6455d;font-size:21px}.tv .pn .sum small{color:#1f8a5b;font-size:12px;font-weight:600}'
+        + '.tv .pn .sum a{height:46px;padding:0 22px;border-radius:999px;background:linear-gradient(135deg,#d6455d,#ef7d8d);color:#fff;font-weight:700;font-size:15px;display:inline-flex;align-items:center;text-decoration:none;white-space:nowrap}'
+        + '@media (max-width:600px){.tv{background:#000}.tv .box{width:100%;height:100%;border-radius:0}.tv .x,.tv .nm{top:max(10px,env(safe-area-inset-top))}.tv .bt{bottom:max(16px,calc(env(safe-area-inset-bottom) + 8px))}}';
       document.head.appendChild(c);
     }
     var esc = function (t) { return String(t || '').replace(/[&<>"]/g, function (ch) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[ch]; }); };
     var el = document.createElement('div'); el.className = 'tv'; el.setAttribute('role', 'dialog'); el.setAttribute('aria-label', 'Xem trước mẫu ' + (o.name || ''));
     // tên mẫu góc trên trái, ✕ góc trên phải, nút Dùng mẫu bo tròn nổi ở đáy (đều đè lên khung xem, có lớp tối mờ dần), không dải trắng
-    el.innerHTML = '<div class="box"><span class="nm">' + esc(o.name) + '</span><button class="x" type="button" aria-label="Đóng">✕</button><div class="vw"><span class="ld">Đang mở mẫu…</span><iframe title="Xem trước mẫu" src="' + esc(o.src) + '"></iframe></div>'
-      + '<a class="go" href="' + esc(o.use) + '">Dùng mẫu này<span aria-hidden="true">→</span></a></div>';
+    var isCard = /^\/thiep-cua-toi\?tao=/.test(o.use || '');
+    el.innerHTML = '<div class="box"><span class="nm">' + esc(o.name) + '</span><button class="x" type="button" aria-label="Đóng">✕</button><div class="vw"><span class="ld">Đang mở mẫu…</span><iframe title="Xem trước mẫu"></iframe></div>'
+      + '<div class="bt"><button type="button" class="tn" data-ten></button><div class="row">' + (isCard ? '<button type="button" class="soft" data-bo>Xem cả bộ</button>' : '') + '<a class="go">Dùng mẫu này<span aria-hidden="true">→</span></a></div></div></div>';
     document.body.appendChild(el);
     var box = el.querySelector('.box'), vw = el.querySelector('.vw'), fr = el.querySelector('iframe');
+    var go = el.querySelector('.go'), tnb = el.querySelector('[data-ten]');
+    // vẽ lại theo tên đã gõ: khung xem, link Dùng mẫu, nút tên
+    var draw = function (reload) {
+      var t = TEN(), qs = tenQS(t);
+      if (reload !== false) fr.src = addQS(o.src, qs);
+      go.href = addQS(o.use, qs);
+      tnb.innerHTML = t.groom || t.bride ? '✏️ <b>' + esc((t.groom || '…') + ' & ' + (t.bride || '…')) + '</b>' : '✏️ Thử tên của hai bạn';
+    };
+    draw();
+    var panel = function (html) { var old = box.querySelector('.pn'); if (old) old.remove(); var pn = document.createElement('div'); pn.className = 'pn'; pn.innerHTML = '<button type="button" class="px" aria-label="Đóng">✕</button>' + html; box.appendChild(pn); pn.querySelector('.px').onclick = function () { pn.remove(); }; return pn; };
+    tnb.onclick = function () {
+      var t = TEN();
+      var pn = panel('<h4>Tên của hai bạn</h4><p>Xem mẫu với tên, ngày cưới của mình — dùng mẫu là thiệp có sẵn luôn.</p>'
+        + '<div class="g2"><input name="g" placeholder="Chú rể" maxlength="40" value="' + esc(t.groom) + '"><span class="amp">&amp;</span><input name="b" placeholder="Cô dâu" maxlength="40" value="' + esc(t.bride) + '"></div>'
+        + '<label>Ngày cưới</label><input name="d" type="date" value="' + esc(t.date) + '"><div class="ok"><button type="button">Xem với tên này</button></div>');
+      pn.querySelector('input').focus();
+      pn.querySelector('.ok button').onclick = function () {
+        var v = function (n) { return pn.querySelector('[name=' + n + ']').value.trim().slice(0, 40); };
+        try { localStorage.setItem('cnTen', JSON.stringify({ groom: v('g'), bride: v('b'), date: v('d') })); } catch (e) { /* bỏ qua */ }
+        pn.remove(); draw();
+      };
+    };
+    // "Xem cả bộ": thiệp + màn LED + slide cùng tên, đặt cạnh nhau; "Lấy cả bộ" → tạo thiệp rồi mở thanh toán tick cả 3 món
+    var bob = el.querySelector('[data-bo]');
+    if (bob) bob.onclick = function () {
+      var t = TEN(), qs = tenQS(t), m = window.CN_META || {}, money = function (n) { return Number(n || 0).toLocaleString('vi-VN') + 'đ'; };
+      var pal = (/[?&]palette=([\w-]+)/.exec(o.src) || [])[1] || '';
+      var tp = (/\/demo\/([\w-]+)/.exec(o.src) || [])[1] || '';
+      var led = /do|son|ruou|tham|hong/.test(pal) ? 'palette=sondo&effect=satindo' : 'palette=bac&effect=dembac';
+      var p1 = m.price || 99000, p2 = m.ledPrice || 69000, p3 = m.videoPrice || 49000, sum = p1 + p2 + p3, pct = m.firstOrderPercent || 0;
+      var nm = t.groom || t.bride ? esc((t.groom || '…') + ' & ' + (t.bride || '…')) : 'hai bạn';
+      var pn = panel('<h4>Cả bộ cho ' + nm + '</h4><p>Thiệp, màn LED tiệc, slide ảnh cưới — cùng tên, cùng ngày. Sửa một chỗ, ba chỗ đổi theo.</p>'
+        + '<div class="it"><div class="im tall" style="background-image:url(\'/demo/cover-' + esc(tp) + '-' + esc(pal) + '.jpg\')"></div><div><b>💌 Thiệp cưới online</b><small>' + esc(o.name) + ' · gửi Zalo, khách xác nhận dự tiệc</small><em>' + money(p1) + '</em></div></div>'
+        + '<div class="it"><div class="im"><iframe tabindex="-1" title="Màn LED" src="' + esc(addQS('/led/demo?preview=1&' + led, qs)) + '"></iframe></div><div><b>🖥️ Màn hình LED</b><small>Tên hai bạn trên màn sân khấu</small><em>' + money(p2) + '</em></div></div>'
+        + '<div class="it"><div class="im"><iframe tabindex="-1" title="Slide ảnh cưới" src="' + esc(addQS('/video/demo?preview=1&template=album', qs)) + '"></iframe></div><div><b>🎞️ Slide ảnh cưới</b><small>Ảnh cưới thành video chiếu TV</small><em>' + money(p3) + '</em></div></div>'
+        + '<div class="sum"><div><b>' + money(sum) + '</b>' + (pct ? '<small>Khách mới giảm thêm ' + pct + '% khi thanh toán</small>' : '') + '</div><a href="' + esc(addQS(addQS(o.use, 'bo=1'), qs)) + '">Lấy cả bộ</a></div>');
+      // khung 1280×720 thu nhỏ vừa ô
+      Array.prototype.forEach.call(pn.querySelectorAll('.im iframe'), function (f) { f.style.transform = 'scale(' + (f.parentNode.offsetWidth / 1280) + ')'; });
+    };
     var fit = function () {
       var mob = innerWidth <= 600, barH = 0;
       if (o.wide) { // video / màn LED: trang 1280×720, thu nhỏ vừa khung

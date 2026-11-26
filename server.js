@@ -400,7 +400,7 @@ route('GET', '/api/meta', async (req, res) => {
   json(res, 200, {
     brand: config.brand, tagline: config.tagline, price: cardPrice(), ...promoInfo(), trialDays: config.trialDays,
     trialGuestLimit: config.trialGuestLimit, banks, templates: templateList(), templateGroups, baseUrl: BASE_URL, support: config.support,
-    ledPrice: config.ledPrice, led: ledLib.options(),
+    ledPrice: config.ledPrice, led: ledLib.options(), firstOrderPercent: config.firstOrderPercent || 0,
     videoPrice: config.videoPrice, video: { ...videoLib.options(), samples: Object.fromEntries(videoLib.options().templates.filter((t) => t.photos).map((t) => [t.id, videoSamples(t)])) }, music: musicLib.options(),
     promoEndsAt: promoActive() ? promoEnd() : null, blobUpload: !!process.env.BLOB_READ_WRITE_TOKEN,
     googleLogin: google.enabled(), facebookLogin: facebook.enabled(), emailSignup: emailSignup(),
@@ -506,13 +506,14 @@ route('POST', '/api/cards', async (req, res, ctx) => {
 // Bấm "Tạo màn LED" / "Dùng mẫu" video: chuyển thẳng tới trình sửa (máy chủ chọn thiệp gần nhất, chưa có thì tạo),
 // không ghé trang "Thiệp của tôi" rồi mới nhảy tiếp. Chưa đăng nhập thì đăng nhập xong quay lại đúng link này.
 // /tao-led?palette=&effect=  → /sua-led/<thiệp>?palette=&effect=      /tao-video?mau=<mẫu> → /sua-video/<thiệp>?mau=<mẫu>
+const nameQ = (ctx) => ({ groom: ctx.query.get('groom') || '', bride: ctx.query.get('bride') || '', date: ctx.query.get('date') || '' });
 for (const [path, to, keep] of [['/tao-led', 'sua-led', ['palette', 'effect']], ['/tao-video', 'sua-video', ['mau']]]) {
   route('GET', path, async (req, res, ctx) => {
     const q = new URLSearchParams();
     keep.forEach((k) => { const v = String(ctx.query.get(k) || '').slice(0, 40); if (/^[\w-]+$/.test(v)) q.set(k, v); });
     const qs = q.toString() ? '?' + q : '';
     if (!ctx.user && to === 'sua-led') { // màn LED: khách chưa đăng nhập sửa + xem trước trên bản nháp; lấy link chiếu mới cần đăng nhập
-      const card = ensureGuestCard(res, ctx, { keepTemplate: true });
+      const card = ensureGuestCard(res, ctx, { keepTemplate: true, ...nameQ(ctx) });
       q.set('tao', '1');
       return redirect(res, `/${to}/${card.id}?${q}`, res.getHeader('Set-Cookie'));
     }
@@ -520,6 +521,7 @@ for (const [path, to, keep] of [['/tao-led', 'sua-led', ['palette', 'effect']], 
     const user = ctx.user, w = Wd.ensure(user);
     const card = db.cards.filter((c) => c.userId === user.id || c.weddingId === w.id).sort((a, b) => b.updatedAt - a.updatedAt)[0]
       || newCard(user, { template: 'dodam' });
+    fillNames(card, nameQ(ctx)); // tên đôi + ngày khách gõ lúc xem mẫu → điền vào ô còn trống
     if (to === 'sua-led') q.set('tao', '1'); // trình sửa LED tự bật màn LED, khỏi bấm thêm nút "Tạo màn LED từ thiệp này"
     redirect(res, `/${to}/${card.id}?${q}`);
   });
@@ -534,6 +536,15 @@ function setTemplate(card, tpl, palette) {
   Object.assign(card, { template: tpl, palette: templates[tpl].palettes.find((p) => p.id === palette)?.id || templates[tpl].palettes[0].id, updatedAt: Date.now() });
   delete card.ledOnly;
 }
+// tên đôi + ngày cưới khách gõ lúc xem mẫu (b.groom / b.bride / b.date) → điền vào thiệp chỉ ở ô còn trống, không đè tên đã có / đã chốt
+function fillNames(card, b) {
+  if (!card || !card.data || Wd.namesFrozen(card)) return;
+  const d = card.data, g = str(b.groom, 40), br = str(b.bride, 40);
+  const date = /^\d{4}-\d{2}-\d{2}$/.test(b.date || '') ? b.date : '';
+  if (g && !d.groom.name) d.groom.name = g;
+  if (br && !d.bride.name) d.bride.name = br;
+  if (date && !d.date) { d.date = date; (d.events || []).forEach((e) => { if (!e.date) e.date = date; }); }
+}
 function newCard(user, b = {}) {
   const tpl = templates[b.template] ? b.template : DEFAULT_TEMPLATE;
   const mine = mineOf(user.id), has = mine[0];
@@ -543,13 +554,15 @@ function newCard(user, b = {}) {
     if (b.target) {
       const t = mine.find((c) => c.id === b.target);
       if (!t) throw httpError(404, 'Không tìm thấy thiệp');
-      if (b.template && templates[b.template]) { setTemplate(t, tpl, b.palette); save(); }
+      if (b.template && templates[b.template]) setTemplate(t, tpl, b.palette);
+      fillNames(t, b); save();
       return t;
     }
     if (b.template && templates[b.template]) {
       if (mine.length > 1) throw Object.assign(httpError(409, 'Dùng mẫu này cho thiệp nào?'), { choose: true });
-      setTemplate(has, tpl, b.palette); save();
+      setTemplate(has, tpl, b.palette);
     }
+    fillNames(has, b); save();
     return has;
   }
   if (mine.length >= 10) throw httpError(400, 'Mỗi tài khoản tối đa 10 thiệp');
@@ -571,6 +584,7 @@ function newCard(user, b = {}) {
     template: tpl, palette: templates[tpl].palettes.find((p) => p.id === b.palette)?.id || templates[tpl].palettes[0].id,
     status: 'draft', paid: false, views: 0, data, createdAt: now, updatedAt: now,
   };
+  fillNames(card, b);
   db.cards.push(card);
   save();
   return card;
@@ -607,6 +621,7 @@ function ensureGuestCard(res, ctx, b = {}) {
     if (b.keepTemplate) card.ledOnly = true; // vào từ màn LED: bấm "Dùng mẫu" thiệp sau đó thì bỏ dấu này
     db.cards.push(card);
   }
+  fillNames(card, b);
   save();
   res.setHeader('Set-Cookie', guestCookie(gid, GUEST_DAYS * 86400));
   return card;
@@ -1186,11 +1201,21 @@ async function showCard(req, res, ctx) {
 route('GET', '/t/:slug', showCard);
 route('GET', '/t/:slug/:code', showCard);
 
+// "Thấy đám cưới của mình": các trang xem mẫu (thiệp, màn LED, slide) nhận tên đôi + ngày cưới khách vừa gõ
+// (?groom= ?bride= ?date=) — chỉ để xem, không lưu gì. Không gõ thì giữ tên mẫu.
+function demoNames(ctx, d) {
+  const q = ctx.query, groom = str(q.get('groom'), 40), bride = str(q.get('bride'), 40);
+  if (groom) Object.assign(d.groom, { name: groom, fullName: groom });
+  if (bride) Object.assign(d.bride, { name: bride, fullName: bride });
+  const date = /^\d{4}-\d{2}-\d{2}$/.test(q.get('date') || '') ? q.get('date') : '';
+  if (date) { d.date = date; (d.events || []).forEach((e) => { e.date = date; }); }
+  return d;
+}
 route('GET', '/demo/:tpl', async (req, res, ctx) => {
   const tpl = templates[ctx.params.tpl];
   if (!tpl) return serveStatic(req, res, '/demo/' + ctx.params.tpl); // ảnh mẫu trong public/demo
   // mẫu có thể kèm ảnh xem thử riêng: demo: { cover: '/demo/<id>-1.jpg', photos: [...] }
-  const card = { slug: 'demo', template: tpl.id, palette: ctx.query.get('palette') || '', data: cd.normalize({ ...cd.sample(), ...tpl.demo }) };
+  const card = { slug: 'demo', template: tpl.id, palette: ctx.query.get('palette') || '', data: demoNames(ctx, cd.normalize({ ...cd.sample(), ...tpl.demo })) };
   const guest = { name: 'Anh Hoàng & Người thương', code: 'demo' };
   const wishes = [
     { name: 'Lan Anh', message: 'Chúc hai bạn trăm năm hạnh phúc, sớm có tin vui nhé!' },
@@ -1234,7 +1259,7 @@ route('GET', '/led/:slug', async (req, res, ctx) => {
     const q = Object.fromEntries(ctx.query);
     const led = ledLib.normalize({ ...q, kicker: 'Lễ Thành Hôn', message: ledLib.defaults().message });
     await demoView(req, ctx, `led:${led.palette}-${led.effect}`);
-    const card = { data: cd.normalize(cd.sample()) };
+    const card = { data: demoNames(ctx, cd.normalize(cd.sample())) };
     return html(res, 200, ledLib.renderLed(card, led, { demo: true, preview: q.preview === '1' }));
   }
   const card = cardBySlug(slug);
@@ -1283,7 +1308,7 @@ route('GET', '/video/:slug', async (req, res, ctx) => {
   if (slug.includes('.')) return serveStatic(req, res, '/video/' + slug); // engine.js
   if (slug === 'demo') {
     const q = Object.fromEntries(ctx.query);
-    const card = { data: cd.normalize(cd.sample()) };
+    const card = { data: demoNames(ctx, cd.normalize(cd.sample())) };
     const photos = VIDEO_SETS[q.template] || [];
     await demoView(req, ctx, 'video:' + (videoLib.options().templates.some((t) => t.id === q.template) ? q.template : 'chung'));
     const v = videoLib.normalize({ template: q.template, photoBg: q.photo === '1', photos, event: { kind: 'Lễ Dạm Ngõ', date: '2026-11-22', time: '09:00', place: 'Tư gia nhà gái' } });
