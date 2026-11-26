@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="vi"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Mock — thanh toán kiểu Shopee</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&display=swap">
+<style>
+:root{--red:#d6455d;--ink:#1f1a1b;--muted:#7a6e70;--line:#efe3e4}
+*{box-sizing:border-box}body{margin:0;background:#efe8e9;font-family:'Be Vietnam Pro',system-ui,sans-serif;color:var(--ink);padding:24px}
+h1{font-size:20px;margin:0 0 4px}p.d{margin:0 0 20px;color:var(--muted);font-size:14px;max-width:900px}
+.row{display:flex;gap:26px;flex-wrap:wrap}.ph{width:340px}.ph h2{font-size:14px;margin:0 0 8px}.ph h2 small{display:block;font-weight:400;color:var(--muted);font-size:12.5px}
+.scr{height:720px;border-radius:28px;border:8px solid #1d1718;background:#f5f0f1;position:relative;overflow:hidden}
+.hd{background:#fff;padding:14px 14px 12px;display:flex;align-items:center;gap:10px;font-weight:700;font-size:16px;border-bottom:1px solid var(--line)}
+.hd span{color:var(--red);font-size:20px}
+.box{background:#fff;margin:8px 0;padding:12px 14px}
+.box h4{margin:0 0 10px;font-size:13px;display:flex;align-items:center;gap:6px}
+.addr{font-size:13px;line-height:1.5}.addr b{display:block;font-size:14px}.addr small{color:var(--muted)}
+.it{display:flex;gap:10px;align-items:center;padding:10px 0;border-top:1px solid #f6eff0}.it:first-of-type{border-top:0}
+.ck{width:20px;height:20px;border-radius:5px;border:2px solid #d9c6c9;flex:none;display:grid;place-items:center;color:#fff;font-size:12px;font-weight:800}.ck.on{background:var(--red);border-color:var(--red)}.ck.dis{background:#cfc3c5;border-color:#cfc3c5}
+.th{width:54px;height:54px;border-radius:8px;background:#ddd center/cover;flex:none}
+.it .tx{flex:1;min-width:0}.it b{display:block;font-size:13.5px}.it small{display:block;color:var(--muted);font-size:11.5px}
+.pr{text-align:right;font-size:13.5px;font-weight:700;color:var(--red);white-space:nowrap}.pr s{display:block;color:var(--muted);font-weight:400;font-size:11px}
+.ln{display:flex;justify-content:space-between;align-items:center;font-size:13px;padding:7px 0}.ln span:last-child{color:var(--muted)}.ln .g{color:#1f8a5b;font-weight:600}
+.pay{display:flex;align-items:center;gap:10px;padding:8px 0;font-size:13px}.pay i{width:18px;height:18px;border-radius:50%;border:5px solid var(--red);flex:none}.pay i.off{border:2px solid #d9c6c9}
+.bar{position:absolute;left:0;right:0;bottom:0;background:#fff;border-top:1px solid var(--line);display:flex;align-items:center;justify-content:flex-end;gap:12px;padding:10px 12px}
+.bar .t{text-align:right;font-size:12px}.bar .t b{display:block;font-size:19px;color:var(--red)}.bar .t small{color:#1f8a5b}
+.btn{height:46px;padding:0 22px;border-radius:10px;background:var(--red);color:#fff;font-weight:700;display:grid;place-items:center;font-size:14px}
+.tag{display:inline-block;font-size:10px;font-weight:700;color:var(--red);border:1px solid var(--red);border-radius:4px;padding:0 4px;margin-left:4px}
+.qr{width:190px;height:190px;margin:10px auto;background:#fff;border:1px solid var(--line);border-radius:12px;display:grid;place-items:center;color:var(--muted);font-size:12px}
+.st{display:flex;justify-content:space-between;font-size:11px;color:var(--muted);padding:12px 14px;background:#fff}.st b{color:var(--red)}
+</style></head><body>
+<h1>Thanh toán kiểu Shopee</h1>
+<p class="d">Bố cục quen tay như đặt hàng Shopee: danh sách món có ô tick, mục mã giảm giá, chi tiết thanh toán, phương thức, thanh dưới cố định "Tổng thanh toán + Đặt hàng". Đủ 3 món tự hiện "Giảm giá Trọn bộ".</p>
+<div class="row">
+<div class="ph"><h2>A · Màn thanh toán<small>Mở từ nút "Kích hoạt" ở bất kỳ đâu</small></h2>
+<div class="scr">
+  <div class="hd"><span>‹</span>Thanh toán</div>
+  <div class="box"><h4>💍 Đám cưới</h4><div class="addr"><b>Thành Hưng &amp; Thùy Dương</b>Thứ Bảy 28/11/2026<br><small>🔒 Kích hoạt là chốt tên + ngày cưới, mẫu vẫn đổi thoải mái</small></div></div>
+  <div class="box"><h4>🛍️ Cưới Nha</h4>
+    <div class="it"><span class="ck on">✓</span><div class="th" style="background-image:url(/demo/cover-songhy-do.jpg)"></div><div class="tx"><b>Thiệp cưới online</b><small>Thiệp nhà trai + nhà gái</small></div><div class="pr">99.000đ</div></div>
+    <div class="it"><span class="ck on">✓</span><div class="th" style="background-image:url(/demo/lposter-bac-dembac.jpg)"></div><div class="tx"><b>Màn hình LED</b><small>Link chiếu tiệc + MP4</small></div><div class="pr">69.000đ</div></div>
+    <div class="it"><span class="ck on">✓</span><div class="th" style="background:linear-gradient(135deg,#3b2b2f,#8a5a63)"></div><div class="tx"><b>Slide ảnh cưới</b><small>Tải MP4 Full HD</small></div><div class="pr">49.000đ</div></div>
+  </div>
+  <div class="box"><div class="ln"><span>🎟️ Mã giảm giá</span><span>Chọn hoặc nhập mã ›</span></div></div>
+  <div class="box"><h4>🧾 Chi tiết thanh toán</h4>
+    <div class="ln"><span>Tổng tiền hàng</span><span>217.000đ</span></div>
+    <div class="ln"><span>Giảm giá Trọn bộ<span class="tag">đủ 3 món</span></span><span class="g">−48.000đ</span></div>
+    <div class="ln"><b>Tổng thanh toán</b><b style="color:var(--red)">169.000đ</b></div></div>
+  <div class="box"><h4>💳 Phương thức thanh toán</h4><div class="pay"><i></i>Chuyển khoản QR (tự kích hoạt)</div></div>
+  <div class="bar"><div class="t">Tổng thanh toán<b>169.000đ</b><small>Tiết kiệm 48.000đ</small></div><span class="btn">Đặt hàng</span></div>
+</div></div>
+<div class="ph"><h2>B · Đã có thiệp, mua thêm<small>Món đã mua ✓ xám, không tính tiền</small></h2>
+<div class="scr">
+  <div class="hd"><span>‹</span>Thanh toán</div>
+  <div class="box"><h4>🛍️ Cưới Nha</h4>
+    <div class="it"><span class="ck dis">✓</span><div class="th" style="background-image:url(/demo/cover-songhy-do.jpg)"></div><div class="tx"><b>Thiệp cưới online</b><small>Đã mua</small></div><div class="pr" style="color:var(--muted)">Đã có</div></div>
+    <div class="it"><span class="ck on">✓</span><div class="th" style="background-image:url(/demo/lposter-bac-dembac.jpg)"></div><div class="tx"><b>Màn hình LED</b><small>Link chiếu tiệc + MP4</small></div><div class="pr">69.000đ</div></div>
+    <div class="it"><span class="ck"></span><div class="th" style="background:linear-gradient(135deg,#3b2b2f,#8a5a63)"></div><div class="tx"><b>Slide ảnh cưới</b><small>Tick thêm: cả bộ chỉ +1.000đ</small></div><div class="pr">49.000đ</div></div>
+  </div>
+  <div class="box"><h4>🧾 Chi tiết thanh toán</h4><div class="ln"><span>Tổng tiền hàng</span><span>69.000đ</span></div><div class="ln"><b>Tổng thanh toán</b><b style="color:var(--red)">69.000đ</b></div></div>
+  <div class="bar"><div class="t">Tổng thanh toán<b>69.000đ</b></div><span class="btn">Đặt hàng</span></div>
+</div></div>
+<div class="ph"><h2>C · Bấm Đặt hàng → mã QR<small>Như "Chờ thanh toán" của Shopee</small></h2>
+<div class="scr">
+  <div class="hd"><span>‹</span>Chờ thanh toán</div>
+  <div class="st"><span>Đặt hàng ✓</span><span><b>Thanh toán</b></span><span>Kích hoạt</span></div>
+  <div class="box" style="text-align:center"><div style="font-size:13px;color:var(--muted)">Quét mã bằng app ngân hàng</div><div class="qr">[ Mã QR ]</div><b style="font-size:22px;color:var(--red)">169.000đ</b><div style="font-size:12px;color:var(--muted);margin-top:4px">Nội dung: CB8K2Q7M · còn 4:59</div></div>
+  <div class="box"><div class="ln"><span>Ngân hàng</span><span>MB Bank</span></div><div class="ln"><span>Đơn gồm</span><span>Thiệp + LED + Slide</span></div></div>
+  <div class="bar"><span class="btn" style="background:#fbe5e9;color:var(--red)">Tôi đã chuyển khoản</span></div>
+</div></div>
+</div></body></html>
