@@ -51,7 +51,7 @@ body.active{cursor:default}
 #stage.portrait .msg{font-size:68px}
 .sign{font-family:'Charm',cursive;font-weight:700;font-size:84px;color:var(--accent);margin-top:46px!important;white-space:nowrap}
 
-.cd{font-family:'Fraunces',Georgia,serif;font-size:190px;line-height:1.1;font-weight:500;white-space:nowrap;margin:20px 0!important;font-variant-numeric:lining-nums tabular-nums}
+.cd{font-family:'Fraunces',Georgia,serif;font-size:190px;line-height:1.1;font-weight:500;white-space:nowrap;margin:20px 0!important;font-variant-numeric:tabular-nums}
 .cd b{font-weight:500}
 .cd small{font-family:'Hanken Grotesk',sans-serif;font-size:.24em;font-weight:300;letter-spacing:.2em;text-transform:uppercase;color:var(--accent);margin:0 .9em 0 .25em}
 .cd small:last-child{margin-right:0}
@@ -145,9 +145,12 @@ body.fs .ctl .i-off{display:block}
 .marked{outline:3px solid #ef7d8d!important;outline-offset:10px;border-radius:12px;animation:mk 1.6s ease forwards}
 @keyframes mk{0%{outline-color:#ef7d8d;box-shadow:0 0 0 0 rgba(239,125,141,.55)}60%{outline-color:#ef7d8d}100%{outline-color:rgba(239,125,141,0);box-shadow:0 0 0 24px rgba(239,125,141,0)}}
 
-/* số kiểu hiện đại (11 không thành "II" với Cormorant) */
-#stage{font-variant-numeric:lining-nums}
+/* "Theo mẫu" giữ nguyên số kiểu cổ của Cormorant Garamond (11 viết như "II") — chủ web thích kiểu này; chọn kiểu chữ khác thì số thường */
+#stage[data-font]:not([data-font=""]):not([data-font=cormorant]){font-variant-numeric:lining-nums}
 /* kiểu chữ chọn trong trình sửa (led.font): tên đôi / chữ ký / tiêu đề dùng font viết tay, còn lại font thường */
+#stage[data-font=cormorant]{--fsc:'Ephesis','Great Vibes',cursive;--fscw:400;--fse:'Cormorant Garamond',Georgia,serif}
+#stage[data-font=cormorant] :is(.names,.sign,.title,.photo-names,.mono){font-family:var(--fsc)!important;font-weight:var(--fscw)!important}
+#stage[data-font=cormorant] :is(.bigdate,.cd,.pp,.msg,.lunar,.wd,.kicker,.time,.lb){font-family:var(--fse)!important}
 #stage[data-font=charm]{--fsc:'Charm',cursive;--fscw:700;--fse:'Fraunces',Georgia,serif}
 #stage[data-font=vibes]{--fsc:'Great Vibes',cursive;--fscw:400;--fse:'Cormorant Garamond',Georgia,serif}
 #stage[data-font=dancing]{--fsc:'Dancing Script',cursive;--fscw:700;--fse:'Playfair Display',Georgia,serif}
