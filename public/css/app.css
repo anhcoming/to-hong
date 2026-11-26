@@ -228,7 +228,7 @@ table.tbl{width:100%;border-collapse:collapse;font-size:14px}
 
 /* điện thoại: icon ngôi nhà nhỏ trước logo — gợi ý bấm logo là về trang chủ (site.js làm y hệt cho trang giới thiệu) */
 .lhome{display:none}
-@media (max-width:760px){.tb .logo{display:inline-flex;align-items:center}.lhome{margin-right:8px;display:grid;place-items:center;flex:none;width:28px;height:28px;border-radius:50%;background:var(--primary-soft);color:var(--primary)}.lhome svg{width:15px;height:15px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}}
+@media (max-width:760px){.tb .logo{display:inline-flex;align-items:center}} /* nút ⌂ bỏ: thanh dưới có Trang chủ */
 
 @media (max-width:760px){body.has-tb-bottom .tb-mmain{display:none}} /* điện thoại: thanh trên chỉ logo · ảnh đại diện (tạo mới ở trang Thiệp) */
 

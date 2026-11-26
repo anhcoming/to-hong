@@ -388,19 +388,10 @@ window.renderTopbar = async function (active) {
       : '<a href="/dang-nhap" class="btn sm">Đăng nhập</a>'}
   </div>`;
   document.body.prepend(bar);
-  if (u) { // thanh tab dưới cùng (điện thoại) — mọi trang sau đăng nhập, kể cả sổ tay
-    const bt = document.createElement('nav');
-    bt.className = 'tb-bottom'; bt.setAttribute('aria-label', 'Của tôi');
-    // 5 nút theo các chức năng chính (thay cho menu ☰): Thiệp · Báo hỷ (miễn phí) · Màn LED · Slide · Sổ tay.
-    // Tài khoản ở ảnh đại diện góc trên; Màn LED mở thẳng màn LED của thiệp chính (dashboard đọc ?mo=led).
-    const BT = [['/mau-thiep', 'Thiệp', 'tpl', TABS[0][3]],
-      ['/video', 'Báo hỷ', 'baohy', '<path d="M4 10h16v9a1.5 1.5 0 0 1-1.5 1.5h-13A1.5 1.5 0 0 1 4 19z"/><path d="m4 10-.6-3.2 15-3 .6 3.2"/><path d="m8.5 6.2 2 3.3M13.5 5.2l2 3.3"/>', 'Free'],
-      ['/man-hinh-led-dam-cuoi', 'Màn LED', 'led', '<rect x="2.5" y="4" width="19" height="12.5" rx="2"/><path d="M8 20.5h8M12 16.5v4"/><path d="m12 7 .9 1.9 2 .3-1.5 1.4.4 2-1.8-1-1.8 1 .4-2-1.5-1.4 2-.3z"/>'],
-      ['/slide-cuoi', 'Slide', 'slide', '<rect x="3" y="4" width="18" height="12" rx="2"/><path d="M12 16v4M8 20h8"/><path d="m10 8 4 2-4 2z"/>'],
-      ['/so-tay', 'Sổ tay', 'planner', TABS[2][3], 'Free']];
-    bt.innerHTML = BT.map(([h, n, k, d, tag]) => `<a href="${h}"${k === active ? ' class="on"' : ''}><i>${ic(d)}${tag ? `<em>${tag}</em>` : ''}</i>${n}</a>`).join('');
-    document.body.appendChild(bt);
+  if (u) { // thanh 5 nút dưới cùng (điện thoại): Trang chủ · Thiệp · Video · Màn LED · tài khoản — chung với trang giới thiệu (public/js/bnav.js)
     document.body.classList.add('has-tb-bottom');
+    const go = () => window.cnBottom.draw(active, u);
+    if (window.cnBottom) go(); else { const bs = document.createElement('script'); bs.src = '/js/bnav.js'; bs.onload = go; document.head.appendChild(bs); }
   }
   // menu thả xuống (Tạo mới, tài khoản): bấm mở / bấm ra ngoài hoặc Esc thì đóng
   const dds = $$('.tb-dd');
