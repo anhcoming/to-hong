@@ -117,28 +117,6 @@
     ['groom', 'bride', 'date'].forEach(function (k) { if (t[k]) q.set(k, t[k]); });
     return '/goi-y/xem/' + c.t.id + '?' + q;
   }
-  function drawTen() {
-    var t = ten(), b = document.getElementById('tenBtn'); if (!b) return;
-    b.innerHTML = t.groom || t.bride ? '✏️ <b>' + esc((t.groom || '…') + ' & ' + (t.bride || '…')) + '</b>' : '✏️ Thử tên của hai bạn';
-  }
-  function tenForm() {
-    var t = ten(), ov = document.createElement('div');
-    ov.style.cssText = 'position:fixed;inset:0;z-index:3000;background:rgba(20,10,14,.45);display:flex;align-items:flex-end;justify-content:center';
-    ov.innerHTML = '<div style="width:100%;max-width:460px;background:var(--card,#fff);border-radius:20px 20px 0 0;padding:18px 16px calc(18px + env(safe-area-inset-bottom));font-family:var(--sans)">'
-      + '<b style="display:block;font-size:17px;margin-bottom:4px">Tên của hai bạn</b><small style="color:var(--muted)">Thiệp xem thử hiện đúng tên, ngày cưới của mình</small>'
-      + '<div style="display:grid;grid-template-columns:1fr auto 1fr;gap:8px;align-items:center;margin-top:12px"><input class="input" name="g" placeholder="Chú rể" maxlength="40" value="' + esc(t.groom || '') + '"><span style="font:700 20px var(--script);color:var(--red)">&amp;</span><input class="input" name="b" placeholder="Cô dâu" maxlength="40" value="' + esc(t.bride || '') + '"></div>'
-      + '<label style="display:block;margin:10px 0 4px;font-size:12.5px;color:var(--muted)">Ngày cưới</label><input class="input" name="d" type="date" value="' + esc(t.date || '') + '" style="width:100%">'
-      + '<div style="display:flex;justify-content:center;margin-top:14px"><button type="button" class="btn btn-main" data-ok>Xem với tên này</button></div></div>';
-    document.body.appendChild(ov);
-    ov.querySelector('input').focus();
-    ov.onclick = function (e) {
-      if (e.target === ov) return ov.remove();
-      if (!e.target.closest('[data-ok]')) return;
-      var v = function (n) { return ov.querySelector('[name=' + n + ']').value.trim().slice(0, 40); };
-      try { localStorage.setItem('cnTen', JSON.stringify({ groom: v('g'), bride: v('b'), date: v('d') })); } catch (er) { /* bỏ qua */ }
-      ov.remove(); drawTen(); loadFrames();
-    };
-  }
   // thay ảnh trong máy vào các ô giữ chỗ (#k=<vị trí>) của thiệp trong khung — cùng cách trình sửa hiện ảnh đang tải
   function inject(fr) {
     var doc, win;
@@ -284,8 +262,7 @@
   }
 
   // ---------- sự kiện ----------
-  drawTen();
-  var tb = document.getElementById('tenBtn'); if (tb) tb.onclick = tenForm;
+  var gb = document.getElementById('gyBack'); if (gb) gb.onclick = function (e) { if (history.length > 1) { e.preventDefault(); history.back(); } };
   var dirty = false; // đang có ảnh xem dở → máy tính hỏi lại khi rời trang (điện thoại: đã có bản lưu tạm)
   window.addEventListener('beforeunload', function (e) { if (dirty && photos.length) { e.preventDefault(); e.returnValue = ''; } });
   elFile.addEventListener('change', function () { dirty = true; addFiles(elFile.files); elFile.value = ''; });
