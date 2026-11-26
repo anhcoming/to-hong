@@ -1,0 +1,155 @@
+<!doctype html>
+<html lang="vi"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Mock — "Thấy đám cưới của mình hiện ra"</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&family=Dancing+Script:wght@600;700&family=Cormorant+Garamond:ital,wght@0,500;1,500&display=swap">
+<style>
+:root{--red:#d6455d;--red2:#ef7d8d;--ink:#1f1a1b;--muted:#7a6e70;--line:#efe3e4;--bg:#fdf8f8;--ok:#1f8a5b}
+*{box-sizing:border-box}
+body{margin:0;background:#ece5e6;font-family:'Be Vietnam Pro',system-ui,sans-serif;color:var(--ink);padding:24px}
+h1.t{font-size:20px;margin:0 0 4px}p.d{margin:0 0 6px;color:var(--muted);font-size:14px;max-width:1000px;line-height:1.55}
+.row{display:flex;gap:24px;flex-wrap:wrap;margin-top:18px}
+.ph{width:330px;flex:none}.ph h2{font-size:14px;margin:0 0 8px}.ph h2 small{display:block;font-weight:400;color:var(--muted);font-size:12.5px;margin-top:2px;line-height:1.45}
+.scr{height:700px;overflow:hidden;border-radius:28px;border:8px solid #1d1718;background:var(--bg);position:relative}
+.note{font-size:12.5px;color:var(--muted);margin-top:10px;line-height:1.55}.note b{color:var(--ink)}
+.top{margin:10px 10px 0;height:44px;border-radius:999px;background:#fff;box-shadow:0 8px 24px rgba(120,40,50,.1);display:flex;align-items:center;gap:8px;padding:0 6px 0 14px}
+.lg{font:700 21px 'Dancing Script',cursive;color:var(--red)}.sp{flex:1}
+.cart{width:34px;height:34px;border-radius:50%;background:#fbe5e9;display:grid;place-items:center;font-size:15px;position:relative}.cart em{position:absolute;top:-3px;right:-3px;background:var(--red);color:#fff;font:700 9.5px/15px 'Be Vietnam Pro';font-style:normal;padding:0 4px;border-radius:8px}
+.bn{position:absolute;left:10px;right:10px;bottom:10px;height:54px;border-radius:999px;background:rgba(255,255,255,.96);box-shadow:0 0 0 1px var(--line),0 10px 24px rgba(120,40,50,.15);display:flex;justify-content:space-around;align-items:center;font-size:10px;font-weight:600;color:var(--muted)}
+.bn b{display:flex;flex-direction:column;align-items:center;gap:2px;font-weight:600}.bn b i{font-style:normal;font-size:16px;filter:grayscale(1)}.bn b.on{color:var(--red)}.bn b.on i{filter:none}
+/* A — hero gõ tên */
+.hero{margin:12px 12px 0;padding:14px 14px 12px;border-radius:18px;background:linear-gradient(140deg,#7c1a24,#d6455d 55%,#ef7d8d);color:#fff;position:relative;overflow:hidden}
+.hero h3{margin:0;font:700 25px/1.1 'Dancing Script',cursive}.hero p{margin:4px 0 10px;font-size:12px;opacity:.92}
+.ins{display:grid;grid-template-columns:1fr auto 1fr;gap:6px;align-items:center}
+.ins span{height:36px;border-radius:10px;background:#fff;color:var(--ink);display:flex;align-items:center;padding:0 10px;font-size:13.5px;font-weight:600}
+.ins em{font:700 18px 'Dancing Script',cursive;font-style:normal}
+.ins .cur{box-shadow:0 0 0 2px #ffd9df}.ins .cur::after{content:"";width:1.5px;height:16px;background:var(--red);margin-left:2px;animation:bl 1s steps(1) infinite}@keyframes bl{50%{opacity:0}}
+.dt{margin-top:6px;height:34px;border-radius:10px;background:rgba(255,255,255,.18);display:flex;align-items:center;padding:0 10px;font-size:12.5px;gap:6px}
+.live{display:flex;align-items:center;gap:6px;margin:12px 14px 8px;font-size:12px;color:var(--muted)}.live i{width:7px;height:7px;border-radius:50%;background:var(--ok);box-shadow:0 0 0 3px rgba(31,138,91,.15)}
+.chips{display:flex;gap:6px;padding:0 12px 8px;overflow:hidden}.chips span{flex:none;padding:5px 11px;border-radius:999px;background:#fff;box-shadow:0 0 0 1px var(--line);font-size:12px;font-weight:600}.chips span.on{background:var(--ink);color:#fff;box-shadow:none}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:0 12px}
+.cv{position:relative;aspect-ratio:3/4.3;border-radius:12px;overflow:hidden;background:#eee center top/cover;box-shadow:0 8px 18px rgba(120,40,50,.14)}
+.cv .nm{position:absolute;left:0;right:0;bottom:0;padding:26px 8px 8px;background:linear-gradient(0deg,rgba(0,0,0,.7),transparent);color:#fff;text-align:center}
+.cv .nm b{display:block;font:700 17px/1.05 'Dancing Script',cursive;text-shadow:0 2px 8px rgba(0,0,0,.4)}.cv .nm small{font-size:9.5px;letter-spacing:.12em;opacity:.9}
+.cv .yt{position:absolute;top:6px;left:6px;background:rgba(255,255,255,.92);color:var(--red);font-size:9.5px;font-weight:700;padding:2px 7px;border-radius:999px}
+.cv .pz{position:absolute;top:6px;right:6px;background:rgba(0,0,0,.45);color:#fff;font-size:10px;font-weight:700;padding:2px 7px;border-radius:999px}
+/* B — mẫu chạy thật */
+.full{position:absolute;inset:0;background:url(/demo/cover-songhy-do.jpg) center top/cover}
+.full::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,0,0,.35),transparent 22%,transparent 60%,rgba(0,0,0,.75))}
+.fh{position:absolute;z-index:2;top:12px;left:12px;right:12px;display:flex;align-items:center;gap:8px;color:#fff;font-size:13px;font-weight:700}
+.fh .x{width:32px;height:32px;border-radius:50%;background:rgba(0,0,0,.35);display:grid;place-items:center}
+.fh .mu{margin-left:auto;padding:5px 10px;border-radius:999px;background:rgba(0,0,0,.35);font-size:11.5px}
+.env{position:absolute;z-index:2;left:50%;top:44%;transform:translate(-50%,-50%);text-align:center;color:#fff}
+.env .n{font:700 34px/1.05 'Dancing Script',cursive;text-shadow:0 3px 14px rgba(0,0,0,.5)}.env .d{font:500 italic 15px 'Cormorant Garamond',serif;letter-spacing:.08em;margin-top:6px}
+.env .tap{margin-top:14px;display:inline-block;padding:7px 14px;border-radius:999px;background:rgba(255,255,255,.2);backdrop-filter:blur(6px);font-size:12px;font-weight:600}
+.sws{position:absolute;z-index:2;left:12px;bottom:84px;display:flex;gap:8px}.sws i{width:26px;height:26px;border-radius:50%;border:2px solid #fff;box-shadow:0 2px 8px rgba(0,0,0,.3)}.sws i.on{outline:2px solid #fff;outline-offset:2px}
+.fb{position:absolute;z-index:2;left:0;right:0;bottom:0;padding:10px 12px 14px;display:flex;align-items:center;gap:8px;background:#fff;border-radius:18px 18px 0 0}
+.fb .btn{height:38px;padding:0 12px;font-size:12px}.fb .pr{flex:1;min-width:0}.fb .pr b{color:var(--red);font-size:18px}.fb .pr small{display:block;font-size:10.5px;color:var(--muted)}
+.btn{height:42px;padding:0 16px;border-radius:999px;background:linear-gradient(135deg,var(--red),var(--red2));color:#fff;font-weight:700;font-size:13px;display:inline-flex;align-items:center;white-space:nowrap}
+.btn.soft{background:#fbe5e9;color:var(--red)}
+/* C — cả bộ */
+.hd2{padding:14px 14px 6px;font-weight:800;font-size:17px}.hd2 small{display:block;font-weight:500;color:var(--muted);font-size:12px;margin-top:2px}
+.set{margin:0 12px;display:grid;gap:8px}
+.it{background:#fff;border-radius:14px;padding:8px;box-shadow:0 0 0 1px var(--line);display:flex;gap:10px;align-items:center}
+.it .im{flex:none;width:118px;aspect-ratio:16/9;border-radius:8px;background:#222 center/cover;position:relative;overflow:hidden;display:grid;place-items:center}
+.it .im.tall{width:64px;aspect-ratio:3/4.3;background-position:center top}
+.it .im b{position:relative;color:#fff;font:700 14px/1 'Dancing Script',cursive;text-shadow:0 2px 6px rgba(0,0,0,.6);text-align:center;padding:0 4px}
+.it .tx{flex:1;min-width:0}.it .tx b{display:block;font-size:13px}.it .tx small{display:block;font-size:11px;color:var(--muted);margin-top:2px}.it .tx em{font-style:normal;color:var(--red);font-weight:700;font-size:12.5px}
+.same{margin:8px 12px;padding:9px 11px;border-radius:12px;background:#fff4d9;color:#8a5a00;font-size:12px;line-height:1.45}
+.sum{margin:0 12px;padding:10px 12px;border-radius:14px;background:#fff;box-shadow:0 0 0 1px var(--line);display:flex;justify-content:space-between;align-items:center}
+.sum s{color:var(--muted);font-size:12px}.sum b{color:var(--red);font-size:20px;display:block}
+/* D — chọn cùng người ấy */
+.share{margin:12px;border-radius:18px;overflow:hidden;background:#fff;box-shadow:0 12px 30px rgba(120,40,50,.16)}
+.share .sv{height:150px;background:linear-gradient(140deg,#7c1a24,#d6455d 55%,#ef7d8d);color:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center}
+.share .sv b{font:700 30px/1.05 'Dancing Script',cursive}.share .sv span{font-size:12px;opacity:.95;margin-top:6px}
+.share .sb{padding:12px;font-size:12.5px;line-height:1.5}
+.votes{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin:0 12px}
+.votes div{position:relative;aspect-ratio:3/4.2;border-radius:10px;background:#eee center top/cover}
+.votes div em{position:absolute;left:5px;bottom:5px;font-style:normal;background:#fff;border-radius:999px;padding:2px 7px;font-size:10.5px;font-weight:700;color:var(--red);box-shadow:0 2px 6px rgba(0,0,0,.15)}
+.votes div.win{outline:3px solid var(--red);outline-offset:2px}
+.who{display:flex;gap:6px;align-items:center;margin:10px 14px 6px;font-size:12px;color:var(--muted)}
+.who i{width:22px;height:22px;border-radius:50%;display:grid;place-items:center;font-style:normal;font-size:10.5px;font-weight:800;color:#fff}
+.verdict{margin-top:30px;max-width:1000px;background:#fff;border-radius:16px;padding:18px 20px;box-shadow:0 0 0 1px var(--line)}
+.verdict h3{margin:0 0 8px;font-size:16px}.verdict ul{margin:6px 0 0;padding-left:20px;font-size:14px;line-height:1.6}.verdict b{color:var(--red)}
+</style></head><body>
+<h1 class="t">Hướng "thấy đám cưới của mình hiện ra"</h1>
+<p class="d">Mặt tiền là <b>cảm xúc</b>: khách gõ tên là cả kho mẫu đổi sang tên hai bạn, bấm mẫu là thiệp chạy thật, xem được cả bộ thiệp + LED + slide cùng tên, rủ người ấy chọn cùng. Phần trả tiền giữ kiểu Shopee (giỏ, thanh toán, đơn mua) — chỉ hiện khi cần.</p>
+
+<div class="row">
+
+  <!-- A -->
+  <div class="ph"><h2>A · Trang chủ: "Thử tên của bạn"<small>Ô gõ tên ngay đầu trang. Gõ tới đâu, cả lưới mẫu đổi sang tên hai bạn tới đó — không cần đăng nhập.</small></h2>
+    <div class="scr">
+      <div class="top"><span class="lg">Cưới Nha</span><span class="sp"></span><span class="cart">🛒<em>1</em></span></div>
+      <div class="hero"><h3>Đám cưới của bạn trông thế nào?</h3><p>Gõ tên hai bạn — xem ngay trên 49 mẫu thiệp</p>
+        <div class="ins"><span>Đức Anh</span><em>&amp;</em><span class="cur">Phạm Nga</span></div>
+        <div class="dt">📅 Thứ Hai, 28.12.2026 · tức 20 tháng 11 Bính Ngọ</div></div>
+      <div class="live"><i></i>Đang hiện tên <b style="color:var(--ink)">Đức Anh &amp; Phạm Nga</b> trên mọi mẫu</div>
+      <div class="chips"><span class="on">Tất cả</span><span>Truyền thống</span><span>Tối giản</span><span>Hoa lá</span></div>
+      <div class="grid">
+        <div class="cv" style="background-image:url(/demo/cover-songhy-do.jpg)"><span class="yt">♥ 2</span><span class="pz">99k</span><div class="nm"><b>Đức Anh &amp; Phạm Nga</b><small>28 · 12 · 2026</small></div></div>
+        <div class="cv" style="background-image:url(/demo/cover-ngoctrai-trang-ngoc.jpg)"><span class="pz">99k</span><div class="nm"><b>Đức Anh &amp; Phạm Nga</b><small>28 · 12 · 2026</small></div></div>
+        <div class="cv" style="background-image:url(/demo/cover-longphung-do-son.jpg)"><span class="pz">99k</span><div class="nm"><b>Đức Anh &amp; Phạm Nga</b><small>28 · 12 · 2026</small></div></div>
+        <div class="cv" style="background-image:url(/demo/cover-hoamoc-xanh-la.jpg)"><span class="yt">♥ 1</span><span class="pz">99k</span><div class="nm"><b>Đức Anh &amp; Phạm Nga</b><small>28 · 12 · 2026</small></div></div>
+      </div>
+      <div class="bn"><b class="on"><i>🏠</i>Trang chủ</b><b><i>💌</i>Thiệp</b><b><i>🎬</i>Video</b><b><i>🖥️</i>Màn LED</b><b><i>👤</i>Tôi</b></div>
+    </div>
+    <p class="note">Bản thật: tên được <b>vẽ đúng vào chỗ tên của từng mẫu</b> (máy chủ dựng ảnh bìa theo tên), không phải dải chữ dán đè như mock. Tên gõ ở đây mang luôn vào thiệp khi bấm Dùng.</p>
+  </div>
+
+  <!-- B -->
+  <div class="ph"><h2>B · Bấm mẫu = thiệp chạy thật, có tên mình<small>Toàn màn hình, nhạc, mở phong bì, vuốt ngang đổi mẫu, chấm màu đổi màu. Giá + nút gọn ở thanh dưới.</small></h2>
+    <div class="scr">
+      <div class="full"></div>
+      <div class="fh"><span class="x">✕</span>Song Hỷ<span class="mu">♫ Nhạc nền</span></div>
+      <div class="env"><div class="n">Đức Anh<br>&amp; Phạm Nga</div><div class="d">28 · 12 · 2026</div><span class="tap">👆 Chạm để mở thiệp · vuốt ↔ đổi mẫu</span></div>
+      <div class="sws"><i class="on" style="background:#9e1b23"></i><i style="background:#2f5a3f"></i></div>
+      <div class="fb"><div class="pr"><b>99.000đ</b><small>Dùng thử miễn phí 7 ngày</small></div><span class="btn soft">Xem cả bộ</span><span class="btn">Dùng thiệp này</span></div>
+    </div>
+    <p class="note">"Dùng thiệp này" tạo thiệp đã có sẵn tên + ngày vừa gõ — vào trình sửa là gần như xong.</p>
+  </div>
+
+  <!-- C -->
+  <div class="ph"><h2>C · "Xem cả bộ" — điểm khác biệt thật<small>Thiệp, màn LED tiệc, slide ảnh cưới cùng tên, cùng tông màu, đặt cạnh nhau. Đối thủ không có đủ cả bộ.</small></h2>
+    <div class="scr">
+      <div class="top"><span class="lg">Cưới Nha</span><span class="sp"></span><span class="cart">🛒<em>1</em></span></div>
+      <div class="hd2">Bộ "Song Hỷ đỏ" của hai bạn<small>Đức Anh &amp; Phạm Nga · 28.12.2026</small></div>
+      <div class="set">
+        <div class="it"><div class="im tall" style="background-image:url(/demo/cover-songhy-do.jpg)"></div><div class="tx"><b>💌 Thiệp cưới online</b><small>Gửi Zalo · khách bấm xác nhận dự tiệc</small><em>99.000đ</em></div></div>
+        <div class="it"><div class="im" style="background-image:url(/demo/lposter-dem-phaohoa.jpg)"><b>Đức Anh &amp; Phạm Nga</b></div><div class="tx"><b>🖥️ Màn LED sân khấu</b><small>Tên hai bạn lấp lánh lúc làm lễ</small><em>69.000đ</em></div></div>
+        <div class="it"><div class="im" style="background-image:url(/demo/vposter-album.jpg)"><b>Đức Anh &amp; Phạm Nga</b></div><div class="tx"><b>🎞️ Slide ảnh cưới</b><small>20 ảnh → video chiếu TV, tải MP4</small><em>49.000đ</em></div></div>
+      </div>
+      <div class="same">✨ Cả bộ dùng chung tên, ngày, ảnh — sửa một chỗ, ba chỗ đổi theo.</div>
+      <div class="sum"><div><s>Mua lẻ 217.000đ</s><b>169.000đ</b></div><span class="btn">Lấy cả bộ</span></div>
+    </div>
+    <p class="note">"Lấy cả bộ" → giỏ hàng / thanh toán kiểu Shopee đã có, tick sẵn 3 món.</p>
+  </div>
+
+  <!-- D -->
+  <div class="ph"><h2>D · "Chọn cùng người ấy"<small>Thả tim vài mẫu → gửi link Zalo cho người ấy tim cùng. Mẫu cả hai cùng thích sáng lên. Mỗi lần gửi = một người mới biết Cưới Nha.</small></h2>
+    <div class="scr">
+      <div class="top"><span class="lg">Cưới Nha</span><span class="sp"></span><span class="cart">🛒<em>1</em></span></div>
+      <div class="share"><div class="sv"><b>Đức Anh ♥ Phạm Nga</b><span>Còn 32 ngày nữa · chọn thiệp cùng em nhé?</span></div>
+        <div class="sb">Gửi cho người ấy — mở link là thấy các mẫu có tên hai bạn, thả tim không cần đăng nhập.<div style="display:flex;gap:8px;margin-top:10px"><span class="btn">Gửi qua Zalo</span><span class="btn soft">Chép link</span></div></div></div>
+      <div class="who"><i style="background:#2f6fd6">A</i>Đức Anh <i style="background:#d6455d;margin-left:8px">N</i>Phạm Nga đã tim</div>
+      <div class="votes">
+        <div class="win" style="background-image:url(/demo/cover-songhy-do.jpg)"><em>♥♥ cả hai</em></div>
+        <div style="background-image:url(/demo/cover-hoamoc-xanh-la.jpg)"><em>♥ Nga</em></div>
+        <div style="background-image:url(/demo/cover-ngoctrai-trang-ngoc.jpg)"><em>♥ Anh</em></div>
+      </div>
+      <div class="bn"><b><i>🏠</i>Trang chủ</b><b class="on"><i>💌</i>Thiệp</b><b><i>🎬</i>Video</b><b><i>🖥️</i>Màn LED</b><b><i>👤</i>Tôi</b></div>
+    </div>
+    <p class="note">Cũng là kênh lan truyền miễn phí: người ấy, bạn thân, mẹ… đều mở link có thương hiệu Cưới Nha.</p>
+  </div>
+
+</div>
+
+<div class="verdict"><h3>So với mock "thuần Shopee"</h3>
+<ul>
+  <li><b>Độc đáo:</b> "gõ tên là cả kho mẫu đổi theo" và "chọn cùng người ấy" — chưa thấy đối thủ nào (CineLove, Ngày Chung Đôi, shop làm hộ) làm.</li>
+  <li><b>Hấp dẫn:</b> khách thấy chính đám cưới của mình trước khi trả tiền → muốn chụp màn hình, gửi người yêu, quay TikTok.</li>
+  <li><b>Vẫn dễ trả tiền:</b> giữ giỏ hàng / thanh toán / đơn mua kiểu Shopee ở phía sau.</li>
+  <li><b>Công sức:</b> A cần máy chủ dựng ảnh bìa có tên (nặng nhất, cache theo tên); B tận dụng trang xem thử sẵn có + truyền tên; C ghép thiệp + LED + slide sẵn có; D cần bảng tim nhỏ theo link chia sẻ.</li>
+  <li><b>Gợi ý thứ tự:</b> B (dễ, thấy hiệu quả ngay) → A → C → D.</li>
+</ul></div>
+</body></html>
