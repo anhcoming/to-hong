@@ -1423,6 +1423,14 @@ function photoLive(key, url) {
     return true;
   } catch (e) { return false; }
 }
+function pickFiles(accept = 'image/*') { // chọn nhiều ảnh một lần (album)
+  return new Promise((ok) => {
+    const inp = document.createElement('input');
+    inp.type = 'file'; inp.accept = accept; inp.multiple = true;
+    inp.onchange = () => ok(Array.from(inp.files || []));
+    inp.click();
+  });
+}
 function pickFile(accept = 'image/*') {
   return new Promise((ok) => {
     const inp = document.createElement('input');
@@ -1804,7 +1812,12 @@ window.addEventListener('message', (e) => {
     const nf = $('#frameNext'); if (nf && e.source === nf.contentWindow && nf._ready) nf._ready();
     return;
   }
-  if (m.type === 'album') { if (m.ratio) albRatio = m.ratio; if (studio()) { stSent = 'album'; openSec('album'); } else albumModal(m.ratio); return; }
+  // bấm khu album trên thiệp: mở thẳng chọn nhiều ảnh (đổi thứ tự / căn / xoá ở mục Album ảnh)
+  if (m.type === 'album') {
+    if (m.ratio) albRatio = m.ratio;
+    pickFiles().then((fs) => { if (fs.length) addAlbumFiles(fs).then(() => { if (studio() && stOpen === 'album') rerender(); }); });
+    return;
+  }
   if (m.type === 'extra') { if (studio()) { stSent = m.key; openSec(m.key); return; } if (m.key === 'dress') dressModal(); else if (m.key === 'qa') qaModal(); else quickStart('info'); return; }
   if (m.type === 'photo') { // ô có ảnh (kể cả ảnh tạm của khách chưa đăng nhập) → hộp Đổi / Căn / Xoá; ô trống → chọn ảnh
     const loc = card.guest && localPhotos[m.key];
