@@ -8,6 +8,7 @@ process.env.DATA_DIR = fs.mkdtempSync(path.join(os.tmpdir(), 'thiep-short-'));
 process.env.BASE_URL = 'http://localhost';
 process.env.ALLOW_EMAIL_SIGNUP = '1';
 process.env.SEPAY_API_KEY = 'khoa-thu';
+require('../config.json').firstOrderPercent = 0; // ưu đãi khách mới kiểm thử riêng ở cuối combo.js
 const server = require('../server');
 const config = require('../config.json');
 

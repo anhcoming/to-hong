@@ -55,13 +55,12 @@ const PRODUCTS = {
     sub: (c) => ({ paid: !!c.combo }),
   },
   // màn thanh toán chung: khách tick 2 món chưa đủ Trọn bộ (vd. thiệp + màn LED) → một đơn, một mã QR (order.items)
-  multi: { name: 'Gói đám cưới', coupons: false, prefix: 'DC', price: (c, o) => ((o && o.items) || []).reduce((n, k) => n + (c && partPaid(c, k) ? 0 : partPrice(k)), 0), sub: () => ({ paid: false }) },
+  multi: { name: 'Đơn nhiều món', coupons: false, prefix: 'DC', price: (c, o) => ((o && o.items) || []).reduce((n, k) => n + (c && partPaid(c, k) ? 0 : partPrice(k)), 0), sub: () => ({ paid: false }) },
 };
 // món khách tick ở màn thanh toán → sản phẩm của đơn: đủ cả ba (tính cả món đã có) = Trọn bộ; một món = mua lẻ; còn lại = multi
 function pickProduct(card, items) {
   const want = PART_KEYS.filter((k) => items.includes(k) && !partPaid(card, k));
   if (!want.length) throw httpError(400, 'Các món bạn chọn đều đã kích hoạt rồi');
-  if (PART_KEYS.every((k) => want.includes(k) || partPaid(card, k)) && !card.combo) return { product: 'combo', items: want };
   if (want.length === 1) return { product: want[0], items: want };
   return { product: 'multi', items: want };
 }
@@ -309,7 +308,7 @@ function orderView(o) {
     items: product === 'multi' ? o.items || [] : product === 'combo' ? PART_KEYS : [product],
     code: o.code, amount: o.amount, coupon: o.coupon || null, status: o.status, claimedAt: o.claimedAt || null,
     createdAt: o.createdAt, paidAt: o.paidAt || null, paidVia: o.paidVia || null, bankNote: o.bankNote || null,
-    upgrade: !!o.upgrade, ...wasPrice(o, product),
+    upgrade: !!o.upgrade, firstOff: o.firstOff || 0, ...wasPrice(o, product),
     ...(product === 'combo' && card && o.status === 'pending' ? { have: comboHave(card) } : {}),
     // đã chuyển thiếu: báo khách số đã nhận + còn thiếu, mã QR theo phần còn thiếu (cùng nội dung chuyển khoản)
     ...(received ? { received, due } : {}),
@@ -954,6 +953,14 @@ route('POST', '/api/cards/:id/order', async (req, res, ctx) => {
   // giá đã hạ sau khi tạo đơn (đổi giá trong config.json): đơn đang chờ theo giá mới. Chỉ hạ, không nâng giá đơn khách đã thấy
   // (khách lỡ chuyển theo QR cũ giá cao hơn vẫn được kích hoạt: SePay nhận khi số tiền ≥ giá đơn).
   if (!d && !order.coupon && product !== 'multi') { const now = P.price(card); if (now < order.amount) order.amount = now; }
+  // Ưu đãi khách mới (kiểu Shopee): tài khoản chưa từng thanh toán đơn nào → tự giảm config.firstOrderPercent % đơn đầu tiên
+  // (làm tròn nghìn). Có mã giảm giá thì dùng mã thay ưu đãi này (mỗi đơn một ưu đãi). Đơn đang chờ đã nhận tiền thiếu: giữ nguyên.
+  if (!order.coupon && !receivedFor(order)) {
+    const base = P.price(card, order), pct = firstOrderPct(card.userId);
+    const off = pct ? Math.round((base * pct) / 100 / 1000) * 1000 : 0;
+    if (off) { order.amount = base - off; order.firstOff = off; }
+    else if (order.firstOff) { order.amount = base; delete order.firstOff; }
+  } else delete order.firstOff;
   // mã giảm hết 100% → không cần chuyển khoản: khách thấy giá 0đ, bấm "Xác nhận kích hoạt" (b.confirm) mới kích hoạt
   if (order.amount <= 0 && d && b.confirm === true) markPaid(order, 'coupon');
   // đã chuyển thiếu trước đó mà giá đơn nay hạ (đổi giá, áp mã) xuống còn ≤ số đã nhận → đủ tiền, kích hoạt luôn
@@ -991,6 +998,8 @@ route('POST', '/api/orders/:code/claim', async (req, res, ctx) => {
   json(res, 200, { order: orderView(o) });
 });
 
+// % giảm đơn đầu tiên: chưa có đơn nào trả tiền thật (SePay / quản trị / mã giảm) — đơn 0đ ghi lại lượt Trọn bộ không tính
+const firstOrderPct = (userId) => (config.firstOrderPercent > 0 && userId && !db.orders.some((o) => o.userId === userId && o.status === 'paid' && ['sepay', 'admin', 'coupon'].includes(o.paidVia)) ? config.firstOrderPercent : 0);
 // Kích hoạt sản phẩm của đơn — dùng chung cho quản trị viên bấm tay và SePay báo tiền về
 function markPaid(o, via) {
   o.status = 'paid';

@@ -211,6 +211,7 @@ function stateChip(c) {
 
 // Đã trả một phần (thiệp / màn LED / video), chưa đủ cả ba: gợi ý nâng lên Trọn bộ — máy chủ tính sẵn phần chênh (c.comboUpgrade)
 function upgradeBar(c) {
+  return ''; // bỏ giảm giá combo (kiểu Shopee): không còn gợi ý nâng lên Trọn bộ — mua thêm ở màn LED / slide
   if (isCombo(c) || !c.comboUpgrade) return ''; // Trọn bộ: lượt còn lại hiện trên ô Màn LED / Video
   const u = c.comboUpgrade, NAME = { card: 'thiệp cưới', led: 'màn LED tiệc cưới', video: 'slide / màn hình dạm ngõ' };
   const need = Object.keys(NAME).filter((k) => !u.have.includes(k)).map((k) => NAME[k]).join(' + ');

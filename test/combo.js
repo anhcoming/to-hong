@@ -6,6 +6,7 @@ process.env.DATA_DIR = fs.mkdtempSync(path.join(os.tmpdir(), 'thiep-combo-'));
 process.env.BASE_URL = 'http://localhost';
 process.env.ALLOW_EMAIL_SIGNUP = '1'; // bài kiểm thử tạo tài khoản bằng email (ngoài thực tế đã đóng khi có Google / Facebook)
 process.env.SEPAY_API_KEY = 'k';
+require('../config.json').firstOrderPercent = 0; // ưu đãi khách mới kiểm thử riêng ở cuối combo.js
 const server = require('../server');
 const config = require('../config.json');
 
@@ -217,7 +218,7 @@ const buyCombo = async (id) => { const o = (await call('u', 'POST', `/api/cards/
   await call('m', 'PUT', `/api/cards/${mc.id}`, { data: { ...mc.data, groom: { ...mc.data.groom, name: 'Hùng' }, bride: { ...mc.data.bride, name: 'Dương' }, date: '2026-12-28' } });
   const price = (await call('x', 'GET', '/api/meta')).json.price;
   r = await call('m', 'POST', `/api/cards/${mc.id}/order`, { items: ['card', 'led', 'video'] });
-  assert.deepEqual([r.json.order.product, r.json.order.amount], ['combo', comboNow], 'tick đủ 3 món = Trọn bộ');
+  assert.deepEqual([r.json.order.product, r.json.order.amount], ['multi', price + config.ledPrice + config.videoPrice], 'tick đủ 3 món = cộng giá lẻ (không còn giảm giá combo)');
   r = await call('m', 'POST', `/api/cards/${mc.id}/order`, { items: ['led'] });
   assert.deepEqual([r.json.order.product, r.json.order.amount], ['led', config.ledPrice], 'một món = mua lẻ, LED chưa tạo vẫn mua được');
   r = await call('m', 'POST', `/api/cards/${mc.id}/order`, { items: ['card', 'led'] });
@@ -231,9 +232,26 @@ const buyCombo = async (id) => { const o = (await call('u', 'POST', `/api/cards/
   assert.ok(r.json.card.led.paid, 'LED đã trả trước: tạo ra là kích hoạt');
   assert.equal((await call('m', 'POST', `/api/cards/${mc.id}/order`, { items: ['card', 'led'] })).status, 400, 'đã có cả hai');
   r = await call('m', 'POST', `/api/cards/${mc.id}/order`, { items: ['card', 'led', 'video'] });
-  assert.deepEqual([r.json.order.product, r.json.order.amount], ['combo', Math.max(0, comboNow - price - config.ledPrice)], 'còn thiếu slide: nâng lên Trọn bộ trả phần chênh');
+  assert.deepEqual([r.json.order.product, r.json.order.amount], ['video', config.videoPrice], 'còn thiếu slide: mua lẻ slide');
   r = await call('m', 'POST', `/api/cards/${mc.id}/order`, { items: ['video'] });
-  assert.deepEqual([r.json.order.product, r.json.order.amount], ['combo', Math.max(0, comboNow - price - config.ledPrice)], 'chỉ tick slide mà thành đủ bộ → tự thành Trọn bộ (rẻ hơn mua lẻ)');
+  assert.deepEqual([r.json.order.product, r.json.order.amount], ['video', config.videoPrice], 'chỉ tick slide → giá slide');
+
+  // 6. không còn giảm giá combo: tick đủ 3 món = cộng giá lẻ (đơn gộp); ưu đãi khách mới: đơn đầu tự giảm 10%, mã giảm giá thay ưu đãi
+  config.firstOrderPercent = 10;
+  await call('n', 'POST', '/api/auth/register', { email: 'moi@test.vn', password: '123456', name: 'Mới' });
+  let nc = (await call('n', 'POST', '/api/cards', { template: 'dodam' })).json.card;
+  await call('n', 'PUT', `/api/cards/${nc.id}`, { data: { ...nc.data, groom: { ...nc.data.groom, name: 'Nam' }, bride: { ...nc.data.bride, name: 'Mai' }, date: '2026-12-30' } });
+  const p0 = (await call('x', 'GET', '/api/meta')).json.price, all3 = p0 + config.ledPrice + config.videoPrice;
+  r = await call('n', 'POST', `/api/cards/${nc.id}/order`, { items: ['card', 'led', 'video'] });
+  const r10 = (n) => Math.round(n * 0.1 / 1000) * 1000;
+  assert.deepEqual([r.json.order.product, r.json.order.amount, r.json.order.firstOff], ['multi', all3 - r10(all3), r10(all3)], 'đủ 3 món = cộng giá lẻ, đơn đầu giảm 10%');
+  r = await call('n', 'POST', `/api/cards/${nc.id}/order`, { items: ['card'] });
+  const fo = r.json.order;
+  assert.deepEqual([fo.amount, fo.firstOff], [p0 - r10(p0), r10(p0)], 'chỉ thiệp: vẫn giảm 10% đơn đầu');
+  assert.equal((await pay(fo)).json.result, 'paid');
+  r = await call('n', 'POST', `/api/cards/${nc.id}/order`, { items: ['led'] });
+  assert.deepEqual([r.json.order.amount, r.json.order.firstOff], [config.ledPrice, 0], 'đơn thứ hai: không còn ưu đãi khách mới');
+  config.firstOrderPercent = 0;
 
   console.log('✓ Trọn bộ gắn với thiệp: mở thiệp + LED + video của thiệp đó (có sẵn hay làm sau), thiệp khác không liên quan, nâng cấp trả phần chênh, lượt cũ vẫn dùng được');
   process.exit(0);

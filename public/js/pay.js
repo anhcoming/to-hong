@@ -163,7 +163,7 @@ window.openPayModal = async function (cardId, onDone, product = 'card') {
     const o = data.order;
     clearInterval(timer); clearInterval(tick);
     closeAll();
-    toast(o.product === 'combo' ? 'Đã kích hoạt Trọn bộ ngày cưới 🎉' : `Đã kích hoạt ${lcFirst(o.productName)} 🎉`);
+    toast(o.product === 'combo' ? 'Đã kích hoạt thiệp + màn LED + slide 🎉' : `Đã kích hoạt ${lcFirst(o.productName)} 🎉`);
     const go = o.product === 'led' ? `/sua-led/${cardId}` : o.product === 'video' ? `/sua-video/${cardId}` : '';
     if (go && !location.pathname.startsWith(go)) { location.href = go; return; } // kích hoạt từ trang khác (Thiệp của tôi) → mở màn LED / video của tôi
     if (onDone) onDone();
@@ -210,8 +210,7 @@ window.openPayModal = async function (cardId, onDone, product = 'card') {
   const cart = (o) => {
     const p = o.product;
     const retail = (o.items || []).filter((k) => !HAVE[k]).reduce((n, k) => n + PRICE[k], 0);
-    const disc = o.discount || 0, combo = Math.max(0, retail - o.amount - disc);
-    const nudge = !part && p !== 'combo' && KEYS.filter((k) => !HAVE[k] && !ticks.includes(k)).length === 1; // còn đúng một món chưa tick → gợi ý đủ bộ
+    const disc = o.discount || 0, first = o.firstOff || 0, combo = 0, nudge = false; // không còn giảm giá combo: tổng = cộng giá lẻ
     return `<div class="shp-hd"><button type="button" class="shp-back" data-x aria-label="Đóng">‹</button>Thanh toán</div>
       <div class="shp-box"><h4>💍 Đám cưới</h4><div class="shp-wed"><b>${esc(cardInfo.names || 'Thiệp của bạn')}</b>${esc(dateText(cardInfo.date))}<small>🔒 Kích hoạt là chốt tên + ngày cưới, mẫu thiệp vẫn đổi thoải mái</small></div></div>
       <div class="shp-box"><h4>🛍️ Cưới Nha</h4>
@@ -221,12 +220,12 @@ window.openPayModal = async function (cardId, onDone, product = 'card') {
       ${p === 'multi' ? '' : `<form class="shp-box shp-cp" id="cp"><label>🎟️ Mã giảm giá</label><input name="c" placeholder="Nhập mã" value="${esc(o.coupon || '')}" autocomplete="off" aria-describedby="cpErr"><button class="btn sm plain">Áp dụng</button><p class="cp-err" id="cpErr" role="alert" hidden></p></form>`}
       <div class="shp-box"><h4>🧾 Chi tiết thanh toán</h4>
         <div class="shp-ln"><span>Tổng tiền hàng</span><span>${money(retail)}</span></div>
-        ${combo ? `<div class="shp-ln"><span>Giảm giá Trọn bộ<span class="shp-tag">đủ 3 món</span></span><span class="g">−${money(combo)}</span></div>` : ''}
+        ${first ? `<div class="shp-ln"><span>🎁 Ưu đãi khách mới<span class="shp-tag">đơn đầu</span></span><span class="g">−${money(first)}</span></div>` : ''}
         ${disc ? `<div class="shp-ln"><span>Mã ${esc(o.coupon)}</span><span class="g">−${money(disc)}</span></div>` : ''}
         <div class="shp-ln tot"><b>Tổng thanh toán</b><b>${money(o.amount)}</b></div></div>
       <div class="shp-box"><h4>💳 Phương thức thanh toán</h4><div class="shp-pay"><i></i>Chuyển khoản QR — tiền về là tự kích hoạt</div></div>
       <p class="shp-fine">Thanh toán là bạn đồng ý với <a href="/dieu-khoan" target="_blank" rel="noopener">Điều khoản</a> và <a href="/hoan-tien" target="_blank" rel="noopener">Chính sách hoàn tiền</a>. ${p === 'combo' ? LOCK_NOTE.combo : (o.items || [p]).includes('card') ? LOCK_NOTE.card : LOCK_NOTE[(o.items || [p])[0]] || ''}</p>
-      <div class="shp-bar"><div class="t">Tổng thanh toán<b>${money(o.amount)}</b>${combo + disc ? `<small>Tiết kiệm ${money(combo + disc)}</small>` : ''}</div>
+      <div class="shp-bar"><div class="t">Tổng thanh toán<b>${money(o.amount)}</b>${first + disc ? `<small>Tiết kiệm ${money(first + disc)}</small>` : ''}</div>
         ${o.amount <= 0 && o.coupon ? '<button type="button" class="shp-go" id="cpOk">Xác nhận kích hoạt</button>' : '<button type="button" class="shp-go" id="order">Đặt hàng</button>'}</div>`;
   };
 

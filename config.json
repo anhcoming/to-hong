@@ -9,6 +9,7 @@
   "ledPrice": 69000,
   "videoPrice": 49000,
   "comboPrice": 169000,
+  "firstOrderPercent": 10,
   "comboListPrice": 0,
   "ffmpegPath": "ffmpeg",
   "trialDays": 7,

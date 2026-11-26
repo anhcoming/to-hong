@@ -13,6 +13,7 @@ const google = require('../lib/google');
 let fakeGoogle = null;
 google.enabled = () => true;
 google.exchange = async (code) => { if (code !== 'ma-dung') throw Object.assign(new Error('Google từ chối'), { status: 502 }); return fakeGoogle; };
+require('../config.json').firstOrderPercent = 0; // ưu đãi khách mới kiểm thử riêng ở cuối combo.js
 const server = require('../server');
 
 let base;
