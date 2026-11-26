@@ -135,8 +135,9 @@ main.wrap{padding-top:112px;padding-bottom:64px;max-width:1120px}
   .mrow>*{pointer-events:auto}
   /* nút "Dùng thiệp này" lên góc trên phải (thiệp được thêm chỗ); nút tên xuống khối dưới, ngay trên dải mẫu */
   .mrow #useBtnM{margin-left:auto;height:38px;padding:0 16px;font-size:14px;border:0;border-radius:999px;color:#fff;background:var(--grad);box-shadow:0 8px 20px rgba(214,69,93,.35)}
-  .pside #tenBtn{align-self:flex-start;display:inline-flex;align-items:center;gap:5px;max-width:calc(100% - 28px);height:30px;margin:0 14px;padding:0 12px;border:0;border-radius:999px;background:#fff0f2;color:var(--red);font:600 12.5px var(--sans);cursor:pointer;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-  .pside #tenBtn b{font:700 15px var(--script)}
+  /* nút tên: ngay dưới nút ảnh ở góc trên trái (gọn, không chiếm khối dưới) */
+  .mrow #tenBtn{position:absolute;left:0;top:46px;display:inline-flex;align-items:center;gap:5px;max-width:70%;height:30px;padding:0 12px;border:0;border-radius:999px;background:rgba(0,0,0,.45);backdrop-filter:blur(6px);color:#fff;font:600 12.5px var(--sans);cursor:pointer;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .mrow #tenBtn b{font:700 15px var(--script)}
   .pcta{display:none!important}
   .strip{padding-bottom:calc(12px + env(safe-area-inset-bottom))!important}
   .strip{padding-bottom:10px!important}
