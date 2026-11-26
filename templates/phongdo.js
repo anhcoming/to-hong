@@ -14,7 +14,7 @@ function partyEvent(d) {
   const evs = evList(d);
   return evs.find((e) => /khai tiệc|tiệc cưới/i.test(e.name)) || evs.find((e) => /tiệc/i.test(e.name)) || evs[evs.length - 1] || null;
 }
-const lunarOf = (ctx) => ctx.lunar.replace(/^Nhằm /i, 'Tức ');
+const lunarOf = (ctx) => ctx.lunar.replace(/^(Nhằm|Tức) /i, 'Tức ');
 
 // chữ 囍 dựng bằng nét (hai chữ 喜 đứng cạnh nhau, nét ngang trên & giữa nối liền)
 const HY = '<path d="M6 8H94M25 2V20M12 20H38M12 26h26v13H12zM17 44l3 5M35 44l-3 5M4 53H96M12 59h26v18H12zM75 2V20M62 20H88M62 26h26v13H62zM67 44l3 5M85 44l-3 5M62 59h26v18H62z" fill="none" stroke="currentColor" stroke-width="5" stroke-linecap="square"/>';

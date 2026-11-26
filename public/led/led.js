@@ -1090,7 +1090,7 @@
       out.push('<div data-k="date" class="slide s-date" data-date="1"><p class="wd">' + esc(C.date.weekday) + '</p>' +
         '<p class="bigdate glow" data-fit>' + C.date.d + '<i>·</i>' + C.date.m + '<i>·</i>' + C.date.y + '</p>' +
         (C.time ? '<p class="time">Vào lúc ' + esc(C.time) + '</p>' : '') +
-        (C.lunar ? '<p class="lunar">' + esc(C.lunar) + '</p>' : '') + '</div>');
+        ((L.lunar || C.lunar) ? '<p class="lunar">' + esc(L.lunar || C.lunar) + '</p>' : '') + '</div>');
     }
     // đếm ngược tới giờ lễ: chỉ hiện khi còn chưa tới giờ (qua giờ thì tự bỏ cảnh này)
     var target = C.at ? Date.parse(C.at) : NaN;
@@ -1195,6 +1195,7 @@
   function apply(newLed) {
     var keep = cur;
     L = newLed;
+    stage.setAttribute('data-font', L.font || '');
     layout();
     applyPalette();
     resetFx();

@@ -158,7 +158,7 @@ module.exports = {
     <p class="tc-quote">Hôn lễ được tổ chức vào</p>
     <p class="tc-wtime">${ctx.time ? esc(ctx.time.replace(/^0/, '')) + ', ' : ''}${esc(ctx.weekday)}</p>
     <div class="tc-wrow"><span>Tháng ${p.m}</span><b>${p.d}</b><span>Năm ${p.y}</span></div>
-    <p class="tc-wlunar">(${esc(ctx.lunar.replace(/^Nhằm /i, 'Tức '))})</p>
+    <p class="tc-wlunar">(${esc(ctx.lunar.replace(/^(Nhằm|Tức) /i, 'Tức '))})</p>
   </section>`;
     },
 

@@ -148,7 +148,7 @@ module.exports = {
       <p class="dt-dnames">${esc(ctx.g)} &amp;<br>${esc(ctx.b)}</p>
       <p>${esc(WD_SHORT[ctx.weekday] || ctx.weekday)}${d.time ? ` – ${esc(hm(d.time))}` : ''}</p>
       <p>${p.d} / ${p.m} / ${p.y}</p>
-      <p>${esc(ctx.lunar.replace(/^Nhằm /i, 'Nhằm '))}</p>
+      <p>${esc(ctx.lunar.replace(/^(Nhằm|Tức) /i, 'Tức '))}</p>
       ${ev && ev.place ? `<p>Tại ${esc(ev.place)}</p>` : ''}
     </div>
   </section>`;

@@ -29,7 +29,7 @@ const XI = (cls) => `<span class="sh-xi ${cls}" aria-hidden="true">囍</span>`;
 
 // ngày | tháng-năm (giống nhau ở lời mời và tiệc cưới)
 const dateRow = (p) => `<div class="sh-date"><b>${p.d}</b><i></i><span><em>Tháng ${p.m}</em><em>${p.y}</em></span></div>`;
-const lunarOf = (ctx) => `(Tức ${esc(ctx.lunar.replace(/^Nhằm /i, ''))})`;
+const lunarOf = (ctx) => `(Tức ${esc(ctx.lunar.replace(/^(Nhằm|Tức) /i, ''))})`;
 
 // khung giấy kem (ảnh viền tự vẽ songhy2-panel.svg, kéo giãn kiểu border-image như bản gốc)
 function panel(cls, inner, over = '') {

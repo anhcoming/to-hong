@@ -14,7 +14,7 @@ function partyEvent(d) {
   const evs = evList(d);
   return evs.find((e) => /khai tiệc|tiệc cưới/i.test(e.name)) || evs.find((e) => /tiệc/i.test(e.name)) || evs[evs.length - 1] || null;
 }
-const lunarOf = (ctx) => ctx.lunar.replace(/^Nhằm /i, 'Tức ');
+const lunarOf = (ctx) => ctx.lunar.replace(/^(Nhằm|Tức) /i, 'Tức ');
 
 // thớ giấy: nhiễu mịn + vân loang lớn (SVG tự viết, nhúng thẳng vào CSS)
 const svgUrl = (s) => `url("data:image/svg+xml,${encodeURIComponent(s)}")`;

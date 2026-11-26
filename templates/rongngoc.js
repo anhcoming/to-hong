@@ -9,7 +9,7 @@ function partyEvent(d) {
   return evs.find((e) => /tiệc cưới|khai tiệc/i.test(e.name)) || evs.find((e) => /tiệc/i.test(e.name)) || evs[evs.length - 1] || null;
 }
 const strip = (s) => (s || '').replace(/^(Ông|Bà)\s+/i, '');
-const lunarOf = (s) => (s || '').replace(/^Nhằm /i, '');
+const lunarOf = (s) => (s || '').replace(/^(Nhằm|Tức) /i, '');
 
 // đặt một hình SVG của _orn vào ô gấm (svg lồng nhau)
 const place = (svg, x, y, w, h, tf = '') => `<g transform="translate(${x} ${y})${tf}">${svg.replace('<svg ', `<svg x="0" y="0" width="${w}" height="${h}" `)}</g>`;

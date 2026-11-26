@@ -18,7 +18,7 @@ function partyEvent(d) {
   const evs = evList(d);
   return evs.find((e) => /khai tiệc|tiệc cưới/i.test(e.name)) || evs.find((e) => /tiệc/i.test(e.name)) || evs[evs.length - 1] || null;
 }
-const lunarOf = (ctx) => `( Tức ${ctx.lunar.replace(/^Nhằm /i, '')} )`;
+const lunarOf = (ctx) => `( Tức ${ctx.lunar.replace(/^(Nhằm|Tức) /i, '')} )`;
 // thứ | ngày | tháng, năm ở dòng dưới; vạch ngăn là chữ "|" (lời mời) hoặc gạch đứng (tiệc cưới)
 const dateRow = (ctx, bar) => {
   const p = ctx.dparts;

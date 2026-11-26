@@ -5,7 +5,7 @@ const { esc } = require('../lib/util');
 const evList = (d) => d.events.filter((e) => e.name || e.place);
 // lễ chính ghi trong lời mời: lễ thành hôn → lễ đầu tiên
 const mainEvent = (d) => { const evs = evList(d); return evs.find((e) => /thành hôn/i.test(e.name)) || evs[0] || null; };
-const lunarOf = (s) => (s || '').replace(/^Nhằm /i, '');
+const lunarOf = (s) => (s || '').replace(/^(Nhằm|Tức) /i, '');
 const n2 = (v) => String(v).padStart(2, '0');
 
 // ---------- phượng hoàng cắt giấy (quay sang phải; lật bằng CSS) ----------

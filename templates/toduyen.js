@@ -26,7 +26,7 @@ const decos = (...imgs) => `<div class="td-decos" aria-hidden="true">${imgs.join
 
 // ngày | tháng-năm (cùng một kiểu ở lời mời và tiệc cưới)
 const dateRow = (p) => `<div class="td-date"><b>${+p.d}</b><i></i><span><em>Tháng ${+p.m}</em><em>${p.y}</em></span></div>`;
-const lunar = (ctx) => `<p class="td-lunar">(Tức ${esc(ctx.lunar.replace(/^Nhằm /i, ''))})</p>`;
+const lunar = (ctx) => `<p class="td-lunar">(Tức ${esc(ctx.lunar.replace(/^(Nhằm|Tức) /i, ''))})</p>`;
 
 // giờ gửi lời chúc như bản gốc: 10:12:58 17/9/2026
 function wishTime(ts) {

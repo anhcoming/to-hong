@@ -31,7 +31,7 @@ function dateRow(ctx, bar) {
 }
 
 // "ngày 8 tháng 4 năm Bính Ngọ" như bản gốc (bỏ "Nhằm", bỏ số 0 đầu)
-const lunar = (ctx) => ctx.lunar.replace(/^Nhằm /i, '').replace(/ngày 0(\d)/, 'ngày $1');
+const lunar = (ctx) => ctx.lunar.replace(/^(Nhằm|Tức) /i, '').replace(/ngày 0(\d)/, 'ngày $1');
 
 // hoa mộc nền: [vị trí, góc xoay, độ mờ, lật ngang] — toạ độ theo bản gốc ở 375 / 768 / 1024px (đặt trong CSS)
 const FLOWERS = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j'];

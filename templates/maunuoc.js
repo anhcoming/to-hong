@@ -82,7 +82,7 @@ function partyEvent(d) {
   return evs.find((e) => /khai tiệc|tiệc cưới/i.test(e.name)) || evs.find((e) => /tiệc/i.test(e.name)) || evs[evs.length - 1] || null;
 }
 const pick = (ph, i) => (ph.length ? ph[i % ph.length] : '');
-const lunarOf = (iso, ctxLunar) => `(Tức ${esc(ctxLunar.replace(/^Nhằm /i, ''))})`;
+const lunarOf = (iso, ctxLunar) => `(Tức ${esc(ctxLunar.replace(/^(Nhằm|Tức) /i, ''))})`;
 // giờ · thứ | ngày lớn | tháng · năm
 function dateRow(h, iso, time) {
   const p = h.parts(iso);
@@ -211,7 +211,7 @@ module.exports = {
       const title = `Đám cưới ${ctx.g} & ${ctx.b}`;
       const block = (e) => {
         const iso = e.date || ctx.date;
-        const lun = iso ? `(Tức ${esc(h.lunarText(iso).replace(/^Nhằm /i, ''))})` : '';
+        const lun = iso ? `(Tức ${esc(h.lunarText(iso).replace(/^(Nhằm|Tức) /i, ''))})` : '';
         return `
     <div class="mn-ev reveal">
       <h3 class="mn-ev-n">${esc(e.name)}</h3>

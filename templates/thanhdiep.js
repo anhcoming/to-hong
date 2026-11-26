@@ -44,7 +44,7 @@ function dateRow(ctx, bar) {
   const sep = bar ? '<i class="td-bar"></i>' : '<i class="td-pipe">|</i>';
   return `<div class="td-daterow">${bi(esc(ctx.weekday).toUpperCase(), WD_EN[wd].toUpperCase(), 'wd')}${sep}<b>${p.d}</b>${sep}${bi(`THÁNG ${p.m}`, MON_EN[+p.m - 1].toUpperCase(), 'mo')}</div>
       <div class="td-year">${p.y}</div>
-      <div class="td-lunar">(${esc(ctx.lunar.replace(/^Nhằm /i, 'Tức '))})</div>`;
+      <div class="td-lunar">(${esc(ctx.lunar.replace(/^(Nhằm|Tức) /i, 'Tức '))})</div>`;
 }
 
 // lá rơi trên màn mở thiệp: vị trí, màu, cỡ, độ lắc, thời gian, độ trễ — chép từ bản gốc

@@ -163,7 +163,7 @@ module.exports = {
       <div><em>${esc(ctx.weekday)}</em><b>${p.d}</b><em>Tháng ${p.m}</em></div>
       <span>Năm ${p.y}</span>
     </div>
-    <p class="hv-lunar">(Tức ${esc(ctx.lunar.replace(/^Nhằm /i, ''))})</p>
+    <p class="hv-lunar">(Tức ${esc(ctx.lunar.replace(/^(Nhằm|Tức) /i, ''))})</p>
     ${cer && cer.place ? `<p class="hv-at">Tại ${esc(cer.place)}</p>` : ''}` : ''}
     ${d.message ? `<p class="invite-msg">${esc(d.message)}</p>` : ''}
   </section>`;
@@ -182,7 +182,7 @@ module.exports = {
       <h3 class="hv-h3">${esc(/tiệc/i.test(party.name) ? 'Tiệc mừng lễ thành hôn' : party.name)}</h3>
       <p class="hv-ptime">${esc(clock(party.time || d.time))}${party.time || d.time ? ' - ' : ''}${esc(h.weekday(party.date || d.date))}</p>
       <p class="hv-pdate">${pp.d}.${pp.m}.${pp.y}</p>
-      <p class="hv-lunar">(${esc(h.lunarText(party.date || d.date).replace(/^Nhằm /i, 'Tức '))})</p>
+      <p class="hv-lunar">(${esc(h.lunarText(party.date || d.date).replace(/^(Nhằm|Tức) /i, 'Tức '))})</p>
       ${party.place ? `<p class="hv-pplace">${esc(party.place)}${party.address ? `<br><span>${esc(party.address)}</span>` : ''}</p>` : ''}
     </div>` : ''}
     ${d.show.calendar ? `<div class="hv-box hv-calbox"><span class="hv-year" aria-hidden="true">${p.y}</span>${h.calGrid(ctx, `<p class="hv-calh">${+p.m}.${p.y}</p>`)}</div>` : ''}

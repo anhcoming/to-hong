@@ -18,7 +18,7 @@ const photoAt = (ctx, i) => {
   return ph.length ? ph[i % ph.length] : (ctx.d.cover || '');
 };
 const phIdx = (ctx, i) => i % Math.max(1, ctx.d.photos.length);
-const tidy = (s) => (s || '').replace(/^Nhằm /i, 'Tức ');
+const tidy = (s) => (s || '').replace(/^(Nhằm|Tức) /i, 'Tức ');
 // con dấu tròn hai vòng có chữ viết tắt hai người
 const seal = (ctx, cls = '') => `<span class="ad-seal ${cls}"><svg viewBox="0 0 60 60" aria-hidden="true"><circle cx="30" cy="30" r="27" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="30" cy="30" r="22" fill="none" stroke="currentColor" stroke-width="1" stroke-dasharray="2 3"/></svg><b>${esc(ctx.initials)}</b></span>`;
 const heart = `<svg viewBox="0 0 24 22" aria-hidden="true"><path fill="currentColor" d="M12 21.5C5 16.3 0 12 0 6.6 0 3 2.8 0 6.4 0 8.8 0 10.8 1.3 12 3.3 13.2 1.3 15.2 0 17.6 0 21.2 0 24 3 24 6.6 24 12 19 16.3 12 21.5z"/></svg>`;

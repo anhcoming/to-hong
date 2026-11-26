@@ -115,7 +115,7 @@ module.exports = {
         ${cer && cer.place ? `<p class="dd-lead">${esc(cer.name || 'Lễ thành hôn')} được cử hành tại<br>${esc(cer.place)}</p>` : ''}
         ${p ? `<div class="dd-when"><span>${time ? `Vào lúc ${esc(time)}` : ''}</span><span>${esc(ctx.weekday)}</span></div>
         ${dateRow(p)}
-        <p class="dd-lunar">(Tức ${esc(ctx.lunar.replace(/^Nhằm /i, ''))})</p>` : ''}
+        <p class="dd-lunar">(Tức ${esc(ctx.lunar.replace(/^(Nhằm|Tức) /i, ''))})</p>` : ''}
       </div>
     </div>
   </section>`;
@@ -170,7 +170,7 @@ module.exports = {
       <h3 class="dd-lead">Tiệc cưới sẽ diễn ra vào lúc:</h3>
       <div class="dd-when"><span>${esc(time || '')}</span><span>${esc(ctx.weekday)}</span></div>
       ${dateRow(p)}
-      <p class="dd-lunar">(Tức ${esc(ctx.lunar.replace(/^Nhằm /i, ''))})</p>
+      <p class="dd-lunar">(Tức ${esc(ctx.lunar.replace(/^(Nhằm|Tức) /i, ''))})</p>
       ${marks.length ? `<div class="dd-marks">${marks.map((e) => `<div><span class="k">${esc(e.name)}</span><span class="t">${esc(e.time)}</span></div>`).join('')}</div>` : ''}
       ${grid ? `<div class="dd-calwrap">${grid}</div>` : ''}
       <a class="dd-link" target="_blank" rel="noopener" href="${esc(cal)}">Thêm vào lịch</a>

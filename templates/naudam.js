@@ -23,7 +23,7 @@ function ceremonyEvent(d, party) {
   const evs = evList(d).filter((e) => e !== party && e.place);
   return evs.find((e) => /thành hôn|vu quy|lễ cưới/i.test(e.name)) || evs[0] || null;
 }
-const lunarOf = (ctx) => `( Tức ${ctx.lunar.replace(/^Nhằm /i, '')} )`;
+const lunarOf = (ctx) => `( Tức ${ctx.lunar.replace(/^(Nhằm|Tức) /i, '')} )`;
 // ngày | tháng / năm (khung lời mời và tiệc cưới cùng một kiểu, cỡ chữ khác nhau qua CSS)
 const dateRow = (p) => `<div class="mn-date"><b>${p.d}</b><i></i><span><em>Tháng ${p.m}</em><em>${p.y}</em></span></div>`;
 // hoa nhỏ rơi trên màn mở thiệp: vị trí / cỡ / nhịp cố định để trang dựng ra lần nào cũng giống nhau

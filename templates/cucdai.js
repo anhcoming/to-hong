@@ -10,7 +10,7 @@ const base = {
 };
 
 const evList = (d) => d.events.filter((e) => e.name || e.place);
-const lunarOf = (s) => s.replace(/^Nhằm /i, 'Tức ');
+const lunarOf = (s) => s.replace(/^(Nhằm|Tức) /i, 'Tức ');
 
 // một bông cúc: 16 cánh trắng + nhuỵ vàng
 function daisy(cx, cy, r, rot = 0) {

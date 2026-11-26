@@ -57,12 +57,14 @@ function renderSide() {
       <section class="group cform">
         <p class="clab">Cỡ chữ</p>
         <div class="fsz"><b class="s">A</b><input type="range" data-fs min="60" max="140" step="5" value="${Math.round((typeof led.fs === 'number' ? led.fs : 1) * 100)}" aria-label="Cỡ chữ"><b class="l">A</b><output>${Math.round((typeof led.fs === 'number' ? led.fs : 1) * 100)}%</output></div>
+        ${(META.led.fonts || []).length ? `<label class="field"><span>Kiểu chữ</span><select data-l="font">${META.led.fonts.map((x) => `<option value="${x.id}"${(led.font || '') === x.id ? ' selected' : ''}>${esc(x.name)}</option>`).join('')}</select></label>` : ''}
         <p class="clab">Tên đôi</p>
         <div class="grid2">${f('groom.name', 'Chú rể', 'names', 'Gia Huy')}${f('bride.name', 'Cô dâu', 'names', 'Bảo Ngọc')}</div>
         ${fixed ? '<p class="muted" style="font-size:12px;margin:-4px 0 8px">🔒 Đã kích hoạt: tên đôi cố định</p>' : ''}
         <label class="field"><span>Dòng tiêu đề</span><input data-l="kicker" data-sc="names" value="${esc(led.kicker)}" maxlength="40" placeholder="Lễ Thành Hôn / Lễ Vu Quy / Tiệc Cưới"></label>
         <p class="clab">Ngày giờ</p>
         <div class="grid2">${f('date', 'Ngày cưới', 'date', '', 'date')}${f('time', 'Giờ', 'date', '', 'time')}</div>
+        <label class="field"><span>Dòng âm lịch</span><input data-l="lunar" data-sc="date" value="${esc(led.lunar || '')}" maxlength="80" placeholder="${esc(window.Lunar && d.date ? Lunar.lunarText(d.date) : 'Để trống: tự ghi theo ngày cưới')}"></label>
         <p class="clab">Bố mẹ hai bên</p>
         <div class="grid2">${f('groom.father', 'Bố chú rể', 'parents', 'Ông …')}${f('bride.father', 'Bố cô dâu', 'parents', 'Ông …')}${f('groom.mother', 'Mẹ chú rể', 'parents', 'Bà …')}${f('bride.mother', 'Mẹ cô dâu', 'parents', 'Bà …')}</div>
         <p class="clab">Lời cảm ơn</p>

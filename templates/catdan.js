@@ -230,7 +230,7 @@ module.exports = {
       </div>
     </article>`;
     }).join('')}
-    <p class="cd-lunar">(Tức ${esc(ctx.lunar.replace(/^Nhằm /i, ''))})</p>
+    <p class="cd-lunar">(Tức ${esc(ctx.lunar.replace(/^(Nhằm|Tức) /i, ''))})</p>
   </section>
   <div class="cd-rip r5" style="${TEAR.e}"></div>`;
     },

@@ -207,7 +207,7 @@ module.exports = {
       return `${i ? div : ''}
     <div class="sh-ev reveal">
       <h3>${esc(e.name)}</h3>
-      ${p ? `<p class="sh-ev-t">${esc(e.time || '')}${e.time ? ' - ' : ''}${esc(h.weekday(iso))}</p><p class="sh-ev-d">${p.d}.${p.m}.${p.y}</p><p class="sh-ev-l">(Tức ${esc(h.lunarText(iso).replace(/^Nhằm /i, ''))})</p>` : ''}
+      ${p ? `<p class="sh-ev-t">${esc(e.time || '')}${e.time ? ' - ' : ''}${esc(h.weekday(iso))}</p><p class="sh-ev-d">${p.d}.${p.m}.${p.y}</p><p class="sh-ev-l">(Tức ${esc(h.lunarText(iso).replace(/^(Nhằm|Tức) /i, ''))})</p>` : ''}
       ${e.place ? `<p class="sh-ev-p">Tại ${esc(e.place)}</p>` : ''}
       ${e.address && e !== party ? `<p class="sh-ev-a">${esc(e.address)}</p>` : ''}
       ${e.date ? `<a class="sh-ev-cal" target="_blank" rel="noopener" href="${esc(h.calendarLink(`${e.name} — ${title}`, e.date, e.time, e.address || e.place))}">Lưu vào lịch</a>` : ''}

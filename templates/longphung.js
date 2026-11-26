@@ -39,7 +39,7 @@ function partyEvent(d) {
 function ceremony(d, party) {
   return evList(d).find((e) => e !== party && e.place) || null;
 }
-const lunarOf = (ctx) => ctx.lunar.replace(/^Nhằm /i, '');
+const lunarOf = (ctx) => ctx.lunar.replace(/^(Nhằm|Tức) /i, '');
 // thứ | ngày | tháng (dùng ở lời mời và tiệc cưới)
 const dateRow = (ctx) => `<div class="lp-date"><span class="wd">${esc(ctx.weekday)}</span><i></i><b>${ctx.dparts.d}</b><i></i><span class="mo">Tháng ${ctx.dparts.m}</span></div>`;
 

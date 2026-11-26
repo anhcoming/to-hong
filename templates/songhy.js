@@ -27,7 +27,7 @@ function partyEvent(d) {
 }
 // lễ cưới ở khung "Thông tin lễ cưới": sự kiện đầu tiên không phải tiệc
 const ceremony = (d) => { const p = partyEvent(d); return evList(d).find((e) => e !== p) || p; };
-const tuc = (s) => `(${s.replace(/^Nhằm /i, 'Tức ')})`;
+const tuc = (s) => `(${s.replace(/^(Nhằm|Tức) /i, 'Tức ')})`;
 
 // thứ | ngày | tháng, rồi năm bên dưới (giống nhau ở lễ cưới và tiệc cưới)
 const dateRow = (wd, p) => `<div class="sh-date"><span class="w">${esc(wd)}</span><i></i><b>${p.d}</b><i></i><span class="m">Tháng ${p.m}</span></div><p class="sh-year">${p.y}</p>`;

@@ -3,7 +3,7 @@
 const { esc } = require('../lib/util');
 
 const evList = (d) => d.events.filter((e) => e.name || e.place);
-const lunarOf = (s) => (s || '').replace(/^Nhằm /i, '');
+const lunarOf = (s) => (s || '').replace(/^(Nhằm|Tức) /i, '');
 const fx = (v) => +v.toFixed(1);
 const MONTHS = ['Tháng Giêng', 'Tháng Hai', 'Tháng Ba', 'Tháng Tư', 'Tháng Năm', 'Tháng Sáu', 'Tháng Bảy', 'Tháng Tám', 'Tháng Chín', 'Tháng Mười', 'Tháng Mười Một', 'Tháng Chạp'];
 const MONTHS_SOLAR = ['Tháng Một', 'Tháng Hai', 'Tháng Ba', 'Tháng Tư', 'Tháng Năm', 'Tháng Sáu', 'Tháng Bảy', 'Tháng Tám', 'Tháng Chín', 'Tháng Mười', 'Tháng Mười Một', 'Tháng Mười Hai'];
