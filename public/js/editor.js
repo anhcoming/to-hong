@@ -657,7 +657,8 @@ function renderHeader() {
   if (card.status !== 'published') {
     pa.innerHTML = pv + sv + '<button class="btn sm" id="pubBtn">Phát hành<span class="xl">&nbsp;thiệp</span></button>';
   } else {
-    pa.innerHTML = pv + sv + (card.paid ? '<button class="btn sm" id="shareBtn">Chia sẻ</button>' : '<button class="btn sm soft" id="shareBtn">Chia sẻ</button><button class="btn sm" id="payBtn">Kích hoạt</button>');
+    // đã phát hành: bỏ nút "Chia sẻ" (link gửi khách ở Thiệp của tôi / tab Khách); chưa kích hoạt thì chỉ còn nút Kích hoạt
+    pa.innerHTML = pv + sv + (card.paid ? '' : '<button class="btn sm" id="payBtn">Kích hoạt</button>');
   }
   const svb = $('#saveBtn'); if (svb) svb.onclick = () => commit();
   $('#profBtn').onclick = () => quickStart('info');
@@ -933,15 +934,17 @@ async function publish(force) {
 }
 function shareModal(first) {
   const url = card.url;
-  openModal(`<h2>${first ? '🎉 Thiệp đã được phát hành!' : 'Chia sẻ thiệp'}</h2>
-    <p class="muted" style="margin:0 0 16px">Gửi link chung cho mọi người, hoặc vào tab <b>Khách mời</b> để tạo link có tên riêng từng khách.</p>
-    <div style="display:flex;gap:8px;margin-bottom:12px"><input class="input" readonly value="${esc(url)}"><button class="btn" id="cpL">Chép link</button></div>
-    <a class="btn block ghost" href="${esc(url)}" target="_blank">Mở thiệp như khách mời</a>
-    <button class="btn block soft" id="toStory" style="margin-top:8px">🎬 Tạo video đăng TikTok / Story</button>
-    ${card.paid ? '' : `<p class="muted" style="font-size:13px;margin:16px 0 0">Bản dùng thử: mời tối đa ${META.trialGuestLimit} khách, hiệu lực ${META.trialDays} ngày. <a href="#" id="toPay">Kích hoạt để mời tới 3.000 khách</a></p>`}`,
+  // gọn: một nút chính (Chép link) + ✕; việc phụ là chữ nhỏ một hàng
+  openModal(`<div style="text-align:center"><h2 style="margin:0 0 6px">${first ? '🎉 Đã phát hành' : 'Link thiệp'}</h2>
+    <p class="muted" style="margin:0 0 14px;font-size:14px">Gửi link này cho khách qua Zalo, Messenger</p>
+    <div style="display:flex;align-items:center;gap:8px;padding:10px 12px;border-radius:12px;background:var(--bg);font-size:13.5px;margin-bottom:14px"><span style="flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;text-align:left">${esc(url.replace(/^https?:\/\//, ''))}</span></div>
+    <button class="btn" id="cpL">Chép link</button>
+    <p style="margin:14px 0 0;font-size:13px"><a href="${esc(url)}" target="_blank" rel="noopener">Mở thiệp ↗</a> · <a href="#" id="toStory">Video TikTok</a> · <a href="#" id="toGuests">Link tên riêng từng khách</a></p>
+    ${card.paid ? '' : `<p class="muted" style="font-size:12.5px;margin:10px 0 0">Dùng thử: tối đa ${META.trialGuestLimit} khách, ${META.trialDays} ngày · <a href="#" id="toPay">Kích hoạt</a></p>`}</div>`,
   (box, close) => {
     $('#cpL', box).onclick = () => copyText(url, 'Đã chép link thiệp');
-    $('#toStory', box).onclick = () => { close(); storyModal(CARD_ID); };
+    $('#toStory', box).onclick = (e) => { e.preventDefault(); close(); storyModal(CARD_ID); };
+    $('#toGuests', box).onclick = (e) => { e.preventDefault(); close(); const t = document.querySelector('.tools [data-tab="guests"]'); if (t) t.click(); };
     const tp = $('#toPay', box); if (tp) tp.onclick = (e) => { e.preventDefault(); close(); openPayModal(CARD_ID, reloadCard); };
   });
 }
