@@ -278,12 +278,13 @@
       var tp = (/\/demo\/([\w-]+)/.exec(o.src) || [])[1] || '';
       var led = /do|son|ruou|tham|hong/.test(pal) ? 'palette=sondo&effect=satindo' : 'palette=bac&effect=dembac';
       var p1 = m.price || 99000, p2 = m.ledPrice || 69000, p3 = m.videoPrice || 49000, sum = p1 + p2 + p3, pct = m.firstOrderPercent || 0;
+      var off = pct ? Math.round(sum * pct / 100 / 1000) * 1000 : 0; // làm tròn nghìn như máy chủ (ưu đãi đơn đầu)
       var nm = t.groom || t.bride ? esc((t.groom || '…') + ' & ' + (t.bride || '…')) : 'hai bạn';
       var pn = panel('<h4>Cả bộ cho ' + nm + '</h4><p>Thiệp, màn LED tiệc, slide ảnh cưới — cùng tên, cùng ngày. Sửa một chỗ, ba chỗ đổi theo.</p>'
         + '<div class="it"><div class="im tall" style="background-image:url(\'/demo/cover-' + esc(tp) + '-' + esc(pal) + '.jpg\')"></div><div><b>💌 Thiệp cưới online</b><small>' + esc(o.name) + ' · gửi Zalo, khách xác nhận dự tiệc</small><em>' + money(p1) + '</em></div></div>'
         + '<div class="it"><div class="im"><iframe tabindex="-1" title="Màn LED" src="' + esc(addQS('/led/demo?preview=1&' + led, qs)) + '"></iframe></div><div><b>🖥️ Màn hình LED</b><small>Tên hai bạn trên màn sân khấu</small><em>' + money(p2) + '</em></div></div>'
         + '<div class="it"><div class="im"><iframe tabindex="-1" title="Slide ảnh cưới" src="' + esc(addQS('/video/demo?preview=1&template=album', qs)) + '"></iframe></div><div><b>🎞️ Slide ảnh cưới</b><small>Ảnh cưới thành video chiếu TV</small><em>' + money(p3) + '</em></div></div>'
-        + '<div class="sum"><div><b>' + money(sum) + '</b>' + (pct ? '<small>Khách mới giảm thêm ' + pct + '% khi thanh toán</small>' : '') + '</div><a href="' + esc(addQS(addQS(o.use, 'bo=1'), qs)) + '">Lấy cả bộ</a></div>');
+        + '<div class="sum"><div>' + (off ? '<s style="color:#7a6e70;font-size:13px">' + money(sum) + '</s>' : '') + '<b>' + money(sum - off) + '</b>' + (off ? '<small>Ưu đãi khách mới −' + pct + '%</small>' : '') + '</div><a href="' + esc(addQS(addQS(o.use, 'bo=1'), qs)) + '">Lấy cả bộ</a></div>');
       // khung 1280×720 thu nhỏ vừa ô
       Array.prototype.forEach.call(pn.querySelectorAll('.im iframe'), function (f) { f.style.transform = 'scale(' + (f.parentNode.offsetWidth / 1280) + ')'; });
     };
