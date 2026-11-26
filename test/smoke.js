@@ -459,6 +459,20 @@ async function call(who, method, url, body, extra = {}) {
   assert.deepEqual([r.json.card.id, r.json.card.template], [n2.id, tpl0], 'đổi mẫu đúng thiệp đã chọn');
   assert.equal((await call('u', 'GET', `/api/cards/${id}`)).json.card.paid, true, 'thiệp đầu vẫn đã kích hoạt');
 
+  // chọn cùng người ấy: tạo bảng chọn (không cần đăng nhập), người ấy tim qua link, sai mã thì bị chặn
+  r = await call('x', 'POST', '/api/chon', { likes: ['dodam', 'songhy', 'khongco'], groom: 'An', bride: 'Bình' });
+  const pk = r.json;
+  assert.deepEqual([r.status, pk.mine, pk.other, pk.side], [200, ['dodam', 'songhy'], [], 'a'], 'tạo bảng chọn, bỏ mẫu không có');
+  const kb = new URL(pk.share).searchParams.get('k');
+  assert.equal((await call('x', 'GET', `/api/chon/${pk.id}?k=sai`)).status, 403, 'sai mã');
+  r = await call('x', 'POST', `/api/chon/${pk.id}/tim`, { k: kb, tpl: 'songhy', on: true });
+  assert.deepEqual([r.json.side, r.json.mine, r.json.other], ['b', ['songhy'], ['dodam', 'songhy']], 'người ấy tim');
+  r = await call('x', 'GET', `/api/chon/${pk.id}?k=${pk.k}`);
+  assert.deepEqual([r.json.groom, r.json.other], ['An', ['songhy']], 'người tạo thấy người ấy tim');
+  assert.equal((await call('x', 'GET', '/chon/' + pk.id)).status, 200, 'trang chọn cùng nhau');
+  r = await call('x', 'GET', '/demo/dodam?groom=Hùng&bride=Dương&date=2026-12-28');
+  assert.ok(r.text.includes('Hùng') && r.text.includes('Dương'), 'xem thử mẫu hiện tên khách gõ');
+
   console.log('✓ Tất cả kiểm thử đều qua');
   server.close();
   process.exit(0);

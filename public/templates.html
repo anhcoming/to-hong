@@ -101,6 +101,14 @@ main.wrap{padding-top:104px}
   .tc .use{height:26px;padding:0 9px;font-size:11px}
   .tc .tag{top:8px;height:20px;padding:0 14px 0 11px;font-size:9.5px}
 }
+/* tim mẫu (chọn cùng người ấy): nút ♡ góc dưới phải thẻ; tim rồi hiện thanh nổi "Rủ người ấy chọn cùng" */
+.tc .ht{position:absolute;right:8px;bottom:8px;z-index:3;width:34px;height:34px;border:0;border-radius:50%;background:rgba(255,255,255,.92);color:#bfaeb1;font-size:17px;line-height:1;display:grid;place-items:center;cursor:pointer;pointer-events:auto;box-shadow:0 3px 10px rgba(0,0,0,.22)}
+.tc .ht.on{color:#d6455d}
+.tc .txt{right:48px}
+.timbar{position:fixed;left:50%;bottom:24px;z-index:47;transform:translateX(-50%);display:flex;align-items:center;gap:10px;padding:8px 8px 8px 16px;border-radius:999px;background:#1f1a1b;color:#fff;font-size:14px;box-shadow:0 12px 30px rgba(0,0,0,.25);white-space:nowrap}
+.timbar[hidden]{display:none}.timbar b{color:#ff9fb0}
+.timbar button{height:38px;padding:0 16px;border:0;border-radius:999px;background:linear-gradient(135deg,#d6455d,#ef7d8d);color:#fff;font:700 13.5px var(--sans);cursor:pointer}
+@media (max-width:760px){.timbar{bottom:calc(86px + env(safe-area-inset-bottom));font-size:13px;padding:6px 6px 6px 14px}.timbar button{height:34px;padding:0 12px;font-size:12.5px}.tc .ht{width:30px;height:30px;font-size:15px;right:6px;bottom:6px}.tc .txt{right:40px}}
 /* nền tối */
 [data-theme="dark"] .flist button[aria-pressed="true"],[data-theme="dark"] .chon{background:#3a1f26}
 </style>
@@ -129,6 +137,26 @@ main.wrap{padding-top:104px}
   const qs = new URLSearchParams(location.search);
   const F = { q: qs.get('q') || '', style: qs.get('phong-cach') || '' };
   if (qs.has('chon')) $('#chon').classList.add('show');
+  // tim mẫu + "Chọn cùng người ấy"
+  const ls = (k) => { try { return JSON.parse(localStorage.getItem(k) || 'null'); } catch (e) { return null; } };
+  const TIM = new Set(ls('cnTim') || []);
+  const chon = () => { const c = ls('cnChon'); return c && c.id && c.k ? c : null; };
+  const tbar = document.createElement('div'); tbar.className = 'timbar'; tbar.hidden = true;
+  tbar.innerHTML = '<span>♥ <b></b> mẫu đã tim</span><button type="button">Rủ người ấy chọn cùng</button>';
+  document.body.appendChild(tbar);
+  const timBar = () => { tbar.hidden = !TIM.size; tbar.querySelector('b').textContent = TIM.size; };
+  tbar.querySelector('button').onclick = async (e) => {
+    const ch = chon();
+    if (ch) { location.href = `/chon/${ch.id}?k=${encodeURIComponent(ch.k)}`; return; }
+    e.target.disabled = true;
+    try {
+      const t = ls('cnTen') || {};
+      const r = await fetch('/api/chon', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ likes: [...TIM], groom: t.groom || '', bride: t.bride || '', date: t.date || '' }) }).then((x) => x.json().then((j) => { if (!x.ok) throw new Error(j.error || 'Có lỗi'); return j; }));
+      try { localStorage.setItem('cnChon', JSON.stringify({ id: r.id, k: r.k })); } catch (er) { /* bỏ qua */ }
+      location.href = `/chon/${r.id}?k=${encodeURIComponent(r.k)}`;
+    } catch (er) { e.target.disabled = false; alert(er.message); }
+  };
+  timBar();
   let T = [], G = [];
 
   function sync() {
@@ -176,7 +204,8 @@ main.wrap{padding-top:104px}
       return `<div class="tc" data-tpl="${t.id}" data-pal="${p.id}">
         <div class="pic"><a class="demo" href="/demo/${t.id}?palette=${p.id}" aria-label="Xem thử mẫu ${esc(t.name)}"><img src="${cover(t.id, p.id)}" alt="Mẫu thiệp ${esc(t.name)}" loading="lazy"></a>
         <div class="sw">${t.palettes.length > 1 ? t.palettes.map((q2) => `<button type="button" data-pal="${q2.id}" title="${esc(q2.name)}" aria-label="Bảng màu ${esc(q2.name)}" class="${q2.id === p.id ? 'on' : ''}" style="background:linear-gradient(135deg,${q2.swatch[0]} 50%,${q2.swatch[1]} 50%)"></button>`).join('') : ''}</div>
-        <div class="txt"><b>${esc(t.name)}</b></div></div>
+        <div class="txt"><b>${esc(t.name)}</b></div>
+        <button type="button" class="ht${TIM.has(t.id) ? ' on' : ''}" aria-label="Tim mẫu ${esc(t.name)}" aria-pressed="${TIM.has(t.id)}">${TIM.has(t.id) ? '♥' : '♡'}</button></div>
       </div>`;
     }).join('') : '<div class="none"><p style="font-size:40px;margin:0">🔍</p><p>Chưa có mẫu khớp bộ lọc.</p><button class="btn btn-ghost" id="clear2">Xoá bộ lọc</button></div>';
     const c2 = $('#clear2'); if (c2) c2.onclick = clear;
@@ -190,10 +219,22 @@ main.wrap{padding-top:104px}
   });
   // bấm thẻ (trừ chấm màu) → xem trước (site.js tplView): điện thoại toàn màn, máy tính popup; trong đó tên mẫu + nút Dùng mẫu
   $('#grid').addEventListener('click', (e) => {
-    if (e.target.closest('.sw') || !window.tplView || e.metaKey || e.ctrlKey) return;
+    if (e.target.closest('.sw') || e.target.closest('.ht') || !window.tplView || e.metaKey || e.ctrlKey) return;
     const c = e.target.closest('.tc[data-tpl]'); if (!c) return;
     e.preventDefault();
     tplView({ name: c.querySelector('.txt b').textContent, src: `/demo/${c.dataset.tpl}?palette=${c.dataset.pal}`, use: `/thiep-cua-toi?tao=${c.dataset.tpl}&mau=${c.dataset.pal}` });
+  });
+  // ---- tim mẫu → "Chọn cùng người ấy" (/chon/:id): tim lưu trong máy (cnTim); đã có bảng chọn (cnChon) thì gửi lên luôn ----
+  $('#grid').addEventListener('click', (e) => {
+    const h = e.target.closest('.ht'); if (!h) return;
+    e.preventDefault(); e.stopPropagation();
+    const id = h.closest('.tc').dataset.tpl, on = !TIM.has(id);
+    if (on) TIM.add(id); else TIM.delete(id);
+    try { localStorage.setItem('cnTim', JSON.stringify([...TIM])); } catch (er) { /* bỏ qua */ }
+    h.classList.toggle('on', on); h.textContent = on ? '♥' : '♡'; h.setAttribute('aria-pressed', on);
+    timBar();
+    const ch = chon();
+    if (ch) fetch(`/api/chon/${ch.id}/tim`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ k: ch.k, tpl: id, on }) }).catch(() => {});
   });
   $('#grid').addEventListener('click', (e) => {
     const b = e.target.closest('.sw button'); if (!b) return;

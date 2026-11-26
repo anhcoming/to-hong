@@ -102,6 +102,7 @@
     { "source": "/hoan-tien", "destination": "/hoan-tien.html" },
     { "source": "/sua/:id", "destination": "/editor.html" },
     { "source": "/sua-led/:id", "destination": "/led-editor.html" },
+    { "source": "/chon/:id", "destination": "/chon.html" },
     { "source": "/sua-video/:id", "destination": "/video-editor.html" },
     { "source": "/tham-gia/:id", "destination": "/join.html" },
     { "source": "/:path*", "destination": "/api/index.js?__p=/:path*" }

@@ -1,0 +1,122 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<script src="/js/theme.js"></script>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Chọn thiệp cùng nhau | Cưới Nha</title>
+<meta property="og:title" content="Chọn thiệp cưới cùng nhau nhé 💌">
+<meta property="og:description" content="Tim mẫu thiệp bạn thích — mẫu cả hai cùng tim sẽ sáng lên.">
+<meta property="og:image" content="https://cuoinha.com/demo/cover-songhy-do.jpg">
+<meta name="theme-color" content="#fffafa">
+<link rel="icon" href="/favicon.ico" sizes="48x48"><link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&amp;family=Dancing+Script:wght@600;700&amp;display=swap">
+<link rel="stylesheet" href="/css/site.css">
+<style>
+/* "Chọn cùng người ấy": hai bên tim mẫu, mẫu cả hai cùng tim sáng lên. Không cần đăng nhập — mỗi bên một mã trong link. */
+.chp{padding:110px 0 80px}
+.chh{text-align:center;margin:0 0 18px}
+.chh h1{margin:0;font:700 38px/1.1 'Dancing Script',cursive;color:var(--red)}
+.chh p{margin:6px 0 0;color:var(--muted);font-size:15px}
+.cha{display:flex;justify-content:center;gap:8px;margin:12px 0 0;flex-wrap:wrap}
+.cha button{height:42px;padding:0 18px;border:0;border-radius:999px;font:700 14px var(--sans);cursor:pointer;background:linear-gradient(135deg,#d6455d,#ef7d8d);color:#fff}
+.cha button.soft{background:#fff0f2;color:var(--red)}
+.leg{display:flex;justify-content:center;gap:14px;flex-wrap:wrap;margin:14px 0 18px;font-size:13px;color:var(--muted)}
+.leg b{color:var(--ink)}
+.cg{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:16px 14px}
+.ct{position:relative;border-radius:14px;overflow:hidden;background:var(--bg2);box-shadow:0 8px 20px rgba(120,40,50,.12);cursor:pointer}
+.ct img{display:block;width:100%;aspect-ratio:3/4.4;object-fit:cover;object-position:top}
+.ct::after{content:"";position:absolute;left:0;right:0;bottom:0;height:42%;background:linear-gradient(0deg,rgba(0,0,0,.75),transparent);pointer-events:none}
+.ct .nm{position:absolute;left:10px;right:52px;bottom:9px;z-index:1;color:#fff;font-size:14px;font-weight:700;line-height:1.25}
+.ct .ht{position:absolute;right:8px;bottom:8px;z-index:2;width:38px;height:38px;border:0;border-radius:50%;background:rgba(255,255,255,.92);color:#c9b8bb;font-size:19px;line-height:1;cursor:pointer;display:grid;place-items:center;box-shadow:0 4px 12px rgba(0,0,0,.2)}
+.ct .ht.on{color:#d6455d}
+.ct .ot{position:absolute;left:8px;top:8px;z-index:2;padding:3px 9px;border-radius:999px;background:rgba(255,255,255,.94);color:var(--red);font-size:11.5px;font-weight:700}
+.ct.both{outline:3px solid #d6455d;outline-offset:3px}
+.ct.both .ot{background:#d6455d;color:#fff}
+.sec{margin:26px 0 12px;font-size:15px;font-weight:800}
+.msg{max-width:520px;margin:60px auto;text-align:center;color:var(--muted)}
+@media (max-width:760px){.chp{padding:88px 0 40px}.chh h1{font-size:30px}.cg{grid-template-columns:repeat(2,minmax(0,1fr));gap:12px 10px}.ct .nm{font-size:13px}}
+</style>
+</head>
+<body data-page="tpl">
+<header id="nav"></header>
+<main class="chp"><div class="wrap" id="app"><p class="msg">Đang mở…</p></div></main>
+<script src="/js/site.js"></script>
+<script>
+(function () {
+  'use strict';
+  var $ = function (s) { return document.querySelector(s); };
+  var esc = function (t) { return String(t == null ? '' : t).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); };
+  var id = location.pathname.split('/').pop();
+  // mã của mình: người tạo giữ trong máy (cnChon), người được mời lấy từ link (?k=) rồi giữ lại
+  var mine = null; try { mine = JSON.parse(localStorage.getItem('cnChon') || 'null'); } catch (e) { /* bỏ qua */ }
+  var k = new URLSearchParams(location.search).get('k');
+  if (mine && mine.id === id && mine.k) k = mine.k;
+  else if (k) { try { localStorage.setItem('cnChon', JSON.stringify({ id: id, k: k })); } catch (e) { /* bỏ qua */ } }
+  var P = null, TPL = [];
+  var api = function (url, body) {
+    return fetch(url, body ? { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) } : {})
+      .then(function (r) { return r.json().then(function (j) { if (!r.ok) throw new Error(j.error || 'Có lỗi, thử lại nhé'); return j; }); });
+  };
+  function names() { return P.groom || P.bride ? (P.groom || '…') + ' ♥ ' + (P.bride || '…') : 'Hai bạn'; }
+  function draw() {
+    var mineSet = new Set(P.mine), other = new Set(P.other);
+    var tile = function (t) {
+      var p = t.palettes[0], on = mineSet.has(t.id), ot = other.has(t.id), both = on && ot;
+      return '<div class="ct' + (both ? ' both' : '') + '" data-tpl="' + t.id + '" data-pal="' + p.id + '">'
+        + (both ? '<span class="ot">♥♥ cả hai</span>' : ot ? '<span class="ot">♥ ' + (P.side === 'a' ? 'người ấy' : 'người kia') + ' thích</span>' : '')
+        + '<img src="/demo/cover-' + t.id + '-' + p.id + '.jpg" alt="" loading="lazy"><span class="nm">' + esc(t.name) + '</span>'
+        + '<button type="button" class="ht' + (on ? ' on' : '') + '" aria-label="Tim mẫu ' + esc(t.name) + '" aria-pressed="' + on + '">' + (on ? '♥' : '♡') + '</button></div>';
+    };
+    var both = TPL.filter(function (t) { return mineSet.has(t.id) && other.has(t.id); });
+    var liked = TPL.filter(function (t) { return (mineSet.has(t.id) || other.has(t.id)) && both.indexOf(t) < 0; });
+    var rest = TPL.filter(function (t) { return !mineSet.has(t.id) && !other.has(t.id); });
+    $('#app').innerHTML = '<div class="chh"><h1>' + esc(names()) + '</h1><p>' + (P.side === 'a' ? 'Tim mẫu bạn thích rồi gửi link cho người ấy tim cùng' : 'Người ấy rủ bạn chọn thiệp cưới — tim mẫu bạn thích nhé') + '</p>'
+      + '<div class="cha">' + (P.side === 'a' ? '<button type="button" data-share>💌 Gửi cho người ấy</button>' : '') + '<button type="button" class="soft" data-ten>✏️ Tên hai bạn</button></div></div>'
+      + '<div class="leg"><span>Bạn đã tim <b>' + P.mine.length + '</b></span><span>' + (P.side === 'a' ? 'Người ấy' : 'Người kia') + ' đã tim <b>' + P.other.length + '</b></span><span>Cả hai cùng thích <b>' + both.length + '</b></span></div>'
+      + (both.length ? '<div class="sec">💞 Cả hai cùng thích</div><div class="cg">' + both.map(tile).join('') + '</div>' : '')
+      + (liked.length ? '<div class="sec">♥ Đã tim</div><div class="cg">' + liked.map(tile).join('') + '</div>' : '')
+      + '<div class="sec">Tất cả mẫu</div><div class="cg">' + rest.map(tile).join('') + '</div>';
+  }
+  function share() {
+    var url = P.share, text = 'Chọn thiệp cưới cùng em/anh nhé 💌 Tim mẫu mình thích, mẫu cả hai cùng tim sẽ sáng lên:';
+    if (navigator.share && matchMedia('(pointer:coarse)').matches) { navigator.share({ title: 'Chọn thiệp cưới cùng nhau', text: text, url: url }).catch(function () {}); return; }
+    (navigator.clipboard ? navigator.clipboard.writeText(url) : Promise.reject()).then(function () { alertMsg('Đã chép link — dán vào Zalo gửi cho người ấy nhé'); }, function () { prompt('Chép link này gửi cho người ấy:', url); });
+  }
+  function alertMsg(m) {
+    var t = document.createElement('div'); t.className = 'toast show'; t.textContent = m; document.body.appendChild(t);
+    setTimeout(function () { t.remove(); }, 2600);
+  }
+  document.addEventListener('click', function (e) {
+    var h = e.target.closest('.ht');
+    if (h) {
+      e.stopPropagation();
+      var tpl = h.closest('.ct').dataset.tpl, on = P.mine.indexOf(tpl) < 0;
+      P.mine = on ? P.mine.concat(tpl) : P.mine.filter(function (x) { return x !== tpl; }); draw(); // hiện ngay, gửi sau
+      api('/api/chon/' + id + '/tim', { k: k, tpl: tpl, on: on }).then(function (r) { P = r; draw(); }).catch(function (er) { alertMsg(er.message); });
+      return;
+    }
+    if (e.target.closest('[data-share]')) return share();
+    if (e.target.closest('[data-ten]')) { // tên hai bạn: dùng chung ô "✏️ Thử tên" của khung xem mẫu — mở một mẫu để sửa tên
+      var first = document.querySelector('.ct'); if (first) first.click(); return;
+    }
+    var c = e.target.closest('.ct');
+    if (c && window.tplView) {
+      var t = TPL.find(function (x) { return x.id === c.dataset.tpl; });
+      tplView({ name: t.name, src: '/demo/' + t.id + '?palette=' + c.dataset.pal, use: '/thiep-cua-toi?tao=' + t.id + '&mau=' + c.dataset.pal });
+    }
+  });
+  if (!k) { $('#app').innerHTML = '<p class="msg">Link chưa đúng — hãy mở lại link người ấy gửi nhé.</p>'; return; }
+  Promise.all([api('/api/chon/' + id + '?k=' + encodeURIComponent(k)), api('/api/meta')]).then(function (x) {
+    P = x[0]; TPL = x[1].templates || [];
+    // tên trong bảng chọn → dùng làm tên xem thử (nếu máy này chưa gõ tên)
+    try { var t = JSON.parse(localStorage.getItem('cnTen') || 'null'); if (!t && (P.groom || P.bride)) localStorage.setItem('cnTen', JSON.stringify({ groom: P.groom, bride: P.bride, date: P.date })); } catch (e) { /* bỏ qua */ }
+    draw();
+    // người kia vừa tim: cập nhật mỗi 15 giây khi đang mở trang
+    setInterval(function () { if (!document.hidden) api('/api/chon/' + id + '?k=' + encodeURIComponent(k)).then(function (r) { if (JSON.stringify(r.other) !== JSON.stringify(P.other)) { P = r; draw(); } }).catch(function () {}); }, 15000);
+  }).catch(function (er) { $('#app').innerHTML = '<p class="msg">' + esc(er.message) + '</p>'; });
+})();
+</script>
+</body>
+</html>

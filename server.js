@@ -1228,6 +1228,48 @@ route('GET', '/demo/:tpl', async (req, res, ctx) => {
   html(res, 200, renderCard(card, { guest, wishes, demo: true, preview, lite, trial: false, baseUrl: BASE_URL }));
 });
 
+// ---------------- "Chọn cùng người ấy" (trang /chon/:id) ----------------
+// Một người thả tim vài mẫu ở /mau-thiep → tạo bảng chọn, gửi link cho người ấy; hai bên tim mẫu mình thích, mẫu cả hai cùng
+// tim sáng lên. Không cần đăng nhập: mỗi bên giữ một mã riêng (ka = người tạo, kb = người được mời, nằm trong link chia sẻ).
+const picksDb = () => (Array.isArray(db.picks) ? db.picks : (db.picks = []));
+const tplList = (x) => (Array.isArray(x) ? [...new Set(x.map(String).filter((t) => templates[t]))].slice(0, 60) : []);
+function pickSide(ctx, k) {
+  const p = picksDb().find((x) => x.id === ctx.params.id);
+  if (!p) throw httpError(404, 'Không tìm thấy bảng chọn — link có thể đã hết hạn');
+  const side = k && k === p.ka ? 'a' : k && k === p.kb ? 'b' : null;
+  if (!side) throw httpError(403, 'Link không đúng');
+  return [p, side];
+}
+const pickView = (p, side) => ({ id: p.id, groom: p.groom, bride: p.bride, date: p.date, mine: p[side], other: p[side === 'a' ? 'b' : 'a'], side, share: `${BASE_URL}/chon/${p.id}?k=${p.kb}` });
+route('POST', '/api/chon', async (req, res, ctx) => {
+  rateLimit('chon:' + ctx.ip, 20, 36e5, true);
+  const b = await readJson(req), now = Date.now(), list = picksDb();
+  const p = { id: rid(8), ka: rid(12), kb: rid(12), groom: str(b.groom, 40), bride: str(b.bride, 40), date: /^\d{4}-\d{2}-\d{2}$/.test(b.date || '') ? b.date : '', a: tplList(b.likes), b: [], createdAt: now, updatedAt: now };
+  list.push(p);
+  // giữ gọn kho: bỏ bảng chọn không ai đụng tới quá 120 ngày
+  const old = now - 120 * DAY;
+  if (list.some((x) => x.updatedAt < old)) db.picks = list.filter((x) => x.updatedAt >= old);
+  save();
+  json(res, 200, { ...pickView(p, 'a'), k: p.ka });
+});
+route('GET', '/api/chon/:id', async (req, res, ctx) => {
+  const [p, side] = pickSide(ctx, ctx.query.get('k'));
+  json(res, 200, pickView(p, side));
+});
+route('POST', '/api/chon/:id/tim', async (req, res, ctx) => {
+  rateLimit('chontim:' + ctx.ip, 600, 36e5, true);
+  const b = await readJson(req);
+  const [p, side] = pickSide(ctx, b.k);
+  const t = String(b.tpl || '');
+  if (!templates[t]) throw httpError(400, 'Không có mẫu này');
+  p[side] = b.on ? tplList([...p[side], t]) : p[side].filter((x) => x !== t);
+  if (b.groom !== undefined && side === 'a') p.groom = str(b.groom, 40);
+  if (b.bride !== undefined && side === 'a') p.bride = str(b.bride, 40);
+  p.updatedAt = Date.now();
+  save();
+  json(res, 200, pickView(p, side));
+});
+
 // ---------------- gợi ý thiệp từ ảnh (trang /goi-y) ----------------
 // Khách thả ảnh cưới vào trang /goi-y: trình duyệt tự đọc màu ảnh, chọn vài mẫu hợp tông rồi mở từng mẫu ở đây trong khung
 // xem thử. Ảnh KHÔNG gửi lên máy chủ: thiệp vẽ ra với các ô ảnh giữ chỗ mang "#k=<vị trí>" (như chế độ sửa), trang /goi-y
@@ -1521,6 +1563,7 @@ function serveStatic(req, res, pathname) {
   if (PAGES[pathname]) return serveFile(res, path.join(PUBLIC_DIR, PAGES[pathname]), 'no-cache');
   if (/^\/sua\/[\w-]+$/.test(pathname)) return serveFile(res, path.join(PUBLIC_DIR, 'editor.html'), 'no-cache');
   if (/^\/sua-led\/[\w-]+$/.test(pathname)) return serveFile(res, path.join(PUBLIC_DIR, 'led-editor.html'), 'no-cache');
+  if (/^\/chon\/[\w-]+$/.test(pathname)) return serveFile(res, path.join(PUBLIC_DIR, 'chon.html'), 'no-cache'); // chọn cùng người ấy
   if (/^\/tham-gia\/[\w-]+$/.test(pathname)) return serveFile(res, path.join(PUBLIC_DIR, 'join.html'), 'no-cache');
   if (/^\/sua-video\/[\w-]+$/.test(pathname)) return serveFile(res, path.join(PUBLIC_DIR, 'video-editor.html'), 'no-cache');
   if (pathname === '/js/cn-guard.js') { // chặn F12 cho khách (lib/guard.js); máy của chủ web nhận bản rỗng
