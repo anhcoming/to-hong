@@ -454,7 +454,7 @@ async function call(who, method, url, body, extra = {}) {
   assert.deepEqual([r.status, n2.paid, n2.template, n2.title], [200, false, tpl1, 'Thiệp 2'], 'tạo thiệp mới: thiệp riêng, chưa kích hoạt');
   assert.ok(n2.trialEndsAt <= (await call('u', 'GET', `/api/cards/${id}`)).json.card.createdAt + 8 * 864e5, 'không được thêm hạn dùng thử');
   r = await call('u', 'POST', '/api/cards', { template: tpl0 });
-  assert.deepEqual([r.status, r.json.choose], [409, true], 'có hai thiệp → hỏi dùng mẫu cho thiệp nào');
+  assert.deepEqual([r.status, r.json.card.id, r.json.card.template], [200, id, tpl0], 'có hai thiệp → Dùng mẫu áp vào thiệp chính (đã kích hoạt), không hỏi');
   r = await call('u', 'POST', '/api/cards', { template: tpl0, target: n2.id });
   assert.deepEqual([r.json.card.id, r.json.card.template], [n2.id, tpl0], 'đổi mẫu đúng thiệp đã chọn');
   assert.equal((await call('u', 'GET', `/api/cards/${id}`)).json.card.paid, true, 'thiệp đầu vẫn đã kích hoạt');

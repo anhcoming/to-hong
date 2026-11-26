@@ -548,7 +548,7 @@ function fillNames(card, b) {
 function newCard(user, b = {}) {
   const tpl = templates[b.template] ? b.template : DEFAULT_TEMPLATE;
   const mine = mineOf(user.id), has = mine[0];
-  // "Dùng mẫu": một thiệp → đổi mẫu thiệp đó (kể cả đã kích hoạt); nhiều thiệp → 409 choose (hỏi thiệp nào / tạo thiệp mới).
+  // "Dùng mẫu": đổi mẫu thiệp chính (kể cả đã kích hoạt) rồi vào trình sửa luôn.
   // b.target = id thiệp của mình → đổi mẫu thiệp đó; b.new → tạo thêm một thiệp riêng (kích hoạt riêng, giá như thiệp đầu).
   if (has && !b.new) {
     if (b.target) {
@@ -558,10 +558,8 @@ function newCard(user, b = {}) {
       fillNames(t, b); save();
       return t;
     }
-    if (b.template && templates[b.template]) {
-      if (mine.length > 1) throw Object.assign(httpError(409, 'Dùng mẫu này cho thiệp nào?'), { choose: true });
-      setTemplate(has, tpl, b.palette);
-    }
+    // bấm "Dùng mẫu" là vào sửa luôn: áp mẫu cho thiệp chính (đã kích hoạt trước, rồi sửa gần nhất) — không hỏi thiệp nào
+    if (b.template && templates[b.template]) setTemplate(has, tpl, b.palette);
     fillNames(has, b); save();
     return has;
   }
