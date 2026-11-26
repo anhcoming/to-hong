@@ -355,9 +355,10 @@ const extraCard = (srcId, slug) => {
   assert.equal(r.location, `/sua/${ka.id}`);
   r = (await call('tn', 'GET', '/api/cards')).json.cards;
   assert.deepEqual([r.length, r[0].template, r[0].status], [1, 'longphung', 'published'], 'thiệp đã phát hành giữ nguyên');
-  // "Dùng mẫu" khi đã có thiệp → đổi mẫu, giữ chữ
-  r = (await call('tn', 'POST', '/api/cards', { template: 'songhy' })).json.card;
-  assert.deepEqual([r.id, r.template, r.data.groom.name], [ka.id, 'songhy', 'Đức Anh'], 'đổi mẫu cho thiệp sẵn có');
+  // "Dùng mẫu" khi đã có thiệp → hỏi nhà trai hay nhà gái; chọn nhà trai → đổi mẫu thiệp sẵn có, giữ chữ
+  assert.equal((await call('tn', 'POST', '/api/cards', { template: 'songhy' })).status, 409, 'đã có thiệp → hỏi nhà trai / nhà gái');
+  r = (await call('tn', 'POST', '/api/cards', { template: 'songhy', side: 'trai' })).json.card;
+  assert.deepEqual([r.id, r.template, r.data.groom.name], [ka.id, 'songhy', 'Đức Anh'], 'đổi mẫu cho thiệp nhà trai sẵn có');
 
   console.log('✓ Đăng nhập Google & trang quản trị: tất cả kiểm thử đều qua');
   server.close();
