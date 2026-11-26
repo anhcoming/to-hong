@@ -1,0 +1,193 @@
+<!doctype html>
+<html lang="vi"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Mock — Cưới Nha kiểu Shopee (từ trang chủ tới đơn mua)</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&family=Dancing+Script:wght@700&display=swap">
+<style>
+:root{--red:#d6455d;--red2:#ef7d8d;--ink:#1f1a1b;--muted:#7a6e70;--line:#efe3e4;--bg:#f5f0f1;--ok:#1f8a5b}
+*{box-sizing:border-box}
+body{margin:0;background:#e9e2e3;font-family:'Be Vietnam Pro',system-ui,sans-serif;color:var(--ink);padding:24px}
+h1.t{font-size:20px;margin:0 0 4px}p.d{margin:0 0 6px;color:var(--muted);font-size:14px;max-width:1000px;line-height:1.55}
+.row{display:flex;gap:24px;flex-wrap:wrap;margin-top:18px}
+.ph{width:330px;flex:none}.ph h2{font-size:14px;margin:0 0 8px}.ph h2 small{display:block;font-weight:400;color:var(--muted);font-size:12.5px;margin-top:2px;line-height:1.45}
+.scr{height:700px;overflow:hidden;border-radius:28px;border:8px solid #1d1718;background:var(--bg);position:relative}
+.in{height:100%;overflow:hidden;padding-bottom:70px}
+/* thanh trên kiểu sàn: ô tìm kiếm + giỏ + tin nhắn */
+.sh{background:linear-gradient(135deg,var(--red),var(--red2));padding:12px 10px 10px;display:flex;align-items:center;gap:8px}
+.sh .q{flex:1;height:34px;border-radius:6px;background:#fff;display:flex;align-items:center;gap:6px;padding:0 10px;font-size:12.5px;color:#b9a9ac}
+.sh .q b{color:var(--red);font-weight:700}
+.ico{position:relative;color:#fff;font-size:19px;width:26px;text-align:center}
+.ico em{position:absolute;top:-6px;right:-6px;min-width:16px;height:16px;border-radius:9px;background:#fff;color:var(--red);font:700 10px/16px 'Be Vietnam Pro';font-style:normal;padding:0 3px}
+.ban{margin:8px;height:120px;border-radius:10px;background:linear-gradient(120deg,#7c1a24,#d6455d 60%,#ef7d8d);color:#fff;padding:14px 16px;position:relative;overflow:hidden}
+.ban b{font:700 26px/1.1 'Dancing Script',cursive;display:block}.ban span{font-size:12px;opacity:.95}
+.ban i{position:absolute;right:-10px;bottom:-14px;width:120px;height:140px;background:url(/demo/cover-songhy-do.jpg) center/cover;transform:rotate(-8deg);border-radius:8px;box-shadow:0 10px 24px rgba(0,0,0,.3)}
+.dots{display:flex;gap:4px;justify-content:center;margin:-2px 0 6px}.dots i{width:5px;height:5px;border-radius:9px;background:#d8c9cc}.dots i.on{width:14px;background:var(--red)}
+.cats{background:#fff;display:grid;grid-template-columns:repeat(5,1fr);gap:4px;padding:10px 6px}
+.cats a{display:flex;flex-direction:column;align-items:center;gap:4px;font-size:10px;text-align:center;line-height:1.2;color:var(--ink)}
+.cats a i{width:40px;height:40px;border-radius:12px;background:#fff0f2;display:grid;place-items:center;font-style:normal;font-size:19px}
+.sec{background:#fff;margin-top:8px;padding:10px}
+.sec .hd{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+.sec .hd b{font-size:13.5px;color:var(--red);text-transform:uppercase;letter-spacing:.02em}.sec .hd span{font-size:11.5px;color:var(--muted)}
+.cd{display:inline-flex;gap:3px;margin-left:6px}.cd i{background:var(--ink);color:#fff;font:700 11px/18px 'Be Vietnam Pro';font-style:normal;padding:0 4px;border-radius:3px}
+.hs{display:flex;gap:8px;overflow:hidden}
+.hs .p{flex:none;width:96px}
+.hs .p i{display:block;height:128px;border-radius:6px;background:#eee center top/cover;position:relative}
+.hs .p i em{position:absolute;top:0;right:0;background:#ffe14d;color:var(--red);font:700 10px/1 'Be Vietnam Pro';font-style:normal;padding:4px 4px 6px;clip-path:polygon(0 0,100% 0,100% 100%,50% 85%,0 100%)}
+.hs .p b{display:block;color:var(--red);font-size:13px;margin-top:4px;text-align:center}
+.bar2{height:14px;border-radius:9px;background:#ffd2d9;position:relative;overflow:hidden;font-size:9px;color:#fff;text-align:center;line-height:14px;font-weight:700}
+.bar2 i{position:absolute;left:0;top:0;bottom:0;background:var(--red);border-radius:9px}.bar2 span{position:relative}
+.tabs{display:flex;background:#fff;margin-top:8px;border-bottom:1px solid var(--line)}
+.tabs span{flex:1;text-align:center;padding:10px 0;font-size:12.5px;font-weight:600;color:var(--muted);border-bottom:2px solid transparent}.tabs span.on{color:var(--red);border-color:var(--red)}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:6px;padding:6px}
+.gp{background:#fff;border-radius:4px;overflow:hidden}
+.gp i{display:block;aspect-ratio:3/3.6;background:#eee center top/cover;position:relative}
+.gp i em{position:absolute;left:0;top:6px;background:var(--red);color:#fff;font:700 9.5px/1 'Be Vietnam Pro';font-style:normal;padding:3px 6px;border-radius:0 3px 3px 0}
+.gp div{padding:6px 7px 8px}.gp b{display:block;font-size:12px;font-weight:500;line-height:1.3;height:31px;overflow:hidden}
+.gp .pr{display:flex;justify-content:space-between;align-items:baseline;margin-top:4px}.gp .pr span{color:var(--red);font-weight:700;font-size:13.5px}.gp .pr small{font-size:10px;color:var(--muted)}
+.tag{display:inline-block;font-size:9.5px;font-weight:700;color:var(--red);border:1px solid var(--red);border-radius:3px;padding:0 3px;margin-right:3px;line-height:14px}
+.tag.g{color:var(--ok);border-color:var(--ok)}
+/* thanh dưới */
+.bn{position:absolute;left:0;right:0;bottom:0;height:58px;background:#fff;border-top:1px solid var(--line);display:flex;justify-content:space-around;align-items:center;font-size:10px;color:var(--muted);font-weight:600}
+.bn b{display:flex;flex-direction:column;align-items:center;gap:2px;font-weight:600;position:relative}.bn b i{font-style:normal;font-size:18px;filter:grayscale(1)}.bn b.on{color:var(--red)}.bn b.on i{filter:none}
+.bn b em{position:absolute;top:-4px;right:-2px;background:var(--red);color:#fff;font:700 9px/14px 'Be Vietnam Pro';font-style:normal;padding:0 4px;border-radius:8px}
+/* chi tiết sản phẩm */
+.pimg{height:300px;background:url(/demo/cover-songhy-do.jpg) center top/cover;position:relative}
+.pimg .bk{position:absolute;top:10px;left:10px;width:32px;height:32px;border-radius:50%;background:rgba(0,0,0,.35);color:#fff;display:grid;place-items:center}
+.pimg .nn{position:absolute;right:10px;bottom:10px;background:rgba(0,0,0,.45);color:#fff;font-size:11px;padding:2px 8px;border-radius:9px}
+.pinfo{background:#fff;padding:10px 12px}
+.pinfo .pr{display:flex;align-items:baseline;gap:8px}.pinfo .pr b{color:var(--red);font-size:22px}.pinfo .pr s{color:var(--muted);font-size:13px}.pinfo .pr em{background:#fff0f2;color:var(--red);font:700 11px/1 'Be Vietnam Pro';font-style:normal;padding:3px 5px;border-radius:3px}
+.pinfo h3{margin:6px 0 4px;font-size:14.5px;font-weight:600;line-height:1.35}
+.pinfo .st{font-size:11.5px;color:var(--muted);display:flex;gap:10px}.pinfo .st b{color:#f5a623}
+.opt{background:#fff;margin-top:8px;padding:10px 12px;font-size:12.5px}
+.opt .l{color:var(--muted);margin-bottom:6px}
+.sw{display:flex;gap:6px;flex-wrap:wrap}.sw span{border:1px solid var(--line);border-radius:4px;padding:5px 8px;display:flex;align-items:center;gap:5px;font-size:12px}.sw span.on{border-color:var(--red);color:var(--red)}
+.sw span i{width:14px;height:14px;border-radius:50%}
+.rev{background:#fff;margin-top:8px;padding:10px 12px;font-size:12px}
+.rev .r{display:flex;gap:8px;margin-top:8px}.rev .r i{width:26px;height:26px;border-radius:50%;background:#f3e6e8;flex:none;font-style:normal;display:grid;place-items:center;font-weight:700;color:var(--red);font-size:11px}
+.rev .r small{color:#f5a623}
+.buy{position:absolute;left:0;right:0;bottom:0;height:56px;display:flex;background:#fff;border-top:1px solid var(--line)}
+.buy span{flex:none;width:64px;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:10px;color:var(--muted);gap:2px;border-right:1px solid var(--line)}.buy span i{font-style:normal;font-size:17px}
+.buy .c{flex:1;background:#fbe5e9;color:var(--red);display:grid;place-items:center;font-weight:700;font-size:13px;text-align:center;line-height:1.2}
+.buy .m{flex:1;background:var(--red);color:#fff;display:grid;place-items:center;font-weight:700;font-size:13px;text-align:center;line-height:1.2}
+/* giỏ hàng / đơn mua */
+.top{background:#fff;padding:13px 12px;display:flex;align-items:center;gap:10px;font-weight:700;font-size:15.5px;border-bottom:1px solid var(--line)}.top span{color:var(--red);font-size:20px}
+.cart{background:#fff;margin-top:8px;padding:10px 12px}
+.cart .sp{display:flex;align-items:center;gap:8px;font-size:13px;font-weight:700;padding-bottom:8px;border-bottom:1px solid #f6eff0}
+.ck{width:18px;height:18px;border-radius:4px;border:2px solid #d9c6c9;flex:none;display:grid;place-items:center;color:#fff;font-size:11px;font-weight:800}.ck.on{background:var(--red);border-color:var(--red)}
+.ci{display:flex;gap:9px;align-items:center;padding:10px 0;border-bottom:1px solid #f6eff0}.ci:last-child{border:0}
+.ci .th{width:62px;height:62px;border-radius:6px;background:#eee center top/cover;flex:none}
+.ci .tx{flex:1;min-width:0}.ci b{display:block;font-size:12.5px;font-weight:600}.ci small{display:inline-block;background:#f6eff0;color:var(--muted);font-size:10.5px;padding:2px 6px;border-radius:3px;margin-top:3px}
+.ci .pr{color:var(--red);font-weight:700;font-size:13px;margin-top:4px}
+.vou{background:#fff;margin-top:8px;padding:11px 12px;display:flex;justify-content:space-between;font-size:12.5px}.vou span:last-child{color:var(--muted)}
+.tip{margin:8px;background:#fff4d9;border-radius:8px;padding:9px 11px;font-size:12px;color:#8a5a00;line-height:1.45}
+.cbar{position:absolute;left:0;right:0;bottom:0;height:58px;background:#fff;border-top:1px solid var(--line);display:flex;align-items:center;gap:8px;padding-left:12px;font-size:12px}
+.cbar .s{flex:1;text-align:right}.cbar .s b{color:var(--red);font-size:16px}.cbar .s small{display:block;color:var(--ok);font-size:10.5px}
+.cbar .go{height:100%;padding:0 18px;background:var(--red);color:#fff;font-weight:700;display:grid;place-items:center;font-size:13.5px}
+.me{background:linear-gradient(135deg,var(--red),var(--red2));color:#fff;padding:18px 14px 14px;display:flex;align-items:center;gap:12px}
+.me i{width:52px;height:52px;border-radius:50%;background:#fff;color:var(--red);display:grid;place-items:center;font-style:normal;font-weight:800;font-size:20px}
+.me b{display:block;font-size:15px}.me small{opacity:.9;font-size:12px}
+.om{background:#fff;padding:10px 12px}
+.om .hd{display:flex;justify-content:space-between;font-size:13px;font-weight:700;margin-bottom:10px}.om .hd span{font-weight:500;color:var(--muted);font-size:12px}
+.om .st4{display:grid;grid-template-columns:repeat(4,1fr);text-align:center;font-size:10.5px;gap:4px}
+.om .st4 a{display:flex;flex-direction:column;align-items:center;gap:4px;position:relative;color:var(--ink)}
+.om .st4 a i{font-style:normal;font-size:22px}
+.om .st4 a em{position:absolute;top:-4px;right:14px;background:var(--red);color:#fff;font:700 9.5px/15px 'Be Vietnam Pro';font-style:normal;padding:0 5px;border-radius:8px}
+.lst{background:#fff;margin-top:8px}
+.lst a{display:flex;align-items:center;gap:10px;padding:12px 14px;border-bottom:1px solid #f6eff0;font-size:13px;color:var(--ink)}.lst a i{font-style:normal;width:22px;text-align:center}.lst a span{margin-left:auto;color:var(--muted);font-size:12px}
+.ord{background:#fff;margin-top:8px;padding:10px 12px}
+.ord .h{display:flex;justify-content:space-between;font-size:12px;margin-bottom:8px}.ord .h b{color:var(--red);font-weight:600}
+.ord .f{display:flex;justify-content:flex-end;gap:8px;margin-top:8px}.ord .f span{border:1px solid var(--line);border-radius:4px;padding:6px 10px;font-size:12px}.ord .f span.p{background:var(--red);color:#fff;border-color:var(--red)}
+/* ghi chú */
+.note{font-size:12.5px;color:var(--muted);margin-top:10px;line-height:1.55}
+.verdict{margin-top:30px;max-width:1000px;background:#fff;border-radius:16px;padding:18px 20px;box-shadow:0 0 0 1px var(--line)}
+.verdict h3{margin:0 0 8px;font-size:16px}.verdict ul{margin:6px 0 0;padding-left:20px;font-size:14px;line-height:1.6}.verdict b{color:var(--red)}
+</style></head><body>
+<h1 class="t">Ý tưởng: Cưới Nha "thuần Shopee" — từ trang chủ tới đơn mua</h1>
+<p class="d">Mỗi mẫu thiệp / màn LED / slide là <b>một sản phẩm</b> (giá, đã bán, đánh giá, màu như phân loại hàng). Luồng quen tay: <b>Trang chủ → Chi tiết sản phẩm → Thêm vào giỏ / Mua ngay → Giỏ hàng → Thanh toán (đã có) → Đơn mua</b>. Màu thương hiệu giữ hồng Cưới Nha, chỉ mượn bố cục. <i>Số đã bán, đánh giá, giá gạch, -10% trong mock chỉ là minh hoạ.</i></p>
+
+<div class="row">
+
+  <!-- A · trang chủ -->
+  <div class="ph"><h2>A · Trang chủ<small>Ô tìm kiếm + giỏ trên đầu, banner, danh mục tròn, "Giá sốc hôm nay", lưới sản phẩm có giá + đã bán.</small></h2>
+    <div class="scr"><div class="in">
+      <div class="sh"><div class="q">🔍 <span>Tìm mẫu: <b>song hỷ</b>, hoa, tối giản…</span></div><span class="ico">🛒<em>2</em></span><span class="ico">💬</span></div>
+      <div class="ban"><b>Thiệp cưới online</b><span>Chọn mẫu, điền tên — gửi khách qua Zalo trong 5 phút</span><i></i></div>
+      <div class="dots"><i class="on"></i><i></i><i></i></div>
+      <div class="cats"><a><i>💌</i>Thiệp cưới</a><a><i>🖥️</i>Màn LED</a><a><i>🎞️</i>Slide cưới</a><a><i>🎁</i>Báo hỷ<br>Free</a><a><i>📒</i>Sổ tay<br>Free</a></div>
+      <div class="sec"><div class="hd"><b>⚡ Giá sốc hôm nay <span class="cd"><i>02</i><i>14</i><i>36</i></span></b><span>Xem tất cả ›</span></div>
+        <div class="hs">
+          <div class="p"><i style="background-image:url(/demo/cover-songhy-do.jpg)"><em>-10%</em></i><b>89.000đ</b><div class="bar2"><i style="width:72%"></i><span>Đã bán 128</span></div></div>
+          <div class="p"><i style="background-image:url(/demo/lposter-dem-phaohoa.jpg)"><em>-10%</em></i><b>62.000đ</b><div class="bar2"><i style="width:45%"></i><span>Đã bán 54</span></div></div>
+          <div class="p"><i style="background-image:url(/demo/cover-hoamoc-xanh-la.jpg)"><em>-10%</em></i><b>89.000đ</b><div class="bar2"><i style="width:88%"></i><span>Sắp hết</span></div></div>
+        </div></div>
+      <div class="tabs"><span class="on">Gợi ý</span><span>Bán chạy</span><span>Mới</span><span>Giá</span></div>
+      <div class="grid">
+        <div class="gp"><i style="background-image:url(/demo/cover-longphung-do-son.jpg)"><em>Yêu thích</em></i><div><b>Thiệp cưới Long Phụng — đỏ son truyền thống</b><span class="tag">Free 7 ngày</span><div class="pr"><span>99.000đ</span><small>Đã bán 312</small></div></div></div>
+        <div class="gp"><i style="background-image:url(/demo/cover-ngoctrai-trang-ngoc.jpg)"></i><div><b>Thiệp Ngọc Trai — tối giản sang trọng</b><span class="tag g">Mới</span><div class="pr"><span>99.000đ</span><small>Đã bán 87</small></div></div></div>
+      </div>
+    </div>
+      <div class="bn"><b class="on"><i>🏠</i>Trang chủ</b><b><i>💌</i>Thiệp</b><b><i>🎬</i>Video</b><b><i>🖥️</i>Màn LED</b><b><i>👤</i>Tôi<em>1</em></b></div>
+    </div>
+    <p class="note">"Đã bán" và đánh giá chỉ bật khi có số thật (đơn đã kích hoạt) — không bịa số.</p>
+  </div>
+
+  <!-- B · chi tiết sản phẩm -->
+  <div class="ph"><h2>B · Chi tiết mẫu = trang sản phẩm<small>Ảnh lớn vuốt, giá + gạch giá, đã bán, đánh giá, chọn màu như "phân loại", mô tả, thanh dưới Thêm vào giỏ / Dùng thử miễn phí.</small></h2>
+    <div class="scr"><div class="in">
+      <div class="pimg"><span class="bk">‹</span><span class="nn">1/6 · ▶ Xem thử</span></div>
+      <div class="pinfo"><div class="pr"><b>99.000đ</b><s>129.000đ</s><em>-23%</em></div>
+        <h3>Thiệp cưới online Song Hỷ — đỏ truyền thống, chữ Hỷ vàng, nhạc nền</h3>
+        <div class="st"><span><b>★ 4.9</b> (46 đánh giá)</span><span>Đã bán 312</span></div></div>
+      <div class="opt"><div class="l">Màu (phân loại)</div><div class="sw"><span class="on"><i style="background:#9e1b23"></i>Đỏ</span><span><i style="background:#2f5a3f"></i>Xanh rêu</span></div></div>
+      <div class="opt"><div class="l">Bao gồm</div>Không giới hạn khách · xác nhận dự tiệc · bản đồ · mừng cưới QR · sổ khách · <b style="color:var(--red)">dùng thử 7 ngày</b></div>
+      <div class="opt" style="display:flex;justify-content:space-between"><span>🎁 Mua kèm Màn LED + Slide</span><span style="color:var(--red);font-weight:700">Trọn bộ 169k ›</span></div>
+      <div class="rev"><b>Đánh giá</b><div class="r"><i>H</i><div><small>★★★★★</small><br>Khách khen thiệp đẹp, gửi Zalo tiện lắm!</div></div></div>
+    </div>
+      <div class="buy"><span><i>💬</i>Hỏi</span><span><i>🛒</i>Giỏ</span><div class="c">Thêm vào<br>giỏ hàng</div><div class="m">Dùng thử<br>miễn phí</div></div>
+    </div>
+    <p class="note">"Dùng thử miễn phí" = tạo thiệp, sửa luôn (như "Dùng mẫu" bây giờ). "Thêm vào giỏ" để gom thiệp + LED + slide rồi trả một lần.</p>
+  </div>
+
+  <!-- C · giỏ hàng -->
+  <div class="ph"><h2>C · Giỏ hàng<small>Mỗi món của đám cưới một dòng có ô tick, phân loại (mẫu · màu), voucher, gợi ý đủ bộ. Bấm "Mua hàng" → màn thanh toán Shopee đã có (v1.8).</small></h2>
+    <div class="scr"><div class="in">
+      <div class="top"><span>‹</span>Giỏ hàng (3)</div>
+      <div class="cart"><div class="sp"><span class="ck on">✓</span>💍 Đức Anh &amp; Phạm Nga <span class="tag" style="margin-left:auto">28/12</span></div>
+        <div class="ci"><span class="ck on">✓</span><i class="th" style="background-image:url(/demo/cover-songhy-do.jpg)"></i><div class="tx"><b>Thiệp cưới online</b><small>Song Hỷ · Đỏ ▾</small><div class="pr">99.000đ</div></div></div>
+        <div class="ci"><span class="ck on">✓</span><i class="th" style="background-image:url(/demo/lposter-bac-dembac.jpg)"></i><div class="tx"><b>Màn hình LED</b><small>Kim tuyến bạc ▾</small><div class="pr">69.000đ</div></div></div>
+        <div class="ci"><span class="ck"></span><i class="th" style="background:linear-gradient(135deg,#3b2b2f,#8a5a63)"></i><div class="tx"><b>Slide ảnh cưới</b><small>Ngà ngọc ▾</small><div class="pr">49.000đ</div></div></div>
+      </div>
+      <div class="tip">🎁 Tick thêm <b>Slide</b> là thành Trọn bộ 169.000đ — giảm 48.000đ</div>
+      <div class="vou"><span>🎟️ Voucher Cưới Nha</span><span>Giảm 10% đơn đầu ›</span></div>
+    </div>
+      <div class="cbar"><span class="ck on">✓</span>Tất cả<div class="s">Tổng: <b>151.200đ</b><small>Tiết kiệm 16.800đ</small></div><span class="go">Mua hàng (2)</span></div>
+    </div>
+    <p class="note">Giỏ gắn với tài khoản (máy chủ lưu) — đổi máy vẫn còn. Không có phí ship, không chọn địa chỉ: phần "địa chỉ" thay bằng tên đôi + ngày cưới.</p>
+  </div>
+
+  <!-- D · Tôi / đơn mua -->
+  <div class="ph"><h2>D · Tôi + Đơn mua<small>Như mục "Tôi" của Shopee: trạng thái đơn theo tab, rồi đồ đã mua (thiệp, màn LED, slide), sổ tay, voucher.</small></h2>
+    <div class="scr"><div class="in">
+      <div class="me"><i>A</i><div><b>Đức Anh</b><small>Đám cưới 28/12/2026 · còn 32 ngày</small></div></div>
+      <div class="om"><div class="hd">Đơn mua <span>Xem lịch sử ›</span></div>
+        <div class="st4"><a><i>💳</i>Chờ thanh toán<em>1</em></a><a><i>⏳</i>Đang xử lý</a><a><i>✅</i>Đã kích hoạt</a><a><i>⭐</i>Đánh giá</a></div></div>
+      <div class="ord"><div class="h"><span>Đơn DC8K2Q7M</span><b>Chờ thanh toán</b></div>
+        <div class="ci" style="border:0;padding:0"><i class="th" style="background-image:url(/demo/cover-songhy-do.jpg);width:48px;height:48px"></i><div class="tx"><b>Thiệp + Màn LED</b><small>2 món</small></div><div class="pr" style="color:var(--red);font-weight:700;font-size:13px">151.200đ</div></div>
+        <div class="f"><span>Huỷ</span><span class="p">Thanh toán</span></div></div>
+      <div class="lst"><a><i>💌</i>Thiệp của tôi<span>2</span></a><a><i>🖥️</i>Màn LED của tôi<span>1</span></a><a><i>🎞️</i>Slide của tôi<span>0</span></a><a><i>📒</i>Sổ tay cưới</a><a><i>🎟️</i>Kho voucher<span>1 mã</span></a></div>
+    </div>
+      <div class="bn"><b><i>🏠</i>Trang chủ</b><b><i>💌</i>Thiệp</b><b><i>🎬</i>Video</b><b><i>🖥️</i>Màn LED</b><b class="on"><i>👤</i>Tôi<em>1</em></b></div>
+    </div>
+    <p class="note">"Đánh giá" sau ngày cưới → có đánh giá thật để hiện ở trang sản phẩm (B).</p>
+  </div>
+
+</div>
+
+<div class="verdict"><h3>Có nên làm "thuần Shopee" không? — ý kiến</h3>
+<ul>
+  <li><b>Nên lấy:</b> giỏ hàng + thanh toán + "Đơn mua" (người Việt quen tay, đỡ hỏi "trả tiền ở đâu"), giá + gạch giá rõ ràng, trang sản phẩm có "Bao gồm", voucher đơn đầu.</li>
+  <li><b>Lấy có chọn lọc:</b> "Đã bán", đánh giá — chỉ bật khi có số thật; chưa có thì ẩn (số ảo dễ mất uy tín, và trái luật quảng cáo).</li>
+  <li><b>Không nên:</b> đồng hồ "Giá sốc" chạy liên tục, banner dày, xu / mini game — làm thiệp cưới trông rẻ, khách cưới cần cảm giác sang, tin cậy.</li>
+  <li><b>Gợi ý triển khai:</b> giữ trang chủ đẹp như hiện tại (đã có ô tìm + danh mục), thêm <b>giỏ hàng + Đơn mua trong mục Tôi</b> trước; trang mẫu thêm khối giá / "Bao gồm" / Thêm vào giỏ. Banner "Giá sốc" để dịp lễ.</li>
+</ul></div>
+</body></html>
