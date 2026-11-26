@@ -826,7 +826,9 @@ function samplesLeft() {
 function smpNote() {
   const n = $('#smpNote'); if (!n) return;
   let off = false; try { off = sessionStorage.getItem('smpNoteOff') === CARD_ID; } catch (e) { /* bỏ qua */ }
-  n.hidden = off || !samplesLeft().length;
+  const show = !off && !!samplesLeft().length;
+  if (show && n.hidden && !smpNote.shown) { smpNote.shown = true; clearTimeout(smpNote.t); smpNote.t = setTimeout(() => { n.hidden = true; smpNote.done = true; }, 6000); } // hiện một lần ~6 giây rồi tự ẩn
+  n.hidden = !show || !!smpNote.done;
 }
 // mở đúng chỗ sửa một ô (như bấm chữ đó trên thiệp)
 function goKey(key) {
@@ -1828,7 +1830,7 @@ window.addEventListener('message', (e) => {
 });
 // hộp sửa một ô chữ trên thiệp: gõ tới đâu thiệp đổi tới đó; Enter (ô một dòng) / Xong để đóng
 function textModal(key) {
-  if (frozenKey(key)) return toast(card.paid ? 'Thiệp đã kích hoạt nên tên cô dâu chú rể và ngày cưới đã chốt, không đổi được' : 'Đã qua ngày cưới nên tên cô dâu chú rể và ngày cưới cố định, không sửa được', true);
+  if (frozenKey(key)) return toast(card.paid ? '🔒 Tên và ngày cưới đã chốt khi kích hoạt' : '🔒 Đã qua ngày cưới, tên và ngày giữ nguyên');
   const cur = getP(card.data, key) || '', long = LONG_FIELDS.test(key);
   const type = /(^|\.)date$/.test(key) ? 'date' : /(^|\.)time$/.test(key) ? 'time' : 'text';
   cardFocus(key);
