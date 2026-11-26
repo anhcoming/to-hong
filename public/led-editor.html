@@ -91,6 +91,7 @@ body{background:var(--bg)}
 .studio{flex:1;min-height:0;display:grid;grid-template-columns:340px minmax(0,1fr)}
 .studio[hidden]{display:none}
 .studio .rail{display:none} /* chỉ còn một bảng (Mẫu) → bỏ cột icon */
+.lcol{display:flex;flex-wrap:wrap;gap:8px;margin-top:6px}.lcol button{width:34px;height:34px;border-radius:50%;border:2px solid transparent;padding:3px;background:none;cursor:pointer}.lcol button.on{border-color:var(--rose,#d6455d)}.lcol i{display:grid;place-items:center;width:100%;height:100%;border-radius:50%;box-shadow:inset 0 0 0 1px rgba(0,0,0,.18);font:600 12px/1 inherit;font-style:normal;color:#666}.lcol i.auto{background:conic-gradient(#fff1d6,#e8c77a,#ffd1dc,#dfe6f5,#fff1d6)}
 .studio.locked{grid-template-columns:minmax(0,1fr)}.studio.locked .side{display:none} /* đã kích hoạt: mẫu chốt, không cần cột chọn mẫu */
 .studio.final .rbar,.studio.final .sc b,.studio.final .sc.off,.studio.final .scspd{display:none} /* đã chốt hẳn: ẩn nút chỉnh, chỉ còn xem / chuyển cảnh */
 .bar{height:10px;border-radius:999px;background:var(--line);overflow:hidden;margin:16px 0 8px}.bar i{display:block;height:100%;width:0;background:var(--primary);transition:width .2s} /* thanh tiến độ dựng MP4 */

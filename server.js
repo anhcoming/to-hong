@@ -415,8 +415,8 @@ route('GET', '/auth/facebook/callback', async (req, res, ctx) => {
   }
 });
 
-// phiên bản đang chạy (mã commit) — hiện mờ ở góc dưới các trang (public/js/ver.js) để biết bản mới đã lên chưa
-const APP_VERSION = (process.env.VERCEL_GIT_COMMIT_SHA || (() => { try { return require('child_process').execSync('git rev-parse HEAD', { cwd: __dirname, stdio: ['ignore', 'pipe', 'ignore'] }).toString(); } catch { return 'dev'; } })()).trim().slice(0, 7);
+// phiên bản đang chạy: "v1.1" theo package.json (mỗi lần đẩy bản mới tăng số sau dấu chấm) — hiện mờ ở góc dưới các trang (public/js/ver.js)
+const APP_VERSION = 'v' + require('./package.json').version.replace(/\.0$/, '');
 route('GET', '/api/version', async (req, res) => json(res, 200, { v: APP_VERSION }));
 route('GET', '/api/meta', async (req, res) => {
   // giá, ngày dùng thử, liên hệ hỗ trợ… sửa trên trang quản trị nằm trong kho dữ liệu: bản chạy vừa khởi động (hoặc đã

@@ -40,8 +40,8 @@
 
   function applyPalette() {
     pal = C.palettes[L.palette] || C.palettes.do;
-    stage.style.setProperty('--text', pal.text);
-    stage.style.setProperty('--accent', pal.accent);
+    stage.style.setProperty('--text', L.color || pal.text); // màu chữ chọn trong trình sửa (trống = theo mẫu)
+    stage.style.setProperty('--accent', L.color || pal.accent);
     stage.style.background = 'radial-gradient(ellipse 80% 70% at 50% 42%,' + pal.bg[1] + ',' + pal.bg[0] + ')';
     // ảnh hạt sáng dựng sẵn — vẽ ảnh nhanh hơn nhiều so với gradient mỗi khung hình
     sprite = document.createElement('canvas');

@@ -58,6 +58,7 @@ function renderSide() {
         <p class="clab">Cỡ chữ</p>
         <div class="fsz"><b class="s">A</b><input type="range" data-fs min="60" max="140" step="5" value="${Math.round((typeof led.fs === 'number' ? led.fs : 1) * 100)}" aria-label="Cỡ chữ"><b class="l">A</b><output>${Math.round((typeof led.fs === 'number' ? led.fs : 1) * 100)}%</output></div>
         ${(META.led.fonts || []).length ? `<label class="field"><span>Kiểu chữ</span><select data-l="font">${META.led.fonts.map((x) => `<option value="${x.id}"${(led.font || '') === x.id ? ' selected' : ''}>${esc(x.name)}</option>`).join('')}</select></label>` : ''}
+        ${(META.led.colors || []).length ? `<div class="field"><span>Màu chữ</span><div class="lcol">${META.led.colors.map((x) => `<button type="button" class="${(led.color || '') === x.id ? 'on' : ''}" data-color="${x.id}" title="${esc(x.name)}" aria-label="${esc(x.name)}">${x.id ? `<i style="background:${x.id}"></i>` : '<i class="auto">A</i>'}</button>`).join('')}</div></div>` : ''}
         <p class="clab">Tên đôi</p>
         <div class="grid2">${f('groom.name', 'Chú rể', 'names', 'Gia Huy')}${f('bride.name', 'Cô dâu', 'names', 'Bảo Ngọc')}</div>
         ${fixed ? '<p class="muted" style="font-size:12px;margin:-4px 0 8px">🔒 Đã kích hoạt: tên đôi cố định</p>' : ''}
@@ -295,6 +296,8 @@ function bind() {
   side.addEventListener('click', (e) => {
     const g = e.target.closest('[data-go]'); if (g) { curPanel = g.dataset.go; return renderSide(); }
 
+    const cb = e.target.closest('[data-color]');
+    if (cb) { led.color = cb.dataset.color; renderSide(); pushPreview(); return schedule(300); }
     const tp = e.target.closest('[data-tpl]');
     if (tp) { const t = META.led.templates.find((x) => x.id === tp.dataset.tpl); led.palette = t.palette; led.effect = t.effect; led.slides.photo = false; renderSide(); pushPreview(); return schedule(300); }
     const b = e.target.closest('[data-set]');
