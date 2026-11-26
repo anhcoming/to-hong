@@ -114,6 +114,8 @@ main.wrap{padding-top:112px;padding-bottom:64px;max-width:1120px}
   body.gy-on .strip small{font-size:11.5px}
   body.gy-on .sg-why{order:3;padding:12px 18px 0;border-top:1px solid var(--line);font-size:12.5px}
   body.gy-on .pcta{order:4;padding:10px 18px 16px}
+  body.gy-on .mrow{display:flex;position:fixed;z-index:9;top:auto;bottom:18px;left:calc(50% - 30px);right:auto;transform:translateX(-50%);gap:8px}body.gy-on .mrow #mPh,body.gy-on .mrow #useBtnM{display:none}
+  #tenBtn{display:inline-flex;align-items:center;gap:5px;height:34px;padding:0 14px;border:0;border-radius:999px;background:#fff0f2;color:var(--red);font:600 13px var(--sans);cursor:pointer}#tenBtn b{font:700 16px var(--script)}
   body.gy-on .pcta .btn{padding:13px;font-size:15px}
 }
 @media (max-width:760px){
@@ -122,16 +124,21 @@ main.wrap{padding-top:112px;padding-bottom:64px;max-width:1120px}
   body.gy-on #nav,body.gy-on #foot,body.gy-on .gy-head,body.gy-on .after{display:none}
   body.gy-on main.wrap{padding:0;max-width:none}
   /* màn gợi ý: ẩn thanh 5 nút dưới cùng (site.js) để thiệp + dải mẫu chiếm trọn màn hình */
-  body.gy-on .sbar{display:none!important}
+  body.gy-on .sbar,body.gy-on .cnb{display:none!important}
+  body.gy-on.has-cnb{padding-bottom:env(safe-area-inset-bottom)!important}
   body.gy-on #work{display:flex;flex-direction:column;height:100vh;height:calc(100dvh - env(safe-area-inset-bottom))}
   body.gy-on{padding-bottom:env(safe-area-inset-bottom)!important}
   body.gy-on #msg{margin:8px 14px 0}
-  .mrow{display:flex;flex:none;align-items:center;gap:10px;padding:10px 14px 0}
-  .mrow{justify-content:space-between}
-  .mrow #useBtnM{margin-left:auto;padding:10px 18px;font-size:14px;border:0;border-radius:999px;color:#fff;background:var(--grad);box-shadow:0 8px 20px rgba(214,69,93,.28)}
-  .pcta{display:none}
+  /* toàn màn hình như khung xem mẫu: thiệp phủ kín, nút ảnh + tên nổi trên đầu; dải mẫu + "Dùng thiệp này" ở khối dưới */
+  body.gy-on #work{position:relative}
+  .mrow{position:absolute;z-index:6;top:calc(10px + env(safe-area-inset-top));left:10px;right:10px;display:flex;align-items:center;gap:8px;padding:0;pointer-events:none}
+  .mrow>*{pointer-events:auto}
+  .mrow #useBtnM{display:none}
+  #tenBtn{margin-left:auto;display:inline-flex;align-items:center;gap:5px;max-width:60%;height:34px;padding:0 13px;border:0;border-radius:999px;background:rgba(0,0,0,.5);backdrop-filter:blur(6px);color:#fff;font:600 13px var(--sans);cursor:pointer;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  #tenBtn b{font:700 16px var(--script)}
+  .pcta{display:block}
   .strip{padding-bottom:10px!important}
-  #mPh{display:flex;align-items:center;gap:6px;border:1px solid var(--line);border-radius:999px;background:var(--card);padding:4px 11px 4px 4px;font:600 12.5px var(--sans);color:var(--ink);cursor:pointer}
+  #mPh{display:flex;align-items:center;gap:6px;border:0;border-radius:999px;background:rgba(255,255,255,.94);box-shadow:0 4px 14px rgba(0,0,0,.18);padding:4px 11px 4px 4px;font:600 12.5px var(--sans);color:var(--ink);cursor:pointer}
   #mPh i{display:flex}
   #mPh i b{width:26px;height:26px;border-radius:50%;border:2px solid var(--card);background:#eee center/cover;margin-left:-9px}
   #mPh i b:first-child{margin-left:0}
@@ -142,9 +149,9 @@ main.wrap{padding-top:112px;padding-bottom:64px;max-width:1120px}
   #work.ph .phbox .thumbs{display:flex;flex-wrap:wrap;gap:10px;overflow:visible;padding:6px 2px 0}
   .phx{display:inline-block;border:0;border-radius:999px;background:var(--red);color:#fff;font:700 13px var(--sans);padding:7px 14px;margin-left:12px;cursor:pointer}
   @keyframes phIn{from{opacity:0;transform:translateY(-6px)}}
-  .gpick{flex:1;min-height:0;display:flex;flex-direction:column;align-items:stretch;gap:0;margin-top:10px}
-  .sg-view.big{flex:1;min-height:0;height:auto;width:auto;margin:0 14px;border-radius:20px}
-  .pside{position:static;gap:8px;padding:10px 0 0}
+  .gpick{flex:1;min-height:0;display:flex;flex-direction:column;align-items:stretch;gap:0;margin-top:0}
+  .sg-view.big{flex:1;min-height:0;height:auto;width:auto;margin:0;border-radius:0;box-shadow:none}
+  .pside{position:relative;top:auto;z-index:5;gap:8px;margin-top:-18px;padding:12px 0 0;border-radius:18px 18px 0 0;background:var(--card);box-shadow:0 -8px 24px rgba(40,10,20,.14)}
   .sg-why{display:none}
   .strip{display:flex;gap:8px;overflow-x:auto;padding:2px 14px 2px;scrollbar-width:none}
   .strip::-webkit-scrollbar{display:none}
@@ -177,7 +184,7 @@ main.wrap{padding-top:112px;padding-bottom:64px;max-width:1120px}
 
   <section id="work" hidden>
     <div class="gtop"><h2>Chọn mẫu thiệp cho ảnh của bạn</h2><small>· Ảnh chỉ nằm trên máy bạn cho tới khi bạn chọn dùng</small><div class="steps"><span class="ok"><i>✓</i>Chọn ảnh</span><span class="on"><i>2</i>Chọn mẫu</span><span><i>3</i>Sửa &amp; gửi</span></div></div>
-    <div class="mrow"><button type="button" id="mPh"><i id="mPhI"></i><span id="mPhN"></span></button><button type="button" class="btn btn-main" id="useBtnM">Dùng thiệp này</button></div>
+    <div class="mrow"><button type="button" id="mPh"><i id="mPhI"></i><span id="mPhN"></span></button><button type="button" id="tenBtn"></button><button type="button" class="btn btn-main" id="useBtnM">Dùng thiệp này</button></div>
     <p class="sh" id="shPh">Ảnh của bạn</p>
     <div class="phbox" id="phbox">
       <div class="bar"><b id="count"></b><button type="button" id="reset">Chọn lại từ đầu</button><button type="button" class="phx" id="phX">Xong</button></div>
