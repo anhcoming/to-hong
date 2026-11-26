@@ -8,14 +8,14 @@
   "promoEndsAt": "2027-01-31",
   "ledPrice": 69000,
   "videoPrice": 49000,
-  "comboPrice": 169000,
   "firstOrderPercent": 10,
-  "comboListPrice": 0,
   "ffmpegPath": "ffmpeg",
   "trialDays": 7,
   "trialGuestLimit": 20,
   "coupons": {},
-  "statsExclude": ["anhcoming"],
+  "statsExclude": [
+    "anhcoming"
+  ],
   "payment": {
     "bankBin": "970432",
     "bankName": "VPBank",

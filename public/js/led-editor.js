@@ -115,7 +115,7 @@ function renderHeader() {
     : '<span class="chip warn">Đang dùng thử</span>';
   // điện thoại: nhãn ngắn (lớp hide-xs / show-xs) để ba nút vừa một hàng
   // chưa kích hoạt: chỉ nút Kích hoạt; kích hoạt rồi mới hiện Chép link · Mở trình chiếu · Tải MP4
-  $('#acts').innerHTML = s.created ? `${s.paid ? `<button class="btn sm soft" id="cpLink">Chép link</button><a class="btn sm plain" id="openLed" target="_blank" href="${esc(s.url)}"><span class="hide-xs">Mở trình chiếu</span><span class="show-xs">▶ Trình chiếu</span></a>` : ''}${s.paid ? '<button class="btn sm" id="mp4Btn">⬇ Tải MP4</button>' : card.credits && card.credits.led > 0 ? '<button class="btn sm" id="payBtn">🎁 Dùng lượt Trọn bộ</button>' : `<button class="btn sm" id="payBtn">Kích hoạt<span class="hide-xs"> · ${money(META.ledPrice)}</span><span class="show-xs"> ${Math.round(META.ledPrice / 1000)}k</span></button>`}`
+  $('#acts').innerHTML = s.created ? `${s.paid ? `<button class="btn sm soft" id="cpLink">Chép link</button><a class="btn sm plain" id="openLed" target="_blank" href="${esc(s.url)}"><span class="hide-xs">Mở trình chiếu</span><span class="show-xs">▶ Trình chiếu</span></a>` : ''}${s.paid ? '<button class="btn sm" id="mp4Btn">⬇ Tải MP4</button>' : `<button class="btn sm" id="payBtn">Kích hoạt<span class="hide-xs"> · ${money(META.ledPrice)}</span><span class="show-xs"> ${Math.round(META.ledPrice / 1000)}k</span></button>`}`
     : '';
   $('#acts').style.gridTemplateColumns = s.created && s.paid ? '1fr 1fr 1fr' : '';
   const mb = $('#mp4Btn'); if (mb) mb.onclick = mp4Dialog;

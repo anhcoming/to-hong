@@ -114,15 +114,6 @@
     set('[data-price]', money(m.price));
     set('[data-price-k]', k(m.price));
     set('[data-led-k]', k(m.ledPrice)); set('[data-video-k]', k(m.videoPrice));
-    // Trọn bộ (khách cũ / trang cũ): giá, giá gốc, tiết kiệm so với mua lẻ cả ba
-    if (m.comboPrice) {
-      set('[data-combo-k]', k(m.comboPrice));
-      set('[data-combo-save]', k(m.price + m.ledPrice + m.videoPrice - m.comboPrice));
-      if (m.comboListPrice) {
-        set('[data-combo-list-k]', k(m.comboListPrice));
-        document.querySelectorAll('[data-combo-promo]').forEach(function (e) { e.hidden = false; });
-      }
-    }
     // giá mở bán: hiện giá gốc gạch ngang + đếm ngược tới hết hạn
     if (m.listPrice && m.promoEndsAt) {
       set('[data-list-price]', money(m.listPrice));

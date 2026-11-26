@@ -530,7 +530,7 @@ function renderExport() {
       ${[[1, `1 vòng (${total} giây)`], [Math.max(2, Math.round(180 / total)), 'Lặp ~3 phút'], [Math.max(2, Math.min(30, Math.round(600 / total))), 'Lặp ~10 phút']]
         .map(([n, label], i) => `<option value="${n}" ${i === 1 ? 'selected' : ''}>${label} · ~${Math.max(1, Math.round(n * total * 0.36))} MB</option>`).join('')}
     </select></label>
-    <button class="btn block" id="exportBtn">${s.paid ? '⬇ Xuất & tải MP4' : card.credits && card.credits.video > 0 ? '🎁 Dùng lượt Trọn bộ để tải MP4' : `Kích hoạt ${money(META.videoPrice)} để tải MP4`}</button>
+    <button class="btn block" id="exportBtn">${s.paid ? '⬇ Xuất & tải MP4' : `Kích hoạt ${money(META.videoPrice)} để tải MP4`}</button>
     ${s.mp4 ? `<a class="btn block plain" style="margin-top:8px" href="${esc(s.mp4)}" target="_blank" rel="noopener" download>Tải bản đã xuất gần nhất</a>` : ''}
     <p class="muted" style="font-size:12px;margin:10px 0 0">Video dựng ngay trên máy bạn — nên dùng Chrome, Edge hoặc Safari bản mới.</p>`;
 }
@@ -559,9 +559,7 @@ function renderHeader() {
   chip.textContent = s.paid ? '· đã kích hoạt' : '· đang dùng thử';
   if (engOpts) engOpts.trial = !s.paid; // khung xem trước: dòng "Bản dùng thử" vẽ thẳng lên hình cho tới khi kích hoạt
   // một nút đỏ duy nhất: Kích hoạt (chưa trả) / Tải MP4 (đã trả); chép link + tải MP4 gom vào menu Chia sẻ
-  const credit = !s.paid && card.credits && card.credits.video > 0;
   const main = s.paid ? '<button class="btn sm" id="goExport">⬇ Tải MP4</button>'
-    : credit ? '<button class="btn sm" id="payBtn">🎁 Dùng lượt Trọn bộ</button>'
     : `<button class="btn sm" id="payBtn">Kích hoạt<span class="xl">&nbsp;· ${money(META.videoPrice)}</span></button>`;
   $('#acts').innerHTML = `${s.paid ? `<a class="btn sm ghost" target="_blank" href="${esc(s.url)}" title="Mở trình chiếu toàn màn hình">▷<span class="xl">&nbsp;Trình chiếu</span></a>` : ''}
     ${s.paid ? `<span class="shr"><button class="btn sm soft" id="shrBtn" aria-haspopup="menu" aria-expanded="false">Chia sẻ ▾</button>

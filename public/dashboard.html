@@ -199,9 +199,7 @@ let META;
 const VIDEOS = location.pathname === '/video-cua-toi';
 const tplName = (id) => (META.templates.find(t => t.id === id) || {}).name || id;
 
-const isCombo = (c) => !!c.combo;
 function stateChip(c) {
-  if (isCombo(c)) return '<span class="chip ok">● Trọn bộ đã kích hoạt</span>';
   if (c.paid) return '<span class="chip ok">● Thiệp đã kích hoạt</span>';
   if (c.status !== 'published') return '<span class="chip">Bản nháp</span>';
   if (c.expired) return '<span class="chip red">Hết hạn dùng thử</span>';
@@ -209,14 +207,6 @@ function stateChip(c) {
   return `<span class="chip warn">Dùng thử · còn ${days} ngày</span>`;
 }
 
-// Đã trả một phần (thiệp / màn LED / video), chưa đủ cả ba: gợi ý nâng lên Trọn bộ — máy chủ tính sẵn phần chênh (c.comboUpgrade)
-function upgradeBar(c) {
-  return ''; // bỏ giảm giá combo (kiểu Shopee): không còn gợi ý nâng lên Trọn bộ — mua thêm ở màn LED / slide
-  if (isCombo(c) || !c.comboUpgrade) return ''; // Trọn bộ: lượt còn lại hiện trên ô Màn LED / Video
-  const u = c.comboUpgrade, NAME = { card: 'thiệp cưới', led: 'màn LED tiệc cưới', video: 'slide / màn hình dạm ngõ' };
-  const need = Object.keys(NAME).filter((k) => !u.have.includes(k)).map((k) => NAME[k]).join(' + ');
-  return `<div class="upbar"><span>✨ Thêm <b>${need}</b> chỉ <b>${money(u.amount)}</b> <span class="muted">(mua lẻ ${money(u.retail)})</span></span><button class="btn sm" data-a="combo">Nâng lên Trọn bộ</button></div>`;
-}
 
 // Thiệp đã phát hành, chưa kích hoạt: thanh đếm ngược tới lúc link bị khoá (chạy từng giây)
 function trialBar(c) {
@@ -246,8 +236,8 @@ async function load() {
   const el = $('#list');
   if (VIDEOS) return loadVideos(cards, el);
   const q = new URLSearchParams(location.search);
-  // thiệp chính: Trọn bộ / đã kích hoạt / đã phát hành trước, cùng mức thì thiệp sửa gần nhất (máy chủ đã xếp)
-  const rank = (c) => (isCombo(c) ? 3 : c.paid ? 2 : c.status === 'published' ? 1 : 0);
+  // thiệp chính: đã kích hoạt / đã phát hành trước, cùng mức thì thiệp sửa gần nhất (máy chủ đã xếp)
+  const rank = (c) => (c.paid ? 2 : c.status === 'published' ? 1 : 0);
   const main = cards.slice().sort((a, b) => rank(b) - rank(a))[0];
   // nút "Màn LED" ở thanh dưới (điện thoại) → mở thẳng màn LED của thiệp chính; chưa có thiệp: sang trang giới thiệu màn LED
   if (q.get('mo') === 'led') { location.replace(main ? `/sua-led/${main.id}${main.led.created ? '' : '?tao=1'}` : '/man-hinh-led-dam-cuoi'); return; }
@@ -279,7 +269,7 @@ async function load() {
 }
 // một dòng thiệp đang làm: ảnh · tên + tình trạng · Sửa · Quản lý
 function mineRow(c) {
-  const st = isCombo(c) ? ['ok', 'Trọn bộ đã kích hoạt'] : c.paid ? ['ok', 'Đã kích hoạt']
+  const st = c.paid ? ['ok', 'Đã kích hoạt']
     : c.status !== 'published' ? ['', 'Bản nháp'] : c.expired ? ['red', 'Link đã bị khoá']
     : ['warn', `Dùng thử · còn ${Math.max(0, Math.ceil((c.trialEndsAt - Date.now()) / 864e5))} ngày`];
   const info = c.status === 'published' ? ` · ${c.views} lượt xem · ${c.rsvpYes} sẽ đến` : ` · ${esc(tplName(c.template))}`;
@@ -305,13 +295,11 @@ const MKI = {
   clap: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 10h16v9a1.5 1.5 0 0 1-1.5 1.5h-13A1.5 1.5 0 0 1 4 19z"/><path d="m4 10-.6-3.2 15-3 .6 3.2"/><path d="m8.5 6.2 2 3.3M13.5 5.2l2 3.3"/></svg>',
 };
 function prodRow(c, kind) {
-  const s = kind === 'led' ? c.led : c.video, left = (c.credits || {})[kind] || 0;
+  const s = kind === 'led' ? c.led : c.video;
   const name = kind === 'led' ? 'Màn hình LED' : s.created ? s.name : 'Slide / màn hình dạm ngõ';
   const href = kind === 'led' ? `/sua-led/${c.id}${s.created ? '' : '?tao=1'}` : `/sua-video/${c.id}`;
   const st = s.paid ? '<span class="ok">● Đã kích hoạt</span>'
     : s.prepaid ? '<span class="ok">Đã mua · tạo là dùng được ngay</span>'
-    : isCombo(c) ? '<span class="gift">Có trong Trọn bộ</span>'
-    : left > 0 ? `<span class="gift">Còn ${left} lượt Trọn bộ</span>`
     : s.created && s.expired ? '<span class="bad">Hết dùng thử</span>'
     : s.created ? 'Đang dùng thử' : '';
   return `<a class="mkr" href="${href}">${MKI[kind]}<span class="t">${name}<small>${st}</small></span><i>${s.created ? 'Mở' : 'Tạo'} ›</i></a>`;
@@ -336,7 +324,7 @@ function heroCard(c) {
           ${moreMenu(c)}
         </div>
         ${trialBar(c) ? '' : `<div class="meta">${stateChip(c)}</div>`}
-        ${trialBar(c)}${upgradeBar(c)}
+        ${trialBar(c)}
         ${pub ? `<div class="kpis"><div class="kpi"><b>${c.views}</b><span>lượt xem</span></div><div class="kpi"><b>${c.guests}</b><span>khách mời</span></div><div class="kpi"><b>${c.rsvpYes}</b><span>người sẽ đến</span></div><div class="kpi"><b>${c.wishes}</b><span>lời chúc</span></div></div>`
           : draftSteps(c)}
         <div class="acts">
@@ -429,7 +417,6 @@ async function act(a, id, c) {
     if (a === 'vshare') copyText(c.video.url, 'Đã chép link — mở trên Smart TV hoặc máy tính nối TV');
     if (a === 'vpay') openPayModal(id, load, 'video');
     if (a === 'pay') openPayModal(id, load);
-    if (a === 'combo') openPayModal(id, load, 'combo');
     if (a === 'del') {
       if (!confirm(`Xoá thiệp "${c.names || c.title}"? Danh sách khách, xác nhận và lời chúc của thiệp này cũng bị xoá và không khôi phục được.`)) return;
       await api(`/api/cards/${id}`, { method: 'DELETE' });

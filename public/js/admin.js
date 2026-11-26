@@ -1,7 +1,7 @@
 // Trang quản trị. Bố cục: thanh bên trái + mỗi trang chỉ có danh sách.
 // Tạo / sửa / xác nhận mở popup (modal, ask); bấm một dòng mở bảng chi tiết bên phải (drawer); thao tác phụ ở nút ⋯ (menu).
 const A = { page: 'home', f: {}, meta: null, me: null };
-const PROD = { card: 'Thiệp', combo: 'Trọn bộ', led: 'Màn LED', video: 'Video' };
+const PROD = { card: 'Thiệp', led: 'Màn LED', video: 'Video', multi: 'Nhiều món' };
 const TITLES = { home: 'Tổng quan', orders: 'Đơn hàng', discounts: 'Mã giảm giá', users: 'Người dùng', cards: 'Thiệp & sản phẩm', traffic: 'Truy cập', settings: 'Cài đặt', audit: 'Nhật ký' };
 const num = (n) => Number(n || 0).toLocaleString('vi-VN');
 const pct = (a, b) => (b ? Math.round((a / b) * 1000) / 10 + '%' : '—');
@@ -219,7 +219,7 @@ async function orders() {
   await load();
 }
 // đơn có màn LED: xem màn khách làm + sửa giúp (cả màn đã chốt: sửa bản chụp lúc chốt, thiệp của khách không đổi)
-const hasLed = (o) => o.site && o.card && /led|combo/.test(o.product);
+const hasLed = (o) => o.site && o.card && /led|multi/.test(o.product);
 const ledActs = (o) => (hasLed(o) ? [['Mở màn LED ↗', () => open(`/led/${o.site.slug}`, '_blank')], ['Sửa màn LED', () => editLed(o)]] : []);
 function editLed(o) { open(`/sua-led/${o.card.id}?admin=1`, '_blank'); }
 function confirmOrder(o) {
@@ -586,7 +586,6 @@ async function settings() {
     <div class="set">
       <div class="box"><div class="bh"><h3>Giá bán</h3><small class="s">Đặt trong config.json · đổi giá cần sửa mã nguồn</small></div>
         <div class="srow"><div><b>Thiệp cưới</b><small>${s.promoEndsAt && s.listPrice > s.price ? `Giá mở bán đến hết ${ddmm(s.promoEndsAt)}` : 'Không có giá gạch'}</small></div><span class="v">${was(s.listPrice, s.price)}${money(s.price)}</span></div>
-        <div class="srow"><div><b>Trọn bộ</b><small>Thiệp + màn LED + video</small></div><span class="v">${was(s.comboListPrice, s.comboPrice)}${money(s.comboPrice)}</span></div>
         <div class="srow"><div><b>Màn hình LED</b></div><span class="v">${money(s.ledPrice)}</span></div>
         <div class="srow"><div><b>Slide / màn hình dạm ngõ</b></div><span class="v">${money(s.videoPrice)}</span></div></div>
       <div class="box"><div class="bh"><h3>Dùng thử</h3><button class="btn sm plain" data-ed="trial">Sửa</button></div>

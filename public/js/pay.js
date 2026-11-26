@@ -6,7 +6,6 @@ const lcFirst = (s) => String(s || '').charAt(0).toLowerCase() + String(s || '')
 // Trả tiền là chốt — nói rõ trước khi khách chuyển khoản
 const LOCK_NOTE = {
   card: '🔒 Kích hoạt là chốt <b>tên cô dâu chú rể và ngày cưới</b>. Mẫu thiệp, ảnh, chữ… vẫn sửa thoải mái.',
-  combo: '🔒 Kích hoạt là chốt <b>tên cô dâu chú rể và ngày cưới</b>; mẫu thiệp vẫn đổi thoải mái. Màn LED và slide chốt hẳn (không sửa gì nữa) khi chiếu hoặc tải lần đầu.',
   led: '🔒 Kích hoạt là <b>chốt hẳn màn LED</b> — sau khi trả tiền không sửa gì được nữa. Kiểm tra kỹ tên, ngày, chữ trên màn trước khi chuyển khoản.',
   video: '🔒 Kích hoạt là <b>chốt hẳn video</b> — sau khi trả tiền không sửa gì được nữa. Kiểm tra kỹ tên, ngày, chữ, ảnh trước khi chuyển khoản.',
 };
@@ -106,16 +105,8 @@ window.openPayModal = async function (cardId, onDone, product = 'card') {
     try { data = (await api(`/api/cards/${cardId}`)).card.data; } catch {}
     if (data && payMissing(data).length) return;
   }
-  // Màn LED / video mà chủ thiệp còn lượt Trọn bộ → hỏi dùng lượt (miễn phí) trước, mua lẻ là lựa chọn phụ
-  if ((product === 'led' || product === 'video') && !openPayModal.skipCredit) {
-    try {
-      const { card } = await api(`/api/cards/${cardId}`);
-      const left = card.credits ? card.credits[product] : 0;
-      if (left > 0 && card[product] && card[product].created && !card[product].paid) return creditModal(cardId, onDone, product, left);
-    } catch {}
-  }
   // Màn thanh toán chung: tick thiệp / màn LED / slide (món đã có hiện ✓ xám). Máy chủ chọn sản phẩm theo món đã tick:
-  // một món = mua lẻ, đủ cả ba (tính cả món đã có) = Trọn bộ (nâng cấp: trừ phần đã trả), hai món = một đơn gộp. Một mã QR.
+  // một món = đơn món đó, nhiều món = một đơn gộp (cộng giá lẻ). Một mã QR.
   let cardInfo = null, M = window.META || null;
   try { [cardInfo, M] = await Promise.all([api(`/api/cards/${cardId}`).then((r) => r.card), M && M.ledPrice ? M : api('/api/meta')]); } catch (e) { return toast(e.message, true); }
   const KEYS = ['card', 'led', 'video'];
@@ -163,7 +154,7 @@ window.openPayModal = async function (cardId, onDone, product = 'card') {
     const o = data.order;
     clearInterval(timer); clearInterval(tick);
     closeAll();
-    toast(o.product === 'combo' ? 'Đã kích hoạt thiệp + màn LED + slide 🎉' : `Đã kích hoạt ${lcFirst(o.productName)} 🎉`);
+    toast(`Đã kích hoạt ${lcFirst(o.productName)} 🎉`);
     const go = o.product === 'led' ? `/sua-led/${cardId}` : o.product === 'video' ? `/sua-video/${cardId}` : '';
     if (go && !location.pathname.startsWith(go)) { location.href = go; return; } // kích hoạt từ trang khác (Thiệp của tôi) → mở màn LED / video của tôi
     if (onDone) onDone();
@@ -210,12 +201,12 @@ window.openPayModal = async function (cardId, onDone, product = 'card') {
   const cart = (o) => {
     const p = o.product;
     const retail = (o.items || []).filter((k) => !HAVE[k]).reduce((n, k) => n + PRICE[k], 0);
-    const disc = o.discount || 0, first = o.firstOff || 0, combo = 0, nudge = false; // không còn giảm giá combo: tổng = cộng giá lẻ
+    const disc = o.discount || 0, first = o.firstOff || 0; // tổng = cộng giá lẻ
     return `<div class="shp-hd"><button type="button" class="shp-back" data-x aria-label="Đóng">‹</button>Thanh toán</div>
       <div class="shp-box"><h4>💍 Đám cưới</h4><div class="shp-wed"><b>${esc(cardInfo.names || 'Thiệp của bạn')}</b>${esc(dateText(cardInfo.date))}<small>🔒 Kích hoạt là chốt tên + ngày cưới, mẫu thiệp vẫn đổi thoải mái</small></div></div>
       <div class="shp-box"><h4>🛍️ Cưới Nha</h4>
         ${KEYS.map((k) => { const have = HAVE[k], on = have || ticks.includes(k);
-          return `<button type="button" class="shp-it${have ? ' have' : ''}" data-tick="${k}"${have || part ? ' disabled' : ''}><span class="shp-ck${on ? ' on' : ''}${have ? ' dis' : ''}">${on ? '✓' : ''}</span><i class="shp-th"${THUMB[k] ? ` style="background-image:url('${esc(THUMB[k])}')"` : ''}></i><span class="shp-tx"><b>${TITLE[k][0]}</b><small>${have ? 'Đã mua' : nudge && !on ? 'Tick thêm để thành Trọn bộ' : SUB[k]}</small></span><span class="shp-pr">${have ? '<em>Đã có</em>' : money(PRICE[k])}</span></button>`; }).join('')}
+          return `<button type="button" class="shp-it${have ? ' have' : ''}" data-tick="${k}"${have || part ? ' disabled' : ''}><span class="shp-ck${on ? ' on' : ''}${have ? ' dis' : ''}">${on ? '✓' : ''}</span><i class="shp-th"${THUMB[k] ? ` style="background-image:url('${esc(THUMB[k])}')"` : ''}></i><span class="shp-tx"><b>${TITLE[k][0]}</b><small>${have ? 'Đã mua' : SUB[k]}</small></span><span class="shp-pr">${have ? '<em>Đã có</em>' : money(PRICE[k])}</span></button>`; }).join('')}
       </div>
       ${p === 'multi' ? '' : `<form class="shp-box shp-cp" id="cp"><label>🎟️ Mã giảm giá</label><input name="c" placeholder="Nhập mã" value="${esc(o.coupon || '')}" autocomplete="off" aria-describedby="cpErr"><button class="btn sm plain">Áp dụng</button><p class="cp-err" id="cpErr" role="alert" hidden></p></form>`}
       <div class="shp-box"><h4>🧾 Chi tiết thanh toán</h4>
@@ -346,30 +337,6 @@ window.openPayModal = async function (cardId, onDone, product = 'card') {
     }
   }, 3000);
 };
-
-// Hộp "Dùng lượt Trọn bộ": kích hoạt ngay màn LED / video này, không trả thêm. Mua lẻ vẫn chọn được.
-function creditModal(cardId, onDone, product, left) {
-  const name = product === 'led' ? 'màn LED' : 'video';
-  openModal(`
-    <div style="text-align:center">
-      <div style="font-size:44px;line-height:1;margin-bottom:10px">🎁</div>
-      <h2 style="margin:0 0 6px">Dùng lượt Trọn bộ cho ${name} này?</h2>
-      <p class="muted" style="margin:0 0 18px">Bạn còn <b>${left}</b> lượt ${name} trong gói Trọn bộ. Kích hoạt ngay, không trả thêm — sau này vẫn đổi mẫu, đổi chữ thoải mái.</p>
-      <button class="btn block lg" id="useCredit">Dùng lượt · miễn phí</button>
-      <button class="btn block plain" id="buyOne" style="margin-top:8px">Không, mua lẻ ${name} này</button>
-    </div>`, (box, close) => {
-    $('#useCredit', box).onclick = async (e) => {
-      e.target.disabled = true;
-      try {
-        await api(`/api/cards/${cardId}/redeem`, { method: 'POST', body: { product } });
-        close();
-        toast(`Đã kích hoạt ${name} bằng lượt Trọn bộ`);
-        if (onDone) onDone();
-      } catch (err) { e.target.disabled = false; toast(err.message, true); }
-    };
-    $('#buyOne', box).onclick = () => { close(); openPayModal.skipCredit = true; openPayModal(cardId, onDone, product).finally(() => { openPayModal.skipCredit = false; }); };
-  });
-}
 
 // Ô bắt buộc trước khi kích hoạt: ô trên trang (trình sửa thiệp data-k, màn LED data-d) hoặc dữ liệu đã lưu
 const PAY_NEED = [['groom.name', 'Chưa nhập tên chú rể'], ['bride.name', 'Chưa nhập tên cô dâu'], ['date', 'Chưa chọn ngày cưới']];
