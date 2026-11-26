@@ -24,20 +24,16 @@
     return new Promise(function (done) {
       if (!document.getElementById('pkCss')) { var st = document.createElement('style'); st.id = 'pkCss'; st.textContent = css; document.head.appendChild(st); }
       var ov = document.createElement('div'); ov.className = 'pk-ov';
-      var paid = cards.some(function (c) { return c.paid; });
-      var names = (cards.find(function (c) { return c.names; }) || {}).names || '';
       var cover = function (c) { return c.cover ? c.cover.split('#')[0] : '/demo/cover-' + c.template + '-' + c.palette + '.jpg'; };
-      // hai lựa chọn cố định: thiệp nhà trai · thiệp nhà gái (đã có thì đổi mẫu, chưa có thì tạo — chữ, ảnh chép từ thiệp bên kia)
-      var opt = function (side, label) {
-        var c = cards.find(function (x) { return x.side === side; });
-        return '<button class="pk-o" data-t="' + side + '"><i' + (c ? ' style="background-image:url(\'' + esc(cover(c)) + '\')"' : '') + '>' + (c ? '' : '＋') + '</i><span><b>' + label + '</b><small>'
-          + (c ? 'Đang dùng ' + esc(c.tplName || c.template) + ' → đổi sang ' + esc(tplName || template) + (c.paid ? ' · <span class="ok">đã kích hoạt</span>' : '')
-            : 'Chưa có — tạo mới với mẫu ' + esc(tplName || template) + ', chữ &amp; ảnh lấy từ thiệp còn lại') + '</small></span></button>';
-      };
+      // các thiệp của tài khoản (đổi mẫu thiệp đó) + tạo thiệp mới (món riêng, kích hoạt riêng)
       ov.innerHTML = '<div class="pk" role="dialog" aria-modal="true"><button class="pk-x" aria-label="Đóng">✕</button>'
-        + '<h4>Áp dụng mẫu ' + esc(tplName || template) + ' cho…</h4>'
-        + '<p>' + (names ? esc(names) + ' · ' : '') + (paid ? 'đã kích hoạt, ' : '') + 'đổi mẫu miễn phí, chữ và ảnh giữ nguyên.</p>'
-        + opt('trai', 'Thiệp nhà trai') + opt('gai', 'Thiệp nhà gái') + '</div>';
+        + '<h4>Dùng mẫu ' + esc(tplName || template) + ' cho…</h4>'
+        + '<p>Đổi mẫu miễn phí — chữ và ảnh giữ nguyên.</p>'
+        + cards.map(function (c) {
+          return '<button class="pk-o" data-t="' + esc(c.id) + '"><i style="background-image:url(\'' + esc(cover(c)) + '\')"></i><span><b>' + esc(c.title || 'Thiệp') + (c.names ? ' · ' + esc(c.names) : '') + '</b><small>'
+            + esc(c.tplName || c.template) + ' → ' + esc(tplName || template) + (c.paid ? ' · <span class="ok">đã kích hoạt</span>' : '') + '</small></span></button>';
+        }).join('')
+        + '<button class="pk-o" data-t="new"><i>＋</i><span><b>Tạo thiệp mới</b><small>Thiệp riêng, kích hoạt riêng</small></span></button></div>';
       var close = function (v) { ov.remove(); document.removeEventListener('keydown', key); done(v); };
       var key = function (e) { if (e.key === 'Escape') close(null); };
       document.addEventListener('keydown', key);
@@ -61,7 +57,7 @@
         return sheet(template, palette, cards, tplName || nm(template));
       }).then(function (target) {
         if (!target) return null;
-        return post({ template: template, palette: palette, side: target }).then(function (r) { return r.card; });
+        return post(target === 'new' ? { template: template, palette: palette, new: true } : { template: template, palette: palette, target: target }).then(function (r) { return r.card; });
       });
     });
   };

@@ -448,6 +448,16 @@ async function call(who, method, url, body, extra = {}) {
   assert.equal((await call('u', 'PUT', `/api/cards/${id}`, { template: tpl0 })).status, 200, 'trình sửa: thiệp đã kích hoạt lưu mẫu khác được');
   assert.equal((await call('u', 'POST', `/api/cards/${id}/duplicate`, {})).status, 400, 'không nhân bản thiệp');
   assert.equal((await call('u', 'GET', '/api/cards')).json.cards.filter((c) => c.ownerId).length, 1);
+  // kiểu Shopee: thiệp thứ hai là món riêng — tự tạo, chưa kích hoạt (trả riêng), dùng chung hạn dùng thử với thiệp đầu
+  r = await call('u', 'POST', '/api/cards', { new: true, template: tpl1 });
+  const n2 = r.json.card;
+  assert.deepEqual([r.status, n2.paid, n2.template, n2.title], [200, false, tpl1, 'Thiệp 2'], 'tạo thiệp mới: thiệp riêng, chưa kích hoạt');
+  assert.ok(n2.trialEndsAt <= (await call('u', 'GET', `/api/cards/${id}`)).json.card.createdAt + 8 * 864e5, 'không được thêm hạn dùng thử');
+  r = await call('u', 'POST', '/api/cards', { template: tpl0 });
+  assert.deepEqual([r.status, r.json.choose], [409, true], 'có hai thiệp → hỏi dùng mẫu cho thiệp nào');
+  r = await call('u', 'POST', '/api/cards', { template: tpl0, target: n2.id });
+  assert.deepEqual([r.json.card.id, r.json.card.template], [n2.id, tpl0], 'đổi mẫu đúng thiệp đã chọn');
+  assert.equal((await call('u', 'GET', `/api/cards/${id}`)).json.card.paid, true, 'thiệp đầu vẫn đã kích hoạt');
 
   console.log('✓ Tất cả kiểm thử đều qua');
   server.close();

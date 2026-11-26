@@ -98,19 +98,10 @@ function comboUnlock(card, kind, at = Date.now()) {
   // ghi thành đơn 0đ để trang quản trị thấy LED / video nào được mở nhờ Trọn bộ
   db.orders.push({ id: rid(12), code: PRODUCTS[kind].prefix + rid(6).toUpperCase(), product: kind, cardId: card.id, userId: card.userId, amount: 0, status: 'paid', paidVia: 'combo', createdAt: at, paidAt: at });
 }
-// Trả tiền theo ĐÁM CƯỚI: kích hoạt một thiệp là kích hoạt mọi thiệp của đám cưới đó (thiệp nhà trai, nhà gái, mời bạn bè…).
-// Chốt tên cô dâu chú rể + ngày cưới theo thiệp vừa trả cho cả đám cưới — không dùng một lần trả cho đám cưới khác.
-// Mẫu, màu, ảnh, chữ vẫn đổi thoải mái.
-function weddingCards(card) { return card.weddingId ? db.cards.filter((c) => c.weddingId === card.weddingId && c.userId) : [card]; }
+// Mỗi thiệp là một món riêng (kiểu Shopee): kích hoạt thiệp nào thì chỉ thiệp đó — thiệp thứ hai tự tạo, tự trả 99k.
 function payCard(card, at) {
   card.paid = true; card.paidAt = card.paidAt || at;
-  for (const c of weddingCards(card)) {
-    if (c === card || c.paid) continue;
-    c.data.groom.name = card.data.groom.name; c.data.bride.name = card.data.bride.name; c.data.date = card.data.date;
-    c.paid = true; c.paidAt = at; c.paidBy = card.id;
-  }
 }
-const weddingPaid = (card) => weddingCards(card).find((c) => c.paid) || null;
 function activateCombo(card, at) {
   payCard(card, at); card.combo = true;
   comboUnlock(card, 'led', at);
@@ -592,11 +583,23 @@ function setTemplate(card, tpl, palette) {
 }
 function newCard(user, b = {}) {
   const tpl = templates[b.template] ? b.template : DEFAULT_TEMPLATE;
-  const has = mineOf(user.id)[0];
-  if (has) {
-    if (b.template && templates[b.template]) { setTemplate(has, tpl, b.palette); save(); }
+  const mine = mineOf(user.id), has = mine[0];
+  // "Dùng mẫu": một thiệp → đổi mẫu thiệp đó (kể cả đã kích hoạt); nhiều thiệp → 409 choose (hỏi thiệp nào / tạo thiệp mới).
+  // b.target = id thiệp của mình → đổi mẫu thiệp đó; b.new → tạo thêm một thiệp riêng (kích hoạt riêng, giá như thiệp đầu).
+  if (has && !b.new) {
+    if (b.target) {
+      const t = mine.find((c) => c.id === b.target);
+      if (!t) throw httpError(404, 'Không tìm thấy thiệp');
+      if (b.template && templates[b.template]) { setTemplate(t, tpl, b.palette); save(); }
+      return t;
+    }
+    if (b.template && templates[b.template]) {
+      if (mine.length > 1) throw Object.assign(httpError(409, 'Dùng mẫu này cho thiệp nào?'), { choose: true });
+      setTemplate(has, tpl, b.palette); save();
+    }
     return has;
   }
+  if (mine.length >= 10) throw httpError(400, 'Mỗi tài khoản tối đa 10 thiệp');
   const now = Date.now();
   const w = Wd.ensure(user);
   const data = cd.defaults();
@@ -609,7 +612,9 @@ function newCard(user, b = {}) {
   }
   const card = {
     id: rid(12), userId: user.id, weddingId: w.id, slug: uniqueSlug('thiep-' + rid(6)),
-    title: str(b.title, 60) || 'Thiệp 1',
+    title: str(b.title, 60) || `Thiệp ${mine.length + 1}`,
+    // thiệp thêm dùng chung đồng hồ dùng thử với thiệp đầu (tạo thiệp mới không được thêm hạn dùng thử)
+    ...(mine.length ? { trialFrom: Math.min(...mine.map((c) => c.trialFrom || c.publishedAt || c.createdAt)) } : {}),
     template: tpl, palette: templates[tpl].palettes.find((p) => p.id === b.palette)?.id || templates[tpl].palettes[0].id,
     status: 'draft', paid: false, views: 0, data, createdAt: now, updatedAt: now,
   };
@@ -1000,7 +1005,7 @@ function markPaid(o, via) {
   closeCovered(o);
 }
 
-// một món: thiệp (cả đám cưới), màn LED / slide (đã tạo thì kích hoạt, chưa tạo thì ghi đã trả — tạo ra là tự mở)
+// một món: thiệp (chỉ thiệp này), màn LED / slide (đã tạo thì kích hoạt, chưa tạo thì ghi đã trả — tạo ra là tự mở)
 function activatePart(card, k, at) {
   if (k === 'card') return payCard(card, at);
   const t = card[k];

@@ -99,7 +99,7 @@ const buyCombo = async (id) => { const o = (await call('u', 'POST', `/api/cards/
   await buyCombo(b);
   assert.ok((await card(b)).led.paid, 'LED có sẵn của thiệp Trọn bộ được mở ngay');
   assert.ok(!(await card(d)).led.paid, 'LED của thiệp khác vẫn là dùng thử');
-  assert.ok((await card(d)).paid, 'trả tiền theo đám cưới: thiệp khác cùng đám cưới cũng kích hoạt (màn LED / slide vẫn theo từng thiệp)');
+  assert.ok(!(await card(d)).paid, 'mỗi thiệp là một món riêng: thiệp khác chưa kích hoạt');
 
   // 3. đã mua thiệp lẻ, có video nháp → nâng lên Trọn bộ (trả phần chênh) thì video mở luôn, LED làm sau cũng mở
   const e = await newCard('combo-e');
