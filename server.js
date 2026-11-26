@@ -415,6 +415,9 @@ route('GET', '/auth/facebook/callback', async (req, res, ctx) => {
   }
 });
 
+// phiên bản đang chạy (mã commit) — hiện mờ ở góc dưới các trang (public/js/ver.js) để biết bản mới đã lên chưa
+const APP_VERSION = (process.env.VERCEL_GIT_COMMIT_SHA || (() => { try { return require('child_process').execSync('git rev-parse HEAD', { cwd: __dirname, stdio: ['ignore', 'pipe', 'ignore'] }).toString(); } catch { return 'dev'; } })()).trim().slice(0, 7);
+route('GET', '/api/version', async (req, res) => json(res, 200, { v: APP_VERSION }));
 route('GET', '/api/meta', async (req, res) => {
   // giá, ngày dùng thử, liên hệ hỗ trợ… sửa trên trang quản trị nằm trong kho dữ liệu: bản chạy vừa khởi động (hoặc đã
   // lâu chưa nạp) phải nạp trước, nếu không khách thấy giá / liên hệ mặc định trong config.json. Kho lỗi thì dùng tạm bản đang có.
@@ -658,7 +661,7 @@ route('PUT', '/api/cards/:id', async (req, res, ctx) => {
   }
   if (b.data) { fixNames(card, false); card.data = Wd.keepFrozen(card, cd.normalize(b.data)); Wd.syncFromCard(card); } // đã qua ngày cưới: tên đôi + ngày cưới giữ nguyên // màn LED kích hoạt từ trước: cố định tên trước khi đổi
   if (b.data && b.slug === undefined && card.userId) autoSlug(card); // thiệp nháp của khách chưa đăng nhập: giữ nguyên
-  if (b.led) { card.led = ledLib.normalize(b.led, card.led); comboUnlock(card, 'led'); }
+  if (b.led) { card.led = ledLib.normalize(b.led, card.led, { admin: ctx.admin }); comboUnlock(card, 'led'); }
   // quản trị viên sửa giúp màn LED đã chốt: sửa bản chụp lúc chốt (tên, ngày, lời cảm ơn…), thiệp của khách giữ nguyên
   if (b.snap && ctx.admin && isFinal(card.led)) {
     const s = cd.normalize(b.snap);

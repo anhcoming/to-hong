@@ -1,5 +1,6 @@
 // popup đăng nhập: link /dang-nhap mở tại chỗ thay vì sang trang
 if (!document.querySelector('script[src="/js/login.js"]')) { const lg = document.createElement('script'); lg.src = '/js/login.js'; document.head.appendChild(lg); }
+if (!document.querySelector('script[src="/js/ver.js"]')) { const vs = document.createElement('script'); vs.src = '/js/ver.js'; vs.defer = true; document.head.appendChild(vs); } // phiên bản mờ ở góc dưới
 // Tiện ích dùng chung cho các trang ứng dụng
 window.$ = (s, r) => (r || document).querySelector(s);
 window.$$ = (s, r) => Array.from((r || document).querySelectorAll(s));

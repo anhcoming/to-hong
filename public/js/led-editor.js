@@ -13,7 +13,9 @@ const RATIO_INFO = {
 const getP = (o, p) => p.split('.').reduce((a, k) => (a == null ? a : a[k]), o);
 const setP = (o, p, v) => { const ks = p.split('.'); let a = o; ks.slice(0, -1).forEach((k) => (a = a[k])); a[ks[ks.length - 1]] = v; };
 
-function status(t) { $('#saved').textContent = (typeof ADMIN !== 'undefined' && ADMIN ? 'Quản trị viên đang sửa · ' : '') + (card && card.guest && t === 'Đã lưu ✓' ? '' : card && card.led && card.led.final && !ADMIN && t === 'Đã lưu ✓' ? 'Đã chốt' : t); }
+// quản trị viên (/sua-led/<id>?admin=1 từ trang quản trị): sửa giúp khách cả màn đã chốt — sửa thẳng bản chụp lúc chốt, thiệp không đổi
+const ADMIN = new URLSearchParams(location.search).get('admin') === '1';
+function status(t) { $('#saved').textContent = (ADMIN ? 'Quản trị viên đang sửa · ' : '') + (card && card.guest && t === 'Đã lưu ✓' ? '' : card && card.led && card.led.final && !ADMIN && t === 'Đã lưu ✓' ? 'Đã chốt' : t); }
 // trình sửa kiểu CapCut: cột icon chọn bảng
 let curPanel = 'chu'; // mặc định bảng Nội dung (ô nhập), bảng Mẫu màn hình ở tab bên cạnh
 
@@ -38,7 +40,7 @@ function renderSide() {
     return `<button class="${led.ratio === r ? 'on' : ''}" data-set="ratio" data-v="${r}" title="${esc(RATIO_INFO[r][0] + ' — ' + RATIO_INFO[r][1])}"><i style="width:${Math.round(w * s)}px;height:${Math.round(hh * s)}px"></i>${r}</button>`;
   }).join('');
   // đã kích hoạt: mẫu đã chốt → bỏ hẳn cột chọn mẫu, khung xem trước chiếm cả bề ngang
-  const lay = $('#layout'), lockedNow = !!card.led.paid;
+  const lay = $('#layout'), lockedNow = !ADMIN && !!card.led.paid; // quản trị viên: vẫn hiện cột sửa + chọn mẫu
   if (lay && lay.classList.contains('locked') !== lockedNow) { lay.classList.toggle('locked', lockedNow); requestAnimationFrame(() => { if (typeof fitScreen === 'function' && led) fitScreen(); }); }
   // đã chốt hẳn (trả tiền là chốt): ẩn mọi nút chỉnh — khung màn, ẩn / hiện cảnh, tốc độ; chỉ còn xem và chuyển cảnh
   if (lay && lay.classList.contains('final') !== ledFinal()) { lay.classList.toggle('final', ledFinal()); requestAnimationFrame(() => { if (typeof fitScreen === 'function' && led) fitScreen(); }); }
@@ -166,8 +168,6 @@ function reloadPreview() { $('#frame').src = `/led/${card.slug}?preview=1&t=${Da
 // ---------- lưu ----------
 // Trả tiền là chốt: màn LED đã kích hoạt không sửa gì nữa (máy chủ cũng từ chối) — báo khách, bỏ phần vừa chỉnh trên máy
 let lockedAt = 0;
-// quản trị viên (/sua-led/<id>?admin=1 từ trang quản trị): sửa giúp khách cả màn đã chốt — sửa thẳng bản chụp lúc chốt, thiệp không đổi
-const ADMIN = new URLSearchParams(location.search).get('admin') === '1';
 const isFinalNow = () => !!(card && card.led && card.led.final);
 const ledFinal = () => !ADMIN && isFinalNow();
 function useSnap() { if (isFinalNow() && card.ledConfig && card.ledConfig.snap) card.data = card.ledConfig.snap; } // hiện đúng dữ liệu lúc chốt
@@ -501,7 +501,7 @@ function start() {
     // đã có màn LED mà bấm "Dùng mẫu" ở trang giới thiệu (/tao-led?palette=…&effect=…): đổi sang mẫu vừa chọn, chữ giữ nguyên
     const q = new URLSearchParams(location.search), t = (META.led.templates || []).find((x) => x.palette === q.get('palette') && x.effect === q.get('effect'));
     if (q.get('palette') || q.get('tao')) history.replaceState(null, '', location.pathname + (q.get('xuat') ? '?xuat=1' : ''));
-    const picked = t && !card.led.paid && (t.palette !== led.palette || t.effect !== led.effect); // đã kích hoạt: mẫu chốt, không đổi
+    const picked = t && (ADMIN || !card.led.paid) && (t.palette !== led.palette || t.effect !== led.effect); // đã kích hoạt: mẫu chốt, không đổi
     if (picked) { led.palette = t.palette; led.effect = t.effect; await save(); } // lưu trước để khung xem trước mở đúng mẫu
     start();
     // vừa đăng nhập từ nút "Lấy link chiếu": mở luôn bước kích hoạt để lấy link

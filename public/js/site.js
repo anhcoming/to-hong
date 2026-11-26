@@ -1,6 +1,7 @@
 // Phần chung của các trang giới thiệu: thanh trên, chân trang, giá từ cấu hình, hiệu ứng hiện dần.
 (function () {
   'use strict';
+  if (!document.querySelector('script[src="/js/ver.js"]')) { const vs = document.createElement('script'); vs.src = '/js/ver.js'; vs.defer = true; document.head.appendChild(vs); } // phiên bản mờ ở góc dưới
   // popup đăng nhập: link /dang-nhap mở tại chỗ thay vì sang trang
   // chặn mở công cụ nhà phát triển cho khách (máy chủ trả bản rỗng cho máy của chủ web — xem lib/guard.js)
   if (!document.querySelector('script[src="/js/cn-guard.js"]')) { var gd = document.createElement('script'); gd.src = '/js/cn-guard.js'; gd.defer = true; document.head.appendChild(gd); }
