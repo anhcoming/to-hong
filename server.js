@@ -275,6 +275,7 @@ function cardSummary(card) {
     date: card.data.date,
     cover: card.data.cover || card.data.photos.find(Boolean) || '',
     ...cardState(card),
+    side: sideOf(card), // 'trai' | 'gai' | null (thiệp cũ thừa)
     namesFrozen: Wd.namesFrozen(card), // đã kích hoạt / đã qua ngày cưới: tên đôi + ngày cưới cố định
     // nâng lên Trọn bộ: giá phần chênh (đã trừ phần đã trả) và giá mua lẻ phần còn thiếu — null khi không cần gợi ý
     comboUpgrade: !card.combo && comboHave(card).length && comboHave(card).length < 3 ? { amount: PRODUCTS.combo.price(card), retail: missingRetail(card), have: comboHave(card) } : null,
@@ -581,12 +582,23 @@ for (const [path, to, keep] of [['/tao-led', 'sua-led', ['palette', 'effect']], 
   });
 }
 
-// Một đám cưới có thể có nhiều thiệp (nhà trai, nhà gái, mời bạn bè…) — trả tiền một lần cho cả đám cưới (payCard).
-// "Dùng mẫu" (b.template):
-//   - b.target = id thiệp của mình → đổi mẫu thiệp đó (kể cả đã kích hoạt: chỉ chốt tên + ngày, mẫu đổi thoải mái)
-//   - b.target = 'new' → làm thêm một thiệp trong đám cưới (đã kích hoạt thì thiệp mới cũng đã kích hoạt)
-//   - không có target: chỉ một thiệp nháp → đổi mẫu thiệp đó như trước; đã kích hoạt / nhiều thiệp → 409 choose để khách chọn
+// Mỗi tài khoản cố định HAI thiệp: thiệp nhà trai và thiệp nhà gái (card.side 'trai' | 'gai') — trả tiền một lần cho cả hai
+// (payCard). Thiệp cũ chưa gắn bên: thiệp chính (đã kích hoạt / sửa gần nhất) tính là nhà trai.
+// "Dùng mẫu" (b.template): b.side = 'trai' | 'gai' → đổi mẫu thiệp bên đó (chưa có thì tạo, chép chữ + ảnh từ thiệp bên kia);
+// chưa có thiệp nào → tạo thiệp nhà trai luôn; đã có thiệp mà không nói bên nào → 409 choose (hỏi "nhà trai hay nhà gái").
+const SIDES = { trai: 'Thiệp nhà trai', gai: 'Thiệp nhà gái' };
 const userCard = (user) => db.cards.filter((c) => c.userId === user.id).sort((a, b) => b.updatedAt - a.updatedAt)[0];
+const mineOf = (userId) => db.cards.filter((c) => c.userId === userId).sort((a, b) => (b.paid ? 1 : 0) - (a.paid ? 1 : 0) || b.updatedAt - a.updatedAt);
+function cardFor(mine, side) {
+  const own = mine.find((c) => c.side === side);
+  if (own || side !== 'trai') return own || null;
+  return mine.find((c) => !c.side) || null; // thiệp cũ chưa gắn bên → nhà trai
+}
+function sideOf(card) {
+  if (!card.userId) return null;
+  if (card.side) return card.side;
+  return cardFor(mineOf(card.userId), 'trai') === card ? 'trai' : null;
+}
 function setTemplate(card, tpl, palette) {
   if (!templates[tpl]) return;
   Object.assign(card, { template: tpl, palette: templates[tpl].palettes.find((p) => p.id === palette)?.id || templates[tpl].palettes[0].id, updatedAt: Date.now() });
@@ -594,19 +606,15 @@ function setTemplate(card, tpl, palette) {
 }
 function newCard(user, b = {}) {
   const tpl = templates[b.template] ? b.template : DEFAULT_TEMPLATE;
-  const mine = db.cards.filter((c) => c.userId === user.id).sort((a, b2) => b2.updatedAt - a.updatedAt);
-  const has = mine[0];
-  if (has && b.target && b.target !== 'new') {
-    const t = mine.find((c) => c.id === b.target);
-    if (!t) throw httpError(404, 'Không tìm thấy thiệp');
-    setTemplate(t, tpl, b.palette); save(); return t;
+  const mine = mineOf(user.id), has = mine[0];
+  const side = SIDES[b.side] ? b.side : null;
+  if (has && side) {
+    const t = cardFor(mine, side);
+    if (t) { if (!t.side) t.side = side; if (b.template) setTemplate(t, tpl, b.palette); save(); return t; }
+    return addCard(user, has, tpl, b.palette, side);
   }
-  if (has && b.target === 'new') return addCard(user, has, tpl, b.palette);
   if (has) {
-    if (b.template && templates[b.template]) {
-      if (mine.length > 1 || (has.paid && b.template !== has.template)) throw Object.assign(httpError(409, 'Chọn thiệp muốn dùng mẫu này'), { choose: true });
-      setTemplate(has, tpl, b.palette); save();
-    }
+    if (b.template && templates[b.template] && !(mine.length === 1 && b.template === has.template)) throw Object.assign(httpError(409, 'Áp dụng mẫu này cho thiệp nhà trai hay nhà gái?'), { choose: true });
     return has;
   }
   const now = Date.now();
@@ -621,7 +629,7 @@ function newCard(user, b = {}) {
   }
   const card = {
     id: rid(12), userId: user.id, weddingId: w.id, slug: uniqueSlug('thiep-' + rid(6)),
-    title: str(b.title, 60) || 'Thiệp 1',
+    title: str(b.title, 60) || SIDES[b.side || 'trai'], side: SIDES[b.side] ? b.side : 'trai',
     template: tpl, palette: templates[tpl].palettes.find((p) => p.id === b.palette)?.id || templates[tpl].palettes[0].id,
     status: 'draft', paid: false, views: 0, data, createdAt: now, updatedAt: now,
   };
@@ -763,20 +771,24 @@ route('POST', '/api/cards/:id/duplicate', async (req, res, ctx) => {
   const src = ownedCard(ctx, ctx.params.id);
   const b = await readJson(req);
   const user = ctx.admin && !ctx.user ? db.users.find((u) => u.id === src.userId) : needUser(ctx);
-  const card = addCard(user, src, templates[b.template] ? b.template : src.template, b.palette || (b.template ? '' : src.palette));
+  const mine = mineOf(user.id), side = SIDES[b.side] ? b.side : ['gai', 'trai'].find((k) => !cardFor(mine, k));
+  if (!side) throw httpError(400, 'Bạn đã có đủ thiệp nhà trai và thiệp nhà gái');
+  const card = addCard(user, src, templates[b.template] ? b.template : src.template, b.palette || (b.template ? '' : src.palette), side);
   json(res, 200, { card: cardFull(card) });
 });
-function addCard(user, src, tpl, palette) {
-  const mine = db.cards.filter((c) => c.userId === user.id);
-  if (mine.length >= 10) throw httpError(400, 'Mỗi đám cưới tối đa 10 thiệp');
+function addCard(user, src, tpl, palette, side) {
+  if (cardFor(mineOf(user.id), side)) throw httpError(400, `Bạn đã có ${SIDES[side].toLowerCase()}`);
   const now = Date.now(), paidBy = weddingPaid(src);
   const data = JSON.parse(JSON.stringify(src.data));
   const card = {
     id: rid(12), userId: user.id, weddingId: src.weddingId || Wd.ensure(user).id, slug: uniqueSlug('thiep-' + rid(6)),
-    title: `Thiệp ${mine.length + 1}`, template: tpl, palette: '', status: 'draft', paid: false, views: 0, data, createdAt: now, updatedAt: now,
+    title: SIDES[side], side, template: tpl, palette: '', status: 'draft', paid: false, views: 0, data, createdAt: now, updatedAt: now,
     trialFrom: src.trialFrom || src.publishedAt || src.createdAt,
   };
   setTemplate(card, tpl, palette);
+  // thiệp nhà gái: lễ chính là Lễ Vu Quy (nhà trai: Lễ Thành Hôn)
+  const swap = side === 'gai' ? ['Lễ Thành Hôn', 'Lễ Vu Quy'] : ['Lễ Vu Quy', 'Lễ Thành Hôn'];
+  (data.events || []).forEach((e) => { if (e.name === swap[0]) e.name = swap[1]; });
   if (paidBy) { card.paid = true; card.paidAt = now; card.paidBy = paidBy.id; data.groom.name = paidBy.data.groom.name; data.bride.name = paidBy.data.bride.name; data.date = paidBy.data.date; }
   db.cards.push(card);
   autoSlug(card);

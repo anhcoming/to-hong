@@ -247,7 +247,8 @@ async function load() {
   const q = new URLSearchParams(location.search);
   // thiệp chính: Trọn bộ / đã kích hoạt / đã phát hành trước, cùng mức thì thiệp sửa gần nhất (máy chủ đã xếp)
   const rank = (c) => (isCombo(c) ? 3 : c.paid ? 2 : c.status === 'published' ? 1 : 0);
-  const main = cards.slice().sort((a, b) => rank(b) - rank(a))[0];
+  // thiệp chính = thiệp nhà trai (mỗi tài khoản cố định hai thiệp: nhà trai + nhà gái)
+  const main = cards.find((c) => c.side === 'trai') || cards.slice().sort((a, b) => rank(b) - rank(a))[0];
   // nút "Màn LED" ở thanh dưới (điện thoại) → mở thẳng màn LED của thiệp chính; chưa có thiệp: sang trang giới thiệu màn LED
   if (q.get('mo') === 'led') { location.replace(main ? `/sua-led/${main.id}${main.led.created ? '' : '?tao=1'}` : '/man-hinh-led-dam-cuoi'); return; }
   const sel = q.get('thiep') && cards.find((c) => c.id === q.get('thiep'));
@@ -261,10 +262,11 @@ async function load() {
     const paidAny = cards.some((c) => c.paid);
     el.innerHTML = `<div class="wedh"><h1>Đám cưới của bạn</h1>${paidAny ? '<span class="lock">🔒 Tên + ngày cưới đã chốt</span>' : ''}</div>
       <div class="dash">${heroCard(main)}</div>
-      <div class="mine"><h4>${rest.length ? 'Các thiệp của đám cưới' : 'Thêm thiệp cho đám cưới'}</h4><div class="mrows">${rest.map(mineRow).join('')}
-        <button type="button" class="addc" data-add="${main.id}">＋ Làm thêm thiệp <small>${paidAny ? 'nhà gái, mời bạn bè… · đã có trong gói' : 'nhà gái, mời bạn bè… · cùng một lần kích hoạt'}</small></button></div></div>`;
-    $('[data-add]').onclick = async (ev) => {
-      try { const { card } = await api(`/api/cards/${ev.currentTarget.dataset.add}/duplicate`, { method: 'POST', body: {} }); location.href = '/sua/' + card.id; } catch (e) { toast(e.message, true); }
+      <div class="mine"><h4>Thiệp nhà gái</h4><div class="mrows">${rest.map(mineRow).join('')}
+        ${rest.some((c) => c.side === 'gai') ? '' : `<button type="button" class="addc" data-add="${main.id}">＋ Tạo thiệp nhà gái <small>chữ, ảnh lấy từ thiệp nhà trai${paidAny ? ' · đã có trong gói' : ''}</small></button>`}</div></div>`;
+    const ad = $('[data-add]');
+    if (ad) ad.onclick = async (ev) => {
+      try { const { card } = await api(`/api/cards/${ev.currentTarget.dataset.add}/duplicate`, { method: 'POST', body: { side: 'gai' } }); location.href = '/sua/' + card.id; } catch (e) { toast(e.message, true); }
     };
   } else { // chưa có thiệp: mời chọn mẫu (kho mẫu ở /mau-thiep)
     $('#mine').innerHTML = ''; document.querySelector('.head').hidden = false;
@@ -284,7 +286,7 @@ function mineRow(c) {
   const info = c.status === 'published' ? ` · ${c.views} lượt xem · ${c.rsvpYes} sẽ đến` : ` · ${esc(tplName(c.template))}`;
   return `<div class="mrow panel" data-id="${c.id}">
     <a class="mini" href="/sua/${c.id}" style="background-image:url('${thumbOf(c)}')" aria-label="Sửa thiệp"></a>
-    <a class="tx" href="/thiep-cua-toi?thiep=${c.id}"><b>${esc(c.names || c.title)}</b><span class="${st[0]}">${st[1]}${info}</span></a>
+    <a class="tx" href="/thiep-cua-toi?thiep=${c.id}"><b>${c.side === 'gai' ? 'Thiệp nhà gái' : c.side === 'trai' ? 'Thiệp nhà trai' : esc(c.names || c.title)}</b><span class="${st[0]}">${st[1]}${info}</span></a>
     <a class="btn sm" href="/sua/${c.id}">Sửa</a>
     <a class="btn sm plain" href="/thiep-cua-toi?thiep=${c.id}" aria-label="Quản lý thiệp"><span class="xl">Quản lý </span>›</a>
   </div>`;
@@ -331,7 +333,7 @@ function heroCard(c) {
       <div class="info">
         <div class="top">
           <div style="min-width:0"><h2>${esc(c.names || c.title)}</h2>
-            <div class="sub">${c.date ? `<span>${dateVN(c.date)} ·</span>` : ''}${dd ? `<span class="dday">${dd}</span>` : ''}<span>${esc(tplName(c.template))}</span></div></div>
+            <div class="sub">${c.side ? `<span class="chip">${c.side === 'gai' ? 'Thiệp nhà gái' : 'Thiệp nhà trai'}</span>` : ''}${c.date ? `<span>${dateVN(c.date)} ·</span>` : ''}${dd ? `<span class="dday">${dd}</span>` : ''}<span>${esc(tplName(c.template))}</span></div></div>
           ${moreMenu(c)}
         </div>
         ${trialBar(c) ? '' : `<div class="meta">${stateChip(c)}</div>`}

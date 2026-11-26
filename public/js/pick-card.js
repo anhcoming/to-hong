@@ -1,6 +1,6 @@
-// "Dùng mẫu" khi đã có thiệp: một đám cưới có thể có nhiều thiệp (nhà trai, nhà gái…) và thiệp đã kích hoạt vẫn đổi mẫu được.
-// window.useTemplate(template, palette) → Promise<card | null>: gửi POST /api/cards; máy chủ trả 409 { choose } khi cần hỏi
-// (đã kích hoạt / có nhiều thiệp) → hiện bảng chọn: đổi mẫu thiệp nào, hay làm thêm một thiệp mới. Đóng bảng = null.
+// "Dùng mẫu" khi đã có thiệp: mỗi tài khoản cố định hai thiệp — nhà trai và nhà gái (thiệp đã kích hoạt vẫn đổi mẫu được).
+// window.useTemplate(template, palette) → Promise<card | null>: gửi POST /api/cards; đã có thiệp thì máy chủ trả 409 { choose }
+// → hiện bảng "Áp dụng cho thiệp nhà trai hay nhà gái" rồi gửi lại kèm side. Đóng bảng = null.
 // Không phụ thuộc common.js (trang giới thiệu cũng dùng).
 (function () {
   if (window.useTemplate) return;
@@ -27,14 +27,17 @@
       var paid = cards.some(function (c) { return c.paid; });
       var names = (cards.find(function (c) { return c.names; }) || {}).names || '';
       var cover = function (c) { return c.cover ? c.cover.split('#')[0] : '/demo/cover-' + c.template + '-' + c.palette + '.jpg'; };
+      // hai lựa chọn cố định: thiệp nhà trai · thiệp nhà gái (đã có thì đổi mẫu, chưa có thì tạo — chữ, ảnh chép từ thiệp bên kia)
+      var opt = function (side, label) {
+        var c = cards.find(function (x) { return x.side === side; });
+        return '<button class="pk-o" data-t="' + side + '"><i' + (c ? ' style="background-image:url(\'' + esc(cover(c)) + '\')"' : '') + '>' + (c ? '' : '＋') + '</i><span><b>' + label + '</b><small>'
+          + (c ? 'Đang dùng ' + esc(c.tplName || c.template) + ' → đổi sang ' + esc(tplName || template) + (c.paid ? ' · <span class="ok">đã kích hoạt</span>' : '')
+            : 'Chưa có — tạo mới với mẫu ' + esc(tplName || template) + ', chữ &amp; ảnh lấy từ thiệp còn lại') + '</small></span></button>';
+      };
       ov.innerHTML = '<div class="pk" role="dialog" aria-modal="true"><button class="pk-x" aria-label="Đóng">✕</button>'
-        + '<h4>Dùng mẫu ' + esc(tplName || template) + ' cho…</h4>'
-        + '<p>' + (paid ? 'Đám cưới ' + esc(names) + ' đã kích hoạt. ' : '') + 'Đổi mẫu hay làm thêm thiệp đều miễn phí — chữ, ảnh, ngày giờ giữ nguyên.</p>'
-        + cards.map(function (c) {
-          return '<button class="pk-o" data-t="' + esc(c.id) + '"><i style="background-image:url(\'' + esc(cover(c)) + '\')"></i><span><b>Đổi mẫu “' + esc(c.title || c.names || 'Thiệp') + '”</b><small>'
-            + esc(c.tplName || c.template) + ' → ' + esc(tplName || template) + (c.status === 'published' ? ' · link đã gửi khách vẫn dùng được' : '') + (c.paid ? ' · <span class="ok">đã kích hoạt</span>' : '') + '</small></span></button>';
-        }).join('')
-        + '<button class="pk-o" data-t="new"><i>＋</i><span><b>Làm thêm một thiệp mới</b><small>Ví dụ thiệp nhà gái, thiệp mời bạn bè' + (paid ? ' · đã có trong gói' : '') + '</small></span></button></div>';
+        + '<h4>Áp dụng mẫu ' + esc(tplName || template) + ' cho…</h4>'
+        + '<p>' + (names ? esc(names) + ' · ' : '') + (paid ? 'đã kích hoạt, ' : '') + 'đổi mẫu miễn phí, chữ và ảnh giữ nguyên.</p>'
+        + opt('trai', 'Thiệp nhà trai') + opt('gai', 'Thiệp nhà gái') + '</div>';
       var close = function (v) { ov.remove(); document.removeEventListener('keydown', key); done(v); };
       var key = function (e) { if (e.key === 'Escape') close(null); };
       document.addEventListener('keydown', key);
@@ -58,7 +61,7 @@
         return sheet(template, palette, cards, tplName || nm(template));
       }).then(function (target) {
         if (!target) return null;
-        return post({ template: template, palette: palette, target: target }).then(function (r) { return r.card; });
+        return post({ template: template, palette: palette, side: target }).then(function (r) { return r.card; });
       });
     });
   };
