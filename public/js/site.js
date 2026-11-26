@@ -325,6 +325,12 @@
     if (me.user && a) a.innerHTML = '<a class="btn btn-main btn-sm" href="/thiep-cua-toi">Thiệp của tôi</a>';
     if (me.user) { renderMPanel(me.user); if (window.drawUav) drawUav(me.user); }
     if (window.drawSbar) drawSbar(me.user || null);
+    // đã đăng nhập mà máy này chưa nhớ tên đôi (máy mới): lấy từ thiệp của tài khoản để xem mẫu có tên mình
+    if (me.user && !TEN().groom && !TEN().bride) fetch('/api/cards').then(function (r) { return r.json(); }).then(function (j) {
+      var c = (j.cards || []).filter(function (x) { return x.names; })[0]; if (!c) return;
+      var nm = c.names.split(' & ');
+      try { localStorage.setItem('cnTen', JSON.stringify({ groom: nm[0] || '', bride: nm[1] || '', date: c.date || '' })); } catch (e) { /* bỏ qua */ }
+    }).catch(function () {});
     var ua = document.querySelector('.uav'); if (ua) ua.style.visibility = '';
   }).catch(function () { var ua = document.querySelector('.uav'); if (ua) ua.style.visibility = ''; if (window.drawSbar) drawSbar(null); });
 

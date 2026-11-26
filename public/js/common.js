@@ -161,7 +161,22 @@ async function apiCall(url, opts) {
     throw new Error('Bạn cần đăng nhập');
   }
   if (!r.ok) throw Object.assign(new Error(j.error || 'Có lỗi xảy ra'), { status: r.status });
+  rememberTen(j);
   return j;
+}
+// Nhớ tên đôi + ngày cưới khách đã gõ ở bất kỳ đâu (thiệp, màn LED, slide, sổ tay) → các trang xem mẫu tự hiện tên đó
+// (localStorage cnTen, dùng chung với khung xem mẫu site.js). Chỉ ghi khi có tên / ngày thật, không xoá thứ đã nhớ.
+function rememberTen(j) {
+  try {
+    const d = (j && j.card && j.card.data) || null, w = (j && j.wedding) || (j && j.ov && j.ov.wedding) || null;
+    const g = d ? d.groom && d.groom.name : w && w.couple && w.couple.groom && w.couple.groom.name;
+    const b = d ? d.bride && d.bride.name : w && w.couple && w.couple.bride && w.couple.bride.name;
+    const date = d ? d.date : w && w.date;
+    if (!g && !b && !date) return;
+    const old = JSON.parse(localStorage.getItem('cnTen') || 'null') || {};
+    const nx = { groom: g || old.groom || '', bride: b || old.bride || '', date: date || old.date || '' };
+    if (JSON.stringify(nx) !== JSON.stringify(old)) localStorage.setItem('cnTen', JSON.stringify(nx));
+  } catch (e) { /* bỏ qua */ }
 }
 
 window.esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
