@@ -33,6 +33,16 @@ h1.t{font-size:20px;margin:0 0 4px}p.d{margin:0 0 6px;color:var(--muted);font-si
 .cv .nm b{display:block;font:700 17px/1.05 'Dancing Script',cursive;text-shadow:0 2px 8px rgba(0,0,0,.4)}.cv .nm small{font-size:9.5px;letter-spacing:.12em;opacity:.9}
 .cv .yt{position:absolute;top:6px;left:6px;background:rgba(255,255,255,.92);color:var(--red);font-size:9.5px;font-weight:700;padding:2px 7px;border-radius:999px}
 .cv .pz{position:absolute;top:6px;right:6px;background:rgba(0,0,0,.45);color:#fff;font-size:10px;font-weight:700;padding:2px 7px;border-radius:999px}
+.hero.hsm{padding:12px 12px 10px}.hero.hsm h3{font-size:21px;margin-bottom:8px}
+.rw{margin:12px 0 0}.rh{display:flex;justify-content:space-between;align-items:baseline;padding:0 12px 6px}.rh b{font-size:14px}.rh span{font-size:11.5px;color:var(--muted)}.rh .fr{color:#fff;background:var(--red);padding:1px 8px;border-radius:999px;font-weight:700}
+.rs{display:flex;gap:8px;overflow-x:auto;padding:0 12px 4px;scrollbar-width:none}.rs::-webkit-scrollbar{display:none}
+.cv.sm{flex:none;width:112px}.cv.sm .nm b{font-size:13.5px}
+.wd,.vt{flex:none;position:relative;border-radius:10px;background:#222 center/cover;display:grid;place-items:center;overflow:hidden;box-shadow:0 6px 14px rgba(0,0,0,.15)}
+.wd{width:170px;aspect-ratio:16/9}.vt{width:96px;aspect-ratio:9/16}
+.wd::before,.vt::before{content:"";position:absolute;inset:0;background:rgba(0,0,0,.25)}
+.wd b,.vt b{position:relative;color:#fff;font:700 16px/1.05 'Dancing Script',cursive;text-align:center;padding:0 6px;text-shadow:0 2px 8px rgba(0,0,0,.6)}.vt b{font-size:14px}
+.wd i,.vt i{position:absolute;right:6px;bottom:6px;width:22px;height:22px;border-radius:50%;background:rgba(255,255,255,.9);color:var(--red);font-style:normal;font-size:9px;display:grid;place-items:center}
+.cb{margin:0 12px;padding:10px 12px;border-radius:14px;background:#fff;box-shadow:0 0 0 1px var(--line);display:flex;justify-content:space-between;align-items:center;gap:8px}.cb b{font-size:13px;display:block}.cb small{font-size:11px;color:var(--muted)}.cb .btn{height:36px;padding:0 14px;font-size:12.5px}
 /* B — mẫu chạy thật */
 .full{position:absolute;inset:0;background:url(/demo/cover-songhy-do.jpg) center top/cover}
 .full::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,0,0,.35),transparent 22%,transparent 60%,rgba(0,0,0,.75))}
@@ -78,23 +88,41 @@ h1.t{font-size:20px;margin:0 0 4px}p.d{margin:0 0 6px;color:var(--muted);font-si
 <div class="row">
 
   <!-- A -->
-  <div class="ph"><h2>A · Trang chủ: "Thử tên của bạn"<small>Ô gõ tên ngay đầu trang. Gõ tới đâu, cả lưới mẫu đổi sang tên hai bạn tới đó — không cần đăng nhập.</small></h2>
-    <div class="scr">
+  <div class="ph"><h2>A · Trang chủ: gõ tên một lần, xem cả thiệp, LED, slide<small>Ô tên trên đầu; bên dưới từng hàng sản phẩm vuốt ngang — Thiệp cưới, Màn hình LED, Slide cưới, Báo hỷ — tất cả đều hiện tên hai bạn.</small></h2>
+    <div class="scr" style="overflow-y:auto">
       <div class="top"><span class="lg">Cưới Nha</span><span class="sp"></span><span class="cart">🛒<em>1</em></span></div>
-      <div class="hero"><h3>Đám cưới của bạn trông thế nào?</h3><p>Gõ tên hai bạn — xem ngay trên 49 mẫu thiệp</p>
+      <div class="hero hsm"><h3>Đám cưới của bạn trông thế nào?</h3>
         <div class="ins"><span>Đức Anh</span><em>&amp;</em><span class="cur">Phạm Nga</span></div>
-        <div class="dt">📅 Thứ Hai, 28.12.2026 · tức 20 tháng 11 Bính Ngọ</div></div>
-      <div class="live"><i></i>Đang hiện tên <b style="color:var(--ink)">Đức Anh &amp; Phạm Nga</b> trên mọi mẫu</div>
-      <div class="chips"><span class="on">Tất cả</span><span>Truyền thống</span><span>Tối giản</span><span>Hoa lá</span></div>
-      <div class="grid">
-        <div class="cv" style="background-image:url(/demo/cover-songhy-do.jpg)"><span class="yt">♥ 2</span><span class="pz">99k</span><div class="nm"><b>Đức Anh &amp; Phạm Nga</b><small>28 · 12 · 2026</small></div></div>
-        <div class="cv" style="background-image:url(/demo/cover-ngoctrai-trang-ngoc.jpg)"><span class="pz">99k</span><div class="nm"><b>Đức Anh &amp; Phạm Nga</b><small>28 · 12 · 2026</small></div></div>
-        <div class="cv" style="background-image:url(/demo/cover-longphung-do-son.jpg)"><span class="pz">99k</span><div class="nm"><b>Đức Anh &amp; Phạm Nga</b><small>28 · 12 · 2026</small></div></div>
-        <div class="cv" style="background-image:url(/demo/cover-hoamoc-xanh-la.jpg)"><span class="yt">♥ 1</span><span class="pz">99k</span><div class="nm"><b>Đức Anh &amp; Phạm Nga</b><small>28 · 12 · 2026</small></div></div>
-      </div>
-      <div class="bn"><b class="on"><i>🏠</i>Trang chủ</b><b><i>💌</i>Thiệp</b><b><i>🎬</i>Video</b><b><i>🖥️</i>Màn LED</b><b><i>👤</i>Tôi</b></div>
+        <div class="dt">📅 Thứ Hai, 28.12.2026</div></div>
+      <div class="rw"><div class="rh"><b>💌 Thiệp cưới</b><span>49 mẫu · từ 99k ›</span></div>
+        <div class="rs">
+          <div class="cv sm" style="background-image:url(/demo/cover-songhy-do.jpg)"><div class="nm"><b>Đức Anh &amp; Phạm Nga</b><small>28·12·2026</small></div></div>
+          <div class="cv sm" style="background-image:url(/demo/cover-ngoctrai-trang-ngoc.jpg)"><div class="nm"><b>Đức Anh &amp; Phạm Nga</b><small>28·12·2026</small></div></div>
+          <div class="cv sm" style="background-image:url(/demo/cover-hoamoc-xanh-la.jpg)"><div class="nm"><b>Đức Anh &amp; Phạm Nga</b><small>28·12·2026</small></div></div>
+        </div></div>
+      <div class="rw"><div class="rh"><b>🖥️ Màn hình LED tiệc</b><span>7 mẫu · 69k ›</span></div>
+        <div class="rs">
+          <div class="wd" style="background-image:url(/demo/lposter-dem-phaohoa.jpg)"><b>Đức Anh &amp; Phạm Nga</b><i>▶</i></div>
+          <div class="wd" style="background-image:url(/demo/lposter-sondo-satindo.jpg)"><b>Đức Anh &amp; Phạm Nga</b><i>▶</i></div>
+          <div class="wd" style="background-image:url(/demo/lposter-bac-dembac.jpg)"><b>Đức Anh &amp; Phạm Nga</b><i>▶</i></div>
+        </div></div>
+      <div class="rw"><div class="rh"><b>🎞️ Slide ảnh cưới</b><span>16 mẫu · 49k ›</span></div>
+        <div class="rs">
+          <div class="wd" style="background-image:url(/demo/vposter-album.jpg)"><b>Đức Anh &amp; Phạm Nga</b><i>▶</i></div>
+          <div class="wd" style="background-image:url(/demo/vposter-dienanh.jpg)"><b>Đức Anh &amp; Phạm Nga</b><i>▶</i></div>
+          <div class="wd" style="background-image:url(/demo/vposter-dao.jpg)"><b>Đức Anh &amp; Phạm Nga</b><i>▶</i></div>
+        </div></div>
+      <div class="rw"><div class="rh"><b>🎁 Video báo hỷ TikTok</b><span class="fr">Miễn phí ›</span></div>
+        <div class="rs">
+          <div class="vt" style="background-image:url(/demo/vposter-baocuoi.jpg)"><b>Đức Anh &amp; Phạm Nga</b><i>▶</i></div>
+          <div class="vt" style="background-image:url(/demo/cover-longphung-do-son.jpg)"><b>Đức Anh &amp; Phạm Nga</b><i>▶</i></div>
+          <div class="vt" style="background-image:url(/demo/cover-toduyen-xanh-la.jpg)"><b>Đức Anh &amp; Phạm Nga</b><i>▶</i></div>
+        </div></div>
+      <div class="rw"><div class="cb"><div><b>Trọn bộ: thiệp + LED + slide</b><small>cùng tên, cùng màu · mua lẻ 217k</small></div><span class="btn">169k ›</span></div></div>
+      <div style="height:76px"></div>
+      <div class="bn" style="position:sticky;margin:0 10px 10px;left:auto;right:auto"><b class="on"><i>🏠</i>Trang chủ</b><b><i>💌</i>Thiệp</b><b><i>🎬</i>Video</b><b><i>🖥️</i>Màn LED</b><b><i>👤</i>Tôi</b></div>
     </div>
-    <p class="note">Bản thật: tên được <b>vẽ đúng vào chỗ tên của từng mẫu</b> (máy chủ dựng ảnh bìa theo tên), không phải dải chữ dán đè như mock. Tên gõ ở đây mang luôn vào thiệp khi bấm Dùng.</p>
+    <p class="note">Vuốt ngang từng hàng; bấm một ô là mở bản chạy thật có tên (màn B). <b>Cuộn được trong khung</b> để xem hết các hàng. Chưa gõ tên thì hiện tên mẫu "Gia Huy &amp; Bảo Ngọc".</p>
   </div>
 
   <!-- B -->
@@ -150,6 +178,7 @@ h1.t{font-size:20px;margin:0 0 4px}p.d{margin:0 0 6px;color:var(--muted);font-si
   <li><b>Hấp dẫn:</b> khách thấy chính đám cưới của mình trước khi trả tiền → muốn chụp màn hình, gửi người yêu, quay TikTok.</li>
   <li><b>Vẫn dễ trả tiền:</b> giữ giỏ hàng / thanh toán / đơn mua kiểu Shopee ở phía sau.</li>
   <li><b>Công sức:</b> A cần máy chủ dựng ảnh bìa có tên (nặng nhất, cache theo tên); B tận dụng trang xem thử sẵn có + truyền tên; C ghép thiệp + LED + slide sẵn có; D cần bảng tim nhỏ theo link chia sẻ.</li>
+  <li><b>Trang chủ</b> giữ đủ 4 nhóm sản phẩm (thiệp, LED, slide, báo hỷ) — chỉ khác là tên hai bạn hiện trên tất cả.</li>
   <li><b>Gợi ý thứ tự:</b> B (dễ, thấy hiệu quả ngay) → A → C → D.</li>
 </ul></div>
 </body></html>
