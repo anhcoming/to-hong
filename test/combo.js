@@ -118,9 +118,8 @@ const buyCombo = async (id) => { const o = (await call('u', 'POST', `/api/cards/
   assert.ok(c.combo && c.video.paid, 'nâng cấp → video có sẵn mở luôn');
   assert.ok((await call('u', 'PUT', `/api/cards/${e}`, { led: {} })).json.card.led.paid, 'LED làm sau cũng mở');
 
-  // 3b. làm thêm thiệp cùng đám cưới: đã kích hoạt sẵn, không kèm Trọn bộ (màn LED / slide theo từng thiệp)
-  r = await call('u', 'POST', `/api/cards/${e}/duplicate`, {});
-  assert.deepEqual([r.status, r.json.card.paid, r.json.card.combo], [200, true, false], 'làm thêm thiệp');
+  // 3b. mỗi tài khoản một thiệp: không nhân bản được
+  assert.equal((await call('u', 'POST', `/api/cards/${e}/duplicate`, {})).status, 400, 'không nhân bản thiệp');
 
   // 3c. lượt Trọn bộ kiểu cũ (trước 18/11/2026) vẫn dùng được
   require('../lib/db').db.users.find((u) => u.email === 'combo@test.vn').credits = { led: 1, video: 0 };
