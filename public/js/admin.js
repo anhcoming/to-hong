@@ -218,17 +218,10 @@ async function orders() {
   bindBar('orders', () => load().catch(err));
   await load();
 }
-// đơn có màn LED: xem màn khách làm + sửa giúp (đã chốt thì mở khoá trước)
+// đơn có màn LED: xem màn khách làm + sửa giúp (cả màn đã chốt: sửa bản chụp lúc chốt, thiệp của khách không đổi)
 const hasLed = (o) => o.site && o.card && /led|combo/.test(o.product);
 const ledActs = (o) => (hasLed(o) ? [['Mở màn LED ↗', () => open(`/led/${o.site.slug}`, '_blank')], ['Sửa màn LED', () => editLed(o)]] : []);
-function editLed(o) {
-  ask({
-    title: 'Sửa màn LED của khách?',
-    text: `Mở trình sửa màn LED của ${esc(o.card.names || o.email)}. Màn đã kích hoạt sẽ được mở khoá để sửa (vẫn giữ đã kích hoạt); lần chiếu thật tiếp theo tự chốt lại.`,
-    ok: 'Mở trình sửa',
-    run: async () => { await api(`/api/admin/cards/${o.card.id}/led-unlock`, { method: 'POST' }); open(`/sua-led/${o.card.id}`, '_blank'); },
-  });
-}
+function editLed(o) { open(`/sua-led/${o.card.id}?admin=1`, '_blank'); }
 function confirmOrder(o) {
   ask({
     title: `Xác nhận đơn ${esc(o.code)}?`,

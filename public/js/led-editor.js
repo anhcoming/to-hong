@@ -13,7 +13,7 @@ const RATIO_INFO = {
 const getP = (o, p) => p.split('.').reduce((a, k) => (a == null ? a : a[k]), o);
 const setP = (o, p, v) => { const ks = p.split('.'); let a = o; ks.slice(0, -1).forEach((k) => (a = a[k])); a[ks[ks.length - 1]] = v; };
 
-function status(t) { $('#saved').textContent = card && card.guest && t === 'Đã lưu ✓' ? '' : card && card.led && card.led.final && t === 'Đã lưu ✓' ? 'Đã chốt' : t; }
+function status(t) { $('#saved').textContent = (typeof ADMIN !== 'undefined' && ADMIN ? 'Quản trị viên đang sửa · ' : '') + (card && card.guest && t === 'Đã lưu ✓' ? '' : card && card.led && card.led.final && !ADMIN && t === 'Đã lưu ✓' ? 'Đã chốt' : t); }
 // trình sửa kiểu CapCut: cột icon chọn bảng
 let curPanel = 'chu'; // mặc định bảng Nội dung (ô nhập), bảng Mẫu màn hình ở tab bên cạnh
 
@@ -49,7 +49,7 @@ function renderSide() {
     </section>`;
   else if (curPanel === 'chu') {
     // A · bảng nhập: điền vào ô → màn đổi ngay; bấm vào ô nào thì màn chuyển tới cảnh có chữ đó và đứng yên (data-sc)
-    const fixed = !!card.led.names; // đã kích hoạt: tên đôi cố định
+    const fixed = !ADMIN && !!card.led.names; // đã kích hoạt: tên đôi cố định (quản trị viên vẫn sửa được)
     const f = (k, label, sc, ph = '', type = 'text') => `<label class="field"><span>${label}</span><input data-d="${k}" data-sc="${sc}" type="${type}" value="${esc(getP(d, k) || '')}" placeholder="${esc(ph)}"${fixed && /\.name$/.test(k) ? ' disabled' : ''}></label>`;
     h = tabs + `<p class="pdesc">Điền vào ô — màn bên cạnh đổi ngay, chỗ vừa đổi sáng viền hồng.</p>
       <section class="group cform">
@@ -166,8 +166,11 @@ function reloadPreview() { $('#frame').src = `/led/${card.slug}?preview=1&t=${Da
 // ---------- lưu ----------
 // Trả tiền là chốt: màn LED đã kích hoạt không sửa gì nữa (máy chủ cũng từ chối) — báo khách, bỏ phần vừa chỉnh trên máy
 let lockedAt = 0;
-const ledFinal = () => !!(card && card.led && card.led.final);
-function useSnap() { if (ledFinal() && card.ledConfig && card.ledConfig.snap) card.data = card.ledConfig.snap; } // hiện đúng dữ liệu lúc chốt
+// quản trị viên (/sua-led/<id>?admin=1 từ trang quản trị): sửa giúp khách cả màn đã chốt — sửa thẳng bản chụp lúc chốt, thiệp không đổi
+const ADMIN = new URLSearchParams(location.search).get('admin') === '1';
+const isFinalNow = () => !!(card && card.led && card.led.final);
+const ledFinal = () => !ADMIN && isFinalNow();
+function useSnap() { if (isFinalNow() && card.ledConfig && card.ledConfig.snap) card.data = card.ledConfig.snap; } // hiện đúng dữ liệu lúc chốt
 function lockedNote() {
   clearTimeout(saveTimer); saveTimer = null;
   if (Date.now() - lockedAt > 2500) { lockedAt = Date.now(); toast('Màn LED đã kích hoạt nên đã chốt — không sửa được nữa', true); }
@@ -187,7 +190,7 @@ async function save() {
   dataDirty = false;
   try {
     const body = { led };
-    if (withData) body.data = card.data;
+    if (withData) body[ADMIN && isFinalNow() ? 'snap' : 'data'] = card.data;
     const r = await api(`/api/cards/${CARD_ID}`, { method: 'PUT', body, quiet: true });
     card.led = r.card.led;
     card.slug = r.card.slug;
@@ -370,7 +373,7 @@ function bind() {
     if (m.type === 'led-text') {
       if (m.key === 'led.kicker') led.kicker = m.value.slice(0, 40);
       else if (m.key === 'led.message') led.message = m.value.slice(0, 200);
-      else if (card.led.names && /^(groom|bride)\.name$/.test(m.key)) return; // đã kích hoạt: tên đôi cố định
+      else if (!ADMIN && card.led.names && /^(groom|bride)\.name$/.test(m.key)) return; // đã kích hoạt: tên đôi cố định
       else { setP(card.data, m.key, m.value); dataDirty = true; if (/\.name$/.test(m.key)) renderHeader(); }
       schedule(700);
     }

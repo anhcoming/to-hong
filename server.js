@@ -629,7 +629,7 @@ route('PUT', '/api/cards/:id', async (req, res, ctx) => {
   const card = ownedCard(ctx, ctx.params.id, { guest: true });
   const b = await readJson(req);
   // trả tiền là chốt: thiệp đã kích hoạt giữ nguyên tên đôi + ngày cưới (Wd.keepFrozen) và mẫu (kiểm tra bên dưới); màn LED / video đã chốt không sửa gì nữa
-  if (b.led && isFinal(card.led)) throw httpError(409, LOCKED.led);
+  if (b.led && isFinal(card.led) && !ctx.admin) throw httpError(409, LOCKED.led);
   if (b.video && isFinal(card.video)) throw httpError(409, LOCKED.video);
   if (!ctx.user) {
     if (b.slug !== undefined || b.video) needUser(ctx); // đường dẫn riêng, video: cần tài khoản (màn LED: nháp xem trước được, lấy link chiếu mới cần đăng nhập)
@@ -658,7 +658,14 @@ route('PUT', '/api/cards/:id', async (req, res, ctx) => {
   }
   if (b.data) { fixNames(card, false); card.data = Wd.keepFrozen(card, cd.normalize(b.data)); Wd.syncFromCard(card); } // đã qua ngày cưới: tên đôi + ngày cưới giữ nguyên // màn LED kích hoạt từ trước: cố định tên trước khi đổi
   if (b.data && b.slug === undefined && card.userId) autoSlug(card); // thiệp nháp của khách chưa đăng nhập: giữ nguyên
-  if (b.led) { card.led = ledLib.normalize(b.led, card.led); comboUnlock(card, 'led'); } // tạo màn LED (chưa kích hoạt: chỉ xem trước; thiệp Trọn bộ: kích hoạt luôn)
+  if (b.led) { card.led = ledLib.normalize(b.led, card.led); comboUnlock(card, 'led'); }
+  // quản trị viên sửa giúp màn LED đã chốt: sửa bản chụp lúc chốt (tên, ngày, lời cảm ơn…), thiệp của khách giữ nguyên
+  if (b.snap && ctx.admin && isFinal(card.led)) {
+    const s = cd.normalize(b.snap);
+    if (!(s.groom.name && s.bride.name)) throw httpError(400, 'Cần đủ tên cô dâu chú rể');
+    card.led.snap = s; card.led.names = { groom: s.groom.name, bride: s.bride.name };
+    adminLib.audit(ctx, 'Sửa màn LED đã chốt', card.slug, `${s.groom.name} & ${s.bride.name}`);
+  } // tạo màn LED (chưa kích hoạt: chỉ xem trước; thiệp Trọn bộ: kích hoạt luôn)
   if (b.video) {
     const nv = videoLib.normalize(b.video, card.video);
     // video đã kích hoạt: tên đôi cố định — không được bỏ chỗ hiện tên ({chu_re} / {co_dau}) để gõ tên khác vào
@@ -1068,17 +1075,6 @@ route('POST', '/api/admin/orders/:id/confirm', async (req, res, ctx) => {
   if (o.status === 'paid' || productPaid(o)) throw httpError(409, 'Đơn này đã được thanh toán rồi');
   markPaid(o, 'admin');
   adminLib.audit(ctx, 'Xác nhận đơn', o.code, `${o.amount}đ`);
-  json(res, 200, { ok: true });
-});
-// Quản trị viên mở khoá màn LED đã chốt để sửa giúp khách (vẫn giữ đã kích hoạt). Lần chiếu thật kế tiếp tự chốt lại theo tên mới.
-route('POST', '/api/admin/cards/:id/led-unlock', async (req, res, ctx) => {
-  needAdmin(ctx);
-  const card = db.cards.find((c) => c.id === ctx.params.id);
-  if (!card || !card.led) throw httpError(404, 'Không tìm thấy màn LED');
-  if (card.led.snap) {
-    delete card.led.snap; delete card.led.names; card.updatedAt = Date.now(); save();
-    adminLib.audit(ctx, 'Mở khoá màn LED', card.slug, '');
-  }
   json(res, 200, { ok: true });
 });
 adminLib.routes({ route, needAdmin, PRODUCTS, orderView, cardSummary, BASE_URL });
