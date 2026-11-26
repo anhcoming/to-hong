@@ -1,0 +1,141 @@
+<!doctype html>
+<html lang="vi"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Mock — thả nhiều ảnh, tự xếp vào thiệp</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&family=Dancing+Script:wght@700&display=swap">
+<style>
+:root{--red:#d6455d;--red2:#ef7d8d;--ink:#1f1a1b;--muted:#7a6e70;--line:#efe3e4;--bg:#fdf8f8;--ok:#1f8a5b}
+*{box-sizing:border-box}
+body{margin:0;background:#ece5e6;font-family:'Be Vietnam Pro',system-ui,sans-serif;color:var(--ink);padding:24px}
+h1.t{font-size:20px;margin:0 0 4px}p.d{margin:0 0 6px;color:var(--muted);font-size:14px;max-width:1000px;line-height:1.55}
+.row{display:flex;gap:24px;flex-wrap:wrap;margin-top:18px}
+.ph{width:330px;flex:none}.ph h2{font-size:14px;margin:0 0 8px}.ph h2 small{display:block;font-weight:400;color:var(--muted);font-size:12.5px;margin-top:2px;line-height:1.45}
+.scr{height:700px;overflow:hidden;border-radius:28px;border:8px solid #1d1718;background:var(--bg);position:relative}
+.note{font-size:12.5px;color:var(--muted);margin-top:10px;line-height:1.55}.note b{color:var(--ink)}
+/* thanh trình sửa */
+.eb{height:54px;background:#fff;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:10px;padding:0 12px}
+.eb .bk{font-size:20px;color:var(--muted)}.eb b{flex:1;font-size:15px}.eb .pub{height:34px;padding:0 14px;border-radius:999px;background:linear-gradient(135deg,var(--red),var(--red2));color:#fff;font-size:12.5px;font-weight:700;display:grid;place-items:center}
+.card{margin:10px 12px;border-radius:14px;overflow:hidden;background:#fff;box-shadow:0 8px 20px rgba(120,40,50,.12)}
+.ch{background:#8a0d17;color:#fff;text-align:center;padding:14px 10px 30px;border-radius:0 0 50% 50%/0 0 24px 24px}
+.ch small{letter-spacing:.3em;font-size:8px;opacity:.85}.ch b{display:block;font:700 22px 'Dancing Script',cursive;margin-top:4px}
+.slot{position:relative;background:#f3e6e8 center/cover;border-radius:10px;overflow:hidden}
+.slot.empty{display:grid;place-items:center;color:#c4aeb2;font-size:11px;border:1.5px dashed #e7c3c9;background:#fff8f9}
+.slot em{position:absolute;left:6px;top:6px;font-style:normal;font-size:9.5px;font-weight:700;color:#fff;background:rgba(0,0,0,.5);padding:2px 7px;border-radius:999px}
+.slot .ai{position:absolute;right:6px;top:6px;font-style:normal;font-size:9.5px;font-weight:700;color:#fff;background:var(--ok);padding:2px 7px;border-radius:999px}
+.big{height:210px;margin:-16px 18px 0;position:relative;z-index:1;border:3px solid #fff;box-shadow:0 6px 16px rgba(0,0,0,.15)}
+.alb{display:grid;grid-template-columns:repeat(3,1fr);gap:5px;padding:12px}
+.alb .slot{aspect-ratio:3/4}
+.tabs{position:absolute;left:0;right:0;bottom:0;height:62px;background:#fff;border-top:1px solid var(--line);display:flex;justify-content:space-around;align-items:center;font-size:10.5px;font-weight:600;color:var(--muted)}
+.tabs b{display:flex;flex-direction:column;align-items:center;gap:3px;font-weight:600}.tabs b i{font-style:normal;font-size:17px;filter:grayscale(1)}.tabs b.on{color:var(--red)}.tabs b.on i{filter:none}
+.cta{position:absolute;left:12px;right:12px;bottom:74px;display:flex;align-items:center;gap:10px;padding:10px 10px 10px 14px;border-radius:16px;background:#1f1a1b;color:#fff;box-shadow:0 12px 28px rgba(0,0,0,.25)}
+.cta div{flex:1;font-size:12.5px;line-height:1.35}.cta div b{display:block;font-size:14px}
+.cta span{height:38px;padding:0 14px;border-radius:999px;background:linear-gradient(135deg,var(--red),var(--red2));font-weight:700;font-size:13px;display:grid;place-items:center;white-space:nowrap}
+/* B — đang xếp */
+.dim{position:absolute;inset:0;background:rgba(30,15,18,.5)}
+.sheet{position:absolute;left:0;right:0;bottom:0;background:#fff;border-radius:22px 22px 0 0;padding:18px 16px 22px}
+.sheet h4{margin:0 0 4px;font-size:16.5px}.sheet p{margin:0 0 12px;color:var(--muted);font-size:12.5px;line-height:1.5}
+.pics{display:grid;grid-template-columns:repeat(6,1fr);gap:4px;margin-bottom:12px}.pics i{aspect-ratio:1;border-radius:6px;background:#eee center/cover}
+.steps{display:grid;gap:8px;font-size:13px}.steps div{display:flex;align-items:center;gap:10px}
+.steps i{width:22px;height:22px;border-radius:50%;flex:none;display:grid;place-items:center;font-style:normal;font-size:12px;font-weight:800;color:#fff;background:var(--ok)}
+.steps i.run{background:none;border:3px solid #f3d3d9;border-top-color:var(--red)}
+.steps i.wait{background:#eee;color:#aaa}
+.prog{height:6px;border-radius:9px;background:#f3e6e8;margin-top:14px;overflow:hidden}.prog i{display:block;height:100%;width:68%;background:linear-gradient(90deg,var(--red),var(--red2))}
+/* C — xem lại */
+.rv{position:absolute;left:0;right:0;bottom:62px;background:#fff;border-radius:18px 18px 0 0;box-shadow:0 -8px 24px rgba(0,0,0,.12);padding:12px 12px 10px}
+.rv .hd{display:flex;justify-content:space-between;align-items:center;font-size:13px;margin-bottom:8px}.rv .hd b{font-size:14px}.rv .hd span{color:var(--ok);font-weight:700;font-size:12px}
+.rs{display:flex;gap:6px;overflow:hidden}
+.rs .s{flex:none;width:52px}.rs .s i{display:block;height:64px;border-radius:8px;background:#eee center/cover;position:relative}
+.rs .s small{display:block;font-size:9.5px;color:var(--muted);text-align:center;margin-top:3px}
+.rs .s.warn i{outline:2px solid #f5a623;outline-offset:1px}.rs .s.warn small{color:#b4630c;font-weight:700}
+.rv .bt{display:flex;gap:8px;margin-top:10px}.rv .bt span{flex:1;height:38px;border-radius:999px;display:grid;place-items:center;font-size:12.5px;font-weight:700}
+.rv .bt .a{background:#fbe5e9;color:var(--red)}.rv .bt .b{background:linear-gradient(135deg,var(--red),var(--red2));color:#fff}
+/* D — đổi ảnh một ô */
+.sw{position:absolute;left:0;right:0;bottom:0;background:#fff;border-radius:22px 22px 0 0;padding:16px 14px 18px}
+.sw h4{margin:0 0 2px;font-size:15.5px}.sw p{margin:0 0 10px;color:var(--muted);font-size:12px}
+.sg{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
+.sg i{position:relative;aspect-ratio:3/4;border-radius:8px;background:#eee center/cover}
+.sg i.on{outline:3px solid var(--red);outline-offset:1px}
+.sg i b{position:absolute;left:3px;bottom:3px;font-style:normal;font-size:8.5px;font-weight:700;background:var(--ok);color:#fff;padding:1px 5px;border-radius:999px}
+.sg i u{position:absolute;right:3px;top:3px;text-decoration:none;font-size:8.5px;font-weight:700;background:rgba(0,0,0,.55);color:#fff;padding:1px 5px;border-radius:999px}
+.focus{margin-top:10px;display:flex;align-items:center;gap:10px;padding:8px;border-radius:12px;background:#faf5f5;font-size:12px}
+.focus i{width:46px;height:56px;border-radius:6px;background:#eee center/cover;position:relative;flex:none}
+.focus i::after{content:"";position:absolute;left:50%;top:36%;width:18px;height:18px;border:2px solid #fff;border-radius:50%;transform:translate(-50%,-50%);box-shadow:0 0 0 1px rgba(0,0,0,.3)}
+.verdict{margin-top:30px;max-width:1000px;background:#fff;border-radius:16px;padding:18px 20px;box-shadow:0 0 0 1px var(--line)}
+.verdict h3{margin:0 0 8px;font-size:16px}.verdict ul{margin:6px 0 0;padding-left:20px;font-size:14px;line-height:1.6}.verdict b{color:var(--red)}
+</style></head><body>
+<h1 class="t">Thả nhiều ảnh một lần — tự xếp vào thiệp</h1>
+<p class="d">Ngay trong trình sửa thiệp (sau khi đã chọn mẫu): chọn cả loạt ảnh cưới, máy tự chọn <b>ảnh bìa</b> (dọc, rõ mặt hai người), xếp <b>album</b> theo thứ tự đẹp, <b>căn mặt vào giữa</b> từng ô. Khách chỉ xem lại và đổi vài ảnh chưa ưng — không phải sửa từng ô.</p>
+
+<div class="row">
+
+  <!-- A -->
+  <div class="ph"><h2>A · Trình sửa: thiệp còn ảnh mẫu<small>Thiệp mới tạo đang dùng ảnh mẫu → hiện ngay lời mời "Thả ảnh cưới, tự xếp" (không phải bấm từng ô).</small></h2>
+    <div class="scr">
+      <div class="eb"><span class="bk">‹</span><b>Đức Anh &amp; Phạm Nga</b><span class="pub">Phát hành</span></div>
+      <div class="card"><div class="ch"><small>WELCOME TO OUR WEDDING</small><b>Đức Anh &amp; Phạm Nga</b></div>
+        <div class="slot big empty">Ảnh bìa</div>
+        <div class="alb"><div class="slot empty">Album 1</div><div class="slot empty">2</div><div class="slot empty">3</div><div class="slot empty">4</div><div class="slot empty">5</div><div class="slot empty">6</div></div></div>
+      <div class="cta"><div><b>📷 Thả ảnh cưới — tự xếp vào thiệp</b>Chọn 5–20 ảnh, máy chọn ảnh bìa, xếp album, căn mặt</div><span>Chọn ảnh</span></div>
+      <div class="tabs"><b><i>🎨</i>Mẫu</b><b><i>✏️</i>Thông tin</b><b class="on"><i>📷</i>Ảnh</b><b><i>🎵</i>Nhạc</b><b><i>🎁</i>Mừng cưới</b></div>
+    </div>
+    <p class="note">Tab <b>Ảnh</b> lúc nào cũng có nút này; thiệp đã có ảnh thật thì nút đổi thành "Thêm / xếp lại ảnh".</p>
+  </div>
+
+  <!-- B -->
+  <div class="ph"><h2>B · Đang xếp (vài giây, ngay trên máy)<small>Ảnh thu nhỏ trên điện thoại rồi mới tải lên; trong lúc đó máy chấm điểm từng ảnh.</small></h2>
+    <div class="scr">
+      <div class="eb"><span class="bk">‹</span><b>Đức Anh &amp; Phạm Nga</b><span class="pub">Phát hành</span></div>
+      <div class="dim"></div>
+      <div class="sheet"><h4>Đang xếp 18 ảnh vào thiệp…</h4><p>Ảnh chỉ tải lên thiệp của bạn, không dùng vào việc khác.</p>
+        <div class="pics"><i style="background-image:url(/demo/dodam-1.jpg)"></i><i style="background-image:url(/demo/dodam-2.jpg)"></i><i style="background-image:url(/demo/dodam-3.jpg)"></i><i style="background-image:url(/demo/dodam-4.jpg)"></i><i style="background-image:url(/demo/dodam-5.jpg)"></i><i style="background-image:url(/demo/dodam-6.jpg)"></i><i style="background-image:url(/demo/dodam-7.jpg)"></i><i style="background-image:url(/demo/dodam-8.jpg)"></i><i style="background-image:url(/demo/hoamoc-1.webp)"></i><i style="background-image:url(/demo/hoamoc-2.webp)"></i><i style="background-image:url(/demo/hoamoc-3.webp)"></i><i style="background-image:url(/demo/hoamoc-4.webp)"></i></div>
+        <div class="steps">
+          <div><i>✓</i>Bỏ ảnh mờ, ảnh trùng (2 ảnh)</div>
+          <div><i>✓</i>Chọn ảnh bìa: dọc, rõ mặt hai bạn</div>
+          <div><i class="run"></i>Căn mặt vào giữa từng ô…</div>
+          <div><i class="wait">4</i>Tải ảnh lên thiệp</div>
+        </div>
+        <div class="prog"><i></i></div>
+      </div>
+    </div>
+    <p class="note">Bộ máy đọc ảnh, chọn ảnh bìa, căn điểm lấy nét <b>đã có sẵn ở trang Gợi ý</b> — chỉ mang sang trình sửa.</p>
+  </div>
+
+  <!-- C -->
+  <div class="ph"><h2>C · Xong: thiệp đã có ảnh, xem lại nhanh<small>Dải dưới liệt kê từng ô và ảnh máy chọn; ô nào máy chưa chắc thì viền cam để khách để ý.</small></h2>
+    <div class="scr">
+      <div class="eb"><span class="bk">‹</span><b>Đức Anh &amp; Phạm Nga</b><span class="pub">Phát hành</span></div>
+      <div class="card"><div class="ch"><small>WELCOME TO OUR WEDDING</small><b>Đức Anh &amp; Phạm Nga</b></div>
+        <div class="slot big" style="background-image:url(/demo/dodam-1.jpg)"><em>Bìa</em><span class="ai">✓ rõ mặt</span></div>
+        <div class="alb"><div class="slot" style="background-image:url(/demo/dodam-2.jpg)"></div><div class="slot" style="background-image:url(/demo/dodam-3.jpg)"></div><div class="slot" style="background-image:url(/demo/dodam-4.jpg)"></div></div></div>
+      <div class="rv"><div class="hd"><b>Đã xếp 16 ảnh</b><span>✓ 15 ô ổn · 1 ô nên xem</span></div>
+        <div class="rs"><div class="s"><i style="background-image:url(/demo/dodam-1.jpg)"></i><small>Bìa</small></div><div class="s"><i style="background-image:url(/demo/dodam-2.jpg)"></i><small>Album 1</small></div><div class="s warn"><i style="background-image:url(/demo/hoamoc-3.webp)"></i><small>Ảnh ngang</small></div><div class="s"><i style="background-image:url(/demo/dodam-4.jpg)"></i><small>Album 3</small></div><div class="s"><i style="background-image:url(/demo/dodam-5.jpg)"></i><small>Album 4</small></div><div class="s"><i style="background-image:url(/demo/dodam-6.jpg)"></i><small>Album 5</small></div></div>
+        <div class="bt"><span class="a">↺ Xáo lại</span><span class="b">Ưng rồi</span></div></div>
+      <div class="tabs"><b><i>🎨</i>Mẫu</b><b><i>✏️</i>Thông tin</b><b class="on"><i>📷</i>Ảnh</b><b><i>🎵</i>Nhạc</b><b><i>🎁</i>Mừng cưới</b></div>
+    </div>
+    <p class="note">"Xáo lại" đổi thứ tự album; "Ưng rồi" đóng dải. Đổi mẫu thiệp sau này <b>ảnh tự xếp lại theo mẫu mới</b>, không mất.</p>
+  </div>
+
+  <!-- D -->
+  <div class="ph"><h2>D · Bấm một ô → đổi ảnh trong 1 chạm<small>Hiện các ảnh đã thả, ảnh hợp ô này lên đầu (dọc / ngang, rõ mặt). Chạm là thay; kéo điểm tròn để căn mặt.</small></h2>
+    <div class="scr">
+      <div class="eb"><span class="bk">‹</span><b>Đức Anh &amp; Phạm Nga</b><span class="pub">Phát hành</span></div>
+      <div class="card"><div class="ch"><small>WELCOME TO OUR WEDDING</small><b>Đức Anh &amp; Phạm Nga</b></div><div class="slot big" style="background-image:url(/demo/dodam-1.jpg)"><em>Bìa</em></div></div>
+      <div class="dim"></div>
+      <div class="sw"><h4>Đổi ảnh bìa</h4><p>Ảnh hợp ô này nhất ở đầu · chạm để thay</p>
+        <div class="sg"><i class="on" style="background-image:url(/demo/dodam-1.jpg)"><b>Hợp nhất</b></i><i style="background-image:url(/demo/dodam-7.jpg)"><b>Hợp</b></i><i style="background-image:url(/demo/dodam-8.jpg)"></i><i style="background-image:url(/demo/hoamoc-1.webp)"></i><i style="background-image:url(/demo/hoamoc-2.webp)"><u>ngang</u></i><i style="background-image:url(/demo/dodam-5.jpg)"></i><i style="background-image:url(/demo/hoamoc-4.webp)"></i><i style="background-image:url(/demo/dodam-6.jpg)"></i></div>
+        <div class="focus"><i style="background-image:url(/demo/dodam-1.jpg)"></i><div><b>Căn mặt</b><br>Kéo vòng tròn vào mặt hai bạn — mọi khung đều căn theo điểm này</div></div>
+      </div>
+    </div>
+    <p class="note">Thay cho cách hiện tại: bấm từng ô → mở thư viện máy → chọn → căn chỉnh, lặp lại cho mỗi ô.</p>
+  </div>
+
+</div>
+
+<div class="verdict"><h3>Vì sao đáng làm hơn trang Gợi ý</h3>
+<ul>
+  <li><b>Ai cũng dùng:</b> mọi khách làm thiệp đều phải đưa ảnh vào — đây là bước tốn công nhất hiện nay (thiệp nhiều mẫu có 10–20 ô ảnh).</li>
+  <li><b>Đúng lúc:</b> khách đã chọn mẫu, đang ở trình sửa, có động lực tìm ảnh — khác trang Gợi ý bắt chọn ảnh từ đầu.</li>
+  <li><b>Tái dùng:</b> bộ máy đọc ảnh + chọn ảnh bìa + căn mặt đã có ở /goi-y; trình sửa đã có tải ảnh + căn điểm lấy nét.</li>
+  <li><b>Đo được:</b> đếm số thiệp dùng "tự xếp" và thời gian từ tạo thiệp → phát hành.</li>
+</ul></div>
+</body></html>
