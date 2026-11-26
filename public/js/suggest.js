@@ -239,8 +239,10 @@
     if (!c || btn.disabled) return;
     btn.disabled = true; btn.textContent = 'Đang tạo thiệp…';
     var tab = null; try { tab = window.open('', '_blank'); if (tab) tab.document.write('<title>Đang mở thiệp…</title><p style="font:16px system-ui;padding:40px;color:#888">Đang tạo thiệp…</p>'); } catch (e) { tab = null; }
-    jsonFetch('/api/cards', 'POST', { template: c.t.id, palette: c.pal.id }).then(function (r) {
-      var card = r.card, d = card.data, step = Promise.resolve();
+    // đã có thiệp đã kích hoạt / nhiều thiệp: bảng chọn đổi mẫu thiệp nào hay làm thêm thiệp (public/js/pick-card.js)
+    window.useTemplate(c.t.id, c.pal.id, c.t.name, function () { if (tab && !tab.closed) tab.close(); tab = null; }).then(function (card) {
+      if (!card) { btn.disabled = false; btn.textContent = 'Dùng thiệp này'; return; }
+      var step = Promise.resolve();
       return step.then(function () {
         // ảnh + vị trí + điểm lấy nét để trình sửa đưa vào thiệp (đã đăng nhập: tải lên ngay; chưa: hiện tạm, mời đăng nhập)
         return idb.set('pending', { cardId: card.id, at: Date.now(), items: slots.map(function (s) { var f = focus(s.p); return { key: s.key, blob: s.p.blob, x: f[0], y: f[1] }; }) });

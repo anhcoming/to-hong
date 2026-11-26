@@ -99,7 +99,7 @@ const buyCombo = async (id) => { const o = (await call('u', 'POST', `/api/cards/
   await buyCombo(b);
   assert.ok((await card(b)).led.paid, 'LED có sẵn của thiệp Trọn bộ được mở ngay');
   assert.ok(!(await card(d)).led.paid, 'LED của thiệp khác vẫn là dùng thử');
-  assert.ok(!(await card(d)).paid, 'thiệp khác chưa kích hoạt');
+  assert.ok((await card(d)).paid, 'trả tiền theo đám cưới: thiệp khác cùng đám cưới cũng kích hoạt (màn LED / slide vẫn theo từng thiệp)');
 
   // 3. đã mua thiệp lẻ, có video nháp → nâng lên Trọn bộ (trả phần chênh) thì video mở luôn, LED làm sau cũng mở
   const e = await newCard('combo-e');
@@ -118,8 +118,9 @@ const buyCombo = async (id) => { const o = (await call('u', 'POST', `/api/cards/
   assert.ok(c.combo && c.video.paid, 'nâng cấp → video có sẵn mở luôn');
   assert.ok((await call('u', 'PUT', `/api/cards/${e}`, { led: {} })).json.card.led.paid, 'LED làm sau cũng mở');
 
-  // 3b. mỗi tài khoản một thiệp: không nhân bản được
-  assert.equal((await call('u', 'POST', `/api/cards/${e}/duplicate`)).status, 400, 'không nhân bản thiệp');
+  // 3b. làm thêm thiệp cùng đám cưới: đã kích hoạt sẵn, không kèm Trọn bộ (màn LED / slide theo từng thiệp)
+  r = await call('u', 'POST', `/api/cards/${e}/duplicate`, {});
+  assert.deepEqual([r.status, r.json.card.paid, r.json.card.combo], [200, true, false], 'làm thêm thiệp');
 
   // 3c. lượt Trọn bộ kiểu cũ (trước 18/11/2026) vẫn dùng được
   require('../lib/db').db.users.find((u) => u.email === 'combo@test.vn').credits = { led: 1, video: 0 };
@@ -211,6 +212,30 @@ const buyCombo = async (id) => { const o = (await call('u', 'POST', `/api/cards/
     for (const p of ['card', 'led', 'video']) await pay((await call('u', 'POST', `/api/cards/${k}/order`, { product: p })).json.order);
     assert.equal((await call('u', 'POST', `/api/cards/${k}/order`, { product: 'combo' })).status, 400, 'đủ cả ba: không mua Trọn bộ');
   }
+  // 5. màn thanh toán chung (b.items): tài khoản mới, chưa có gì
+  await call('m', 'POST', '/api/auth/register', { email: 'multi@test.vn', password: '123456', name: 'Multi' });
+  let mc = (await call('m', 'POST', '/api/cards', { template: 'dodam' })).json.card;
+  await call('m', 'PUT', `/api/cards/${mc.id}`, { data: { ...mc.data, groom: { ...mc.data.groom, name: 'Hùng' }, bride: { ...mc.data.bride, name: 'Dương' }, date: '2026-12-28' } });
+  const price = (await call('x', 'GET', '/api/meta')).json.price;
+  r = await call('m', 'POST', `/api/cards/${mc.id}/order`, { items: ['card', 'led', 'video'] });
+  assert.deepEqual([r.json.order.product, r.json.order.amount], ['combo', comboNow], 'tick đủ 3 món = Trọn bộ');
+  r = await call('m', 'POST', `/api/cards/${mc.id}/order`, { items: ['led'] });
+  assert.deepEqual([r.json.order.product, r.json.order.amount], ['led', config.ledPrice], 'một món = mua lẻ, LED chưa tạo vẫn mua được');
+  r = await call('m', 'POST', `/api/cards/${mc.id}/order`, { items: ['card', 'led'] });
+  const mo = r.json.order;
+  assert.deepEqual([mo.product, mo.amount, mo.items, /^DC/.test(mo.code)], ['multi', price + config.ledPrice, ['card', 'led'], true], 'thiệp + LED = một đơn, một mã');
+  assert.equal((await call('m', 'POST', `/api/cards/${mc.id}/order`, { items: ['led', 'card'] })).json.order.code, mo.code, 'cùng món → cùng đơn');
+  assert.equal((await pay(mo)).json.result, 'paid');
+  mc = (await call('m', 'GET', `/api/cards/${mc.id}`)).json.card;
+  assert.ok(mc.paid && !mc.combo && !mc.led.created, 'thiệp kích hoạt; LED chưa tạo');
+  r = await call('m', 'PUT', `/api/cards/${mc.id}`, { led: {} });
+  assert.ok(r.json.card.led.paid, 'LED đã trả trước: tạo ra là kích hoạt');
+  assert.equal((await call('m', 'POST', `/api/cards/${mc.id}/order`, { items: ['card', 'led'] })).status, 400, 'đã có cả hai');
+  r = await call('m', 'POST', `/api/cards/${mc.id}/order`, { items: ['card', 'led', 'video'] });
+  assert.deepEqual([r.json.order.product, r.json.order.amount], ['combo', Math.max(0, comboNow - price - config.ledPrice)], 'còn thiếu slide: nâng lên Trọn bộ trả phần chênh');
+  r = await call('m', 'POST', `/api/cards/${mc.id}/order`, { items: ['video'] });
+  assert.deepEqual([r.json.order.product, r.json.order.amount], ['combo', Math.max(0, comboNow - price - config.ledPrice)], 'chỉ tick slide mà thành đủ bộ → tự thành Trọn bộ (rẻ hơn mua lẻ)');
+
   console.log('✓ Trọn bộ gắn với thiệp: mở thiệp + LED + video của thiệp đó (có sẵn hay làm sau), thiệp khác không liên quan, nâng cấp trả phần chênh, lượt cũ vẫn dùng được');
   process.exit(0);
 })().catch((e) => { console.error('✗', e); process.exit(1); });

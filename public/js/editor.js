@@ -47,9 +47,7 @@ function tplPicker(cur) {
   if (tplGroup === null) tplGroup = cur.group || '';
   const list = META.templates.filter((t) => !tplGroup || t.group === tplGroup);
   const chip = (id, name) => `<button data-tg="${id}" class="${tplGroup === id ? 'on' : ''}">${esc(name)}</button>`;
-  // thiệp đã kích hoạt: mẫu đã chốt — chỉ hiện mẫu đang dùng (màu của mẫu vẫn đổi được)
-  if (card.paid) return `<p class="muted tplnow">🔒 Thiệp đã kích hoạt nên mẫu đã chốt: <b>${esc(cur.name)}</b>. Màu của mẫu vẫn đổi được.</p>
-      <div class="tplpick"><button data-tpl="${cur.id}" class="on" aria-pressed="true"><img src="${tplCover(cur)}" alt="" loading="lazy"><span>${esc(cur.name)}</span></button></div>`;
+  // thiệp đã kích hoạt vẫn đổi mẫu được (trả tiền theo đám cưới: chỉ chốt tên cô dâu chú rể + ngày cưới)
   return `<p class="muted tplnow">Đang dùng: <b>${esc(cur.name)}</b></p>
       ${groups.length > 1 ? `<div class="tgchips">${chip('', 'Tất cả')}${groups.map((g) => chip(g.id, g.name)).join('')}</div>` : ''}
       <div class="tplpick">${list.map((t) => `<button data-tpl="${t.id}" class="${t.id === card.template ? 'on' : ''}" title="${esc(t.desc)}" aria-pressed="${t.id === card.template}">

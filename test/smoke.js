@@ -440,19 +440,29 @@ async function call(who, method, url, body, extra = {}) {
   rr = await fetch(base + '/tao-video?mau=polaroid&x=<b>', { redirect: 'manual', headers: { cookie: jar.u } });
   assert.match(rr.headers.get('location'), /^\/sua-video\/[\w-]+\?mau=polaroid$/, 'thẳng trình sửa video, bỏ tham số lạ');
 
-  // mỗi tài khoản một thiệp: không nhân bản, "Dùng mẫu" khác thì đổi mẫu cho thiệp sẵn có
-  r = await call('u', 'POST', `/api/cards/${id}/duplicate`);
-  assert.equal(r.status, 400, 'không nhân bản thiệp');
-  // thiệp đã kích hoạt: mẫu chốt — "Dùng mẫu" khác / lưu mẫu khác đều bị từ chối, mẫu giữ nguyên
-  const tpl0 = (await call('u', 'GET', `/api/cards/${id}`)).json.card.template;
-  assert.ok((await call('u', 'GET', `/api/cards/${id}`)).json.card.paid, 'thiệp này đã kích hoạt');
-  r = await call('u', 'POST', '/api/cards', { template: tpl0 === 'songhy' ? 'dodam' : 'songhy' });
-  assert.equal(r.status, 409, 'đã kích hoạt: không đổi sang mẫu khác');
-  r = await call('u', 'PUT', `/api/cards/${id}`, { template: tpl0 === 'songhy' ? 'dodam' : 'songhy' });
-  assert.equal(r.status, 409, 'đã kích hoạt: lưu mẫu khác bị từ chối');
+  // trả tiền theo đám cưới: thiệp đã kích hoạt vẫn đổi mẫu; "Dùng mẫu" khác thì hỏi (409 choose); làm thêm thiệp cùng đám cưới
+  const tpl0 = (await call('u', 'GET', `/api/cards/${id}`)).json.card.template, tpl1 = tpl0 === 'songhy' ? 'dodam' : 'songhy';
+  const c0 = (await call('u', 'GET', `/api/cards/${id}`)).json.card;
+  assert.ok(c0.paid, 'thiệp này đã kích hoạt');
   r = await call('u', 'POST', '/api/cards', { template: tpl0 });
-  assert.deepEqual([r.json.card.id, r.json.card.template], [id, tpl0], 'Dùng đúng mẫu đang có → vẫn là thiệp sẵn có, không tạo thiệp thứ hai');
-  assert.equal((await call('u', 'GET', '/api/cards')).json.cards.filter((c) => c.ownerId).length, 1);
+  assert.deepEqual([r.status, r.json.card && r.json.card.id], [200, id], 'Dùng đúng mẫu đang có → vẫn là thiệp sẵn có');
+  r = await call('u', 'POST', '/api/cards', { template: tpl1 });
+  assert.deepEqual([r.status, r.json.choose], [409, true], 'đã kích hoạt + mẫu khác → hỏi đổi mẫu thiệp nào / làm thêm');
+  r = await call('u', 'POST', '/api/cards', { template: tpl1, target: id });
+  assert.deepEqual([r.status, r.json.card.id, r.json.card.template, r.json.card.paid], [200, id, tpl1, true], 'đổi mẫu thiệp đã kích hoạt');
+  r = await call('u', 'PUT', `/api/cards/${id}`, { template: tpl0 });
+  assert.equal(r.status, 200, 'trình sửa: thiệp đã kích hoạt lưu mẫu khác được');
+  r = await call('u', 'POST', '/api/cards', { template: tpl1, target: 'new' });
+  const c2 = r.json.card;
+  assert.deepEqual([r.status, c2.paid, c2.names, c2.date, c2.template], [200, true, c0.names, c0.date, tpl1], 'làm thêm thiệp: cùng đám cưới đã kích hoạt → đã kích hoạt, cùng tên + ngày');
+  assert.notEqual(c2.id, id);
+  r = await call('u', 'PUT', `/api/cards/${c2.id}`, { data: { ...c2.data, groom: { ...c2.data.groom, name: 'Người Khác' } } });
+  assert.equal(r.json.card.data.groom.name, c2.data.groom.name, 'thiệp thêm: tên đôi vẫn chốt');
+  r = await call('u', 'POST', `/api/cards/${id}/duplicate`, {});
+  assert.deepEqual([r.status, r.json.card.paid], [200, true], 'nhân bản thiệp (làm thêm) được');
+  assert.equal((await call('u', 'GET', '/api/cards')).json.cards.filter((c) => c.ownerId).length, 3);
+  r = await call('u', 'POST', '/api/cards', { template: tpl0 });
+  assert.equal(r.status, 409, 'nhiều thiệp → luôn hỏi');
 
   console.log('✓ Tất cả kiểm thử đều qua');
   server.close();

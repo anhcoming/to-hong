@@ -35,7 +35,13 @@ store.onLoad(() => { Wd.migrate(); db.cards.forEach((c) => fixNames(c, false)); 
 // LED / video cũng được, ưng cái nào thì bấm "Dùng lượt Trọn bộ" trên cái đó (POST /api/cards/:id/redeem).
 // Nâng cấp lên Trọn bộ: phần nào của thiệp đã trả (thiệp / màn LED / video) thì trừ đúng giá lẻ phần đó — khách chỉ trả
 // phần chênh, không bao giờ trả hai lần cho cùng một thứ. Đủ cả ba rồi thì không cần Trọn bộ nữa.
-const PARTS = [['card', (c) => c.paid, () => cardPrice()], ['led', (c) => c.led && c.led.paid, () => config.ledPrice], ['video', (c) => c.video && c.video.paid, () => config.videoPrice]];
+// prepaid: màn LED / slide đã trả tiền khi chưa tạo (mua ở màn thanh toán chung) — tạo ra là tự kích hoạt (comboUnlock)
+const prepaid = (c, k) => !!(c.prepaid && c.prepaid[k]);
+const PARTS = [['card', (c) => c.paid, () => cardPrice()], ['led', (c) => (c.led && c.led.paid) || prepaid(c, 'led'), () => config.ledPrice], ['video', (c) => (c.video && c.video.paid) || prepaid(c, 'video'), () => config.videoPrice]];
+const PART_KEYS = PARTS.map(([k]) => k);
+const partPaid = (c, k) => PARTS.find(([x]) => x === k)[1](c);
+const partPrice = (k) => PARTS.find(([x]) => x === k)[2]();
+const PART_NAME = { card: 'thiệp', led: 'màn LED', video: 'slide' };
 const comboHave = (c) => PARTS.filter(([, paid]) => paid(c)).map(([k]) => k);
 const comboCredit = (c) => (c.combo ? 0 : PARTS.reduce((n, [, paid, price]) => n + (paid(c) ? price() : 0), 0));
 const missingRetail = (c) => PARTS.reduce((n, [, paid, price]) => n + (paid(c) ? 0 : price()), 0);
@@ -48,7 +54,17 @@ const PRODUCTS = {
     price: (c) => (c ? Math.max(0, comboPrice() - comboCredit(c)) : comboPrice()),
     sub: (c) => ({ paid: !!c.combo }),
   },
+  // màn thanh toán chung: khách tick 2 món chưa đủ Trọn bộ (vd. thiệp + màn LED) → một đơn, một mã QR (order.items)
+  multi: { name: 'Gói đám cưới', coupons: false, prefix: 'DC', price: (c, o) => ((o && o.items) || []).reduce((n, k) => n + (c && partPaid(c, k) ? 0 : partPrice(k)), 0), sub: () => ({ paid: false }) },
 };
+// món khách tick ở màn thanh toán → sản phẩm của đơn: đủ cả ba (tính cả món đã có) = Trọn bộ; một món = mua lẻ; còn lại = multi
+function pickProduct(card, items) {
+  const want = PART_KEYS.filter((k) => items.includes(k) && !partPaid(card, k));
+  if (!want.length) throw httpError(400, 'Các món bạn chọn đều đã kích hoạt rồi');
+  if (PART_KEYS.every((k) => want.includes(k) || partPaid(card, k)) && !card.combo) return { product: 'combo', items: want };
+  if (want.length === 1) return { product: want[0], items: want };
+  return { product: 'multi', items: want };
+}
 // ---- lượt Trọn bộ (credits) — lưu trên tài khoản chủ thiệp: user.credits = { led, video } ----
 // Trả tiền là chốt (thiệp: lúc kích hoạt; màn LED / video: lúc kích hoạt, hoặc lần đầu chiếu / xuất nếu mở bằng Trọn bộ)
 const LOCKED = {
@@ -75,14 +91,28 @@ function useCredit(card, kind, via = 'credit') {
 // Lượt Trọn bộ cũ (user.credits, trước 18/11/2026) vẫn dùng được qua /redeem — không cộng thêm lượt nữa.
 function comboUnlock(card, kind, at = Date.now()) {
   const t = card[kind];
-  if (!card.combo || !t || t.paid) return;
+  if (!(card.combo || prepaid(card, kind)) || !t || t.paid) return;
   t.paid = true; t.paidAt = at;
+  if (card.prepaid) delete card.prepaid[kind];
   fixNames(card, false); // Trọn bộ mở sẵn: chưa chốt — khách vẫn làm màn LED / video, chốt lúc chiếu thật / xuất MP4 lần đầu
   // ghi thành đơn 0đ để trang quản trị thấy LED / video nào được mở nhờ Trọn bộ
   db.orders.push({ id: rid(12), code: PRODUCTS[kind].prefix + rid(6).toUpperCase(), product: kind, cardId: card.id, userId: card.userId, amount: 0, status: 'paid', paidVia: 'combo', createdAt: at, paidAt: at });
 }
+// Trả tiền theo ĐÁM CƯỚI: kích hoạt một thiệp là kích hoạt mọi thiệp của đám cưới đó (thiệp nhà trai, nhà gái, mời bạn bè…).
+// Chốt tên cô dâu chú rể + ngày cưới theo thiệp vừa trả cho cả đám cưới — không dùng một lần trả cho đám cưới khác.
+// Mẫu, màu, ảnh, chữ vẫn đổi thoải mái.
+function weddingCards(card) { return card.weddingId ? db.cards.filter((c) => c.weddingId === card.weddingId && c.userId) : [card]; }
+function payCard(card, at) {
+  card.paid = true; card.paidAt = card.paidAt || at;
+  for (const c of weddingCards(card)) {
+    if (c === card || c.paid) continue;
+    c.data.groom.name = card.data.groom.name; c.data.bride.name = card.data.bride.name; c.data.date = card.data.date;
+    c.paid = true; c.paidAt = at; c.paidBy = card.id;
+  }
+}
+const weddingPaid = (card) => weddingCards(card).find((c) => c.paid) || null;
 function activateCombo(card, at) {
-  card.paid = true; card.paidAt = card.paidAt || at; card.combo = true;
+  payCard(card, at); card.combo = true;
   comboUnlock(card, 'led', at);
   comboUnlock(card, 'video', at);
 }
@@ -248,8 +278,8 @@ function cardSummary(card) {
     namesFrozen: Wd.namesFrozen(card), // đã kích hoạt / đã qua ngày cưới: tên đôi + ngày cưới cố định
     // nâng lên Trọn bộ: giá phần chênh (đã trừ phần đã trả) và giá mua lẻ phần còn thiếu — null khi không cần gợi ý
     comboUpgrade: !card.combo && comboHave(card).length && comboHave(card).length < 3 ? { amount: PRODUCTS.combo.price(card), retail: missingRetail(card), have: comboHave(card) } : null,
-    led: { ...ledLib.state(card.led), url: `${BASE_URL}/led/${card.slug}`, palette: card.led ? card.led.palette : null, effect: card.led ? card.led.effect : null },
-    video: { ...videoLib.state(card.video), url: `${BASE_URL}/video/${card.slug}`, template: card.video ? card.video.template : null, kind: card.video ? card.video.event.kind : null },
+    led: { ...ledLib.state(card.led), prepaid: prepaid(card, 'led'), url: `${BASE_URL}/led/${card.slug}`, palette: card.led ? card.led.palette : null, effect: card.led ? card.led.effect : null },
+    video: { ...videoLib.state(card.video), prepaid: prepaid(card, 'video'), url: `${BASE_URL}/video/${card.slug}`, template: card.video ? card.video.template : null, kind: card.video ? card.video.event.kind : null },
   };
 }
 function cardFull(card) {
@@ -284,7 +314,8 @@ function orderView(o) {
   const product = o.product || 'card';
   const received = receivedFor(o), due = Math.max(0, o.amount - received);
   return {
-    product, productName: product === 'video' && card ? videoLib.videoName(card.video) : PRODUCTS[product].name,
+    product, productName: product === 'multi' ? (o.items || []).map((k) => PART_NAME[k]).join(' + ').replace(/^./, (c) => c.toUpperCase()) : product === 'video' && card ? videoLib.videoName(card.video) : PRODUCTS[product].name,
+    items: product === 'multi' ? o.items || [] : product === 'combo' ? PART_KEYS : [product],
     code: o.code, amount: o.amount, coupon: o.coupon || null, status: o.status, claimedAt: o.claimedAt || null,
     createdAt: o.createdAt, paidAt: o.paidAt || null, paidVia: o.paidVia || null, bankNote: o.bankNote || null,
     upgrade: !!o.upgrade, ...wasPrice(o, product),
@@ -550,23 +581,35 @@ for (const [path, to, keep] of [['/tao-led', 'sua-led', ['palette', 'effect']], 
   });
 }
 
-// Mỗi tài khoản chỉ MỘT thiệp. Đã có thiệp mà bấm "Dùng mẫu" → đổi mẫu cho thiệp đó (chữ, ảnh giữ nguyên), không tạo thêm.
-// Đã kích hoạt (thiệp / màn LED / video) thì mẫu chốt luôn — đổi mẫu khác phải làm thiệp khác
-const tplLockedMsg = (card) => `Thiệp đã kích hoạt nên mẫu đã chốt (${(templates[card.template] || {}).name || card.template}). Mỗi thiệp kích hoạt dùng một mẫu, không đổi sang mẫu khác được.`;
+// Một đám cưới có thể có nhiều thiệp (nhà trai, nhà gái, mời bạn bè…) — trả tiền một lần cho cả đám cưới (payCard).
+// "Dùng mẫu" (b.template):
+//   - b.target = id thiệp của mình → đổi mẫu thiệp đó (kể cả đã kích hoạt: chỉ chốt tên + ngày, mẫu đổi thoải mái)
+//   - b.target = 'new' → làm thêm một thiệp trong đám cưới (đã kích hoạt thì thiệp mới cũng đã kích hoạt)
+//   - không có target: chỉ một thiệp nháp → đổi mẫu thiệp đó như trước; đã kích hoạt / nhiều thiệp → 409 choose để khách chọn
 const userCard = (user) => db.cards.filter((c) => c.userId === user.id).sort((a, b) => b.updatedAt - a.updatedAt)[0];
+function setTemplate(card, tpl, palette) {
+  if (!templates[tpl]) return;
+  Object.assign(card, { template: tpl, palette: templates[tpl].palettes.find((p) => p.id === palette)?.id || templates[tpl].palettes[0].id, updatedAt: Date.now() });
+  delete card.ledOnly;
+}
 function newCard(user, b = {}) {
   const tpl = templates[b.template] ? b.template : DEFAULT_TEMPLATE;
-  const now = Date.now();
-  const has = userCard(user);
+  const mine = db.cards.filter((c) => c.userId === user.id).sort((a, b2) => b2.updatedAt - a.updatedAt);
+  const has = mine[0];
+  if (has && b.target && b.target !== 'new') {
+    const t = mine.find((c) => c.id === b.target);
+    if (!t) throw httpError(404, 'Không tìm thấy thiệp');
+    setTemplate(t, tpl, b.palette); save(); return t;
+  }
+  if (has && b.target === 'new') return addCard(user, has, tpl, b.palette);
   if (has) {
-    // thiệp đã kích hoạt: mẫu đã chốt, không đổi sang mẫu khác
-    if (has.paid && b.template && b.template !== has.template) throw httpError(409, tplLockedMsg(has));
     if (b.template && templates[b.template]) {
-      Object.assign(has, { template: tpl, palette: templates[tpl].palettes.find((p) => p.id === b.palette)?.id || templates[tpl].palettes[0].id, updatedAt: now });
-      save();
+      if (mine.length > 1 || (has.paid && b.template !== has.template)) throw Object.assign(httpError(409, 'Chọn thiệp muốn dùng mẫu này'), { choose: true });
+      setTemplate(has, tpl, b.palette); save();
     }
     return has;
   }
+  const now = Date.now();
   const w = Wd.ensure(user);
   const data = cd.defaults();
   // hồ sơ cưới (sổ tay): tên đôi, danh xưng, bố mẹ, ngày cưới; các lễ + tài khoản mừng cưới của thiệp đã lưu trước đó
@@ -643,7 +686,6 @@ route('PUT', '/api/cards/:id', async (req, res, ctx) => {
       if (!ok(b.data.cover) || !ok(b.data.music) || (Array.isArray(b.data.photos) && !b.data.photos.every(ok))) needUser(ctx);
     }
   }
-  if (card.paid && b.template && b.template !== card.template) throw httpError(409, tplLockedMsg(card)); // đã kích hoạt: mẫu chốt
   if (b.title !== undefined) card.title = str(b.title, 60) || card.title;
   if (b.template && templates[b.template]) {
     if (b.template !== card.template) card.palette = templates[b.template].palettes[0].id;
@@ -692,7 +734,6 @@ route('POST', '/api/cards/:id/draft', async (req, res, ctx) => {
   rateLimit('draft:' + ctx.ip, 3000, 36e5);
   const b = await readJson(req);
   let template = templates[b.template] ? b.template : card.template;
-  if (card.paid) template = card.template; // đã kích hoạt: xem trước cũng chỉ mẫu đã chốt
   if (!templates[template]) template = DEFAULT_TEMPLATE;
   let palette = template !== card.template ? templates[template].palettes[0].id : card.palette;
   if (b.palette && templates[template].palettes.some((p) => p.id === b.palette)) palette = b.palette;
@@ -716,11 +757,32 @@ route('POST', '/api/cards/:id/publish', async (req, res, ctx) => {
   json(res, 200, { card: cardSummary(card) });
 });
 
+// Làm thêm thiệp cho cùng đám cưới (bản sao chữ + ảnh của thiệp nguồn, đổi mẫu tuỳ ý). Đám cưới đã kích hoạt → thiệp mới
+// cũng đã kích hoạt (cùng tên + ngày). Chưa kích hoạt → dùng chung đồng hồ dùng thử với thiệp nguồn (không được thêm hạn).
 route('POST', '/api/cards/:id/duplicate', async (req, res, ctx) => {
-  ownedCard(ctx, ctx.params.id);
-  // mỗi tài khoản một thiệp: muốn mẫu khác thì đổi mẫu ngay trong trình sửa
-  throw httpError(400, 'Mỗi tài khoản chỉ có một thiệp — muốn mẫu khác thì đổi mẫu ngay trong trình sửa');
+  const src = ownedCard(ctx, ctx.params.id);
+  const b = await readJson(req);
+  const user = ctx.admin && !ctx.user ? db.users.find((u) => u.id === src.userId) : needUser(ctx);
+  const card = addCard(user, src, templates[b.template] ? b.template : src.template, b.palette || (b.template ? '' : src.palette));
+  json(res, 200, { card: cardFull(card) });
 });
+function addCard(user, src, tpl, palette) {
+  const mine = db.cards.filter((c) => c.userId === user.id);
+  if (mine.length >= 10) throw httpError(400, 'Mỗi đám cưới tối đa 10 thiệp');
+  const now = Date.now(), paidBy = weddingPaid(src);
+  const data = JSON.parse(JSON.stringify(src.data));
+  const card = {
+    id: rid(12), userId: user.id, weddingId: src.weddingId || Wd.ensure(user).id, slug: uniqueSlug('thiep-' + rid(6)),
+    title: `Thiệp ${mine.length + 1}`, template: tpl, palette: '', status: 'draft', paid: false, views: 0, data, createdAt: now, updatedAt: now,
+    trialFrom: src.trialFrom || src.publishedAt || src.createdAt,
+  };
+  setTemplate(card, tpl, palette);
+  if (paidBy) { card.paid = true; card.paidAt = now; card.paidBy = paidBy.id; data.groom.name = paidBy.data.groom.name; data.bride.name = paidBy.data.bride.name; data.date = paidBy.data.date; }
+  db.cards.push(card);
+  autoSlug(card);
+  save();
+  return card;
+}
 
 route('DELETE', '/api/cards/:id', async (req, res, ctx) => {
   const card = ownedCard(ctx, ctx.params.id);
@@ -881,20 +943,29 @@ route('POST', '/api/upload/discard', async (req, res, ctx) => {
 route('POST', '/api/cards/:id/order', async (req, res, ctx) => {
   const card = ownedCard(ctx, ctx.params.id);
   const b = await readJson(req);
-  const product = PRODUCTS[b.product] ? b.product : 'card';
+  // màn thanh toán chung gửi b.items (các món khách tick); cách cũ gửi b.product
+  let product = PRODUCTS[b.product] && b.product !== 'multi' ? b.product : 'card', items = null;
+  if (Array.isArray(b.items)) ({ product, items } = pickProduct(card, b.items.map(String)));
   const P = PRODUCTS[product];
-  const target = P.sub(card);
-  if (!target) throw httpError(400, `Hãy tạo ${P.name.toLowerCase()} trước`);
-  if (target.paid) throw httpError(400, `${P.name} này đã được kích hoạt`);
+  if (product === 'led' || product === 'video') { if (partPaid(card, product)) throw httpError(400, `${P.name} này đã được kích hoạt`); }
+  else if (product !== 'multi') {
+    const target = P.sub(card);
+    if (!target) throw httpError(400, `Hãy tạo ${P.name.toLowerCase()} trước`);
+    if (target.paid) throw httpError(400, `${P.name} này đã được kích hoạt`);
+  }
   if (product === 'combo' && comboHave(card).length === 3) throw httpError(400, 'Thiệp, màn LED và video của bạn đều đã kích hoạt — không cần mua Trọn bộ nữa');
   // trả tiền là chốt tên cô dâu chú rể + ngày cưới (màn LED / video: chốt hẳn) → phải có đủ trước khi kích hoạt
   if (!card.data.groom.name || !card.data.bride.name || !card.data.date) throw httpError(400, 'Điền tên cô dâu, chú rể và ngày cưới trước khi kích hoạt nhé — kích hoạt là chốt, sau đó không đổi được nữa.');
-  const isThis = (o) => o.cardId === card.id && (o.product || 'card') === product && o.status === 'pending';
+  const key = (x) => (x || []).slice().sort().join(',');
+  const isThis = (o) => o.cardId === card.id && (o.product || 'card') === product && o.status === 'pending' && (product !== 'multi' || key(o.items) === key(items));
   let order = db.orders.find(isThis);
   if (!order) {
-    order = { id: rid(12), code: P.prefix + rid(6).toUpperCase(), product, cardId: card.id, userId: card.userId, amount: P.price(card), status: 'pending', createdAt: Date.now() };
+    order = { id: rid(12), code: P.prefix + rid(6).toUpperCase(), product, cardId: card.id, userId: card.userId, status: 'pending', createdAt: Date.now() };
+    if (product === 'multi') order.items = items;
+    order.amount = P.price(card, order);
     db.orders.push(order);
   }
+  if (product === 'multi') { order.amount = P.price(card, order); delete order.coupon; delete order.discount; } // gói tự chọn: không áp mã giảm giá
   // combo: giá tuỳ thiệp đã kích hoạt chưa (nâng cấp) → tính lại mỗi lần mở (giữ mã đã áp)
   if (product === 'combo') order.upgrade = comboHave(card).length > 0;
   // mã giảm giá (lib/discounts.js): b.coupon = mã mới ('' = bỏ mã); không gửi thì giữ mã đã áp, mã hết hạn/hết lượt thì tự bỏ
@@ -903,14 +974,14 @@ route('POST', '/api/cards/:id/order', async (req, res, ctx) => {
   if (code) {
     try { d = discounts.check(code, product, order.id); } catch (e) { if (b.coupon !== undefined) throw e; }
   }
-  if (d || b.coupon !== undefined || product === 'combo' || order.coupon) {
+  if (product !== 'multi' && (d || b.coupon !== undefined || product === 'combo' || order.coupon)) {
     const price = P.price(card), off = d ? discounts.offFor(d, price) : 0;
     order.amount = price - off;
     if (d) { order.coupon = d.code; order.discount = off; } else { delete order.coupon; delete order.discount; }
   }
   // giá đã hạ sau khi tạo đơn (đổi giá trong config.json): đơn đang chờ theo giá mới. Chỉ hạ, không nâng giá đơn khách đã thấy
   // (khách lỡ chuyển theo QR cũ giá cao hơn vẫn được kích hoạt: SePay nhận khi số tiền ≥ giá đơn).
-  if (!d && !order.coupon) { const now = P.price(card); if (now < order.amount) order.amount = now; }
+  if (!d && !order.coupon && product !== 'multi') { const now = P.price(card); if (now < order.amount) order.amount = now; }
   // mã giảm hết 100% → không cần chuyển khoản: khách thấy giá 0đ, bấm "Xác nhận kích hoạt" (b.confirm) mới kích hoạt
   if (order.amount <= 0 && d && b.confirm === true) markPaid(order, 'coupon');
   // đã chuyển thiếu trước đó mà giá đơn nay hạ (đổi giá, áp mã) xuống còn ≤ số đã nhận → đủ tiền, kích hoạt luôn
@@ -955,16 +1026,25 @@ function markPaid(o, via) {
   o.paidVia = via;
   const card = db.cards.find((c) => c.id === o.cardId);
   if (card && o.product === 'combo') activateCombo(card, o.paidAt);
-  else {
-    const target = card && PRODUCTS[o.product || 'card'].sub(card);
-    if (target) { target.paid = true; target.paidAt = o.paidAt; fixNames(card); }
+  else if (card) {
+    for (const k of o.product === 'multi' ? o.items || [] : [o.product || 'card']) activatePart(card, k, o.paidAt);
+    fixNames(card);
   }
   closeCovered(o);
 }
 
+// một món: thiệp (cả đám cưới), màn LED / slide (đã tạo thì kích hoạt, chưa tạo thì ghi đã trả — tạo ra là tự mở)
+function activatePart(card, k, at) {
+  if (k === 'card') return payCard(card, at);
+  const t = card[k];
+  if (t) { if (!t.paid) { t.paid = true; t.paidAt = at; } } else card.prepaid = { ...(card.prepaid || {}), [k]: true };
+}
 function productPaid(o) {
   const card = db.cards.find((c) => c.id === o.cardId);
-  const target = card && PRODUCTS[o.product || 'card'].sub(card);
+  if (!card) return false;
+  if (o.product === 'multi') return (o.items || []).every((k) => partPaid(card, k));
+  if (o.product === 'led' || o.product === 'video') return partPaid(card, o.product);
+  const target = PRODUCTS[o.product || 'card'].sub(card);
   return !!(target && target.paid);
 }
 // Đơn đang chờ mà sản phẩm của nó đã được trả bằng đơn khác (vd. tạo đơn thiệp 99k rồi trả đơn Trọn bộ 169k) → tự đóng,
@@ -1617,7 +1697,7 @@ const server = http.createServer(async (req, res) => {
     const status = e.status || 500;
     if (status === 500) console.error(e);
     if (res.headersSent) return res.end();
-    json(res, status, { error: status === 500 ? 'Lỗi máy chủ, vui lòng thử lại' : e.message });
+    json(res, status, { error: status === 500 ? 'Lỗi máy chủ, vui lòng thử lại' : e.message, ...(e.choose ? { choose: true } : {}) });
   }
 });
 

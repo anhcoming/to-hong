@@ -115,6 +115,14 @@
 .mrow .tx span{display:block;font-size:12.5px;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .mrow .tx span.warn{color:var(--warn)}.mrow .tx span.red{color:var(--danger)}.mrow .tx span.ok{color:var(--ok)}
 .mrow .btn{flex:none}
+.wedh{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:8px 14px;margin:0 0 14px}
+.wedh h1{margin:0;font-family:var(--serif);font-weight:600;font-size:26px;line-height:1.2}
+.wedh .wd{display:flex;flex-wrap:wrap;align-items:center;gap:6px 10px;color:var(--muted);font-size:14px;margin-top:2px}
+.wedh .lock{display:inline-flex;align-items:center;gap:5px;padding:2px 10px;border-radius:999px;background:var(--ok-soft,#e6f3ec);color:var(--ok);font-size:12.5px;font-weight:700}
+.addc{display:flex;align-items:center;justify-content:center;gap:8px;min-height:58px;border:1.5px dashed #e7c3c9;border-radius:14px;background:#fff8f9;color:var(--primary);font:inherit;font-size:14.5px;font-weight:700;cursor:pointer;padding:10px 14px}
+.addc:hover{background:var(--primary-soft)}
+.addc small{font-weight:500;color:var(--muted);font-size:12.5px}
+@media (max-width:760px){.wedh h1{font-size:20px}.wedh{margin:0 0 10px}}
 .back{display:inline-flex;align-items:center;gap:4px;margin:0 0 12px;font-size:14px;font-weight:600;color:var(--muted);text-decoration:none}.back:hover{color:var(--primary)}
 @media (max-width:760px){.mine{margin:14px 0 0}.mrows{grid-template-columns:minmax(0,1fr)}.mrow .xl{display:none}}
 .tpls .th{display:flex;align-items:baseline;justify-content:space-between;gap:10px;margin:0 0 10px}
@@ -183,6 +191,7 @@ if (/[?&](tao|tao-led|tao-video|mo)=/.test(location.search)) {
 </script>
 <script src="/js/common.js"></script>
 <script src="/js/pay.js"></script>
+<script src="/js/pick-card.js"></script>
 <script src="/js/story.js" defer></script>
 <script>
 let META;
@@ -245,11 +254,18 @@ async function load() {
   if (sel) { // màn quản lý một thiệp: số liệu, gửi link, kích hoạt, màn LED / video
     document.querySelector('.head').hidden = true; $('#mine').innerHTML = '';
     el.innerHTML = `<a class="back" href="/thiep-cua-toi">‹ Quay lại</a><div class="dash">${heroCard(sel)}</div>`;
-  } else if (main) { // "Thiệp của tôi": mở thẳng màn quản lý thiệp chính (mỗi tài khoản một thiệp); thiệp khác (nếu có) liệt kê bên dưới
+  } else if (main) { // "Đám cưới của bạn": thiệp chính + màn LED / slide; các thiệp khác của đám cưới (nhà trai, nhà gái…) bên dưới
     $('#mine').innerHTML = '';
     document.querySelector('.head').hidden = true;
-    const rest = cards.filter((c) => c !== main);
-    el.innerHTML = `<div class="dash">${heroCard(main)}</div>` + (rest.length ? `<div class="mine"><h4>Thiệp khác</h4><div class="mrows">${rest.map(mineRow).join('')}</div></div>` : '');
+    const rest = cards.filter((c) => c !== main && c.ownerId === main.ownerId);
+    const paidAny = cards.some((c) => c.paid);
+    el.innerHTML = `<div class="wedh"><h1>Đám cưới của bạn</h1>${paidAny ? '<span class="lock">🔒 Tên + ngày cưới đã chốt</span>' : ''}</div>
+      <div class="dash">${heroCard(main)}</div>
+      <div class="mine"><h4>${rest.length ? 'Các thiệp của đám cưới' : 'Thêm thiệp cho đám cưới'}</h4><div class="mrows">${rest.map(mineRow).join('')}
+        <button type="button" class="addc" data-add="${main.id}">＋ Làm thêm thiệp <small>${paidAny ? 'nhà gái, mời bạn bè… · đã có trong gói' : 'nhà gái, mời bạn bè… · cùng một lần kích hoạt'}</small></button></div></div>`;
+    $('[data-add]').onclick = async (ev) => {
+      try { const { card } = await api(`/api/cards/${ev.currentTarget.dataset.add}/duplicate`, { method: 'POST', body: {} }); location.href = '/sua/' + card.id; } catch (e) { toast(e.message, true); }
+    };
   } else { // chưa có thiệp: mời chọn mẫu (kho mẫu ở /mau-thiep)
     $('#mine').innerHTML = ''; document.querySelector('.head').hidden = false;
     $('#pageTitle').textContent = 'Thiệp của tôi';
@@ -292,6 +308,7 @@ function prodRow(c, kind) {
   const name = kind === 'led' ? 'Màn hình LED' : s.created ? s.name : 'Slide / màn hình dạm ngõ';
   const href = kind === 'led' ? `/sua-led/${c.id}${s.created ? '' : '?tao=1'}` : `/sua-video/${c.id}`;
   const st = s.paid ? '<span class="ok">● Đã kích hoạt</span>'
+    : s.prepaid ? '<span class="ok">Đã mua · tạo là dùng được ngay</span>'
     : isCombo(c) ? '<span class="gift">Có trong Trọn bộ</span>'
     : left > 0 ? `<span class="gift">Còn ${left} lượt Trọn bộ</span>`
     : s.created && s.expired ? '<span class="bad">Hết dùng thử</span>'
@@ -324,7 +341,7 @@ function heroCard(c) {
         <div class="acts">
           <a class="btn" href="/sua/${c.id}">${pub ? 'Sửa thiệp' : 'Tiếp tục sửa thiệp'}</a>
           ${pub ? `<button class="btn soft" data-a="share">Gửi link</button><a class="btn plain open" target="_blank" href="${esc(c.url)}">Mở thiệp</a>` : ''}
-          ${!c.paid && !pub ? `<button class="btn plain" data-a="pay">Kích hoạt · ${money(META.price)}</button>` : ''}
+          ${!c.paid && !pub ? `<button class="btn plain" data-a="pay">Kích hoạt</button>` : ''}
         </div>
       </div>
     </article>
@@ -422,7 +439,9 @@ async function act(a, id, c) {
 }
 
 async function create(template, palette) {
-  const { card } = await api('/api/cards', { method: 'POST', body: { template, palette } });
+  // đã có thiệp đã kích hoạt / nhiều thiệp: hỏi đổi mẫu thiệp nào hay làm thêm (public/js/pick-card.js); đóng bảng → về Thiệp của tôi
+  const card = await useTemplate(template, palette);
+  if (!card) { location.replace('/thiep-cua-toi'); return; }
   // replace: bấm Quay lại từ trình sửa không quay về link ?tao= (sẽ tạo thêm một thiệp trùng)
   location.replace('/sua/' + card.id);
 }

@@ -5,8 +5,8 @@
 const lcFirst = (s) => String(s || '').charAt(0).toLowerCase() + String(s || '').slice(1);
 // Trả tiền là chốt — nói rõ trước khi khách chuyển khoản
 const LOCK_NOTE = {
-  card: '🔒 Kích hoạt là chốt <b>mẫu, tên cô dâu chú rể và ngày cưới</b> — sau đó không đổi được. Bố mẹ, giờ, địa điểm, ảnh, nhạc… vẫn sửa thoải mái.',
-  combo: '🔒 Kích hoạt là chốt <b>mẫu thiệp, tên cô dâu chú rể và ngày cưới</b>. Màn LED và video chốt hẳn (không sửa gì nữa) khi chiếu hoặc tải lần đầu.',
+  card: '🔒 Kích hoạt là chốt <b>tên cô dâu chú rể và ngày cưới</b> cho cả đám cưới. Mẫu thiệp, ảnh, chữ… vẫn sửa thoải mái, làm thêm thiệp (nhà trai, nhà gái…) không mất thêm tiền.',
+  combo: '🔒 Kích hoạt là chốt <b>tên cô dâu chú rể và ngày cưới</b>; mẫu thiệp vẫn đổi thoải mái. Màn LED và slide chốt hẳn (không sửa gì nữa) khi chiếu hoặc tải lần đầu.',
   led: '🔒 Kích hoạt là <b>chốt hẳn màn LED</b> — sau khi trả tiền không sửa gì được nữa. Kiểm tra kỹ tên, ngày, chữ trên màn trước khi chuyển khoản.',
   video: '🔒 Kích hoạt là <b>chốt hẳn video</b> — sau khi trả tiền không sửa gì được nữa. Kiểm tra kỹ tên, ngày, chữ, ảnh trước khi chuyển khoản.',
 };
@@ -54,6 +54,12 @@ const PAY_CSS = `<style>
 .cp-err:not([hidden])+p{margin-top:4px}.pay-cp::placeholder{text-transform:none;font-size:14px}
 .pay-short{display:grid;gap:4px;margin:14px 0 0;padding:12px 14px;border-radius:14px;background:#fff6e0;color:#6b4e00;font-size:13.5px;line-height:1.5;text-align:left}
 .pay-short>b{font-size:15px;color:#8a5a00}
+.pay-opt .ck{flex:none;width:22px;height:22px;border-radius:7px;border:2px solid var(--line);margin-top:1px;box-sizing:border-box;display:grid;place-items:center;color:#fff;font-size:13px;font-weight:800}
+.pay-opt.on .ck{background:var(--primary);border-color:var(--primary)}
+.pay-opt.have{cursor:default;opacity:.75;background:var(--bg,#faf6f6);border-color:var(--line)}.pay-opt.have .ck{background:#bdb2b4;border-color:#bdb2b4}
+.pay-save{margin:2px 0 10px;padding:9px 12px;border-radius:12px;background:#fff4d9;color:#8a5a00;font-size:13px;text-align:left}
+.pay-tot{display:flex;justify-content:space-between;align-items:baseline;gap:10px;padding:10px 2px 0;border-top:1px dashed var(--line)}
+.pay-tot span{color:var(--muted);font-size:14px}.pay-tot s{margin-right:8px;font-size:14px}.pay-tot b{font-family:var(--serif);font-size:30px;color:var(--primary)}
 .pay-pill{display:inline-block;margin-top:4px;background:var(--ok-soft,#e6f3ec);color:var(--ok,#2f7d5b);font-size:11px;font-weight:700;padding:2px 8px;border-radius:999px}
 </style>`;
 
@@ -72,28 +78,25 @@ window.openPayModal = async function (cardId, onDone, product = 'card') {
       if (left > 0 && card[product] && card[product].created && !card[product].paid) return creditModal(cardId, onDone, product, left);
     } catch {}
   }
-  // Bấm "Kích hoạt" thiệp / màn LED / video → tải kèm đơn Trọn bộ để chọn gói ngay trên đầu (thiệp: mặc định Trọn bộ).
-  // product 'combo' khi đã trả một phần (thiệp / LED / video) = nâng cấp: máy chủ trừ giá phần đã trả, chỉ trả phần chênh.
+  // Màn thanh toán chung: tick thiệp / màn LED / slide (món đã có hiện ✓ xám). Máy chủ chọn sản phẩm theo món đã tick:
+  // một món = mua lẻ, đủ cả ba (tính cả món đã có) = Trọn bộ (nâng cấp: trừ phần đã trả), hai món = một đơn gộp. Một mã QR.
+  let cardInfo = null, M = window.META || null;
+  try { [cardInfo, M] = await Promise.all([api(`/api/cards/${cardId}`).then((r) => r.card), M && M.ledPrice ? M : api('/api/meta')]); } catch (e) { return toast(e.message, true); }
+  const KEYS = ['card', 'led', 'video'];
+  const HAVE = { card: !!cardInfo.paid, led: !!(cardInfo.led.paid || cardInfo.led.prepaid), video: !!(cardInfo.video.paid || cardInfo.video.prepaid) };
+  const PRICE = { card: M.price, led: M.ledPrice, video: M.videoPrice };
+  const TITLE = { card: ['Thiệp cưới online', 'Mọi thiệp của đám cưới (nhà trai, nhà gái…), đổi mẫu thoải mái'], led: ['Màn hình LED', 'Link chiếu ở tiệc + tải MP4'], video: ['Slide ảnh cưới / màn hình dạm ngõ', 'Dựng video từ ảnh, tải MP4 Full HD'] };
+  let ticks = (product === 'led' || product === 'video' ? [product] : KEYS).filter((k) => !HAVE[k]);
+  if (!ticks.length) ticks = KEYS.filter((k) => !HAVE[k]);
+  if (!ticks.length) return toast('Thiệp, màn LED và slide của bạn đều đã kích hoạt', true);
   const orders = {};
-  const post = (p, extra = {}) => api(`/api/cards/${cardId}/order`, { method: 'POST', body: { product: p, ...extra } });
-  try {
-    if (product !== 'combo') {
-      const [c, cb] = await Promise.allSettled([post(product), post('combo')]); // Trọn bộ không mua được (đã có / đủ cả ba) thì thôi
-      if (c.status === 'rejected') throw c.reason;
-      orders[product] = c.value.order;
-      if (cb.status === 'fulfilled' && cb.value.order.status !== 'paid') orders.combo = cb.value.order;
-    } else orders[product] = (await post(product)).order;
-  } catch (e) { return toast(e.message, true); }
-  let sel = orders.combo && product === 'card' ? 'combo' : product;
-  // đã chuyển thiếu cho một đơn: mở thẳng đơn đó (chuyển nốt phần còn thiếu), không cho đổi gói giữa chừng
+  const post = (_p, extra = {}) => api(`/api/cards/${cardId}/order`, { method: 'POST', body: { items: ticks, ...extra } });
+  let sel;
+  try { const o = (await post()).order; orders[o.product] = o; sel = o.product; } catch (e) { return toast(e.message, true); }
+  // đã chuyển thiếu cho một đơn: giữ nguyên đơn đó (chuyển nốt phần còn thiếu), không cho đổi món giữa chừng
   const part = Object.values(orders).find((x) => x.received);
-  if (part) sel = part.product;
   const data = { get order() { return orders[sel]; }, set order(o) { orders[o.product] = o; } };
-  let picker = !part && !!(product !== 'combo' && orders[product] && orders.combo);
-  // tên các phần của Trọn bộ: đã có / còn thiếu (đơn nâng cấp)
-  const PART = { card: 'thiệp', led: 'màn LED', video: 'slide / màn hình dạm ngõ' };
-  const partsOf = (o) => { const have = o.have || []; return { have: have.map((k) => PART[k]).join(', '), need: Object.keys(PART).filter((k) => !have.includes(k)).map((k) => PART[k]).join(' + ') }; };
-  const ONLY = { card: ['Chỉ thiệp cưới', 'Mời tới 3.000 khách, dùng vĩnh viễn', 'Kích hoạt thiệp'], led: ['Chỉ màn hình LED', 'Trình chiếu ở tiệc, không dòng "Bản dùng thử"', 'Kích hoạt màn LED'], video: ['Chỉ slide / màn hình dạm ngõ', 'Chiếu TV bằng link + tải MP4 Full HD', 'Kích hoạt slide / màn hình dạm ngõ'] };
+  let picker = !part;
 
   let timer = null, tick = null, ov = null, box = null, closeModal = null;
   const QR_LIFE = 5 * 60e3; // mã QR hiệu lực 5 phút (đủ để mở app ngân hàng, đăng nhập, xác thực) — hết thì bấm tạo mã mới
@@ -162,18 +165,18 @@ window.openPayModal = async function (cardId, onDone, product = 'card') {
       const x = orders[k];
       return `<button type="button" class="pay-opt ${sel === k ? 'on' : ''}" data-sel="${k}"><span class="rd"></span><span class="t"><b>${title}</b><span>${desc}</span>${pill ? `<br><span class="pay-pill">${pill}</span>` : ''}</span><span class="p">${x.wasPrice ? `<s>${money(x.wasPrice)}</s>` : ''}<b>${money(x.amount)}</b></span></button>`;
     };
+    const retail = (o.items || []).filter((k) => !HAVE[k]).reduce((n, k) => n + PRICE[k], 0);
     const head = picker ? `
-      <div style="text-align:center"><h2>${ONLY[product][2]}</h2><p class="muted" style="margin:0 0 14px">${esc(o.card ? o.card.names || o.card.title : '')}</p></div>
-      ${opt(product, ONLY[product][0], ONLY[product][1])}
-      ${opt('combo', orders.combo.upgrade ? 'Nâng lên Trọn bộ' : 'Trọn bộ ngày cưới', orders.combo.upgrade ? `Đã có ${partsOf(orders.combo).have} · thêm ${partsOf(orders.combo).need}` : 'Thiệp + màn LED + slide / màn hình dạm ngõ', orders.combo.amount > orders[product].amount ? `Chỉ thêm ${Math.round((orders.combo.amount - orders[product].amount) / 1000)}k` : 'Rẻ hơn')}
-      <div style="text-align:center;margin-top:4px">${o.wasPrice ? `<div class="muted" style="font-size:15px">${o.retail ? 'Mua lẻ ' : ''}<s>${money(o.wasPrice)}</s></div>` : ''}<div style="font-family:var(--serif);font-size:34px;font-weight:600;color:var(--primary);line-height:1.2">${money(o.amount)}</div>${until}${o.coupon ? ` <span class="chip ok">Đã áp mã ${esc(o.coupon)}</span>` : ''}</div>`
+      <div style="text-align:center"><h2>Kích hoạt đám cưới</h2><p class="muted" style="margin:0 0 14px">${esc(o.card ? o.card.names || o.card.title : '')}</p></div>
+      ${KEYS.map((k) => { const have = HAVE[k], on = have || ticks.includes(k); return `<button type="button" class="pay-opt ${on ? 'on' : ''} ${have ? 'have' : ''}" data-tick="${k}"${have ? ' disabled' : ''}><span class="ck">${on ? '✓' : ''}</span><span class="t"><b>${TITLE[k][0]}</b><span>${have ? 'Đã có' : TITLE[k][1]}</span></span><span class="p">${have ? '' : `<b>${money(PRICE[k])}</b>`}</span></button>`; }).join('')}
+      ${p === 'combo' && retail > o.amount ? `<div class="pay-save">🎁 Đủ 3 món = <b>Trọn bộ</b>, rẻ hơn mua lẻ ${money(retail - o.amount)}</div>` : ''}
+      <div class="pay-tot"><span>Tổng</span><span>${retail > o.amount ? `<s>${money(retail)}</s>` : ''}<b>${money(o.amount)}</b></span></div>
+      <div style="text-align:center">${until}${o.coupon ? ` <span class="chip ok">Đã áp mã ${esc(o.coupon)}</span>` : ''}</div>`
       : `
       <div style="text-align:center">
         <h2>${p === 'combo' && o.upgrade ? 'Nâng lên Trọn bộ' : `Kích hoạt ${esc(lcFirst(o.productName))}`}</h2>
-        <p class="muted" style="margin:0 0 6px">${p === 'combo' && o.upgrade ? `Đã có ${partsOf(o).have} · thêm ${partsOf(o).need}` : esc(o.card ? o.card.names || o.card.title : '')}</p>
-        ${o.wasPrice ? `<div class="muted" style="font-size:16px;margin-top:4px">${o.retail ? 'Mua lẻ ' : ''}<s>${money(o.wasPrice)}</s></div>` : ''}
+        <p class="muted" style="margin:0 0 6px">${esc(o.card ? o.card.names || o.card.title : '')}</p>
         <div style="font-family:var(--serif);font-size:36px;font-weight:600;color:var(--primary)">${money(o.amount)}</div>
-        ${until}${p === 'combo' && (o.upgrade || o.retail) && o.wasPrice ? ` <span class="chip ok">Rẻ hơn mua lẻ ${money(o.wasPrice - o.amount)}</span>` : ''}
         ${o.coupon ? `<span class="chip ok">Đã áp mã ${esc(o.coupon)}</span>` : ''}
       </div>`;
     const short = o.received ? `<div class="pay-short" role="alert"><b>Đã nhận ${money(o.received)} · còn thiếu ${money(o.due)}</b><span>Quét mã bên dưới để chuyển nốt ${money(o.due)}, giữ nguyên nội dung <b>${esc(o.code)}</b>. Đủ tiền là tự kích hoạt.</span></div>` : '';
@@ -190,12 +193,12 @@ window.openPayModal = async function (cardId, onDone, product = 'card') {
           <div><span>Nội dung</span><b class="code">${esc(o.code)}</b></div>
         </div>
       </div>
-      <form id="cp" style="display:${o.received ? 'none' : 'flex'};gap:8px;margin-bottom:4px">
+      <form id="cp" style="display:${o.received || p === 'multi' ? 'none' : 'flex'};gap:8px;margin-bottom:4px">
         <input class="input pay-cp" name="c" placeholder="Mã giảm giá (nếu có)" value="${esc(o.coupon || '')}" aria-describedby="cpErr">
         <button class="btn plain">Áp dụng</button>
       </form>
       <p class="cp-err" id="cpErr" role="alert" hidden></p>
-      <p style="font-size:12.5px;text-align:center;margin:14px 0 0;color:var(--ink)">${LOCK_NOTE[p] || LOCK_NOTE.card}</p>
+      <p style="font-size:12.5px;text-align:center;margin:14px 0 0;color:var(--ink)">${p === 'combo' ? LOCK_NOTE.combo : (o.items || [p]).includes('card') ? LOCK_NOTE.card : LOCK_NOTE[(o.items || [p])[0]] || LOCK_NOTE.card}</p>
       <p class="muted" style="font-size:12px;text-align:center;margin:6px 0 0">Thanh toán là bạn đồng ý với <a href="/dieu-khoan" target="_blank" rel="noopener" style="color:inherit;text-decoration:underline">Điều khoản</a> và <a href="/hoan-tien" target="_blank" rel="noopener" style="color:inherit;text-decoration:underline">Chính sách hoàn tiền</a>.</p>`;
     // mã giảm 100%: giá còn 0đ → thay mã QR bằng nút "Xác nhận kích hoạt", bấm mới kích hoạt
     const qc = $('.qrcard', box);
@@ -207,7 +210,12 @@ window.openPayModal = async function (cardId, onDone, product = 'card') {
       };
     }
     modalHead(box); // nút × đứng yên khi cuộn
-    $$('[data-sel]', box).forEach((b) => (b.onclick = () => { sel = b.dataset.sel; render(); }));
+    $$('[data-tick]', box).forEach((b) => (b.onclick = async () => {
+      const k = b.dataset.tick, next = ticks.includes(k) ? ticks.filter((x) => x !== k) : ticks.concat(k);
+      if (!next.length) return toast('Chọn ít nhất một món nhé', true);
+      const prev = ticks; ticks = next;
+      try { const o2 = (await post()).order; orders[o2.product] = o2; sel = o2.product; qrUntil = Date.now() + QR_LIFE; render(); } catch (err) { ticks = prev; toast(err.message, true); }
+    }));
     $('#cp', box).onsubmit = async (e) => {
       e.preventDefault();
       try {
