@@ -455,7 +455,7 @@ function askLogin(why = 'save') {
 }
 
 // ---------- lưu ----------
-function status(t) { const el = $('#saved'); el.textContent = card && card.guest && t === 'Đã lưu ✓' ? 'Bản nháp tạm' : t; el.classList.toggle('ok', el.textContent === 'Đã lưu ✓'); el.title = el.textContent; const sb = $('#subl'); if (sb) sb.classList.toggle('ok', el.classList.contains('ok')); }
+function status(t) { const el = $('#saved'); el.textContent = card && card.guest && t === 'Đã lưu ✓' ? 'Bản nháp tạm' : t; el.classList.toggle('ok', el.textContent === 'Đã lưu ✓'); el.classList.toggle('dirty', el.textContent === 'Chưa lưu'); el.title = el.textContent; const sb = $('#subl'); if (sb) sb.classList.toggle('ok', el.classList.contains('ok')); }
 // Lưu xong có phải vẽ lại thiệp không: chỉ bỏ qua khi MỌI thay đổi từ lần lưu trước đã được đổi sẵn ngay trên khung
 // (vd. ảnh vừa tải lên đã thay vào đúng ô) — khỏi tải lại cả thiệp, album không nhảy về ảnh đầu, hiệu ứng không chạy lại.
 // null = chưa có thay đổi; true = toàn thay đổi đã hiện sẵn; false = có thay đổi cần vẽ lại.
