@@ -176,6 +176,7 @@ async function call(who, method, url, body, extra = {}) {
   r = await call('u', 'GET', '/led/tuan-lan?preview=1', undefined, { 'sec-fetch-dest': 'iframe' });
   assert.equal(r.status, 200);
   assert.match(r.text, /class="wmt"/, 'bản dùng thử: chữ chìm phủ khắp màn');
+  assert.match(r.text, /class="wmt" aria-hidden="true" style="opacity:\.07"/, 'đang sửa / xem trước: chữ chìm mờ hơn');
   // màn mẫu không chữ chìm, kể cả khi tự điền tên (27/11, chủ web chọn); trang chống nhúng khung
   r = await call('anon', 'GET', '/led/demo?groom=A&bride=B');
   assert.ok(!r.text.includes('class="wmt"'), 'demo màn LED có tên riêng không chữ chìm');
@@ -184,6 +185,7 @@ async function call(who, method, url, body, extra = {}) {
   r = await call('anon', 'GET', '/led/tuan-lan?xem=1');
   assert.equal(r.status, 200, 'link xem thử gửi vợ/chồng mở được');
   assert.match(r.text, /class="wmt"/, 'link xem thử luôn có chữ chìm');
+  assert.ok(!r.text.includes('style="opacity:.07"'), 'link xem thử giữ chữ chìm đậm như cũ');
   assert.match(r.text, /"review":true/, 'link xem thử không phủ lớp cần kích hoạt');
   assert.ok(!r.text.includes('Tuấn <script>'), 'tên trên màn LED phải được escape');
   assert.equal((await call('u', 'POST', `/api/cards/${id}/order`, { product: 'led', coupon: 'GIAMRIENG' })).status, 400, 'mã giảm giá chỉ cho thiệp');

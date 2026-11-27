@@ -1394,14 +1394,16 @@
   requestAnimationFrame(frame);
   // Bản dùng thử: lớp chữ chìm "BẢN DÙNG THỬ" phủ khắp màn phải luôn hiện — bị xoá / ẩn / làm mờ (công cụ của trình duyệt) thì dựng lại ngay.
   if (C.trial && !C.demo) {
+    // đang sửa / xem trước (khung trình sửa, nút Xem trước): chữ chìm mờ hơn cho dễ nhìn mẫu; link chiếu / link xem thử giữ đậm như cũ
+    var WMO = C.preview ? 0.07 : 0.16;
     var keepWm = function () {
       var w = stage.querySelector(':scope > .wmt');
       if (!w) { w = document.createElement('div'); w.className = 'wmt'; stage.appendChild(w); }
       var cs = getComputedStyle(w);
-      if (w.hidden || cs.display === 'none' || cs.visibility !== 'visible' || +cs.opacity < 0.1 || (cs.filter && cs.filter !== 'none') || cs.backgroundImage === 'none' || w !== stage.lastElementChild) {
+      if (w.hidden || cs.display === 'none' || cs.visibility !== 'visible' || +cs.opacity < WMO - 0.02 || (cs.filter && cs.filter !== 'none') || cs.backgroundImage === 'none' || w !== stage.lastElementChild) {
         w.hidden = false;
         if (w !== stage.lastElementChild) stage.appendChild(w);
-        w.style.cssText = 'display:block!important;visibility:visible!important;opacity:.16!important;filter:none!important;z-index:2147483647!important;clip-path:none!important';
+        w.style.cssText = 'display:block!important;visibility:visible!important;opacity:' + WMO + '!important;filter:none!important;z-index:2147483647!important;clip-path:none!important';
         w.style.removeProperty('background-image');
       }
       // bản chưa kích hoạt chỉ để xem trong khung của trình sửa / link xem thử; mở thẳng link chiếu ra cả trang thì phủ lớp "cần kích hoạt"
