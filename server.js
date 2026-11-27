@@ -1424,12 +1424,12 @@ route('GET', '/video/:slug', async (req, res, ctx) => {
   if (!card || !card.video) return html(res, 404, renderNotice('Không tìm thấy video', 'Đường dẫn có thể đã bị đổi.'));
   if (card.blocked && !isOwner) return html(res, 403, BLOCKED_HTML());
   const st = videoLib.state(card.video);
-  // ?xem=1: link xem thử gửi vợ/chồng duyệt (như màn LED) — luôn có chữ chìm "Xem trước tại cuoinha.com"
+  // ?xem=1: link xem thử gửi vợ/chồng duyệt — có nhãn "Bản xem thử · làm tại cuoinha.com" ở góc (như thiệp)
   if (st.locked && ctx.query.get('xem') === '1' && card.userId) return html(res, 200, videoLib.renderVideo(card, card.video, { trial: true }));
   // chưa kích hoạt: không có link chiếu TV — chỉ xem trước trong trình sửa
   if (st.locked) {
     return html(res, 403, isOwner
-      ? renderNotice('Video chưa kích hoạt', 'Bạn vẫn xem trước và sửa video trong trình sửa. Kích hoạt một lần để chiếu TV bằng link và tải MP4 Full HD, không còn chữ "Xem trước tại cuoinha.com".', { href: `/sua-video/${card.id}`, text: 'Kích hoạt video' })
+      ? renderNotice('Video chưa kích hoạt', 'Bạn vẫn xem trước và sửa video trong trình sửa. Kích hoạt một lần để chiếu TV bằng link và tải MP4 Full HD, không còn nhãn "Bản xem thử".', { href: `/sua-video/${card.id}`, text: 'Kích hoạt video' })
       : renderNotice('Video chưa sẵn sàng', 'Chủ thiệp chưa kích hoạt video này.'));
   }
   const inEditor = isOwner && ctx.query.get('preview') === '1' && req.headers['sec-fetch-dest'] !== 'document'; // khung xem trước của trình sửa (mở thẳng một tab thì tính là chiếu thật)

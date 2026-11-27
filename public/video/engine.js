@@ -1076,18 +1076,6 @@
       ctx.globalAlpha = 1;
       if (st) renderAlbum(t);
       else { bg(t); decor(t); particles(t); text(t); }
-      if (opts.trial) trialTile(t); // bỏ nhãn góc "BẢN DÙNG THỬ": chữ chìm phủ khắp khung đã đủ (nhãn góc dễ cắt)
-    }
-    // bản dùng thử: chữ chìm lặp chéo khắp khung, trôi chậm — thu nhỏ rồi cắt góc (bỏ nhãn) cũng không xoá được
-    function trialTile(t) {
-      var txt = 'Xem trước tại ' + (opts.site || 'cuoinha.com'), sx = 900, sy = 300, off = (t * 12) % sx;
-      ctx.save();
-      ctx.globalAlpha = 0.14; ctx.fillStyle = '#ffffff'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-      ctx.font = '700 48px "Hanken Grotesk", system-ui, sans-serif'; if ('letterSpacing' in ctx) ctx.letterSpacing = '2px';
-      ctx.translate(W / 2, H / 2); ctx.rotate(-22 * Math.PI / 180);
-      var R = Math.ceil(Math.hypot(W, H) / 2) + sx;
-      for (var y = -R, row = 0; y <= R; y += sy, row++) for (var x = -R + (row % 2 ? sx / 2 : 0) + off; x <= R; x += sx) ctx.fillText(txt, x, y);
-      ctx.restore();
     }
     function loop(now) {
       renderAt((now - t0) / 1000);

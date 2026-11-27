@@ -41,6 +41,7 @@
 .txpop .scene{border:0;padding:0;margin:0}
 /* thanh ảnh dưới cùng */
 .tl .clip.slot{width:84px;cursor:grab}.tl .clip.slot .th{height:62px}
+.tl .clip.slot{position:relative}.tl .clip.slot .ed{position:absolute;right:4px;top:4px;width:20px;height:20px;border-radius:50%;display:grid;place-items:center;background:rgba(255,255,255,.92);color:var(--primary);font-size:11px;box-shadow:0 1px 4px rgba(0,0,0,.2);pointer-events:none} /* bấm ảnh để căn / thay */
 .tl .clip.slot .th i.none{display:grid;place-items:center;background:var(--surface);color:var(--muted);font-style:normal;font-size:20px;border:2px dashed var(--line);border-radius:8px}
 .tl .clip.slot.sample .th{opacity:.6;filter:saturate(.6)}.tl .clip.slot.sample:hover .th{opacity:1;filter:none}
 .tl .clip.slot.drag{opacity:.4}.tl .clip.slot.over{box-shadow:-4px 0 0 var(--primary)}
@@ -298,6 +299,40 @@ body{height:100vh;display:flex;flex-direction:column;overflow:hidden;background:
 .vfs{position:fixed;inset:0;z-index:300;background:#000;display:grid;place-items:center}
 .vfs canvas{width:100%!important;height:100%!important;max-width:none!important;object-fit:contain;border-radius:0!important}
 .vfs button{position:absolute;top:12px;right:12px;width:38px;height:38px;border-radius:50%;border:0;background:rgba(255,255,255,.18);color:#fff;font-size:18px;cursor:pointer}
+/* ===== giao diện như trình sửa màn LED ===== */
+/* điện thoại: mọi hộp xổ từ dưới lên (như trình sửa thiệp, màn LED) */
+@keyframes sheetUp{from{transform:translateY(40px);opacity:.4}to{transform:none;opacity:1}}
+@media (max-width:760px){
+  .modal{place-items:end stretch;padding:0}
+  .modal .modal-box{width:100%!important;max-height:88vh;max-height:88dvh;border-radius:20px 20px 0 0;padding:24px 16px calc(16px + env(safe-area-inset-bottom));animation:sheetUp .22s ease-out}
+  .modal .modal-box::before{content:"";position:absolute;z-index:6;left:50%;top:7px;translate:-50% 0;width:40px;height:4px;border-radius:4px;background:var(--line)}
+}
+.rail button[data-panel="nhac"]{order:-1} /* tab Nhạc đứng trước Mẫu */
+/* thanh phát kiểu YouTube: thanh tua mảnh rộng hết hàng, hàng dưới ❚❚ · giờ · ⛶ (nút dạng icon) */
+.scrub{display:grid!important;grid-template-columns:auto auto minmax(0,1fr) auto;column-gap:6px;row-gap:0;max-width:900px}
+.scrub .track{grid-column:1/-1;grid-row:1;height:22px}
+.scrub #pp{grid-column:1;grid-row:2;width:36px;height:36px;background:none;color:var(--ink);box-shadow:none;font-size:15px}
+.scrub #tm{grid-column:2;grid-row:2;min-width:0;text-align:left;font-size:13px;color:var(--ink)}
+.scrub #fs{grid-column:4;grid-row:2;width:36px;height:36px;border:0;border-radius:50%;background:none;font-size:15px}
+.scrub #pp:hover,.scrub #fs:hover{background:color-mix(in srgb,var(--ink) 8%,transparent)}
+.scrub input[type=range]{-webkit-appearance:none;appearance:none;height:22px;background:transparent;--p:0%}
+.scrub input[type=range]::-webkit-slider-runnable-track{height:4px;background:linear-gradient(90deg,var(--primary) var(--p),color-mix(in srgb,var(--ink) 16%,transparent) var(--p))}
+.scrub input[type=range]::-moz-range-track{height:4px;background:color-mix(in srgb,var(--ink) 16%,transparent)}
+.scrub input[type=range]::-moz-range-progress{height:4px;background:var(--primary)}
+.scrub input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:12px;height:12px;margin-top:-4px;border-radius:50%;background:var(--primary);border:0}
+.scrub input[type=range]::-moz-range-thumb{width:12px;height:12px;border-radius:50%;background:var(--primary);border:0}
+.scrub .marks i{top:-2px;width:3px;height:4px;border-radius:0;background:var(--bg,#fff)}
+/* tab Mẫu | Nhạc: chữ + gạch chân chia đôi (như màn LED) */
+@media (max-width:980px){
+  .rail{gap:0!important;padding:0 12px!important;border-bottom:1px solid var(--line)}
+  .rail button{flex:1;height:44px!important;min-height:44px!important;border:0!important;border-radius:0!important;background:none!important;box-shadow:none;outline:none!important;font-size:14.5px!important;font-weight:600}
+  .rail button.on{color:var(--primary);box-shadow:inset 0 -2px 0 var(--primary)} /* gạch chân vẽ bên trong nút (khung cuộn của thanh tab không cắt mất) */
+  .rail button svg{display:none!important}
+}
+/* điện thoại: thanh trên ← · trạng thái · Xem trước · Kích hoạt (bỏ tên slide, mẫu, tỉ lệ) */
+@media (max-width:600px){
+  .sbar h1,.sbar #tplName,.sbar #subl>span:nth-child(2),.sbar #subl .dot{display:none!important}
+}
 </style>
 </head>
 <body>

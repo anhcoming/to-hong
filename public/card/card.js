@@ -59,8 +59,20 @@
   // ----- nhạc nền -----
   var audio = $('#bgm');
   var mbtn = $('#musicBtn');
+  // đoạn phát: bắt đầu từ data-start (thường là điệp khúc), tới data-end hoặc hết bài thì quay lại data-start
+  var mStart = audio ? +audio.getAttribute('data-start') || 0 : 0;
+  var mEnd = audio ? +audio.getAttribute('data-end') || 0 : 0;
+  var mSeeked = false;
+  function toStart() { try { audio.currentTime = mStart; } catch (e) {} }
+  if (audio && (mStart || mEnd)) {
+    audio.loop = false; // tự lặp về mốc bắt đầu thay cho lặp về giây 0
+    audio.addEventListener('loadedmetadata', function () { if (!mSeeked) { mSeeked = true; toStart(); } });
+    audio.addEventListener('ended', function () { toStart(); audio.play().catch(function () {}); });
+    if (mEnd) audio.addEventListener('timeupdate', function () { if (audio.currentTime >= mEnd) toStart(); });
+  }
   function playMusic() {
     if (!audio) return;
+    if (!mSeeked && mStart && audio.readyState >= 1) { mSeeked = true; toStart(); }
     var p = audio.play();
     if (p && p.then) p.then(function () { mbtn.classList.add('playing'); }).catch(function () {});
   }

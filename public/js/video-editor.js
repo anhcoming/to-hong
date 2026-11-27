@@ -147,7 +147,7 @@ function renderSide() {
   if (!isAlbum() && video.photoBg) video.photoBg = false;
   let h = '';
   if (curPanel === 'mau') {
-    h = head(isAlbum() ? 'Mẫu slide' : 'Mẫu màn hình dạm ngõ', isAlbum() ? (card.video.paid ? 'Ảnh và chữ sửa thoải mái.' : 'Đổi mẫu bất cứ lúc nào — ảnh và chữ của bạn giữ nguyên.') : 'Chọn một mẫu có sẵn — bấm chữ trên video để sửa.') + '<p class="mobhint">Chạm vào chữ hoặc ảnh trên video để sửa ngay.</p>' + `
+    h = `
       ${card.video.paid ? '<p class="muted" style="font-size:13px;margin:0 0 10px">🔒 Đã kích hoạt nên mẫu đã chốt — mỗi lần kích hoạt dùng một mẫu.</p>' : ''}
       <div class="opts">${META.video.templates.filter((t) => !!t.photos === isAlbum() && (!card.video.paid || t.id === video.template)).map((t) => `<button class="opt ${video.template === t.id ? 'on' : ''}" data-tpl="${t.id}"><i style="background:${SWATCH[t.id] || '#333'};background-image:url('/demo/vposter-${t.id}.jpg')"></i><b>${esc(t.name)}</b><span>${t.photos ? `${t.slots} ảnh` : 'Chữ + ảnh nền'}</span></button>`).join('')}</div>
       `;
@@ -303,12 +303,12 @@ function renderTl() {
   const tiles = list.map((u, i) => {
     const pend = vPending.has(i), shown = (pend && vPending.get(i)) || u || sampleAt(i), k = clipOfSlot(i);
     const th = isClipU(shown) ? `<i class="vclip"><video src="${esc(String(shown).split('#')[0])}#t=0.5" muted playsinline preload="metadata"></video></i>` : shown ? `<i style="background-image:url('${esc(String(shown).split('#')[0])}')"></i>` : '<i class="none">＋</i>';
-    return `<div class="clip slot${sampleAt(i) ? ' sample' : ''}${pend ? ' up' : ''}" data-clip="${k}" data-slot="${i}" draggable="${pend ? 'false' : 'true'}" title="${sampleAt(i) ? 'Ảnh mẫu — rê chuột lên video để thay' : 'Kéo để đổi chỗ'}"><span class="th">${th}</span><span class="n">${i + 1}</span>${pend ? '<i class="vspin"></i>' : ''}</div>`;
+    return `<div class="clip slot${sampleAt(i) ? ' sample' : ''}${pend ? ' up' : ''}" data-clip="${k}" data-slot="${i}" draggable="${pend ? 'false' : 'true'}" title="${sampleAt(i) ? 'Ảnh mẫu — rê chuột lên video để thay' : 'Kéo để đổi chỗ'}"><span class="th">${th}</span><span class="n">${i + 1}</span>${pend ? '<i class="vspin"></i>' : '<b class="ed" aria-hidden="true">✎</b>'}</div>`; // ✎: bấm ảnh → căn / thay ảnh
   });
   // nút thêm / thay ảnh đứng đầu; sau đó đúng thứ tự video chạy: thẻ mở đầu → các ảnh → thẻ kết thúc
   $('#tls').innerHTML = `<div class="clip addbox">${list.some((u, i) => u && !sampleAt(i))
-        ? `<label class="addph main" title="Chọn cả bộ ảnh — thay lần lượt từ ảnh 1"><b>⟳</b><small>Thay toàn bộ</small><input type="file" accept="image/*,video/mp4,video/webm,video/quicktime" multiple id="tlAll" hidden></label>${list.some((_, i) => sampleAt(i) || !list[i]) ? `<label class="addph" title="Thêm vào các ô còn là ảnh mẫu"><b>＋</b><small>Thêm ảnh</small><input type="file" accept="image/*,video/mp4,video/webm,video/quicktime" multiple id="tlAdd" hidden></label>` : ''}`
-        : `<label class="addph main wide" title="Chọn nhiều ảnh một lúc — thay lần lượt các ảnh mẫu"><b>＋</b><small>Thay bằng ảnh của bạn</small><input type="file" accept="image/*,video/mp4,video/webm,video/quicktime" multiple id="tlAll" hidden></label>`}</div>`
+        ? `<label class="addph" title="Chọn cả bộ ảnh — thay lần lượt từ ảnh 1"><b>⟳</b><small>Thay cả bộ</small><input type="file" accept="image/*,video/mp4,video/webm,video/quicktime" multiple id="tlAll" hidden></label>${list.some((_, i) => sampleAt(i) || !list[i]) ? `<label class="addph" title="Thêm vào các ô còn là ảnh mẫu"><b>＋</b><small>Thêm ảnh</small><input type="file" accept="image/*,video/mp4,video/webm,video/quicktime" multiple id="tlAdd" hidden></label>` : ''}`
+        : `<label class="addph wide" title="Chọn nhiều ảnh một lúc — thay lần lượt các ảnh mẫu"><b>＋</b><small>Thêm ảnh của bạn</small><input type="file" accept="image/*,video/mp4,video/webm,video/quicktime" multiple id="tlAll" hidden></label>`}</div>`
     + tcard(0) + tiles.join('') + video.scenes.slice(1).map((_, k) => tcard(k + 1)).join('');
 }
 // điền ảnh vào các ô chưa có ảnh của bạn (ảnh mẫu / ô trống), theo thứ tự
@@ -455,13 +455,13 @@ function vCrop(i, ratio) {
   const list = slots(), u = list[i] || sampleAt(i); if (!u) return; // ảnh mẫu: căn xong thì giữ làm ảnh của ô
   const base = String(u).split('#')[0], m = /#p=([\d.]+),([\d.]+)(?:,([\d.]+))?/.exec(u);
   let x = m ? +m[1] : 50, y = m ? +m[2] : 50, z = m ? Math.max(1, +m[3] || 1) : 1;
-  openModal(`<h2 style="margin-top:0">Căn ảnh ${i + 1}</h2>
-    <p class="muted" style="margin:-4px 0 12px">Kéo ảnh để chọn phần hiện ra, kéo thanh trượt để phóng to.</p>
-    <div id="vcF" style="position:relative;margin:0 auto;width:${fw};aspect-ratio:${ratio};border-radius:12px;overflow:hidden;touch-action:none;cursor:grab;background:#eee url('${esc(base)}') no-repeat;box-shadow:inset 0 0 0 2px var(--primary)"></div>
-    <div style="display:flex;align-items:center;gap:10px;margin:14px auto 0;max-width:420px"><span aria-hidden="true">−</span><input type="range" id="vcZ" min="1" max="3" step="0.01" value="${z}" aria-label="Phóng to" style="flex:1;accent-color:var(--primary)"><span aria-hidden="true">+</span><button type="button" id="vcR" title="Đặt lại như ban đầu" aria-label="Đặt lại" style="all:unset;cursor:pointer;width:30px;height:30px;border-radius:50%;text-align:center;line-height:30px;font-size:16px;color:var(--muted)" onmouseover="this.style.background='var(--primary-soft)'" onmouseout="this.style.background=''">⟲</button></div>
-    <div style="display:flex;gap:8px;margin-top:16px"><button class="btn plain" id="vcRep" style="flex:1">↻ Đổi ảnh khác</button><button class="btn" id="vcOk" style="flex:1">Xong</button></div>`, (box, close) => {
+  const touch = matchMedia('(pointer:coarse)').matches || 'ontouchstart' in window || window.innerWidth <= 760;
+  openModal(`<h2>Căn ảnh ${i + 1}</h2>
+    <div id="vcF" style="position:relative;margin:0 auto;width:${fw};aspect-ratio:${ratio};border-radius:12px;overflow:hidden;touch-action:none;cursor:grab;background:#eee url('${esc(base)}') no-repeat;box-shadow:inset 0 0 0 2px var(--primary)"><span id="vcTip" style="position:absolute;left:50%;bottom:10px;translate:-50% 0;width:max-content;max-width:88%;padding:6px 12px;border-radius:14px;background:rgba(0,0,0,.55);color:#fff;font-size:12.5px;line-height:1.35;text-align:center;pointer-events:none;transition:opacity .4s">${touch ? 'Kéo để di chuyển · chụm 2 ngón để phóng to' : 'Kéo để di chuyển · lăn chuột để phóng to'}</span></div>
+    <div style="display:flex;gap:8px;margin-top:16px"><button class="btn plain" id="vcRep" style="flex:1">Đổi ảnh</button><button class="btn" id="vcOk" style="flex:2">Xong</button></div>`, (box, close) => {
     $('#vcRep', box).onclick = (e) => { e.preventDefault(); close(); const inp = $('#tlIn'); inp.dataset.s = i; inp.value = ''; inp.click(); };
-    const fr = $('#vcF', box), zr = $('#vcZ', box);
+    const fr = $('#vcF', box), tip = $('#vcTip', box);
+    const hideTip = () => { tip.style.opacity = '0'; }; setTimeout(hideTip, 3500);
     let paint = () => { fr.style.backgroundSize = `${Math.round(z * 100)}% auto`; fr.style.backgroundPosition = `${x}% ${y}%`; };
     const img = new Image(); img.onload = () => { // ảnh dọc: phủ theo chiều cao
       const fw = fr.clientWidth, fh = fr.clientHeight, cover = Math.max(fw / img.width, fh / img.height);
@@ -470,11 +470,18 @@ function vCrop(i, ratio) {
     }; img.src = base;
     paint();
     let dr = null;
-    fr.addEventListener('pointerdown', (e) => { dr = { x: e.clientX, y: e.clientY, x0: x, y0: y }; fr.setPointerCapture(e.pointerId); fr.style.cursor = 'grabbing'; });
+    // phóng to: chụm / mở 2 ngón, lăn chuột (thay thanh trượt)
+    const setZ = (nz) => { z = Math.min(3, Math.max(1, nz)); paint(); };
+    const pts = new Map(); let pinch = null;
+    const dist = () => { const [a, b] = [...pts.values()]; return Math.hypot(a.x - b.x, a.y - b.y); };
+    fr.addEventListener('wheel', (e) => { e.preventDefault(); setZ(z * (e.deltaY < 0 ? 1.06 : 1 / 1.06)); }, { passive: false });
+    fr.addEventListener('pointerdown', (e) => { hideTip(); pts.set(e.pointerId, { x: e.clientX, y: e.clientY }); if (pts.size === 2) { dr = null; pinch = { d: dist(), z }; } }, true);
+    fr.addEventListener('pointermove', (e) => { if (!pts.has(e.pointerId)) return; pts.set(e.pointerId, { x: e.clientX, y: e.clientY }); if (pinch && pts.size === 2) { e.stopImmediatePropagation(); setZ(pinch.z * dist() / Math.max(1, pinch.d)); } }, true);
+    const pend = (e) => { pts.delete(e.pointerId); if (pts.size < 2) pinch = null; };
+    fr.addEventListener('pointerup', pend, true); fr.addEventListener('pointercancel', pend, true);
+    fr.addEventListener('pointerdown', (e) => { if (pts.size > 1) return; dr = { x: e.clientX, y: e.clientY, x0: x, y0: y }; fr.setPointerCapture(e.pointerId); fr.style.cursor = 'grabbing'; });
     fr.addEventListener('pointermove', (e) => { if (!dr) return; x = Math.min(100, Math.max(0, dr.x0 - (e.clientX - dr.x) / fr.clientWidth * 100 / z)); y = Math.min(100, Math.max(0, dr.y0 - (e.clientY - dr.y) / fr.clientHeight * 100 / z)); paint(); });
     const up = () => { dr = null; fr.style.cursor = 'grab'; }; fr.addEventListener('pointerup', up); fr.addEventListener('pointercancel', up);
-    zr.addEventListener('input', () => { z = +zr.value; paint(); });
-    $('#vcR', box).onclick = () => { x = 50; y = 50; z = 1; zr.value = 1; paint(); };
     $('#vcOk', box).onclick = () => {
       const keep = Math.round(x) === 50 && Math.round(y) === 50 && z === 1;
       if (keep && !list[i]) return close(); // ảnh mẫu không căn gì: vẫn để là ảnh mẫu
@@ -556,7 +563,7 @@ function renderHeader() {
   // tình trạng: dòng chữ nhỏ cạnh "Đã lưu" (không chiếm chỗ trên thanh)
   const chip = $('#chip');
   chip.className = s.paid ? 'ok' : 'warn';
-  chip.textContent = s.paid ? '· đã kích hoạt' : '· đang dùng thử';
+  chip.textContent = s.paid ? '· đã kích hoạt' : ''; // bản xem thử: không ghi chữ trạng thái (như màn LED)
   if (engOpts) engOpts.trial = !s.paid; // khung xem trước: dòng "Bản dùng thử" vẽ thẳng lên hình cho tới khi kích hoạt
   // một nút đỏ duy nhất: Kích hoạt (chưa trả) / Tải MP4 (đã trả); chép link + tải MP4 gom vào menu Chia sẻ
   const main = s.paid ? '<button class="btn sm" id="goExport">⬇ Tải MP4</button>'
@@ -577,7 +584,7 @@ function renderHeader() {
   const goX = () => { close(); exportModal(); };
   if ($('#goExportM')) $('#goExportM').onclick = goX;
   const ge = $('#goExport'); if (ge) ge.onclick = goX;
-  const pb = $('#payBtn'); if (pb) pb.onclick = () => activateSheet({ url: `${s.url}?xem=1`, mainTitle: 'Chiếu TV · tải MP4', perks: ['Link chiếu TV, máy chiếu ở buổi lễ', 'Tải video MP4 Full HD', 'Bỏ chữ “Xem trước tại cuoinha.com”'], priceHtml: `<b>${money(META.videoPrice)}</b>`, onPay: () => openPayModal(CARD_ID, reload, 'video') });
+  const pb = $('#payBtn'); if (pb) pb.onclick = () => activateSheet({ url: `${s.url}?xem=1`, mainTitle: 'Chiếu TV · tải MP4', perks: ['Link chiếu TV, máy chiếu ở buổi lễ', 'Tải video MP4 Full HD', 'Bỏ nhãn “Bản xem thử”'], priceHtml: `<b>${money(META.videoPrice)}</b>`, onPay: () => openPayModal(CARD_ID, reload, 'video') });
   const pv = $('#pvBtn'); if (pv) pv.onclick = () => $('#fs').click(); // xem to hết màn (lớp phủ đen, ✕ để thoát)
   // đã chốt hẳn: bố cục xem chi tiết dùng chung với màn LED (public/js/final-view.js) — thẻ đem đi chiếu / gửi người nhà
   if (vFinal()) {
@@ -888,6 +895,17 @@ function bind() {
     const c = clips[k]; if (!c) return;
     if (!engine.paused()) $('#pp').click();
     engine.seek(c.t0 + c.dur * 0.5);
+    // ô ảnh: mở luôn bảng căn / thay ảnh đó (đúng tỉ lệ khung trên video — dò khung ảnh của ô này trên khung hình vừa tua tới)
+    if (t.dataset.slot != null) {
+      const sl = +t.dataset.slot, u = slots()[sl] || sampleAt(sl);
+      if (vPending.has(sl)) return;
+      if (isClipU(u)) { const inp = $('#tlIn'); inp.dataset.s = sl; inp.value = ''; return inp.click(); }
+      requestAnimationFrame(() => {
+        let r = 0; const cv = $('#cv');
+        for (let gy = 1; gy < 10 && !r; gy++) for (let gx = 1; gx < 16 && !r; gx++) { const p = engine.photoAt(cv.width * gx / 16, cv.height * gy / 10); if (p && slotOfShown(p.i) === sl) r = p.ratio; }
+        vCrop(sl, r);
+      });
+    }
   });
   tls.addEventListener('change', (e) => { const t = e.target; if (!t.files || !t.files.length || (t.id !== 'tlAdd' && t.id !== 'tlAll')) return; const fs = [...t.files]; t.value = ''; if (t.id === 'tlAll') replaceAll(fs); else fillSlots(fs); });
   let tlDrag = -1;
@@ -958,6 +976,9 @@ function bind() {
   // ⛶ toàn màn hình: đưa khung chiếu ra lớp phủ đen kín màn (có ✕) — chạy cả iPhone / khung app (không có toàn màn hình của trình duyệt);
   // máy tính hỗ trợ thì vào toàn màn hình thật, Esc là thoát
   $('#fs').onclick = () => {
+    // đang sửa chữ trên khung (dòng đó bị ẩn để ô nhập đè lên): chốt chữ đang gõ, hiện lại mọi dòng rồi mới xem
+    if (document.activeElement && document.activeElement !== document.body) document.activeElement.blur();
+    engine.hideText(null); engine.seek(engine.time());
     const c = $('#cv'), mark = document.createComment('cv'), ov = document.createElement('div');
     ov.className = 'vfs';
     ov.innerHTML = '<button type="button" aria-label="Thoát toàn màn hình">✕</button>';
@@ -999,6 +1020,7 @@ function bind() {
   (function tick() {
     const D = engine.duration(), t = engine.time();
     if (!dragging) seekEl.value = Math.round(t / D * 1000);
+    seekEl.style.setProperty('--p', (seekEl.value / 10) + '%');
     $('#tm').textContent = `${fmt(t)} / ${fmt(D)}`;
     const k = clipAt(t), pl = $('#tls .clip.play');
     if (!pl || +pl.dataset.clip !== k) { if (pl) pl.classList.remove('play'); const nb = $(`#tls [data-clip="${k}"]`); if (nb) { nb.classList.add('play'); if (!engine.paused()) nb.scrollIntoView({ block: 'nearest', inline: 'nearest' }); } }
@@ -1013,7 +1035,7 @@ function start() {
   $('#layout').hidden = false;
   engOpts = { photo: card.data.cover || card.data.photos.find(Boolean) || '', photos: slidePhotos(), trial: !(card.video && card.video.paid), brand: META.brand };
   engine = VideoEngine.create($('#cv'), engOpts);
-  curPanel = 'mau';
+  curPanel = vFinal() ? 'mau' : 'nhac'; // mở trình sửa: tab Nhạc chọn sẵn (đứng đầu thanh tab)
   renderSide();
   renderHeader();
   bind();
@@ -1057,7 +1079,7 @@ function start() {
     <p style="font-size:44px;margin:0">🎬</p>
     <h2 style="font-family:var(--serif);margin:8px 0">Slide cưới · màn hình dạm ngõ chiếu TV</h2>
     <p class="muted">Chọn mẫu, chèn ảnh cưới và lời chào — video tự dựng chuyển cảnh, ngày âm lịch. Dùng cho dạm ngõ, ăn hỏi, vu quy, thành hôn.</p>
-    <p class="muted" style="font-size:14px">Làm và xem trước miễn phí · Kích hoạt ${money(META.videoPrice)} để chiếu TV bằng link và tải MP4 Full HD, không có chữ "Xem trước tại cuoinha.com".</p>
+    <p class="muted" style="font-size:14px">Làm và xem trước miễn phí · Kích hoạt ${money(META.videoPrice)} để chiếu TV bằng link và tải MP4 Full HD, không có nhãn "Bản xem thử".</p>
     <button class="btn lg" id="startBtn">Tạo video từ thiệp này</button>
     <p style="margin:14px 0 0"><a href="/slide-cuoi">Xem các mẫu video</a></p>
   </div>`;

@@ -1097,7 +1097,81 @@ function musicPane() {
       ${now.auto || !M.tracks.length ? '' : '<button class="btn sm plain" data-music-auto>Để thiệp tự chọn theo mẫu</button>'}
       ${now.off ? '' : '<button class="btn sm plain" data-music-off>Tắt nhạc</button>'}
     </div>
-    <p class="muted" style="font-size:13px;margin:10px 0 0">${now.off ? 'Thiệp đang tắt nhạc.' : 'Nhạc phát khi khách chạm "Mở thiệp".'} Nhạc mẫu là bản thu miễn phí bản quyền. Tự tải lên: tối đa 12MB, chỉ dùng bản nhạc bạn có quyền sử dụng.</p>`;
+    ${now.off ? '' : musicSeg(now.url)}
+    <p class="muted" style="font-size:13px;margin:10px 0 0">${now.off ? 'Thiệp đang tắt nhạc.' : 'Nhạc phát khi khách chạm "Mở thiệp", hết đoạn thì tự lặp lại.'} Nhạc mẫu là bản thu miễn phí bản quyền. Tự tải lên: tối đa 12MB, chỉ dùng bản nhạc bạn có quyền sử dụng.</p>`;
+}
+// ---------- đoạn phát: mốc bắt đầu (mặc định = đoạn điệp khúc tự dò) + mốc kết thúc, thiệp lặp lại đúng đoạn ----------
+const mDur = {}; // url → thời lượng (giây)
+const mHook = {}; // url → Promise mốc điệp khúc đã dò
+let mBusy = ''; // url đang dò điệp khúc
+const mmss = (t) => `${Math.floor(t / 60)}:${String(Math.floor(t % 60)).padStart(2, '0')}`;
+function musicDur(url) {
+  if (mDur[url] !== undefined) return mDur[url];
+  mDur[url] = 0;
+  const a = new Audio(); a.preload = 'metadata';
+  a.onloadedmetadata = () => { mDur[url] = a.duration || 0; if (curTab === 'media' || curTab === 'studio') rerender(); };
+  a.src = url;
+  return 0;
+}
+// đoạn "hay nhất" ≈ điệp khúc: đoạn ~20 giây to và dày nhất; điệp khúc thường lặp lại nhiều lần,
+// lần cuối hay to nhất nên lấy lần ĐẦU TIÊN đạt gần mức to nhất (≥ 86%)
+function findHook(url) {
+  if (!mHook[url]) mHook[url] = (async () => {
+    const buf = await (await fetch(url)).arrayBuffer();
+    const AC = window.OfflineAudioContext || window.webkitOfflineAudioContext;
+    const ab = await new Promise((ok, bad) => { const p = new AC(1, 1, 44100).decodeAudioData(buf, ok, bad); if (p && p.catch) p.catch(bad); });
+    const dur = ab.duration; mDur[url] = dur;
+    if (dur < 50) return 0; // bài ngắn: phát từ đầu
+    const ch = ab.getChannelData(0), sr = ab.sampleRate, step = Math.floor(sr / 2), e = [];
+    for (let i = 0; i + step <= ch.length; i += step) { let s = 0; for (let j = i; j < i + step; j += 8) s += ch[j] * ch[j]; e.push(Math.sqrt(s / (step / 8))); }
+    const W = Math.max(16, Math.min(40, Math.round(dur * 0.12) * 2)); // cửa sổ 8–20 giây (mỗi ô 0,5 giây)
+    const lim = e.length - W - Math.round(e.length * 0.08); // bỏ đoạn nhỏ dần cuối bài
+    const avg = []; let sum = 0;
+    for (let i = 0; i < e.length; i++) { sum += e[i]; if (i >= W) sum -= e[i - W]; if (i >= W - 1) avg.push(sum / W); }
+    let max = 0; for (let i = 0; i <= lim && i < avg.length; i++) max = Math.max(max, avg[i]);
+    let k = 0; for (let i = Math.round(e.length * 0.08); i <= lim && i < avg.length; i++) if (avg[i] >= max * 0.86) { k = i; break; }
+    return Math.max(0, Math.floor((k / 2 - 1) * 2) / 2); // vào sớm 1 giây cho khỏi hụt câu đầu
+  })().catch(() => 0);
+  return mHook[url];
+}
+// chọn / tải bài mới → tự đặt mốc điệp khúc
+async function autoHook(url) {
+  const d = card.data;
+  d.musicStart = 0; d.musicEnd = 0; mBusy = url; rerender();
+  const t = await findHook(url);
+  mBusy = '';
+  if (d.music !== url) return;
+  d.musicStart = t; d.musicEnd = 0;
+  rerender(); scheduleSave(50);
+}
+function musicSeg(url) {
+  const d = card.data, dur = musicDur(url) || mDur[url] || 0;
+  const st = d.music === url ? d.musicStart || 0 : 0, en = d.music === url && d.musicEnd ? d.musicEnd : dur;
+  if (mBusy === url) return '<div class="mseg"><p class="muted" style="margin:0"><span class="spin"></span> Đang tìm đoạn điệp khúc…</p></div>';
+  if (!dur) return '';
+  const max = Math.floor(dur * 2) / 2;
+  return `<div class="mseg">
+      <b>Đoạn phát</b>
+      <label>Bắt đầu <input type="range" data-mseg="start" min="0" max="${max}" step="0.5" value="${st}"><span class="mtime" id="msegS">${mmss(st)}</span></label>
+      <label>Kết thúc <input type="range" data-mseg="end" min="0" max="${max}" step="0.5" value="${Math.min(en, max)}"><span class="mtime" id="msegE">${en >= max ? 'Hết bài' : mmss(en)}</span></label>
+      <div class="mbtns">
+        <button class="btn sm soft" data-mseg-play>${musicPrev && !musicPrev.paused && musicPrev.dataset.seg ? '❚❚ Dừng' : '▶ Nghe đoạn này'}</button>
+        <button class="btn sm plain" data-mseg-hook>Tự chọn điệp khúc</button>
+      </div>
+    </div>`;
+}
+function segPlay() {
+  const d = card.data, url = musicNow().url;
+  if (musicPrev && !musicPrev.paused && musicPrev.dataset.seg) { musicPrev.pause(); return; }
+  if (musicPrev) musicPrev.pause();
+  const st = d.music === url ? d.musicStart || 0 : 0, en = d.music === url ? d.musicEnd || 0 : 0;
+  const a = musicPrev = new Audio(url); a.dataset.f = url; a.dataset.seg = '1';
+  a.onloadedmetadata = () => { a.currentTime = st; };
+  a.ontimeupdate = () => { if (en && a.currentTime >= en) a.currentTime = st; };
+  a.onended = () => { a.currentTime = st; a.play(); };
+  a.onpause = () => { if (curTab === 'media' || curTab === 'studio') rerender(); };
+  a.play().catch((e) => toast('Không phát được: ' + e.message, true));
+  if (curTab === 'media' || curTab === 'studio') rerender();
 }
 function musicPreview(f) {
   if (musicPrev && musicPrev.dataset.f === f && !musicPrev.paused) { musicPrev.pause(); }
@@ -1157,6 +1231,17 @@ async function pumpUploads() {
 function bind() {
   const panesEl = $('#panes');
   panesEl.addEventListener('input', (e) => {
+    const sg = e.target.dataset.mseg;
+    if (sg) {
+      const d = card.data, url = musicNow().url, v = +e.target.value, max = +e.target.max;
+      if (d.music !== url) { d.music = url; d.musicOff = false; } // đang "tự chọn theo mẫu" → giữ đúng bài đó
+      if (sg === 'start') { d.musicStart = Math.min(v, max - 5); if (d.musicEnd && d.musicEnd < d.musicStart + 5) d.musicEnd = 0; }
+      else d.musicEnd = v >= max || v < (d.musicStart || 0) + 5 ? 0 : v;
+      const S = $('#msegS'), E = $('#msegE'); if (S) S.textContent = mmss(d.musicStart || 0); if (E) E.textContent = d.musicEnd ? mmss(d.musicEnd) : 'Hết bài';
+      if (musicPrev && !musicPrev.paused && musicPrev.dataset.seg && sg === 'start') musicPrev.currentTime = d.musicStart;
+      scheduleSave(700);
+      return;
+    }
     const pk = e.target.dataset.pn || e.target.dataset.pt;
     if (pk) {
       const n = ($(`#panes [data-pn="${pk}"]`) || {}).value || '', t = ($(`#panes [data-pt="${pk}"]`) || {}).value || '';
@@ -1232,7 +1317,7 @@ function bind() {
       musicUp = f.name;
       rerender();
       status('Đang tải nhạc lên…');
-      try { card.data.music = await uploadFile(f, { quiet: true }); card.data.musicOff = false; musicUp = ''; rerender(); save(); }
+      try { card.data.music = await uploadFile(f, { quiet: true }); card.data.musicOff = false; musicUp = ''; rerender(); await save(); autoHook(card.data.music); }
       catch (err) { musicUp = ''; rerender(); toast(err.message, true); status('Tải nhạc thất bại'); }
     }
   });
@@ -1281,9 +1366,11 @@ function bind() {
     else if (ds.phUp !== undefined) { const i = +ds.phUp; let j = i - 1; while (j > 0 && !d.photos[j]) j--; [d.photos[j], d.photos[i]] = [d.photos[i], d.photos[j]]; }
     else if (ds.coverDel !== undefined) d.cover = '';
     else if (ds.mplay !== undefined) { musicPreview(ds.mplay); return; }
-    else if (ds.mpick !== undefined) { d.music = ds.mpick; d.musicOff = false; }
-    else if (ds.musicAuto !== undefined) { d.music = ''; d.musicOff = false; }
-    else if (ds.musicOff !== undefined) { d.music = ''; d.musicOff = true; if (musicPrev) musicPrev.pause(); }
+    else if (ds.mpick !== undefined) { d.music = ds.mpick; d.musicOff = false; autoHook(ds.mpick); }
+    else if (ds.msegPlay !== undefined) { segPlay(); return; }
+    else if (ds.msegHook !== undefined) { const u = musicNow().url; if (d.music !== u) { d.music = u; d.musicOff = false; } autoHook(u); return; }
+    else if (ds.musicAuto !== undefined) { d.music = ''; d.musicOff = false; d.musicStart = 0; d.musicEnd = 0; }
+    else if (ds.musicOff !== undefined) { d.music = ''; d.musicOff = true; d.musicStart = 0; d.musicEnd = 0; if (musicPrev) musicPrev.pause(); }
     else if (ds.tg !== undefined) { tplGroup = ds.tg; rerender(); return; }
     else if (ds.tpl) { if (card.template !== ds.tpl) { card.template = ds.tpl; card.palette = ''; } }
     else if (ds.pal) card.palette = ds.pal;
