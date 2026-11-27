@@ -113,7 +113,9 @@ window.openPayModal = async function (cardId, onDone, product = 'card') {
   const HAVE = { card: !!cardInfo.paid, led: !!(cardInfo.led.paid || cardInfo.led.prepaid), video: !!(cardInfo.video.paid || cardInfo.video.prepaid) };
   const PRICE = { card: M.price, led: M.ledPrice, video: M.videoPrice };
   const TITLE = { card: ['Thiệp cưới online', 'Mời khách không giới hạn, đổi mẫu thoải mái'], led: ['Màn hình LED', 'Link chiếu ở tiệc + tải MP4'], video: ['Slide ảnh cưới', 'Dựng video từ ảnh, tải MP4 Full HD'] };
-  let ticks = (product === 'led' || product === 'video' ? [product] : KEYS).filter((k) => !HAVE[k]);
+  // món tick sẵn = đúng thứ khách vừa bấm mua: "Gửi khách · 99k" → chỉ thiệp; màn LED / slide → món đó;
+  // 'all' ("Lấy cả bộ") → cả 3; mảng (mở lại đơn ở trang Đơn hàng) → đúng các món của đơn. Khách vẫn tự tick thêm được.
+  let ticks = (Array.isArray(product) ? product : product === 'all' ? KEYS : [product]).filter((k) => KEYS.includes(k) && !HAVE[k]);
   if (!ticks.length) ticks = KEYS.filter((k) => !HAVE[k]);
   if (!ticks.length) return toast('Thiệp, màn LED và slide của bạn đều đã kích hoạt', true);
   const orders = {};

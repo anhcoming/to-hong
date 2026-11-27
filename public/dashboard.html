@@ -245,7 +245,7 @@ async function load() {
   if (sel) { // màn quản lý một thiệp: số liệu, gửi link, kích hoạt, màn LED / video
     document.querySelector('.head').hidden = true; $('#mine').innerHTML = '';
     el.innerHTML = `<a class="back" href="/thiep-cua-toi">‹ Quay lại</a><div class="dash">${heroCard(sel)}</div>`;
-    if (q.get('mua')) { history.replaceState(null, '', location.pathname + '?thiep=' + sel.id); setTimeout(() => openPayModal(sel.id, load, 'card'), 50); } // "Lấy cả bộ": mở thanh toán tick đủ 3 món
+    if (q.get('mua')) { history.replaceState(null, '', location.pathname + '?thiep=' + sel.id); setTimeout(() => openPayModal(sel.id, load, 'all'), 50); } // "Lấy cả bộ": mở thanh toán tick đủ 3 món
   } else if (main) { // "Đám cưới của bạn": thiệp chính + màn LED / slide; các thiệp khác của đám cưới (nhà trai, nhà gái…) bên dưới
     $('#mine').innerHTML = '';
     document.querySelector('.head').hidden = true;

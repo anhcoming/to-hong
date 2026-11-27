@@ -74,7 +74,7 @@
         <a class="btn sm" href="/thiep-cua-toi">Về thiệp của tôi</a></div>`;
     el.querySelectorAll('[data-pay]').forEach((b) => (b.onclick = () => {
       const o = orders.find((x) => x.code === b.dataset.pay); if (!o || !o.card) return;
-      openPayModal(o.card.id, load, o.items.length === 1 ? o.items[0] : 'card');
+      openPayModal(o.card.id, load, o.items);
     }));
   };
   const load = async () => {
