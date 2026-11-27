@@ -461,8 +461,9 @@ function status(t) { const el = $('#saved'); el.textContent = card && card.guest
 // null = chưa có thay đổi; true = toàn thay đổi đã hiện sẵn; false = có thay đổi cần vẽ lại.
 let liveOnly = null;
 function markChange(live) { liveOnly = live && liveOnly !== false; }
-// Trình sửa KHÔNG tự lưu: mọi thay đổi chỉ là bản nháp trên máy (+ bản nháp ở máy chủ để dựng khung xem trước, không ghi
-// vào thiệp). Thiệp thật — khách đang xem — chỉ đổi khi bấm "Lưu" (hoặc ⌘/Ctrl+S, hoặc Phát hành).
+// Sửa đâu lưu đó (27/11, giống trình sửa màn LED / video): ngừng tay 1,5 giây là tự lưu vào thiệp, không còn nút "Lưu".
+// Bản nháp ở máy chủ vẫn dùng để dựng khung xem trước ngay khi sửa. ⌘/Ctrl+S, Phát hành, rời trang thì lưu ngay.
+let autoTimer = null, editVer = 0; // editVer: đếm lần sửa — sửa tiếp trong lúc đang lưu thì lưu xong vẫn còn "Chưa lưu" và lưu tiếp
 let dirty = false, draftTimer = null, draftBusy = null, savedData = null, hasDraft = false; // hasDraft: phiên này đã gửi bản nháp (bản nháp cũ của lần mở trước thì bỏ)
 // Chưa đăng nhập: mọi chữ / ngày / mẫu / màu đang sửa cũng cất vào trình duyệt (cùng ý với ảnh tạm) — tải lại trang,
 // lỡ đóng tab hay quay lại sau vẫn còn; đăng nhập xong (lưu lên máy chủ) thì xoá bản cất này.
@@ -472,8 +473,11 @@ function guestKeep() {
   try { localStorage.setItem(GKEY(), JSON.stringify({ at: Date.now(), data: card.data, template: card.template, palette: card.palette, title: card.title })); } catch (e) { /* hết chỗ / chặn lưu */ }
 }
 function guestDrop() { try { localStorage.removeItem(GKEY()); } catch (e) { /* bỏ qua */ } }
-function setDirty(on) {
+function setDirty(on, { auto = true } = {}) {
   dirty = on;
+  if (on) editVer++;
+  clearTimeout(autoTimer); autoTimer = null;
+  if (on && auto && card && !card.guest) autoTimer = setTimeout(() => commit({ auto: true }), 1500);
   if (on) guestKeep(); else guestDrop();
   const b = $('#saveBtn');
   if (b) { b.disabled = !on; b.textContent = on ? 'Lưu' : 'Đã lưu'; b.classList.toggle('soft', !on); }
@@ -509,8 +513,10 @@ async function pushDraft() {
   return my;
 }
 // lưu thật
-async function commit() {
+async function commit({ auto = false } = {}) {
+  clearTimeout(autoTimer); autoTimer = null;
   if (saving) { pending = true; return; }
+  const ver = editVer;
   // ảnh còn đang tải lên → chờ xong rồi lưu (để ảnh nằm trong thiệp)
   if (pendingSlots.size) { status(`Đang chờ ${pendingSlots.size} ảnh tải xong…`); while (pendingSlots.size) await new Promise((r) => setTimeout(r, 300)); }
   saving = true;
@@ -529,18 +535,19 @@ async function commit() {
     }
     savedData = JSON.stringify(card.data);
     liveOnly = null; hasDraft = false;
-    unbusy(); setDirty(false);
+    unbusy();
+    if (editVer === ver) setDirty(false); else { pending = true; } // sửa thêm trong lúc lưu → lưu tiếp phần mới
     if (hadDraft) refreshPreview();
     renderHeader();
     shareSoon();
-    toast(kept ? `Đã lưu — ${card.paid ? 'thiệp đã kích hoạt' : 'đã qua ngày cưới'} nên tên cô dâu chú rể và ngày cưới giữ nguyên` : 'Đã lưu thiệp', kept);
+    if (!auto || kept) toast(kept ? `Đã lưu — ${card.paid ? 'thiệp đã kích hoạt' : 'đã qua ngày cưới'} nên tên cô dâu chú rể và ngày cưới giữ nguyên` : 'Đã lưu thiệp', kept);
   } catch (e) {
-    unbusy(); setDirty(true);
+    unbusy(); setDirty(true, { auto: false }); // lỗi: không tự thử lại liên tục; sửa tiếp hoặc ⌘/Ctrl+S sẽ lưu lại
     status('Lưu thất bại');
     toast(e.message, true);
   } finally {
     saving = false;
-    if (pending) { pending = false; commit(); }
+    if (pending) { pending = false; commit({ auto: true }); }
   }
 }
 // ---------- ảnh xem trước khi gửi link (Zalo, Messenger, Facebook…) ----------
@@ -652,7 +659,7 @@ function renderHeader() {
   pl.innerHTML = ''; // gọn: bỏ chip "hồ sơ cưới dùng chung" (sửa tên / các lễ ở mục Thông tin)
   // nút: Xem trước (nhẹ) · Lưu (viền, chỉ khi có thay đổi) · một nút đỏ duy nhất: Phát hành / Kích hoạt (đã phát hành thì Chia sẻ thành nút chính khi đã kích hoạt)
   const pv = `<a class="btn sm ghost" href="/t/${esc(card.slug)}?preview=1" target="_blank" rel="noopener" title="Xem thiệp như khách mời"><svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex:none"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg><span>&nbsp;Xem</span><span class="xl">&nbsp;trước</span></a>`; // icon mắt + chữ "Xem" (▷ dễ nhầm là phát nhạc)
-  const sv = dirty ? '<button class="btn sm soft" id="saveBtn" title="Lưu (⌘/Ctrl+S)">Lưu</button>' : ''; // đã lưu: chỉ còn chữ "Đã lưu ✓" ở dòng dưới tên
+  const sv = ''; // tự lưu: không còn nút Lưu, trạng thái lưu là dòng chữ nhỏ dưới tên
   // luồng gửi (27/11): một nút chính "Gửi thiệp" → bảng chọn Gửi xem thử (miễn phí) / Gửi khách mời (99k → thanh toán → tab Khách).
   // Chưa phát hành thì bấm là phát hành trước rồi mở bảng chọn.
   pa.innerHTML = pv + sv + `<button class="btn sm" id="sendBtn">${card.paid ? 'Gửi thiệp' : 'Kích hoạt'}</button>`; // chưa kích hoạt: "Kích hoạt" → bảng Kích hoạt (như màn LED, slide)
@@ -827,7 +834,7 @@ function shareEdit() {
     pv();
     box.addEventListener('click', (e) => { const b = e.target.closest('[data-own]'); if (b) { own = b.dataset.own; pv(); } });
     box.addEventListener('input', pv);
-    $('#shOk', box).onclick = () => { d.shareOwn = own; d.shareTitle = $('#shT', box).value.trim(); d.shareDesc = $('#shD', box).value.trim(); close(); applyLive(); toast('Đã lưu — bấm Lưu thiệp để áp dụng'); };
+    $('#shOk', box).onclick = () => { d.shareOwn = own; d.shareTitle = $('#shT', box).value.trim(); d.shareDesc = $('#shD', box).value.trim(); close(); applyLive(); toast('Đã lưu'); };
   });
 }
 function weekdayVi(iso) { return ['Chủ Nhật', 'Thứ Hai', 'Thứ Ba', 'Thứ Tư', 'Thứ Năm', 'Thứ Sáu', 'Thứ Bảy'][new Date(iso + 'T00:00:00').getDay()]; }
@@ -2009,7 +2016,7 @@ async function adoptSuggested() {
   rerender(); renderHeader();
   await save();
   setTimeout(() => locals.forEach((u) => URL.revokeObjectURL(u)), 60000);
-  toast(failed ? `${failed} ảnh chưa tải lên được — tải lại trang để thử lại` : 'Đã thêm ảnh của bạn vào thiệp — bấm Lưu để giữ lại', !!failed);
+  toast(failed ? `${failed} ảnh chưa tải lên được — tải lại trang để thử lại` : 'Đã thêm ảnh của bạn vào thiệp', !!failed);
 }
 
 // cột "Các phần của thiệp" (màn rộng): bấm để thiệp cuộn tới phần đó
