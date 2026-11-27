@@ -176,11 +176,11 @@ async function call(who, method, url, body, extra = {}) {
   r = await call('u', 'GET', '/led/tuan-lan?preview=1', undefined, { 'sec-fetch-dest': 'iframe' });
   assert.equal(r.status, 200);
   assert.match(r.text, /class="wmt"/, 'bản dùng thử: chữ chìm phủ khắp màn');
-  // demo tự điền tên → có chữ chìm (không chiếu thật miễn phí); demo mặc định sạch; trang chống nhúng khung
+  // màn mẫu không chữ chìm, kể cả khi tự điền tên (27/11, chủ web chọn); trang chống nhúng khung
   r = await call('anon', 'GET', '/led/demo?groom=A&bride=B');
-  assert.match(r.text, /class="wmt"/, 'demo màn LED có tên riêng phải có chữ chìm');
+  assert.ok(!r.text.includes('class="wmt"'), 'demo màn LED có tên riêng không chữ chìm');
   assert.ok(!(await call('anon', 'GET', '/led/demo')).text.includes('class="wmt"'), 'demo mặc định không chữ chìm');
-  assert.match((await call('anon', 'GET', '/video/demo?groom=A')).text, /"trial":true/, 'demo slide có tên riêng là bản xem thử');
+  assert.match((await call('anon', 'GET', '/video/demo?groom=A')).text, /"trial":false/, 'demo slide có tên riêng không phải bản xem thử');
   r = await call('anon', 'GET', '/led/tuan-lan?xem=1');
   assert.equal(r.status, 200, 'link xem thử gửi vợ/chồng mở được');
   assert.match(r.text, /class="wmt"/, 'link xem thử luôn có chữ chìm');

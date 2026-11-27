@@ -1261,8 +1261,7 @@ route('GET', '/t/:slug/:code', showCard);
 
 // "Thấy đám cưới của mình": các trang xem mẫu (thiệp, màn LED, slide) nhận tên đôi + ngày cưới khách vừa gõ
 // (?groom= ?bride= ?date=) — chỉ để xem, không lưu gì. Không gõ thì giữ tên mẫu.
-// demo đã điền tên / ngày riêng (người xem tự gõ) → coi như bản xem thử: có chữ chìm, không đem chiếu thật miễn phí được
-const demoCustom = (ctx) => !!(ctx.query.get('groom') || ctx.query.get('bride') || ctx.query.get('date'));
+// màn mẫu (LED / video) không phủ chữ chìm, kể cả khi đã điền tên thật qua "Thử tên của hai bạn" (27/11, chủ web chọn)
 function demoNames(ctx, d) {
   const q = ctx.query, groom = str(q.get('groom'), 40), bride = str(q.get('bride'), 40);
   if (groom) Object.assign(d.groom, { name: groom, fullName: groom });
@@ -1362,7 +1361,7 @@ route('GET', '/led/:slug', async (req, res, ctx) => {
     const led = ledLib.normalize({ ...q, kicker: 'Lễ Thành Hôn', message: ledLib.defaults().message });
     await demoView(req, ctx, `led:${led.palette}-${led.effect}`);
     const card = { data: demoNames(ctx, cd.normalize(cd.sample())) };
-    return html(res, 200, ledLib.renderLed(card, led, { demo: true, preview: q.preview === '1', trial: demoCustom(ctx) }));
+    return html(res, 200, ledLib.renderLed(card, led, { demo: true, preview: q.preview === '1', trial: false }));
   }
   const card = cardBySlug(slug);
   const isOwner = canManage(ctx.user, card) || guestOwns(ctx, card) || ctx.admin;
@@ -1417,7 +1416,7 @@ route('GET', '/video/:slug', async (req, res, ctx) => {
     await demoView(req, ctx, 'video:' + (videoLib.options().templates.some((t) => t.id === q.template) ? q.template : 'chung'));
     const v = videoLib.normalize({ template: q.template, photoBg: q.photo === '1', photos, event: { kind: 'Lễ Dạm Ngõ', date: '2026-11-22', time: '09:00', place: 'Tư gia nhà gái' } });
     const useUrl = videoLib.options().templates.some((t) => t.id === q.template) ? `/tao-video?mau=${encodeURIComponent(q.template)}` : '';
-    return html(res, 200, videoLib.renderVideo(card, v, { preview: q.preview === '1', useUrl, trial: demoCustom(ctx) }));
+    return html(res, 200, videoLib.renderVideo(card, v, { preview: q.preview === '1', useUrl, trial: false }));
   }
   const card = cardBySlug(slug);
   const isOwner = canManage(ctx.user, card);
