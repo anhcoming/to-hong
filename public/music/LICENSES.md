@@ -40,3 +40,7 @@ chuẩn hoá âm lượng (loudnorm −18 LUFS), vào nhẹ 1,5 giây, nhỏ d�
 
 Không dùng: Vivaldi "Mùa xuân" (bản thu trên Commons đều CC BY-SA), Arrival of the Queen of Sheba (CC BY-SA 2.0),
 Trumpet Voluntary (bản Public domain đều là đĩa than cũ, nhiều tiếng rè).
+
+## Nhạc chủ web tự tải lên (27/11/2026)
+
+Các bài nhạc cưới phổ biến (A Thousand Years, Perfect, Nơi Này Có Anh, …) do chủ web tự thêm. Đây là nhạc **có bản quyền**, không thuộc phạm vi công cộng; chủ web tự chịu trách nhiệm về quyền sử dụng.
