@@ -70,15 +70,21 @@
     audio.addEventListener('ended', function () { toStart(); audio.play().catch(function () {}); });
     if (mEnd) audio.addEventListener('timeupdate', function () { if (audio.currentTime >= mEnd) toStart(); });
   }
+  // want: người xem đang muốn nghe nhạc hay không. Không dựa vào audio.paused: lúc tệp nhạc còn đang tải (mạng điện thoại chậm)
+  // trình duyệt đã coi là "đang phát" → bấm nút lại thành tắt nhạc, bấm mãi không thấy chạy.
+  var want = false;
   function playMusic() {
     if (!audio) return;
+    want = true;
+    try { if (window.parent !== window) window.parent.postMessage({ ce: 1, type: 'bgm-play' }, location.origin); } catch (e) {} // trình sửa: dừng nhạc đang nghe thử
+    if (mbtn) mbtn.classList.add('playing'); // hiện "đang phát" ngay khi bấm (tệp còn tải vẫn vậy)
     if (!mSeeked && mStart && audio.readyState >= 1) { mSeeked = true; toStart(); }
     var p = audio.play();
-    if (p && p.then) p.then(function () { mbtn.classList.add('playing'); }).catch(function () {});
+    if (p && p.catch) p.catch(function () { if (want && audio.paused) { want = false; if (mbtn) mbtn.classList.remove('playing'); } });
   }
   if (mbtn) mbtn.addEventListener('click', function () {
-    if (audio.paused) playMusic();
-    else { audio.pause(); mbtn.classList.remove('playing'); }
+    if (!want) playMusic();
+    else { want = false; audio.pause(); mbtn.classList.remove('playing'); }
   });
 
   // ----- mở thiệp (chạm để mở cũng là cử chỉ cho phép phát nhạc) -----

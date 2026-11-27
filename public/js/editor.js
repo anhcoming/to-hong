@@ -112,7 +112,7 @@ const panes = {
     const len = Math.max(d.photos.length, ...[...pendingSlots, ...Object.keys(localPhotos)].filter((k) => k !== 'cover').map((k) => +k.split('.')[1] + 1));
     return `
     <!-- bảng này chỉ còn nhạc nền: ảnh sửa thẳng trên thiệp (bấm ảnh → Căn chỉnh / Thay ảnh) -->
-    <section class="group panel"><h3>Nhạc nền ${musicNow().auto ? '<small>tự chọn theo mẫu</small>' : ''}</h3>
+    <section class="group panel">
       ${musicPane()}
     </section>`;
   },
@@ -1081,6 +1081,16 @@ function musicNow() {
   return { url, auto: !d.music && !d.musicOff && !!url, off: !url, track: M.tracks.find((t) => t.file === url) };
 }
 let musicPrev = null; // máy nghe thử trong bảng (một bản một lúc)
+// chỉ một nhạc một lúc: nghe thử trong bảng thì tắt nhạc nền của thiệp (khung xem trước); thiệp bật nhạc thì dừng nghe thử
+function stopCardMusic() {
+  try {
+    const doc = $('#frame').contentDocument, a = doc && doc.getElementById('bgm');
+    if (a && !a.paused) { const b = doc.getElementById('musicBtn'); if (b) b.click(); else a.pause(); } // bấm nút của thiệp để nút cũng về trạng thái tắt
+  } catch (e) { /* khung chưa sẵn sàng */ }
+}
+window.addEventListener('message', (e) => { if (e.origin === location.origin && e.data && e.data.ce && e.data.type === 'bgm-play' && musicPrev && !musicPrev.paused) musicPrev.pause(); });
+// trình duyệt huỷ lần phát trước khi đổi bài nhanh (AbortError: "play() … interrupted by pause()") — chuyện bình thường, không báo lỗi
+const playErr = (e) => { if (e && e.name !== 'AbortError') toast('Không phát được: ' + e.message, true); };
 function musicPane() {
   const M = META.music || { tracks: [] }, now = musicNow();
   const playing = (f) => musicPrev && !musicPrev.paused && musicPrev.dataset.f === f;
@@ -1091,14 +1101,14 @@ function musicPane() {
     </div>`;
   const own = card.data.music && !now.track ? row(card.data.music, 'Nhạc bạn tải lên', 'MP3 của bạn', true, '') : '';
   return `${musicUp ? `<p class="muted" style="margin:0 0 10px"><span class="spin"></span> Đang tải lên "${esc(musicUp)}"…</p>` : ''}
+    ${now.off ? '' : musicSeg(now.url)}
     <div class="mlist">${own}${M.tracks.map((t) => row(t.file, t.name, `${t.by} · ${t.mood}`, now.url === t.file, `data-mpick="${esc(t.file)}"`)).join('')}</div>
     <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px">
       <label class="btn sm soft">Tải lên MP3 của bạn<input type="file" accept="audio/mpeg" id="musicIn" hidden></label>
       ${now.auto || !M.tracks.length ? '' : '<button class="btn sm plain" data-music-auto>Để thiệp tự chọn theo mẫu</button>'}
       ${now.off ? '' : '<button class="btn sm plain" data-music-off>Tắt nhạc</button>'}
     </div>
-    ${now.off ? '' : musicSeg(now.url)}
-    <p class="muted" style="font-size:13px;margin:10px 0 0">${now.off ? 'Thiệp đang tắt nhạc.' : 'Nhạc phát khi khách chạm "Mở thiệp", hết đoạn thì tự lặp lại.'} Nhạc mẫu là bản thu miễn phí bản quyền. Tự tải lên: tối đa 12MB, chỉ dùng bản nhạc bạn có quyền sử dụng.</p>`;
+    ${now.off ? '<p class="muted" style="font-size:13px;margin:10px 0 0">Thiệp đang tắt nhạc.</p>' : ''}`;
 }
 // ---------- đoạn phát: mốc bắt đầu (mặc định = đoạn điệp khúc tự dò) + mốc kết thúc, thiệp lặp lại đúng đoạn ----------
 const mDur = {}; // url → thời lượng (giây)
@@ -1145,20 +1155,12 @@ async function autoHook(url) {
   rerender(); scheduleSave(50);
 }
 function musicSeg(url) {
-  const d = card.data, dur = musicDur(url) || mDur[url] || 0;
-  const st = d.music === url ? d.musicStart || 0 : 0, en = d.music === url && d.musicEnd ? d.musicEnd : dur;
-  if (mBusy === url) return '<div class="mseg"><p class="muted" style="margin:0"><span class="spin"></span> Đang tìm đoạn điệp khúc…</p></div>';
-  if (!dur) return '';
-  const max = Math.floor(dur * 2) / 2;
-  return `<div class="mseg">
-      <b>Đoạn phát</b>
-      <label>Bắt đầu <input type="range" data-mseg="start" min="0" max="${max}" step="0.5" value="${st}"><span class="mtime" id="msegS">${mmss(st)}</span></label>
-      <label>Kết thúc <input type="range" data-mseg="end" min="0" max="${max}" step="0.5" value="${Math.min(en, max)}"><span class="mtime" id="msegE">${en >= max ? 'Hết bài' : mmss(en)}</span></label>
-      <div class="mbtns">
-        <button class="btn sm soft" data-mseg-play>${musicPrev && !musicPrev.paused && musicPrev.dataset.seg ? '❚❚ Dừng' : '▶ Nghe đoạn này'}</button>
-        <button class="btn sm plain" data-mseg-hook>Tự chọn điệp khúc</button>
-      </div>
-    </div>`;
+  // gọn: chọn bài là tự tìm điệp khúc; ai muốn nghe từ đầu thì bấm "Đầu bài". Bấm ▶ ở bài đang dùng = nghe đúng đoạn sẽ phát
+  const d = card.data, hook = d.music === url && (d.musicStart || 0) > 0;
+  if (mBusy === url) return '<div class="mseg"><span class="spin"></span> Đang tìm đoạn điệp khúc…</div>';
+  return `<div class="mseg"><span>Phát từ</span><div class="mfrom">
+      <button type="button" data-mfrom="0" class="${hook ? '' : 'on'}">Đầu bài</button>
+      <button type="button" data-mfrom="1" class="${hook ? 'on' : ''}">Điệp khúc ✨</button></div></div>`;
 }
 function segPlay() {
   const d = card.data, url = musicNow().url;
@@ -1170,7 +1172,8 @@ function segPlay() {
   a.ontimeupdate = () => { if (en && a.currentTime >= en) a.currentTime = st; };
   a.onended = () => { a.currentTime = st; a.play(); };
   a.onpause = () => { if (curTab === 'media' || curTab === 'studio') rerender(); };
-  a.play().catch((e) => toast('Không phát được: ' + e.message, true));
+  stopCardMusic();
+  a.play().catch(playErr);
   if (curTab === 'media' || curTab === 'studio') rerender();
 }
 function musicPreview(f) {
@@ -1178,8 +1181,11 @@ function musicPreview(f) {
   else {
     if (musicPrev) musicPrev.pause();
     musicPrev = new Audio(f); musicPrev.dataset.f = f;
+    const st = card.data.music === f ? card.data.musicStart || 0 : 0; // bài đang dùng: nghe từ đoạn sẽ phát trên thiệp
+    if (st) musicPrev.onloadedmetadata = () => { musicPrev.currentTime = st; };
     musicPrev.onended = musicPrev.onpause = () => { if (curTab === 'media' || curTab === 'studio') rerender(); };
-    musicPrev.play().catch((e) => toast('Không phát được: ' + e.message, true));
+    stopCardMusic();
+    musicPrev.play().catch(playErr);
   }
   if (curTab === 'media' || curTab === 'studio') rerender();
 }
@@ -1368,6 +1374,12 @@ function bind() {
     else if (ds.mplay !== undefined) { musicPreview(ds.mplay); return; }
     else if (ds.mpick !== undefined) { d.music = ds.mpick; d.musicOff = false; autoHook(ds.mpick); }
     else if (ds.msegPlay !== undefined) { segPlay(); return; }
+    else if (ds.mfrom !== undefined) {
+      const u = musicNow().url; if (d.music !== u) { d.music = u; d.musicOff = false; }
+      if (musicPrev && !musicPrev.paused) musicPrev.pause();
+      if (ds.mfrom === '1') { autoHook(u); return; }
+      d.musicStart = 0; d.musicEnd = 0;
+    }
     else if (ds.msegHook !== undefined) { const u = musicNow().url; if (d.music !== u) { d.music = u; d.musicOff = false; } autoHook(u); return; }
     else if (ds.musicAuto !== undefined) { d.music = ''; d.musicOff = false; d.musicStart = 0; d.musicEnd = 0; }
     else if (ds.musicOff !== undefined) { d.music = ''; d.musicOff = true; d.musicStart = 0; d.musicEnd = 0; if (musicPrev) musicPrev.pause(); }
