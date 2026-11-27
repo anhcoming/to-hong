@@ -443,7 +443,7 @@ function askLogin(why = 'save') {
       ${META.facebookLogin ? `<a class="btn block ${META.googleLogin ? 'plain' : ''}" data-go href="/auth/facebook?next=${next}">Tiếp tục với Facebook</a>` : ''}
       ${META.emailSignup ? `<a class="btn block ${META.googleLogin || META.facebookLogin ? 'plain' : ''}" data-go href="/dang-nhap?dang-ky=1&next=${next}">Dùng email</a>` : `<a class="muted" style="font-size:13px;text-align:center" data-go href="/dang-nhap?next=${next}">Tôi có tài khoản email từ trước</a>`}
     </div>
-    <p class="muted" style="font-size:13px;margin:14px 0 0">Miễn phí, không cần thẻ. Dùng thử ${META.trialDays} ngày, mời ${META.trialGuestLimit} khách.</p>`, (box) => {
+    <p class="muted" style="font-size:13px;margin:14px 0 0">Làm và xem thử miễn phí · gửi khách thật ${money(META.price)}.</p>`, (box) => {
     box.addEventListener('click', async (e) => {
       const a = e.target.closest('[data-go]'); if (!a) return;
       e.preventDefault();
@@ -655,15 +655,15 @@ function renderHeader() {
   const pv = `<a class="btn sm ghost" href="/t/${esc(card.slug)}?preview=1" target="_blank" rel="noopener" title="Xem thiệp như khách mời">▷<span class="xl">&nbsp;Xem trước</span></a>`;
   const sv = dirty ? '<button class="btn sm soft" id="saveBtn" title="Lưu (⌘/Ctrl+S)">Lưu</button>' : ''; // đã lưu: chỉ còn chữ "Đã lưu ✓" ở dòng dưới tên
   if (card.status !== 'published') {
-    pa.innerHTML = pv + sv + '<button class="btn sm" id="pubBtn">Phát hành<span class="xl">&nbsp;thiệp</span></button>';
+    pa.innerHTML = pv + sv + '<button class="btn sm" id="pubBtn">Gửi xem thử</button>'; // phát hành = có link xem thử (gửi vợ/chồng, người nhà)
   } else {
     // đã phát hành: bỏ nút "Chia sẻ" (link gửi khách ở Thiệp của tôi / tab Khách); chưa kích hoạt thì chỉ còn nút Kích hoạt
-    pa.innerHTML = pv + sv + (card.paid ? '' : '<button class="btn sm" id="payBtn">Kích hoạt</button>');
+    pa.innerHTML = pv + sv + (card.paid ? '' : `<button class="btn sm soft" id="shareBtn">Xem thử</button><button class="btn sm" id="payBtn">Gửi khách<span class="xl">&nbsp;· ${Math.round(META.price / 1000)}k</span></button>`);
   }
   const svb = $('#saveBtn'); if (svb) svb.onclick = () => commit();
 
   const pb = $('#pubBtn'); if (pb) pb.onclick = publish;
-  const sb = $('#shareBtn'); if (sb) sb.onclick = shareModal;
+  const sb = $('#shareBtn'); if (sb) sb.onclick = () => shareModal();
   const yb = $('#payBtn'); if (yb) yb.onclick = () => openPayModal(CARD_ID, reloadCard);
 }
 // Bảng "thông tin chính": tên đôi, ngày giờ, nơi tổ chức tiệc — điền một lần là thiệp có đủ nội dung để gửi.
@@ -935,14 +935,16 @@ async function publish(force) {
 function shareModal(first) {
   const url = card.url;
   // gọn: một nút chính (Chép link) + ✕; việc phụ là chữ nhỏ một hàng
-  openModal(`<div style="text-align:center"><h2 style="margin:0 0 6px">${first ? '🎉 Đã phát hành' : 'Link thiệp'}</h2>
-    <p class="muted" style="margin:0 0 14px;font-size:14px">Gửi link này cho khách qua Zalo, Messenger</p>
+  // chưa trả tiền: link xem thử (gửi vợ/chồng, người nhà duyệt) + nút chính "Gửi khách · 99k"
+  const trial = !card.paid;
+  openModal(`<div style="text-align:center"><h2 style="margin:0 0 6px">${trial ? 'Link xem thử' : first ? '🎉 Đã phát hành' : 'Link thiệp'}</h2>
+    <p class="muted" style="margin:0 0 14px;font-size:14px">${trial ? 'Gửi vợ/chồng, người nhà xem trước. Thiệp có dòng "Bản xem thử".' : 'Gửi link này cho khách qua Zalo, Messenger'}</p>
     <div style="display:flex;align-items:center;gap:8px;padding:10px 12px;border-radius:12px;background:var(--bg);font-size:13.5px;margin-bottom:14px"><span style="flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;text-align:left">${esc(url.replace(/^https?:\/\//, ''))}</span></div>
-    <button class="btn" id="cpL">Chép link</button>
+    ${trial ? `<button class="btn" id="toPay">Gửi khách thật · ${Math.round(META.price / 1000)}k</button><p style="margin:10px 0 0"><a href="#" id="cpL">Chép link xem thử</a></p>` : '<button class="btn" id="cpL">Chép link</button>'}
     <p style="margin:14px 0 0;font-size:13px"><a href="${esc(url)}" target="_blank" rel="noopener">Mở thiệp ↗</a> · <a href="#" id="toStory">Video TikTok</a> · <a href="#" id="toGuests">Link tên riêng từng khách</a></p>
-    ${card.paid ? '' : `<p class="muted" style="font-size:12.5px;margin:10px 0 0">Dùng thử: tối đa ${META.trialGuestLimit} khách, ${META.trialDays} ngày · <a href="#" id="toPay">Kích hoạt</a></p>`}</div>`,
+    ${trial ? '<p class="muted" style="font-size:12.5px;margin:10px 0 0">Trả một lần: thiệp sạch, link tên riêng từng khách</p>' : ''}</div>`,
   (box, close) => {
-    $('#cpL', box).onclick = () => copyText(url, 'Đã chép link thiệp');
+    $('#cpL', box).onclick = (e) => { e.preventDefault(); copyText(url, trial ? 'Đã chép link xem thử' : 'Đã chép link thiệp'); };
     $('#toStory', box).onclick = (e) => { e.preventDefault(); close(); storyModal(CARD_ID); };
     $('#toGuests', box).onclick = (e) => { e.preventDefault(); close(); const t = document.querySelector('.tools [data-tab="guests"]'); if (t) t.click(); };
     const tp = $('#toPay', box); if (tp) tp.onclick = (e) => { e.preventDefault(); close(); openPayModal(CARD_ID, reloadCard); };
@@ -967,13 +969,13 @@ async function loadGuests() {
         <label class="field"><span>Mỗi dòng một tên — hiện đúng như vậy trên thiệp</span><textarea name="names" rows="4" placeholder="Anh Hùng & người thương&#10;Cô chú Tư và gia đình&#10;Bạn Lan Anh"></textarea></label>
         <div style="display:flex;justify-content:center"><button class="btn">Thêm khách</button></div>
       </form>
-      ${limit ? `<p class="muted" style="font-size:13px;margin:12px 0 0">Bản dùng thử: ${limit} khách đầu danh sách có link mang tên riêng. <a href="#" id="gPay">Kích hoạt để gửi link riêng cho tất cả</a></p>` : ''}
+      ${card.paid ? '' : `<p class="muted" style="font-size:13px;margin:12px 0 0">Thêm tên trước thoải mái · link tên riêng từng khách mở khi gửi khách thật. <a href="#" id="gPay">Gửi khách · ${Math.round(META.price / 1000)}k</a></p>`}
     </section>
     <section class="group panel"><h3>Danh sách <small>${guests.length} khách${guests.length ? ` · ${opened} đã mở` : ''}</small></h3>
       ${guests.length ? `<ul class="glist">
         ${guests.map((g) => `<li data-g="${g.id}">
           <div class="gm"><b>${esc(g.name)}</b><div class="gs">${g.rsvp ? (g.rsvp.attending === 'yes' ? `<span class="chip ok">Sẽ đến · ${g.rsvp.count} người</span>` : '<span class="chip red">Không đến</span>') : g.opens ? `<span class="chip warn">Đã mở ${g.opens} lần</span>` : '<span class="chip">Chưa mở</span>'}${g.side === 'trai' ? '<span>Nhà trai</span>' : g.side === 'gai' ? '<span>Nhà gái</span>' : ''}</div></div>
-          <div class="ga">${g.locked ? '<button class="btn sm plain" data-glock>🔒 Kích hoạt để gửi</button>' : `<button class="btn sm soft" data-gc="${esc(g.url)}" data-gn="${esc(g.name)}">Chép lời mời</button>`}<button class="btn sm danger" data-gd="${g.id}" title="Xoá" aria-label="Xoá ${esc(g.name)}">×</button></div>
+          <div class="ga">${g.locked ? `<button class="btn sm plain" data-glock>Gửi khách · ${Math.round(META.price / 1000)}k</button>` : `<button class="btn sm soft" data-gc="${esc(g.url)}" data-gn="${esc(g.name)}">Chép lời mời</button>`}<button class="btn sm danger" data-gd="${g.id}" title="Xoá" aria-label="Xoá ${esc(g.name)}">×</button></div>
         </li>`).join('')}</ul>` : '<p class="empty">Chưa có khách nào. Thêm tên ở trên để tạo link riêng cho từng người.</p>'}
     </section>`;
   $('#gForm').onsubmit = async (e) => {

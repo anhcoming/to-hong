@@ -200,15 +200,10 @@ function uniqueSlug(wanted, exceptId) {
 }
 const RESERVED = new Set(['api', 'admin', 'demo', 'uploads', 'card', 'css', 'js', 'led', 'video', 'so-tay', 'tham-gia']);
 
+// Từ 27/11 (v1.27): không còn dùng thử 7 ngày / khoá link. Chưa trả tiền = bản xem thử: link mở được mãi (gửi vợ/chồng, người nhà duyệt),
+// thiệp luôn có nhãn "Bản xem thử", chưa có link tên riêng từng khách. Trả 99k = gửi khách thật: thiệp sạch + tên riêng từng khách.
 function cardState(card) {
-  // trialFrom: bản sao của thiệp đã phát hành dùng tiếp đồng hồ dùng thử của bản gốc (nhân bản không được thêm hạn mới)
-  const trialEndsAt = card.paid ? null : (card.trialFrom || card.publishedAt || card.createdAt) + config.trialDays * DAY;
-  return {
-    paid: !!card.paid,
-    trialEndsAt,
-    expired: !card.paid && card.status === 'published' && Date.now() > trialEndsAt,
-    guestLimit: card.paid ? null : config.trialGuestLimit,
-  };
+  return { paid: !!card.paid, trialEndsAt: null, expired: false, guestLimit: card.paid ? null : 0 };
 }
 
 function cardSummary(card) {
@@ -944,6 +939,38 @@ route('GET', '/api/orders/:code', async (req, res, ctx) => {
   json(res, 200, { order: orderView(o) });
 });
 
+// Bấm "Đặt hàng" ở màn thanh toán: đơn mới vào mục "Chờ thanh toán" của trang Đơn hàng
+// (đơn chỉ mở màn thanh toán xem giá rồi thôi thì không hiện ở đó)
+route('POST', '/api/orders/:code/place', async (req, res, ctx) => {
+  const o = db.orders.find((x) => x.code === ctx.params.code);
+  if (!o) throw httpError(404, 'Không tìm thấy đơn');
+  ownedCard(ctx, o.cardId, { guest: true });
+  if (o.status === 'pending' && !o.placedAt) { o.placedAt = Date.now(); save(); }
+  json(res, 200, { order: orderView(o) });
+});
+
+// Trang "Đơn hàng của tôi" (kiểu Shopee): đơn đã thanh toán + đơn đã đặt mà chưa trả xong.
+// Đơn chờ mà các món nay đều đã kích hoạt bằng đơn khác thì bỏ qua.
+route('GET', '/api/my-orders', async (req, res, ctx) => {
+  const user = needUser(ctx);
+  const mine = new Set(db.cards.filter((c) => c.userId === user.id).map((c) => c.id));
+  const list = db.orders.filter((o) => {
+    if (o.userId !== user.id && !mine.has(o.cardId)) return false;
+    if (o.status === 'paid') return true;
+    if (o.status !== 'pending' || !(o.placedAt || o.claimedAt || receivedFor(o))) return false;
+    const card = db.cards.find((c) => c.id === o.cardId);
+    if (!card) return false;
+    const items = (o.product || 'card') === 'multi' ? o.items || [] : [o.product || 'card'];
+    return items.some((k) => PARTS.some(([x]) => x === k) && !partPaid(card, k));
+  }).sort((a, b) => (b.paidAt || b.placedAt || b.createdAt) - (a.paidAt || a.placedAt || a.createdAt)).map((o) => {
+    const v = orderView(o), card = db.cards.find((c) => c.id === o.cardId);
+    return { code: v.code, product: v.product, productName: v.productName, items: v.items, amount: v.amount, status: v.status, claimedAt: v.claimedAt,
+      createdAt: v.createdAt, placedAt: o.placedAt || null, paidAt: v.paidAt, received: v.received || 0, due: v.due || 0, card: v.card,
+      cover: card ? (card.data.cover || card.data.photos.find(Boolean) ? String(card.data.cover || card.data.photos.find(Boolean)).split('#')[0] : `/demo/cover-${card.template}-${card.palette}.jpg`) : null };
+  });
+  json(res, 200, { orders: list });
+});
+
 // Chủ thiệp báo "Tôi đã chuyển khoản"
 route('POST', '/api/orders/:code/claim', async (req, res, ctx) => {
   rateLimit('claim:' + ctx.ip, 10, 36e5, true);
@@ -1518,6 +1545,7 @@ const PAGES = {
   '/man-hinh-led-dam-cuoi': 'led-landing.html',
   '/so-tay': 'planner.html',
   '/video-cua-toi': 'dashboard.html', // cùng trang với "Thiệp của tôi", hiện danh sách video
+  '/don-hang': 'orders.html', // đơn hàng của tôi (chờ thanh toán / đã thanh toán)
   '/so-tay-cuoi': 'planner-landing.html',
   '/goi-y': 'suggest.html', // thả ảnh cưới → gợi ý thiệp
   '/video': 'video-tiktok.html', // video báo hỷ đăng TikTok, miễn phí, không cần đăng nhập (dựng trên máy khách)

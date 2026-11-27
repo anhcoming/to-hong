@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<script src="/js/theme.js"></script>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Đơn hàng của tôi — Cưới Nha</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&amp;family=Dancing+Script:wght@600;700&amp;display=swap">
+<link rel="stylesheet" href="/css/app.css">
+<style>
+/* Đơn hàng của tôi (kiểu Shopee): 2 tab Chờ thanh toán / Đã thanh toán, mỗi đơn một thẻ */
+.oh{margin:12px 0 14px;font-family:var(--serif);font-weight:600;font-size:30px}
+.otabs{display:flex;gap:4px;margin:0 0 14px;padding:4px;border-radius:999px;background:var(--surface);box-shadow:0 0 0 1px var(--line);width:max-content;max-width:100%}
+.otabs button{display:inline-flex;align-items:center;gap:6px;height:36px;padding:0 16px;border:0;border-radius:999px;background:none;color:var(--muted);font:inherit;font-size:14px;font-weight:600;cursor:pointer;white-space:nowrap}
+.otabs button.on{background:var(--primary-soft);color:var(--primary)}
+.otabs b{min-width:18px;height:18px;padding:0 5px;border-radius:999px;background:var(--primary);color:#fff;font-size:11px;line-height:18px;text-align:center}
+.olist{display:grid;gap:12px;max-width:720px}
+.ord{padding:14px 16px;border-radius:16px;background:var(--surface);box-shadow:0 0 0 1px var(--line)}
+.ord-hd{display:flex;align-items:center;justify-content:space-between;gap:10px;padding-bottom:10px;border-bottom:1px solid var(--line);font-size:13px;color:var(--muted)}
+.ord-hd b{color:var(--ink);font-size:14px}
+.ord-st{flex:none;font-weight:700;font-size:12.5px;color:var(--primary)}.ord-st.ok{color:#1f8a5b}
+.ord-bd{display:flex;gap:12px;align-items:center;padding:12px 0}
+.ord-th{flex:none;width:56px;height:56px;border-radius:10px;background:linear-gradient(135deg,#3b2b2f,#8a5a63) center/cover;box-shadow:0 0 0 1px rgba(0,0,0,.06)}
+.ord-tx{flex:1;min-width:0}.ord-tx b{display:block;font-size:15px}.ord-tx span{display:block;margin-top:2px;color:var(--muted);font-size:12.5px}
+.ord-ft{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;padding-top:10px;border-top:1px dashed var(--line);font-size:13px;color:var(--muted)}
+.ord-ft .amt{color:var(--ink)}.ord-ft .amt b{color:var(--primary);font-size:16px;margin-left:4px}
+.ord-note{margin:8px 0 0;padding:8px 10px;border-radius:10px;background:var(--warn-soft,#fbf0dc);color:var(--warn,#a5660f);font-size:12.5px}
+.oempty{max-width:720px;padding:40px 16px;text-align:center;color:var(--muted);border-radius:16px;background:var(--surface);box-shadow:0 0 0 1px var(--line)}
+.oempty svg{width:54px;height:54px;fill:none;stroke:var(--primary);stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round;opacity:.7}
+.oempty p{margin:8px 0 16px}
+@media (max-width:760px){.oh{font-size:24px;margin:4px 0 12px}.otabs{width:100%}.otabs button{flex:1;justify-content:center;padding:0 8px}}
+</style>
+</head>
+<body>
+<main class="wrap" style="padding-top:20px;padding-bottom:60px">
+  <h1 class="oh">Đơn hàng của tôi</h1>
+  <div class="otabs" role="tablist"><button type="button" role="tab" data-tab="wait">Chờ thanh toán</button><button type="button" role="tab" data-tab="paid">Đã thanh toán</button></div>
+  <div id="list" class="olist"><div class="muted">Đang tải…</div></div>
+</main>
+<script src="/js/common.js"></script>
+<script src="/js/pay.js"></script>
+<script>
+(async () => {
+  const { user } = await renderTopbar('orders');
+  if (!user) return (location.href = '/dang-nhap?next=' + encodeURIComponent(location.pathname));
+  const el = document.getElementById('list');
+  const tabs = [...document.querySelectorAll('.otabs button')];
+  const THUMB = { led: '/demo/lposter-bac-dembac.jpg', video: '/demo/vposter-sen.jpg' };
+  const day = (t) => { const d = new Date(t); return `${String(d.getDate()).padStart(2, '0')}/${String(d.getMonth() + 1).padStart(2, '0')}/${d.getFullYear()}`; };
+  let orders = [], tab = new URLSearchParams(location.search).get('tab') === 'paid' ? 'paid' : 'wait';
+
+  const card = (o) => {
+    const paid = o.status === 'paid';
+    const th = o.items.length === 1 && o.items[0] !== 'card' ? THUMB[o.items[0]] : o.cover;
+    const n = o.items.length;
+    return `<div class="ord">
+      <div class="ord-hd"><span><b>${esc(o.card ? o.card.names || o.card.title : 'Đám cưới')}</b></span><span class="ord-st${paid ? ' ok' : ''}">${paid ? 'Đã kích hoạt' : o.claimedAt ? 'Đang chờ tiền về' : 'Chờ thanh toán'}</span></div>
+      <div class="ord-bd"><i class="ord-th"${th ? ` style="background-image:url('${esc(th)}')"` : ''}></i>
+        <div class="ord-tx"><b>${esc(o.productName)}</b><span>Mã đơn ${esc(o.code)} · ${day(o.paidAt || o.placedAt || o.createdAt)}</span></div></div>
+      ${o.received ? `<p class="ord-note">Đã nhận ${money(o.received)} · còn thiếu ${money(o.due)}</p>` : ''}
+      <div class="ord-ft"><span class="amt">${n} món · ${paid ? 'Đã trả' : 'Cần trả'}<b>${money(paid ? o.amount : o.due || o.amount)}</b></span>
+        ${paid ? `<a class="btn sm plain" href="/thiep-cua-toi?thiep=${encodeURIComponent(o.card ? o.card.id : '')}">Xem thiệp</a>` : `<button type="button" class="btn sm" data-pay="${esc(o.code)}">Thanh toán</button>`}</div>
+    </div>`;
+  };
+
+  const draw = () => {
+    const wait = orders.filter((o) => o.status !== 'paid'), paid = orders.filter((o) => o.status === 'paid');
+    tabs.forEach((b) => { const k = b.dataset.tab, c = k === 'wait' ? wait.length : 0; b.classList.toggle('on', k === tab); b.setAttribute('aria-selected', k === tab); b.innerHTML = (k === 'wait' ? 'Chờ thanh toán' : 'Đã thanh toán') + (c ? `<b>${c}</b>` : ''); });
+    const list = tab === 'wait' ? wait : paid;
+    el.innerHTML = list.length ? list.map(card).join('')
+      : `<div class="oempty"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 7h14l-1.2 11.2A2 2 0 0 1 15.8 20H8.2a2 2 0 0 1-2-1.8z"/><path d="M9 7V6a3 3 0 0 1 6 0v1"/></svg>
+        <p>${tab === 'wait' ? 'Không có đơn nào đang chờ thanh toán' : 'Chưa có đơn nào đã thanh toán'}</p>
+        <a class="btn sm" href="/thiep-cua-toi">Về thiệp của tôi</a></div>`;
+    el.querySelectorAll('[data-pay]').forEach((b) => (b.onclick = () => {
+      const o = orders.find((x) => x.code === b.dataset.pay); if (!o || !o.card) return;
+      openPayModal(o.card.id, load, o.items.length === 1 ? o.items[0] : 'card');
+    }));
+  };
+  const load = async () => {
+    try { orders = (await api('/api/my-orders')).orders; } catch (e) { el.innerHTML = `<div class="oempty"><p>${esc(e.message)}</p></div>`; return; }
+    if (!new URLSearchParams(location.search).get('tab') && !orders.some((o) => o.status !== 'paid') && orders.length) tab = 'paid';
+    draw();
+  };
+  tabs.forEach((b) => (b.onclick = () => { tab = b.dataset.tab; history.replaceState(null, '', tab === 'paid' ? '?tab=paid' : location.pathname); draw(); }));
+  load();
+})();
+</script>
+</body>
+</html>

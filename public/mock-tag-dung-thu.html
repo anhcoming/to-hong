@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="vi"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex">
+<title>Mock — xem thử miễn phí, trả 99k để gửi</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&family=Dancing+Script:wght@600;700&display=swap">
+<style>
+:root{--p:#d6455d;--g:linear-gradient(120deg,#d6455d,#ec6f86);--ink:#1f1a1b;--mu:#8a7d80;--ln:#f0e4e6;--bg:#fbf6f7}
+*{box-sizing:border-box}body{margin:0;font-family:"Be Vietnam Pro",sans-serif;background:#efe7e9;color:var(--ink)}
+h1{text-align:center;font-size:20px;margin:24px 16px 4px}.lead{text-align:center;color:var(--mu);font-size:14px;margin:0 16px 20px}
+.row{display:flex;flex-wrap:wrap;gap:28px;justify-content:center;padding:0 16px 40px}
+.col{display:flex;flex-direction:column;align-items:center;gap:10px;max-width:330px}
+.cap{font-size:13.5px;font-weight:700}.cap span{display:block;font-weight:400;color:var(--mu);font-size:12.5px;text-align:center;margin-top:2px}
+.ph{position:relative;width:320px;height:660px;border-radius:38px;background:var(--bg);overflow:hidden;box-shadow:0 0 0 9px #1c1718,0 20px 50px rgba(0,0,0,.25)}
+/* thanh trên */
+.tb{margin:12px;height:52px;border-radius:999px;background:#fff;display:flex;align-items:center;padding:0 8px 0 18px;box-shadow:0 6px 18px rgba(120,40,50,.08)}
+.logo{font-family:"Dancing Script";font-size:26px;color:var(--p);font-weight:700}.tb .sp{flex:1}
+.new{height:36px;padding:0 14px;border-radius:999px;background:var(--g);color:#fff;font-size:13px;font-weight:700;display:flex;align-items:center;gap:4px}
+/* thanh dưới */
+.bn{position:absolute;left:10px;right:10px;bottom:10px;height:58px;border-radius:999px;background:#fff;display:flex;justify-content:space-around;align-items:center;font-size:10px;color:var(--mu);box-shadow:0 0 0 1px var(--ln),0 10px 24px rgba(120,40,50,.14)}
+.bn div{display:flex;flex-direction:column;align-items:center;gap:3px}.bn i{width:20px;height:20px;border-radius:6px;background:#e9dde0}.bn .on{color:var(--p)}.bn .on i{background:#f6cdd5}
+/* thẻ thiệp */
+.pad{padding:0 12px}.h{font-size:19px;font-weight:700;margin:6px 4px 10px}
+.card{background:#fff;border-radius:18px;overflow:hidden;box-shadow:0 0 0 1px var(--ln)}
+.cv{height:120px;background:url('/demo/cover-anhdo-do-do.jpg') center 40%/cover,linear-gradient(135deg,#caa,#866)}
+.ci{padding:12px 14px 14px}.ci b{font-size:17px}.ci .s{font-size:12.5px;color:var(--mu);margin:2px 0 10px}
+.tag{display:flex;align-items:center;gap:10px;padding:9px 9px 9px 12px;border-radius:12px;background:#fff4f1;border:1px dashed #efb9a9}
+.tag span{flex:1;font-size:12px;color:var(--mu);line-height:1.35}.tag span b{display:block;color:#b4532a;font-size:13px}
+.buy{flex:none;height:32px;padding:0 12px;border-radius:999px;background:var(--g);color:#fff;font-size:12px;font-weight:700;display:flex;align-items:center}
+.k{display:grid;grid-template-columns:repeat(4,1fr);gap:5px;margin:10px 0}.k div{background:var(--bg);border-radius:10px;text-align:center;padding:6px 0;font-size:10px;color:var(--mu)}.k b{display:block;font-size:16px;color:var(--ink)}
+.ac{display:flex;gap:8px}.ac div{flex:1;height:40px;border-radius:999px;display:grid;place-items:center;font-size:13.5px;font-weight:700}.a1{background:var(--g);color:#fff}.a2{background:#fdeef1;color:var(--p)}
+/* thiệp phía khách */
+.inv{position:absolute;inset:0;background:#7c1c26 url('/demo/cover-anhdo-do-do.jpg') center top/cover}
+
+.strip{position:absolute;z-index:2;top:0;left:0;right:0;display:flex;align-items:center;justify-content:center;gap:6px;height:34px;background:rgba(255,255,255,.92);backdrop-filter:blur(8px);font-size:11.5px;color:var(--mu)}
+.strip b{color:var(--ink);font-weight:700}.strip em{font-style:normal;color:var(--p);font-weight:700}
+.it{position:absolute;z-index:2;left:0;right:0;bottom:70px;text-align:center;color:#fff}
+.it small{letter-spacing:.2em;font-size:10px}.it h2{font-family:"Dancing Script";font-size:40px;margin:6px 0}.it p{margin:0;font-size:13px}
+.guest{position:absolute;z-index:2;left:50%;bottom:24px;transform:translateX(-50%);padding:8px 16px;border-radius:999px;background:rgba(255,255,255,.92);font-size:12px;white-space:nowrap}
+.paid .strip{display:none}
+/* trình sửa */
+.ed{padding:12px}.ebar{display:flex;align-items:center;gap:8px;height:48px;padding:0 6px;border-bottom:1px solid var(--ln);background:#fff;margin:-12px -12px 12px}
+.ebar b{flex:1;font-size:15px}.pub{height:34px;padding:0 14px;border-radius:999px;background:var(--g);color:#fff;font-size:12.5px;font-weight:700;display:grid;place-items:center}
+.prev{height:300px;border-radius:16px;background:url('/demo/cover-anhdo-do-do.jpg') center/cover,#a55;position:relative;overflow:hidden}
+.prev .strip{position:absolute;height:28px;font-size:10.5px}
+.note{margin-top:12px}
+.f{margin-top:12px;background:#fff;border-radius:14px;padding:12px;box-shadow:0 0 0 1px var(--ln);font-size:12.5px;color:var(--mu)}.f b{display:block;color:var(--ink);font-size:13.5px;margin-bottom:6px}
+.f i{display:block;height:34px;border-radius:10px;background:var(--bg);margin-top:6px}
+</style></head><body>
+<h1>Làm &amp; xem thử miễn phí · trả 99k để gửi khách</h1>
+<p class="lead">Không đếm ngược, không khoá link, không giỏ hàng. Link xem thử gửi vợ/chồng, người nhà · gửi khách thật thì trả 99k.</p>
+<div class="row">
+
+  <div class="col"><div class="ph">
+    <div class="tb"><span class="logo">Cưới Nha♥</span><span class="sp"></span><span class="new">＋ Tạo thiệp</span></div>
+    <div class="pad"><div class="h">Thiệp của tôi</div>
+      <div class="card"><div class="cv"></div><div class="ci"><b>Đức Anh &amp; Phạm Nga</b><div class="s">04/11/2026 · Mẫu Đơn</div>
+        <div class="tag"><span><b>Đang là bản xem thử</b>Gửi vợ/chồng, người nhà duyệt thoải mái</span><div class="buy">Gửi khách · 99k</div></div>
+        <div class="k"><div><b>3</b>lượt xem</div><div><b>0</b>khách</div><div><b>0</b>sẽ đến</div><div><b>0</b>lời chúc</div></div>
+        <div class="ac"><div class="a1">Sửa thiệp</div><div class="a2">Gửi xem thử</div></div></div></div></div>
+    <div class="bn"><div><i></i>Trang chủ</div><div class="on"><i></i>Thiệp</div><div><i></i>Video</div><div><i></i>Màn LED</div><div><i></i>Tôi</div></div>
+  </div><div class="cap">① Thiệp của tôi<span>Giỏ hàng → "＋ Tạo thiệp". Chưa trả: "Gửi xem thử" + "Gửi khách · 99k"</span></div></div>
+
+  <div class="col"><div class="ph"><div class="inv"></div>
+    <div class="strip"><b>Bản xem thử</b>·<span>chưa gửi khách mời</span>·<em>Cưới Nha</em></div>
+    <div class="guest">Mở thiệp</div>
+  </div><div class="cap">② Link xem thử (miễn phí)<span>Chồng / vợ, bố mẹ mở qua Zalo. Luôn có dải "Bản xem thử", không có tên riêng khách</span></div></div>
+
+  <div class="col"><div class="ph paid"><div class="inv"></div>
+    <div class="guest">Kính mời <b>anh Tuấn</b> · Mở thiệp</div>
+  </div><div class="cap">③ Sau khi trả 99k · gửi khách thật<span>Link chính thức, thiệp sạch, tên riêng từng khách</span></div></div>
+
+  <div class="col"><div class="ph"><div class="ed">
+    <div class="ebar"><span style="color:var(--p);font-size:22px">‹</span><b>Sửa thiệp</b><span class="pub">Gửi khách · 99k</span></div>
+    <div class="prev"><div class="strip"><b>Bản xem thử</b>·<em>Cưới Nha</em></div></div>
+    <div class="tag note"><span><b>Gửi xem thử miễn phí</b>Cho vợ/chồng, người nhà duyệt trước</span><div class="buy" style="background:#fdeef1;color:var(--p)">Gửi xem thử</div></div>
+    <div class="f"><b>Tên cô dâu &amp; chú rể</b><i></i><i></i></div>
+  </div></div><div class="cap">④ Trình sửa thiệp<span>Nút chính "Gửi khách · 99k" (khách mới giảm 10%), "Gửi xem thử" miễn phí</span></div></div>
+
+</div></body></html>

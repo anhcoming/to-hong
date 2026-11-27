@@ -110,13 +110,12 @@ async function call(who, method, url, body, extra = {}) {
   r = await call('u', 'GET', `/api/cards/${id}/guests`);
   const guest = r.json.guests[0];
   const lateGuest = r.json.guests[25];
-  assert.equal(lateGuest.locked, true, 'khách thứ 26 bị khoá link riêng khi thiệp chưa kích hoạt');
+  assert.equal(guest.locked, true, 'bản xem thử (chưa trả tiền): chưa có link tên riêng từng khách');
+  assert.equal(lateGuest.locked, true);
   r = await call('anon', 'GET', `/t/tuan-lan/${guest.code}`);
-  assert.equal(r.status, 200);
-  assert.match(r.text, /Anh Hùng/);
-  assert.match(r.text, /Bản dùng thử/);
-  r = await call('anon', 'GET', `/t/tuan-lan/${lateGuest.code}`);
-  assert.ok(!r.text.includes(lateGuest.name), 'quá giới hạn dùng thử → lời mời chung, không hiện tên');
+  assert.equal(r.status, 200, 'bản xem thử không bao giờ bị khoá link');
+  assert.ok(!r.text.includes('Kính mời Anh Hùng') && !/class="[^"]*guest[^"]*"[^>]*>\s*Anh Hùng/.test(r.text), 'bản xem thử → lời mời chung');
+  assert.match(r.text, /Bản xem thử/);
 
   // khách xác nhận + chúc
   assert.equal((await call('anon', 'POST', '/api/public/tuan-lan/rsvp', { name: 'Anh Hùng', attending: 'yes', count: 2, side: 'trai', g: guest.code })).status, 200);
@@ -129,7 +128,7 @@ async function call(who, method, url, body, extra = {}) {
   assert.match(r.text, /Anh Hùng/);
   r = await call('u', 'GET', '/api/cards');
   assert.equal(r.json.cards[0].rsvpYes, 2);
-  assert.equal(r.json.cards[0].views, 2);
+  assert.equal(r.json.cards[0].views, 1);
   // xác nhận ghi ngược vào danh sách khách của sổ tay
   r = await call('u', 'GET', '/api/wedding/guests');
   const hung = r.json.guests.find((g) => g.name === 'Anh Hùng');

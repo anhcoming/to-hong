@@ -74,7 +74,7 @@
 .mk h4+h4,.mk .mine-r+h4{margin-top:6px;border-top:1px solid var(--line);padding-top:12px}
 .mk h4{margin:0;padding:8px 10px 4px;font-size:11.5px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;color:var(--muted)}
 .mkr{display:flex;align-items:center;gap:12px;width:100%;padding:12px 10px;border:0;border-radius:12px;background:none;color:var(--ink);font:inherit;font-size:15px;font-weight:600;text-align:left;text-decoration:none;cursor:pointer}
-.mkr+.mkr{border-top:1px solid var(--line);border-radius:0}.mkr:hover{background:var(--primary-soft);border-radius:12px}
+.mkr+.mkr{border-top:1px solid var(--line);border-radius:0}.mkr:active{background:var(--primary-soft);border-radius:12px}@media (hover:hover){.mkr:hover{background:var(--primary-soft);border-radius:12px}}
 .mkr svg{flex:none;width:20px;height:20px;fill:none;stroke:var(--primary);stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
 .mkr .t{flex:1;min-width:0;display:flex;flex-direction:column;gap:1px}
 .mkr small{font-size:12.5px;font-weight:500;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.mkr small:empty{display:none}
@@ -85,6 +85,11 @@
 .hero .trialbar{margin:0;padding:0;background:none;font-size:13px;gap:8px}
 .hero .trialbar .btn{padding:0;height:auto;min-height:0;background:none;box-shadow:none;color:var(--primary);font-weight:700;font-size:13px}
 .hero .trialbar .btn::after{content:" →"}
+/* link đã khoá: khối đỏ nhạt hai dòng + nút Kích hoạt rõ ràng (không cắt chữ trên điện thoại) */
+.hero .trialbar.over{flex-wrap:nowrap;padding:10px 10px 10px 14px;border-radius:14px;background:#fff4f1;border:1px dashed #efc0b3;color:#b4532a;gap:10px}
+.trialbar .tb-t{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}.trialbar .tb-t b{font-size:14px}.trialbar .tb-t small{font-size:12px;color:var(--muted);line-height:1.35}
+.hero .trialbar.over .btn{flex:none;padding:8px 14px;border-radius:999px;background:var(--grad,var(--primary));color:#fff;font-size:13px}.hero .trialbar.over .btn::after{content:none}
+[data-theme="dark"] .hero .trialbar.over{background:rgba(192,57,43,.16)}
 /* máy tính: thẻ thiệp bên trái, "Làm thêm" thành cột bên phải (hết khoảng trắng thừa, mắt không phải chạy ngang cả màn) */
 .dash{display:grid;gap:14px}
 @media (min-width:980px){
@@ -155,12 +160,10 @@
   .hero .info{padding:14px 14px 16px;gap:10px}.hero h2{font-size:19px}
   .sub{font-size:13px}.next{font-size:13px}
   /* gọn: số liệu thành một dòng chữ, nút "Mở thiệp" vào menu ⋯ (Màn LED / Video ở danh sách "Làm thêm" dưới thẻ) */
-  .kpis{display:flex!important;flex-wrap:wrap;gap:4px 14px}.kpi{padding:0!important;border:0;background:none;text-align:left!important}
-  .kpi b{display:inline!important;font-size:15px!important;margin-right:3px}.kpi span{display:inline!important;font-size:12.5px!important}
   .hero .acts .open{display:none}
-  .trialbar{flex-wrap:nowrap;padding:8px 8px 8px 12px;font-size:13px}.trialbar .xl{display:none}.trialbar .xs{display:inline}.trialbar>span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.trialbar .btn{flex:none;padding:6px 12px;font-size:12.5px}.trialbar{gap:6px;padding:7px 7px 7px 10px;font-size:12.5px}
+  .trialbar{flex-wrap:nowrap;padding:8px 8px 8px 12px;font-size:13px}.trialbar .xl{display:none}.trialbar .xs{display:inline}.trialbar:not(.over)>span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.trialbar .btn{flex:none;padding:6px 12px;font-size:12.5px}.trialbar:not(.over){gap:6px;padding:7px 7px 7px 10px;font-size:12.5px}
   .hero .acts{flex-wrap:nowrap}.hero .acts>.btn{flex:1 1 0;min-width:0;justify-content:center;padding:9px 12px;font-size:13.5px;white-space:nowrap}
-  .kpis{grid-template-columns:repeat(4,minmax(0,1fr));gap:6px}.kpi{padding:8px 8px 7px;text-align:center}.kpi b{font-size:17px}.kpi span{font-size:11px;line-height:1.25;display:block}
+  .kpis{grid-template-columns:repeat(4,minmax(0,1fr));gap:6px}.kpi{padding:8px 4px 7px;text-align:center;border:0}.kpi b{font-size:18px}.kpi span{font-size:11px;line-height:1.25;display:block;white-space:nowrap}
   .row .chip{display:none}
   .steps{display:flex;flex-wrap:wrap;gap:6px 14px}.steps li{padding:0;border:0;background:none;font-size:13px;gap:6px}.steps li::before{width:16px;height:16px}.steps li.done::before{background-size:10px}
   .prog .xl{display:none}
@@ -202,17 +205,14 @@ const tplName = (id) => (META.templates.find(t => t.id === id) || {}).name || id
 function stateChip(c) {
   if (c.paid) return '<span class="chip ok">● Thiệp đã kích hoạt</span>';
   if (c.status !== 'published') return '<span class="chip">Bản nháp</span>';
-  if (c.expired) return '<span class="chip red">Hết hạn dùng thử</span>';
-  const days = Math.max(0, Math.ceil((c.trialEndsAt - Date.now()) / 864e5));
-  return `<span class="chip warn">Dùng thử · còn ${days} ngày</span>`;
+  return '<span class="chip warn">Bản xem thử</span>';
 }
 
 
 // Thiệp đã phát hành, chưa kích hoạt: thanh đếm ngược tới lúc link bị khoá (chạy từng giây)
 function trialBar(c) {
   if (c.paid || c.status !== 'published') return '';
-  if (c.expired) return `<div class="trialbar over"><span>🔒 <b>Link đã bị khoá</b> — khách mở thiệp sẽ thấy "Thiệp đang tạm khoá". Kích hoạt để mở lại ngay.</span><button class="btn sm" data-a="pay">Kích hoạt</button></div>`;
-  return `<div class="trialbar" data-end="${c.trialEndsAt}"><span>⏳ <span class="xl">Dùng thử — link sẽ bị khoá sau</span><span class="xs">Link khoá sau</span> <b class="cd">${countdown(c.trialEndsAt)}</b></span><button class="btn sm" data-a="pay">Kích hoạt</button></div>`;
+  return `<div class="trialbar over"><span class="tb-t"><b>Đang là bản xem thử</b><small>Gửi vợ/chồng, người nhà duyệt thoải mái</small></span><button class="btn sm" data-a="pay">Gửi khách · ${Math.round(META.price / 1000)}k</button></div>`;
 }
 function countdown(end) {
   const s = Math.max(0, Math.floor((end - Date.now()) / 1000));
@@ -271,8 +271,7 @@ async function load() {
 // một dòng thiệp đang làm: ảnh · tên + tình trạng · Sửa · Quản lý
 function mineRow(c) {
   const st = c.paid ? ['ok', 'Đã kích hoạt']
-    : c.status !== 'published' ? ['', 'Bản nháp'] : c.expired ? ['red', 'Link đã bị khoá']
-    : ['warn', `Dùng thử · còn ${Math.max(0, Math.ceil((c.trialEndsAt - Date.now()) / 864e5))} ngày`];
+    : c.status !== 'published' ? ['', 'Bản nháp'] : ['warn', 'Bản xem thử'];
   const info = c.status === 'published' ? ` · ${c.views} lượt xem · ${c.rsvpYes} sẽ đến` : ` · ${esc(tplName(c.template))}`;
   return `<div class="mrow panel" data-id="${c.id}">
     <a class="mini" href="/sua/${c.id}" style="background-image:url('${thumbOf(c)}')" aria-label="Sửa thiệp"></a>
@@ -302,7 +301,7 @@ function prodRow(c, kind) {
   const st = s.paid ? '<span class="ok">● Đã kích hoạt</span>'
     : s.prepaid ? '<span class="ok">Đã mua · tạo là dùng được ngay</span>'
     : s.created && s.expired ? '<span class="bad">Hết dùng thử</span>'
-    : s.created ? 'Đang dùng thử' : '';
+    : s.created ? 'Đang dùng thử' : kind === 'led' ? 'Chiếu tên cô dâu chú rể ở tiệc' : 'Chiếu buổi dạm ngõ, ăn hỏi'; // chưa tạo: một dòng mô tả cho đều hàng
   return `<a class="mkr" href="${href}">${MKI[kind]}<span class="t">${name}<small>${st}</small></span><i>${s.created ? 'Mở' : 'Tạo'} ›</i></a>`;
 }
 // cột phải, mục "Của bạn": món đã kích hoạt — bấm hàng để mở trình sửa, nút ▶ mở trình chiếu
@@ -330,12 +329,12 @@ function heroCard(c) {
           : draftSteps(c)}
         <div class="acts">
           <a class="btn" href="/sua/${c.id}">${pub ? 'Sửa thiệp' : 'Tiếp tục sửa thiệp'}</a>
-          ${pub ? `<button class="btn soft" data-a="share">Gửi link</button><a class="btn plain open" target="_blank" href="${esc(c.url)}">Mở thiệp</a>` : ''}
+          ${pub ? `<button class="btn soft" data-a="share">${c.paid ? 'Gửi link' : 'Gửi xem thử'}</button><a class="btn plain open" target="_blank" href="${esc(c.url)}">Mở thiệp</a>` : ''}
           ${!c.paid && !pub ? `<button class="btn plain" data-a="pay">Kích hoạt</button>` : ''}
         </div>
       </div>
     </article>
-    <div class="mk panel" data-id="${c.id}">${c.led.paid || c.video.paid ? `<h4>Của bạn</h4>${c.led.paid ? mineRow2(c, 'led') : ''}${c.video.paid ? mineRow2(c, 'video') : ''}` : ''}<h4>Làm thêm cho thiệp này</h4>${c.led.paid ? '' : prodRow(c, 'led')}${c.video.paid ? '' : prodRow(c, 'video')}<button type="button" class="mkr" data-a="story">${MKI.clap}<span class="t">Video báo hỷ TikTok<small>Khoe ngày cưới lên TikTok</small></span><em class="free">Miễn phí</em></button><a class="mkr" href="/video-dam-ngo">${MKI.video}<span class="t">Video dạm ngõ<small>Chiếu buổi dạm ngõ, ăn hỏi</small></span><i>›</i></a></div>`;
+    <div class="mk panel" data-id="${c.id}">${c.led.paid || c.video.paid ? `<h4>Của bạn</h4>${c.led.paid ? mineRow2(c, 'led') : ''}${c.video.paid ? mineRow2(c, 'video') : ''}` : ''}<h4>Làm thêm cho thiệp này</h4>${c.led.paid ? '' : prodRow(c, 'led')}${c.video.paid ? '' : prodRow(c, 'video')}<button type="button" class="mkr" data-a="story">${MKI.clap}<span class="t">Video báo hỷ TikTok<small>Khoe ngày cưới lên TikTok</small></span><em class="free">Miễn phí</em></button></div>`;
 }
 // thiệp nháp: còn thiếu gì trước khi có link gửi khách
 function draftSteps(c) {

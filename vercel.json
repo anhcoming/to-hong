@@ -89,6 +89,7 @@
     { "source": "/dang-nhap", "destination": "/auth.html" },
     { "source": "/thiep-cua-toi", "destination": "/dashboard.html" },
     { "source": "/video-cua-toi", "destination": "/dashboard.html" },
+    { "source": "/don-hang", "destination": "/orders.html" },
     { "source": "/admin", "destination": "/admin.html" },
     { "source": "/mau-thiep", "destination": "/templates.html" },
     { "source": "/video-dam-ngo", "destination": "/video-landing.html" },

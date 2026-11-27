@@ -271,7 +271,7 @@ window.openPayModal = async function (cardId, onDone, product = 'card') {
         cp.c.addEventListener('input', (e) => { const m = $('#cpErr', root); m.hidden = true; e.target.classList.remove('bad'); });
       }
       const go = $('#order', root);
-      if (go) go.onclick = () => { step = 'qr'; qrUntil = Date.now() + QR_LIFE; render(); };
+      if (go) go.onclick = () => { step = 'qr'; qrUntil = Date.now() + QR_LIFE; render(); api(`/api/orders/${data.order.code}/place`, { method: 'POST', body: {} }).catch(() => {}); }; // vào mục Chờ thanh toán ở trang Đơn hàng
       const ok = $('#cpOk', root); // mã giảm 100%: giá 0đ → bấm "Xác nhận kích hoạt" mới kích hoạt
       if (ok) ok.onclick = async () => {
         ok.disabled = true;
