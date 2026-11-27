@@ -737,7 +737,7 @@
   };
   window.STORY_STYLES = STYLE_IDS.map(function (id) { return { id: id, name: STYLES[id].name, desc: STYLES[id].desc }; });
   // mẫu có sẵn ở trang /video (kiểu + tông màu + nhạc + bộ ảnh mẫu). Video xem trước dựng sẵn ở /demo/story/<id>.mp4 (+ .jpg) —
-  // đổi mẫu nào thì dựng lại video xem trước của mẫu đó (window.storyRender(..., { scale: 1/3, bitrate: 7e5, noAudio: true })).
+  // đổi mẫu nào thì dựng lại video xem trước của mẫu đó (tools/story-previews.js: 720×1280, 1,8 Mbps, không tiếng).
   var dset = function (pre, n, ext, cover) { var a = cover ? [cover] : []; for (var i = 1; i <= n; i++) a.push('/demo/' + pre + '-' + i + '.' + ext); return a; };
   window.STORY_TEMPLATES = [
     { id: 'phongbi-hong', st: 'phongbi', tone: 'hong', name: 'Phong bì hồng', music: '/music/canon.mp3', mname: 'Canon in D', ph: dset('hoamoc', 8, 'webp', '/demo/hoamoc-c1.webp') },
