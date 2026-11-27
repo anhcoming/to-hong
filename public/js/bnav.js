@@ -7,7 +7,6 @@
   var css = '.cnb,.cn-cart{display:none}@media (max-width:760px){'
     + 'body.has-cnb .tb-split,body.has-cnb .uav:has(.usplit){display:none!important}' // đã có nút avatar + tab Thiệp ở thanh dưới → bỏ nút "Thiệp của tôi" trên đầu cho đỡ thừa
     + '.cn-cart{flex:none;display:inline-flex;align-items:center;height:36px;margin-left:auto;padding:0 14px;border-radius:999px;background:linear-gradient(120deg,#d6455d,#ec6f86);color:#fff;font-size:13px;font-weight:700;text-decoration:none;white-space:nowrap;box-shadow:0 6px 16px rgba(214,69,93,.25)}'
-    + '.pbar{display:none!important}.hnav:not(.up){top:0!important;transform:translateX(-50%)!important}' // dải giá chạy chữ chỉ hiện trên máy tính
     + 'body.has-cnb{padding-bottom:calc(92px + env(safe-area-inset-bottom))}.totop{bottom:calc(88px + env(safe-area-inset-bottom))!important}'
     + '.cnb{position:fixed;z-index:48;left:12px;right:12px;bottom:calc(12px + env(safe-area-inset-bottom));height:62px;padding:0 6px;display:flex;align-items:center;justify-content:space-around;border-radius:999px;background:rgba(255,255,255,.94);backdrop-filter:blur(12px) saturate(1.4);-webkit-backdrop-filter:blur(12px) saturate(1.4);box-shadow:0 0 0 1px var(--line,#f0e4e6),0 12px 30px rgba(120,40,50,.16)}'
     + '[data-theme="dark"] .cnb{background:rgba(31,25,27,.94)}'
