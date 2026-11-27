@@ -101,14 +101,25 @@ main.wrap{padding-top:104px}
   .tc .use{height:26px;padding:0 9px;font-size:11px}
   .tc .tag{top:8px;height:20px;padding:0 14px 0 11px;font-size:9.5px}
 }
+/* điện thoại (thanh trên phẳng 54px dính đỉnh): bớt khoảng trắng đầu trang, lề + khe hẹp lại, thẻ thấp hơn → thấy nhiều mẫu hơn trong một màn */
+@media (max-width:760px){
+  main.wrap{padding:66px 12px 0}
+  .thead h1{font-size:20px}
+  .side{margin-bottom:10px}
+  .flist{margin:0 -12px;padding:0 12px;gap:0 18px}
+  .flist button,.flist button:hover{padding:8px 0 8px;font-size:14px}
+  .grid{gap:8px;padding-bottom:24px}
+  .tc img{aspect-ratio:3/4}
+  .tc .pic{box-shadow:0 4px 12px rgba(120,40,50,.1)}
+}
 /* tim mẫu (chọn cùng người ấy): nút ♡ góc dưới phải thẻ; tim rồi hiện thanh nổi "Rủ người ấy chọn cùng" */
 .tc .ht{position:absolute;right:8px;bottom:8px;z-index:3;width:34px;height:34px;border:0;border-radius:50%;background:rgba(255,255,255,.92);color:#bfaeb1;font-size:17px;line-height:1;display:grid;place-items:center;cursor:pointer;pointer-events:auto;box-shadow:0 3px 10px rgba(0,0,0,.22)}
 .tc .ht.on{color:#d6455d}
-.tc .txt{right:48px}
+.tc .txt{right:12px}
 .timbar{position:fixed;left:50%;bottom:24px;z-index:47;transform:translateX(-50%);display:flex;align-items:center;gap:10px;padding:8px 8px 8px 16px;border-radius:999px;background:#1f1a1b;color:#fff;font-size:14px;box-shadow:0 12px 30px rgba(0,0,0,.25);white-space:nowrap}
 .timbar[hidden]{display:none}.timbar b{color:#ff9fb0}
 .timbar button{height:38px;padding:0 16px;border:0;border-radius:999px;background:linear-gradient(135deg,#d6455d,#ef7d8d);color:#fff;font:700 13.5px var(--sans);cursor:pointer}
-@media (max-width:760px){.timbar{bottom:calc(86px + env(safe-area-inset-bottom));font-size:13px;padding:6px 6px 6px 14px}.timbar button{height:34px;padding:0 12px;font-size:12.5px}.tc .ht{width:30px;height:30px;font-size:15px;right:6px;bottom:6px}.tc .txt{right:40px}}
+@media (max-width:760px){.timbar{bottom:calc(86px + env(safe-area-inset-bottom));font-size:13px;padding:6px 6px 6px 14px}.timbar button{height:34px;padding:0 12px;font-size:12.5px}.tc .ht{width:30px;height:30px;font-size:15px;right:6px;bottom:6px}.tc .txt{right:8px}}
 /* nền tối */
 [data-theme="dark"] .flist button[aria-pressed="true"],[data-theme="dark"] .chon{background:#3a1f26}
 </style>
@@ -144,7 +155,7 @@ main.wrap{padding-top:104px}
   const tbar = document.createElement('div'); tbar.className = 'timbar'; tbar.hidden = true;
   tbar.innerHTML = '<span>♥ <b></b> mẫu đã tim</span><button type="button">Rủ người ấy chọn cùng</button>';
   document.body.appendChild(tbar);
-  const timBar = () => { tbar.hidden = !TIM.size; tbar.querySelector('b').textContent = TIM.size; };
+  const timBar = () => { tbar.hidden = true; }; // đã bỏ nút tim trên thẻ mẫu (27/11) → thanh này không hiện nữa
   tbar.querySelector('button').onclick = async (e) => {
     const ch = chon();
     if (ch) { location.href = `/chon/${ch.id}?k=${encodeURIComponent(ch.k)}`; return; }
@@ -205,7 +216,7 @@ main.wrap{padding-top:104px}
         <div class="pic"><a class="demo" href="/demo/${t.id}?palette=${p.id}" aria-label="Xem thử mẫu ${esc(t.name)}"><img src="${cover(t.id, p.id)}" alt="Mẫu thiệp ${esc(t.name)}" loading="lazy"></a>
         <div class="sw">${t.palettes.length > 1 ? t.palettes.map((q2) => `<button type="button" data-pal="${q2.id}" title="${esc(q2.name)}" aria-label="Bảng màu ${esc(q2.name)}" class="${q2.id === p.id ? 'on' : ''}" style="background:linear-gradient(135deg,${q2.swatch[0]} 50%,${q2.swatch[1]} 50%)"></button>`).join('') : ''}</div>
         <div class="txt"><b>${esc(t.name)}</b></div>
-        <button type="button" class="ht${TIM.has(t.id) ? ' on' : ''}" aria-label="Tim mẫu ${esc(t.name)}" aria-pressed="${TIM.has(t.id)}">${TIM.has(t.id) ? '♥' : '♡'}</button></div>
+        </div>
       </div>`;
     }).join('') : '<div class="none"><p style="font-size:40px;margin:0">🔍</p><p>Chưa có mẫu khớp bộ lọc.</p><button class="btn btn-ghost" id="clear2">Xoá bộ lọc</button></div>';
     const c2 = $('#clear2'); if (c2) c2.onclick = clear;

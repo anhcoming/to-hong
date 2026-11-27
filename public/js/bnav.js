@@ -17,12 +17,19 @@
     + 'body.has-cnb{padding-bottom:calc(60px + env(safe-area-inset-bottom))}.totop{bottom:calc(72px + env(safe-area-inset-bottom))!important}'
     + '.cnb{position:fixed;z-index:48;left:0;right:0;bottom:0;height:calc(58px + env(safe-area-inset-bottom));padding:0 4px env(safe-area-inset-bottom);box-sizing:border-box;display:flex;align-items:center;justify-content:space-around;background:var(--surface,#fff);box-shadow:0 -1px 0 var(--line,#f0e4e6)}'
     + '[data-theme="dark"] .cnb{background:#1f191b}'
+    + 'body.has-cnb #appVer{bottom:calc(62px + env(safe-area-inset-bottom))!important}' // nhãn phiên bản nằm trên thanh dưới, không đè chữ "Tôi"
     + '.cnb>a,.cnb>button{flex:1;min-width:0;display:flex;flex-direction:column;align-items:center;gap:2px;padding:0;border:0;background:none;font-family:inherit;font-size:10.5px;font-weight:600;line-height:1.2;white-space:nowrap;color:var(--muted,#8a7d80);text-decoration:none;cursor:pointer}'
     + '.cnb i{position:relative;display:grid;place-items:center;width:44px;height:26px;border-radius:999px;font-style:normal}'
     + '.cnb svg{width:21px;height:21px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}'
-    + '.cnb .on{color:#d6455d}.cnb .on i{background:rgba(214,69,93,.12)}'
+    + '.cnb .on{color:#d6455d;font-weight:800}'
+    + '.cnb .on svg>*{fill:currentColor}.cnb .on svg>.d{fill:none;stroke:#fff}.cnb .on svg>.d.s{fill:#fff;stroke:none}'
+    + '[data-theme="dark"] .cnb .on svg>.d{stroke:#1f191b}[data-theme="dark"] .cnb .on svg>.d.s{fill:#1f191b}'
+    + '.cnb .pop i{animation:cnbPop .38s cubic-bezier(.3,1.6,.5,1)}@keyframes cnbPop{0%{transform:scale(.8)}55%{transform:scale(1.16)}100%{transform:scale(1)}}'
+    + '@media (prefers-reduced-motion:reduce){.cnb .pop i{animation:none}}'
     + '.cnb i.av{width:26px;height:26px;border-radius:50%;background:linear-gradient(135deg,#f6d7dc,#e9b7c0);color:#8b1a24;font-size:11.5px;font-weight:800}'
     + '.cnb .on i.av{box-shadow:0 0 0 2px #d6455d}'
+    + '.cnb i.ph,.cnb-sh .who i.ph{overflow:hidden;background:#f3e6e8;padding:0}.cnb i.ph img,.cnb-sh .who i.ph img{width:100%;height:100%;object-fit:cover;display:block}'
+    + '.cnb .on i.ph{box-shadow:0 0 0 2px var(--surface,#fff),0 0 0 3.5px #d6455d}'
     + '}'
     + '.cnb-ov{position:fixed;inset:0;z-index:2147483400;background:rgba(30,15,18,.42);display:flex;align-items:flex-end;animation:cnbIn .18s ease}@keyframes cnbIn{from{opacity:0}}'
     + '.cnb-sh{width:100%;max-height:85vh;overflow:auto;box-sizing:border-box;padding:10px 12px calc(16px + env(safe-area-inset-bottom));border-radius:22px 22px 0 0;background:var(--surface,var(--card,#fff));color:var(--ink,#2b2224)}'
@@ -42,9 +49,9 @@
     + '.cnb-sh .lg{display:flex;justify-content:center;padding:6px 0 10px}.cnb-sh .lg a{justify-content:center;padding:0 26px;height:46px;border-radius:999px;background:linear-gradient(120deg,#d6455d,#ec6f86);color:#fff;font-weight:700}';
   var I = {
     home: '<path d="M4 11 12 4l8 7v8.5a1.5 1.5 0 0 1-1.5 1.5H15v-6H9v6H5.5A1.5 1.5 0 0 1 4 19.5z"/>',
-    card: '<rect x="3" y="5" width="18" height="14" rx="2.5"/><path d="M3.5 6.5 12 13l8.5-6.5"/>',
+    card: '<rect x="3" y="5" width="18" height="14" rx="2.5"/><path class="d" d="M3.5 6.5 12 13l8.5-6.5"/>',
     video: '<rect x="3" y="6" width="13" height="12" rx="2.5"/><path d="m16 10.5 5-3v9l-5-3"/>',
-    led: '<rect x="2.5" y="4" width="19" height="12.5" rx="2"/><path d="M8 20.5h8M12 16.5v4"/><path d="m12 7 .9 1.9 2 .3-1.5 1.4.4 2-1.8-1-1.8 1 .4-2-1.5-1.4 2-.3z"/>',
+    led: '<rect x="2.5" y="4" width="19" height="12.5" rx="2"/><path d="M8 20.5h8M12 16.5v4"/><path class="d s" d="m12 7 .9 1.9 2 .3-1.5 1.4.4 2-1.8-1-1.8 1 .4-2-1.5-1.4 2-.3z"/>',
     user: '<circle cx="12" cy="8.5" r="3.8"/><path d="M4.5 20c.9-3.6 3.9-5.5 7.5-5.5s6.6 1.9 7.5 5.5"/>',
     slide: '<rect x="3" y="4" width="18" height="12" rx="2"/><path d="M12 16v4M8 20h8"/><path d="m10 8 4 2-4 2z"/>',
     book: '<path d="M5 4.5A1.5 1.5 0 0 1 6.5 3H19v15H6.5A1.5 1.5 0 0 0 5 19.5z"/><path d="M5 19.5A1.5 1.5 0 0 0 6.5 21H19v-3"/><path d="M9 8h6M9 11.5h4"/>',
@@ -56,6 +63,8 @@
   };
   var svg = function (k) { return '<svg viewBox="0 0 24 24" aria-hidden="true">' + I[k] + '</svg>'; };
   var esc = function (t) { return String(t == null ? '' : t).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); };
+  // ảnh tài khoản (Google / Facebook): không gửi referrer (ảnh Google hay chặn), lỗi tải thì thay bằng icon người
+  var photo = function (u) { return '<img src="' + esc(u.avatar) + '" alt="" referrerpolicy="no-referrer" onerror="var i=this.parentNode;i.className=\'\';i.innerHTML=window.cnBottom.userIcon">'; };
   var initial = function (u) { var n = String((u && (u.name || u.email)) || '?').trim(); return esc(n.split(/\s+/).pop().charAt(0).toUpperCase() || '?'); };
   var GROUP = { home: 'home', tpl: 'tpl', cards: 'tpl', goiy: 'tpl', slide: 'video', baohy: 'video', videos: 'video', damngo: 'video', led: 'led', planner: 'me', orders: 'me' };
   var nav = null, state = { active: '', user: undefined };
@@ -65,7 +74,7 @@
     var ov = document.createElement('div'); ov.className = 'cnb-ov';
     var link = function (href, ic, text, tag) { return '<a href="' + href + '">' + svg(ic) + '<span>' + text + '</span>' + (tag ? '<em>' + tag + '</em>' : '') + '</a>'; };
     ov.innerHTML = '<div class="cnb-sh" role="dialog" aria-modal="true" aria-label="Tài khoản"><div class="gr"></div>'
-      + (u ? '<div class="who"><i>' + initial(u) + '</i><div style="min-width:0"><b>' + esc(u.name || 'Tài khoản') + '</b><span>' + esc(u.email) + '</span></div></div>'
+      + (u ? '<div class="who"><i' + (u.avatar ? ' class="ph">' + photo(u) : '>' + initial(u)) + '</i><div style="min-width:0"><b>' + esc(u.name || 'Tài khoản') + '</b><span>' + esc(u.email) + '</span></div></div>'
         + link('/thiep-cua-toi', 'card', 'Thiệp &amp; màn LED của tôi') + link('/don-hang', 'bag', 'Đơn hàng của tôi') + link('/video-cua-toi', 'slide', 'Slide của tôi') + link('/so-tay', 'book', 'Sổ tay của tôi')
         : '<div class="lg"><a href="/dang-nhap?next=' + encodeURIComponent(location.pathname + location.search) + '">Đăng nhập</a></div>' + link('/so-tay-cuoi', 'book', 'Sổ tay cưới', 'Free'))
       + link('/video', 'clap', 'Video báo hỷ TikTok', 'Free')
@@ -95,9 +104,18 @@
     var item = function (key, href, ic, text) { return '<a href="' + href + '"' + (g === key ? ' class="on" aria-current="page"' : '') + '><i>' + svg(ic) + '</i>' + text + '</a>'; };
     nav.innerHTML = item('home', '/', 'home', 'Trang chủ') + item('tpl', '/mau-thiep', 'card', 'Thiệp') + item('video', '/slide-cuoi', 'video', 'Video') + item('led', '/man-hinh-led-dam-cuoi', 'led', 'Màn LED')
       + '<button type="button"' + (g === 'me' ? ' class="on"' : '') + ' aria-label="Tài khoản"' + (u === undefined ? ' style="visibility:hidden"' : '') + '>'
-      + (u ? '<i class="av">' + initial(u) + '</i>Tôi' : '<i>' + svg('user') + '</i>Tài khoản') + '</button>';
-    nav.querySelector('button').onclick = sheet;
+      + (u ? (u.avatar ? '<i class="av ph">' + photo(u) + '</i>' : '<i>' + svg('user') + '</i>') + 'Tôi' : '<i>' + svg('user') + '</i>Tài khoản') + '</button>';
+    nav.querySelector('button').onclick = function (e) { pop(e.currentTarget); sheet(); };
+    if (!popped && g) { popped = true; var on = nav.querySelector('.on'); if (on) pop(on); }
+    nav.querySelectorAll('a').forEach(function (a) {
+      a.onclick = function (e) {
+        pop(a);
+        if (a.classList.contains('on') && a.pathname === location.pathname && window.scrollY > 8) { e.preventDefault(); window.scrollTo({ top: 0, behavior: 'smooth' }); }
+      };
+    });
   }
+  var popped = false;
+  function pop(el) { el.classList.remove('pop'); void el.offsetWidth; el.classList.add('pop'); }
   // Nút "＋ Tạo thiệp" (điện thoại) bên phải logo — thay giỏ hàng từ v1.27 (trả tiền nằm ngay ở thẻ thiệp / trình sửa: "Gửi khách · 99k")
   var newAsked = false;
   function cart() {
@@ -111,5 +129,5 @@
   }
   var draw0 = draw;
   draw = function (a, u) { draw0(a, u); cart(); };
-  window.cnBottom = { draw: draw };
+  window.cnBottom = { draw: draw, userIcon: svg('user') };
 })();
