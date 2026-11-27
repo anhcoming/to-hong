@@ -127,6 +127,8 @@ a{color:inherit}
 .form label{display:grid;gap:6px;font-size:13px;color:var(--muted)}
 .form input:not([type=radio]),.form select,.form textarea{width:100%;font:inherit;font-size:16px;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:11px 12px;outline:none}
 .form input:focus,.form select:focus,.form textarea:focus{border-color:var(--accent)}
+/* ô chọn: mũi tên tự vẽ, cách mép phải đều nhau ở mọi trình duyệt / mọi mẫu (mũi tên mặc định mỗi nơi một chỗ) */
+.form select{-webkit-appearance:none;appearance:none;padding-right:36px!important;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23888' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E")!important;background-repeat:no-repeat!important;background-position:right 12px center!important;background-size:14px 14px!important;text-overflow:ellipsis}
 .row2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 .choice{display:grid;gap:8px}
 .choice label{display:flex;align-items:center;gap:10px;padding:11px 12px;border:1px solid var(--line);border-radius:10px;color:var(--ink);font-size:15px;cursor:pointer;background:var(--bg)}
@@ -144,6 +146,27 @@ a{color:inherit}
 .gift-acc{display:flex;justify-content:center;align-items:center;gap:8px;font-size:18px;letter-spacing:.04em}
 .copy{border:1px solid var(--line);background:var(--bg);color:var(--accent);border-radius:999px;font-size:12px;padding:4px 10px}
 .gift-holder{color:var(--muted);font-size:13px}
+/* hai bên (chú rể · cô dâu) luôn đứng cạnh nhau, kể cả trên điện thoại */
+.gifts:has(>.gift+.gift){display:grid!important;grid-template-columns:1fr 1fr!important;gap:12px!important;align-items:start!important;justify-items:stretch!important}
+.gifts:has(>.gift+.gift)>.gift{min-width:0!important;max-width:none!important;width:auto!important;padding:14px 8px!important}
+.gifts:has(>.gift+.gift) .gift img{width:min(100%,150px)!important;height:auto!important;aspect-ratio:1}
+.gifts:has(>.gift+.gift) .gift-acc{font-size:14px!important;letter-spacing:0!important;word-break:break-all}
+.gift img{cursor:zoom-in}
+/* bảng mã QR: mã to + Lưu mã QR + chuyển khoản bằng app ngân hàng */
+.qrv{border:0;padding:0;margin:auto auto 0;width:100%;max-width:460px;max-height:92vh;border-radius:20px 20px 0 0;background:#fff;color:#222;font-family:system-ui,sans-serif}
+@media (min-width:600px){.qrv{margin:auto;border-radius:20px}}
+.qrv::backdrop{background:rgba(0,0,0,.5)}
+.qrv-in{position:relative;padding:20px 18px 22px;text-align:center}
+.qrv-x{position:absolute;right:10px;top:10px;width:34px;height:34px;border:0;border-radius:50%;background:#f2f2f2;font-size:18px;line-height:1;cursor:pointer;color:#444}
+.qrv h3{margin:0 0 12px;font-size:16px}
+.qrv img{display:block;width:220px;height:220px;margin:0 auto 10px;object-fit:contain}
+.qrv-i{margin:0 0 14px;font-size:14px;line-height:1.5}.qrv-i b{display:block;font-size:15px}
+.qrv-dl{display:inline-flex;align-items:center;gap:6px;padding:10px 20px;border:0;border-radius:999px;background:#d6455d;color:#fff;font:600 14px system-ui,sans-serif;cursor:pointer;text-decoration:none}
+.qrv-apps{margin-top:18px;padding-top:14px;border-top:1px solid #eee}
+.qrv-apps p{margin:0 0 10px;font-size:13px;color:#666}
+.qrv-g{display:grid;grid-template-columns:repeat(4,1fr);gap:10px 6px}
+.qrv-g a{display:flex;flex-direction:column;align-items:center;gap:4px;color:#333;text-decoration:none;font-size:11px;line-height:1.2}
+.qrv-g img{width:44px;height:44px;margin:0;border-radius:12px;box-shadow:0 1px 4px rgba(0,0,0,.12)}
 
 /* lưu bút */
 .wish-list{display:grid;gap:10px;margin-top:18px;text-align:left;max-height:420px;overflow:auto}
@@ -164,6 +187,8 @@ a{color:inherit}
 .credit .mk small{font-size:12px;color:var(--muted)}
 .credit .mk>span{font-size:11px;color:var(--muted);letter-spacing:.02em}
 /* thiệp chưa kích hoạt: nhãn nhỏ cố định góc trên, nổi cả trên màn mở thiệp */
+/* xem trước của chủ thiệp: ✕ góc phải trên → đóng tab / về trình sửa */
+.pv-x{position:fixed;z-index:56;top:10px;right:max(10px,calc(50% - 230px));display:grid;place-items:center;width:34px;height:34px;border-radius:50%;background:rgba(20,20,20,.62);color:#fff;font:600 16px/1 system-ui,sans-serif;text-decoration:none;backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px)}
 .trial-tag{position:fixed;z-index:55;top:10px;left:max(10px,calc(50% - 230px));padding:5px 11px;border-radius:999px;background:rgba(20,20,20,.62);color:#fff;font:600 11px/1.2 system-ui,-apple-system,'Segoe UI',sans-serif;letter-spacing:.04em;text-decoration:none;backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);pointer-events:auto}
 .wm{display:inline-block;padding:8px 14px;border-radius:999px;background:var(--paper);border:1px dashed var(--line)}
 

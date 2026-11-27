@@ -199,7 +199,7 @@ const eq = (a, b, msg) => { assert.deepEqual(a, b, msg); n++; };
     eq(u.photos[1], '/demo/dodam-3.jpg#p=0,100,2.25', 'lưu được điểm lấy nét và mức phóng to của ảnh album');
     let h = (await call('a', 'GET', `/t/${c.slug}?preview=1&edit=1`)).text;
     ok(h.includes('/card/edit.js') && /#p=0,100,2.25(&amp;|&)k=photos\.1/.test(h) && /\/card\/slot\.svg(\?v=\d+)?#k=photos\./.test(h), 'chủ thiệp: khung sửa trực tiếp có ô ảnh và ô trống');
-    ok(h.includes('+ Thêm lễ'), 'chế độ sửa có dòng "+ Thêm lễ" trong lịch trình');
+    ok(!h.includes('+ Thêm lễ'), 'chế độ sửa không còn dòng "+ Thêm lễ" (thêm lễ ở bảng Lịch trình)');
     ok(!(await call('a', 'GET', `/t/${c.slug}?preview=1`)).text.includes('/card/edit.js'), 'xem trước thường không bật chế độ sửa');
     ok(!/\+ Thêm (lễ|tên bố|nơi tổ chức)/.test((await call('a', 'GET', `/t/${c.slug}?preview=1`)).text), 'xem trước thường không có chữ giữ chỗ "+ Thêm …"');
     h = (await call('anon', 'GET', `/t/${c.slug}?preview=1&edit=1`)).text;

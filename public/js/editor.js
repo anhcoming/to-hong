@@ -48,8 +48,7 @@ function tplPicker(cur) {
   const list = META.templates.filter((t) => !tplGroup || t.group === tplGroup);
   const chip = (id, name) => `<button data-tg="${id}" class="${tplGroup === id ? 'on' : ''}">${esc(name)}</button>`;
   // thiệp đã kích hoạt vẫn đổi mẫu được (trả tiền theo đám cưới: chỉ chốt tên cô dâu chú rể + ngày cưới)
-  return `<p class="muted tplnow">Đang dùng: <b>${esc(cur.name)}</b></p>
-      ${groups.length > 1 ? `<div class="tgchips">${chip('', 'Tất cả')}${groups.map((g) => chip(g.id, g.name)).join('')}</div>` : ''}
+  return `${groups.length > 1 ? `<div class="tgchips">${chip('', 'Tất cả')}${groups.map((g) => chip(g.id, g.name)).join('')}</div>` : ''}
       <div class="tplpick">${list.map((t) => `<button data-tpl="${t.id}" class="${t.id === card.template ? 'on' : ''}" title="${esc(t.desc)}" aria-pressed="${t.id === card.template}">
         <img src="${tplCover(t)}" alt="" loading="lazy"><span>${esc(t.name)}</span></button>`).join('')}</div>
 `;
@@ -652,7 +651,7 @@ function renderHeader() {
   // dòng nhỏ dưới tên (giống trình sửa video): mẫu · trạng thái lưu · hồ sơ cưới dùng chung
   pl.innerHTML = ''; // gọn: bỏ chip "hồ sơ cưới dùng chung" (sửa tên / các lễ ở mục Thông tin)
   // nút: Xem trước (nhẹ) · Lưu (viền, chỉ khi có thay đổi) · một nút đỏ duy nhất: Phát hành / Kích hoạt (đã phát hành thì Chia sẻ thành nút chính khi đã kích hoạt)
-  const pv = `<a class="btn sm ghost" href="/t/${esc(card.slug)}?preview=1" target="_blank" rel="noopener" title="Xem thiệp như khách mời">▷<span class="xl">&nbsp;Xem trước</span></a>`;
+  const pv = `<a class="btn sm ghost" href="/t/${esc(card.slug)}?preview=1" target="_blank" rel="noopener" title="Xem thiệp như khách mời"><svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex:none"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg><span>&nbsp;Xem</span><span class="xl">&nbsp;trước</span></a>`; // icon mắt + chữ "Xem" (▷ dễ nhầm là phát nhạc)
   const sv = dirty ? '<button class="btn sm soft" id="saveBtn" title="Lưu (⌘/Ctrl+S)">Lưu</button>' : ''; // đã lưu: chỉ còn chữ "Đã lưu ✓" ở dòng dưới tên
   // luồng gửi (27/11): một nút chính "Gửi thiệp" → bảng chọn Gửi xem thử (miễn phí) / Gửi khách mời (99k → thanh toán → tab Khách).
   // Chưa phát hành thì bấm là phát hành trước rồi mở bảng chọn.
@@ -686,10 +685,10 @@ function secItems() {
     { k: 'countdown', n: 'Đếm ngược', show: 'countdown', ok: !!d.date, miss: 'chưa có ngày cưới' },
     { k: 'dress', n: 'Trang phục (Dress code)', isNew: 1, show: 'dress', ok: !!(d.dress.colors.length || d.dress.note), miss: 'chưa chọn màu', go: () => dressModal() },
     { k: 'qa', n: 'Hỏi đáp về hai bạn', isNew: 1, show: 'qa', ok: d.qa.some((x) => x.q && x.a), miss: 'chưa có câu hỏi', go: () => qaModal() },
-    { k: 'gift', n: 'Mừng cưới (mã QR)', show: 'gift', ok: !!(d.gifts.groom.acc || d.gifts.bride.acc), miss: 'chưa có số tài khoản', go: () => showTab('gift') },
+    { k: 'gift', n: 'Mừng cưới (mã QR)', show: 'gift', ok: !!(d.gifts.groom.acc || d.gifts.bride.acc), miss: 'chưa có số tài khoản', go: () => giftModal() },
     { k: 'rsvp', n: 'Xác nhận tham dự', show: 'rsvp', ok: true },
     { k: 'wishes', n: 'Sổ lưu bút', show: 'wishes', ok: true },
-    { k: 'contact', n: 'Liên hệ (nút gọi điện)', isNew: 1, show: 'contact', ok: telOk(d.groom.phone) || telOk(d.bride.phone), miss: 'chưa có số điện thoại', go: () => quickStart('info') },
+    { k: 'contact', n: 'Liên hệ (nút gọi điện)', isNew: 1, show: 'contact', ok: telOk(d.groom.phone) || telOk(d.bride.phone), miss: 'chưa có số điện thoại', go: () => (studio() ? openSec('contact') : phoneModal()) },
     { k: 'share', n: 'Ảnh khi gửi link', sub: d.shareOwn || d.shareTitle ? 'tự chọn' : 'tự tạo từ ảnh bìa', ok: true, go: () => shareEdit() },
   ];
 }
@@ -746,6 +745,26 @@ function secsBind() {
 }
 // ----- Trang phục (dress code) -----
 const DRESS_COLORS = ['#ffffff', '#f3e6d8', '#e8d5c4', '#c9a27e', '#a47551', '#8b1a24', '#c2185b', '#f4b6c2', '#b7c9a8', '#4f6f52', '#9cb4cc', '#2c3e50', '#6d5a8d', '#2c2c2c'];
+// ----- Mừng cưới: bấm hộp mừng cưới trên thiệp → bảng nhập tài khoản (trượt từ dưới lên) -----
+function giftModal() {
+  if (openSec('gift')) return;
+  const g = card.data.gifts;
+  const side = (who, t, ph) => `<h4 style="margin:4px 0 8px">${t}</h4>
+    <label class="field"><span>Ngân hàng</span><select data-g="${who}.bin"><option value="">— Chọn ngân hàng —</option>${META.banks.map((b) => `<option value="${b.bin}" ${g[who].bin === b.bin ? 'selected' : ''}>${esc(b.name)}</option>`).join('')}</select></label>
+    <label class="field"><span>Số tài khoản</span><input data-g="${who}.acc" value="${esc(g[who].acc || '')}" maxlength="30" inputmode="numeric"></label>
+    <label class="field"><span>Tên chủ tài khoản</span><input data-g="${who}.holder" value="${esc(g[who].holder || '')}" maxlength="60" placeholder="${ph}"></label>`;
+  openModal(`<h2 style="margin-top:0">Hộp mừng cưới</h2>
+    <p class="muted" style="margin:-4px 0 12px;font-size:14px">Khách quét mã QR để chuyển thẳng vào tài khoản của bạn. Để trống thì thiệp không hiện hộp này.</p>
+    ${side('groom', 'Chú rể', 'NGUYEN DUC MINH')}${side('bride', 'Cô dâu', 'LE THU HA')}
+    <div style="text-align:center;margin-top:6px"><button class="btn" id="gfOk">Lưu</button></div>`, (box, close) => {
+    const apply = () => {
+      $$('[data-g]', box).forEach((x) => { const [w, f] = x.dataset.g.split('.'); g[w][f] = f === 'holder' ? x.value.trim().toUpperCase() : x.value.trim(); });
+      if (g.groom.acc || g.bride.acc) card.data.show.gift = true;
+      applyLive();
+    };
+    $('#gfOk', box).onclick = () => { apply(); close(); };
+  });
+}
 function dressModal() {
   if (openSec('dress')) return;
   const dr = card.data.dress; let pick = dr.colors.slice();
@@ -847,25 +866,22 @@ function quickStart(forPublish) {
   const inp = (id, label, v, o = {}) => `<label class="field"><span>${label}</span><input id="${id}" type="${o.type || 'text'}" value="${esc(v || '')}" ${o.ph ? `placeholder="${esc(o.ph)}"` : ''} ${o.max ? `maxlength="${o.max}"` : ''} ${o.req ? 'required' : ''} autocomplete="off"></label>`;
   const info = forPublish === 'info'; if (info) forPublish = false;
   const pf = (who, k, label, ph, max = 80) => `<label class="field"><span>${label}</span><input data-pf="${who}.${k}" value="${esc(d[who][k] || '')}" placeholder="${esc(ph)}" maxlength="${max}" autocomplete="off"></label>`;
-  // bố / mẹ: chọn "Ông / Bà" + tên (ghép lại thành "Ông Trần Quang Hải" như thiệp cũ vẫn lưu)
-  const TT = ['Ông', 'Bà', 'Cụ ông', 'Cụ bà'];
+  // bố / mẹ: chỉ ô tên; kính xưng (Ông / Bà) giữ nguyên như đã lưu, mặc định Ông / Bà
   const par = (who, k, label, def, ph) => { const v = d[who][k] || '', m = /^(Cụ ông|Cụ bà|Ông|Bà)\s+(.*)$/.exec(v), t = m ? m[1] : v ? '' : def, n = m ? m[2] : v;
-    return `<label class="field"><span>${label}</span><div class="rk"><input data-pn="${who}.${k}" value="${esc(n)}" placeholder="${esc(ph)}" maxlength="70" autocomplete="off"><select data-pt="${who}.${k}"><option value="">—</option>${TT.map((x) => `<option${x === t ? ' selected' : ''}>${x}</option>`).join('')}</select></div></label>`; };
-  const rank = (who) => `<select data-pf="${who}.rank" class="rk-s" title="Danh xưng trên thiệp"><option value="">Danh xưng</option>${RANKS.filter((r) => (who === 'groom') === /nam|trai/.test(r)).map((r) => `<option${r === d[who].rank ? ' selected' : ''}>${r}</option>`).join('')}</select>`;
-  const fam = (who, ten) => `<h4 style="margin:12px 0 8px">${ten}</h4><div class="grid2">${pf(who, 'fullName', 'Họ và tên đầy đủ', who === 'groom' ? 'Trần Gia Huy' : 'Lê Bảo Ngọc')}${pf(who, 'phone', 'Số điện thoại (nút gọi)', '0901 234 567', 20)}${par(who, 'father', 'Bố', 'Ông', 'Trần Quang Hải')}${par(who, 'mother', 'Mẹ', 'Bà', 'Nguyễn Thị Lan')}</div>${pf(who, 'address', 'Địa chỉ', 'Phường, tỉnh / thành', 160)}`;
+    return `<label class="field"><span>${label}</span><input data-pn="${who}.${k}" value="${esc(n)}" placeholder="${esc(ph)}" maxlength="70" autocomplete="off"><input type="hidden" data-pt="${who}.${k}" value="${esc(t)}"></label>`; }; // gọn (27/11): bỏ ô chọn Ông / Bà — tự giữ kính xưng cũ, mặc định Ông (bố) / Bà (mẹ)
+  const fam = (who, ten) => `<h4 style="margin:12px 0 8px">${ten}</h4>${pf(who, 'fullName', 'Họ và tên đầy đủ', who === 'groom' ? 'Trần Gia Huy' : 'Lê Bảo Ngọc')}<div class="grid2">${par(who, 'father', 'Bố', 'Ông', 'Trần Quang Hải')}${par(who, 'mother', 'Mẹ', 'Bà', 'Nguyễn Thị Lan')}</div>${pf(who, 'address', 'Địa chỉ', 'Phường, tỉnh / thành', 160)}`;
   const evRows = () => d.events.map((e, i) => `<div class="ev" style="margin-bottom:8px"><div class="ev-h flat" style="cursor:default">${evSum(e, i)}<span class="ev-act"><button type="button" class="btn sm plain qe-main${e.main ? ' on' : ''}" data-qe-main="${i}" title="${e.main ? 'Lễ chính' : 'Đặt làm lễ chính'}">${e.main ? '★ Lễ chính' : '☆'}</button>${i ? `<button type="button" class="btn sm plain" data-qe-up="${i}" title="Lên trên">↑</button>` : ''}<button type="button" class="btn sm plain" data-qe-ed="${i}">Sửa</button></span></div></div>`).join('');
   openModal(`<h2 style="margin-top:0">${forPublish ? 'Còn thiếu vài thông tin' : info ? 'Thông tin chính' : 'Bắt đầu nhanh'}</h2>
-    <p class="muted" style="margin:-6px 0 12px;font-size:13.5px">${forPublish ? 'Điền đủ tên cô dâu, chú rể và ngày cưới để phát hành thiệp.' : info ? 'Mọi chữ trên thiệp đều bấm thẳng vào để sửa. Ở đây điền nhanh các thông tin chính một lượt.' : 'Điền nhanh, phần khác bấm thẳng lên thiệp để sửa.'}</p>
+    ${forPublish ? '<p class="muted" style="margin:-6px 0 12px;font-size:13.5px">Điền đủ tên cô dâu, chú rể và ngày cưới để phát hành thiệp.</p>' : ''}
     <form id="qsF" class="qs">
       <div class="grid2">${inp('qsG', 'Tên chú rể', d.groom.name, { ph: 'Gia Huy', max: 40, req: 1 })}${inp('qsB', 'Tên cô dâu', d.bride.name, { ph: 'Bảo Ngọc', max: 40, req: 1 })}</div>
-      ${info ? `<div class="grid2" style="margin-top:-4px">${rank('groom')}${rank('bride')}</div>` : ''}
       <div class="grid2">${inp('qsD', 'Ngày cưới', d.date, { type: 'date', req: 1 })}${inp('qsT', 'Giờ tiệc', (party && party.time) || d.time, { type: 'time' })}</div>
       ${party ? inp('qsP', 'Nơi tổ chức', party.place, { ph: 'Nhà hàng Ngọc Lan — Sảnh A (không bắt buộc)', max: 120 }) : ''}
       ${info ? `<details class="ev" style="margin:4px 0 10px"><summary class="ev-h"><span class="ev-s"><b>Họ tên đầy đủ, bố mẹ, địa chỉ hai nhà</b><small>Không bắt buộc</small></span></summary><div class="ev-b">${fam('groom', 'Nhà trai')}${fam('bride', 'Nhà gái')}</div></details>
-      <h3 style="margin:14px 0 8px;font-size:15px">Các lễ trong ngày cưới</h3><div id="qsEv">${evRows()}</div>
-      ${d.events.length < 6 ? `<div class="chips2" style="margin-bottom:12px">${EV_PRESETS.map((n) => `<button type="button" data-qe-add="${esc(n)}">+ ${esc(n)}</button>`).join('')}<button type="button" data-qe-add="">+ Lễ khác</button></div>` : ''}` : ''}
+      ` : ''}
       <div style="text-align:center;margin-top:6px"><button class="btn" style="min-width:140px;justify-content:center">${forPublish ? 'Lưu & phát hành' : 'Lưu'}</button></div>
     </form>`, (box, close) => {
+      box.parentElement.classList.add('as-sheet'); // điện thoại: xổ từ dưới lên như bảng "Mẫu & màu", không popup giữa màn
     if (info) box.addEventListener('click', (e) => { // các lễ: đổi thứ tự tại chỗ; Sửa / Thêm → hộp sửa lễ
       const b = e.target.closest('[data-qe-up],[data-qe-ed],[data-qe-add],[data-qe-main]'); if (!b) return;
       if (b.dataset.qeUp !== undefined) { const i = +b.dataset.qeUp; [d.events[i - 1], d.events[i]] = [d.events[i], d.events[i - 1]]; $('#qsEv', box).innerHTML = evRows(); applyLive(); return; }
@@ -912,7 +928,7 @@ async function publish(force) {
       <button class="btn block" id="pubGo" style="margin-top:14px">Vẫn phát hành</button>
       <button class="btn block plain" id="pubFix" style="margin-top:8px">Bổ sung trước</button>`, (box, close) => {
       $('#pubGo', box).onclick = () => { close(); publish(true); };
-      $('#pubFix', box).onclick = () => { close(); if (smp.length) return smp[0].go(); if (studio()) openSec(SHOW_SEC[miss[0].show] || (miss[0].k === 'invite' ? 'date' : miss[0].k === 'cover' ? 'info' : miss[0].k)); else showTab('secs'); };
+      $('#pubFix', box).onclick = () => { close(); if (smp.length) return smp[0].go(); if (studio()) openSec(SHOW_SEC[miss[0].show] || (miss[0].k === 'invite' ? 'date' : miss[0].k === 'cover' ? 'info' : miss[0].k)); else quickStart('info'); };
       box.addEventListener('click', (e) => { const sb = e.target.closest('[data-smp]'); if (sb) { close(); smp[+sb.dataset.smp].go(); return; } const b = e.target.closest('[data-fix]'); if (!b) return; close(); const it = secItems().find((x) => x.k === b.dataset.fix); if (it && it.go) it.go(); });
     });
   }
@@ -1338,6 +1354,7 @@ const withFocus = (u, x, y, z = 1) => {
 };
 function photoGet(key) {
   if (key === 'cover') return card.data.cover;
+  const gq = /^gifts\.(groom|bride)\.qr$/.exec(key); if (gq) return card.data.gifts[gq[1]].qr || '';
   const i = +key.split('.')[1];
   return card.data.photos[i] || '';
 }
@@ -1360,7 +1377,7 @@ function albumKeys() {
 function albumModal(ratio = 0.75) {
   albRatio = ratio;
   if (openSec('album')) return;
-  openModal(`<h2 style="margin-top:0">Album ảnh</h2><div id="alBox"></div><button class="btn block" data-close style="margin-top:16px">Xong</button>`, (box, close) => {
+  openModal(`<h2 style="margin-top:0">Album ảnh</h2><div id="alBox"></div><div style="display:flex;justify-content:center;margin-top:16px"><button class="btn" data-close>Xong</button></div>`, (box, close) => {
     box.addEventListener('click', (e) => { if (e.target.closest('[data-close]')) close(); });
     albumMount($('#alBox', box), ratio);
   });
@@ -1368,17 +1385,18 @@ function albumModal(ratio = 0.75) {
 // lưới ảnh album: kéo để đổi thứ tự, ✥ căn, × xoá (không hỏi lại), + thêm nhiều ảnh một lần
 function albumMount(box, ratio = 0.75) {
   let sig = null; // null = chưa vẽ (album trống cũng phải vẽ lại)
-  box.innerHTML = `<p class="muted al-tip">Kéo ảnh để đổi thứ tự (ảnh 1 hiện đầu tiên). Bấm ✥ để căn phần ảnh hiện ra, × để xoá. <b class="al-cnt"></b>${card.guest ? '<br>Ảnh đang hiện tạm trên máy — đăng nhập để lưu vào thiệp.' : ''}</p><div class="al-g"></div>`;
+  box.innerHTML = `<p class="muted al-tip">‹ › đổi thứ tự (ảnh 1 hiện đầu tiên) · ✥ căn · ⇄ thay · × xoá. <b class="al-cnt"></b>${card.guest ? '<br>Ảnh đang hiện tạm trên máy — đăng nhập để lưu vào thiệp.' : ''}</p><div class="al-g"></div>`;
+  let n = 0;
   const tile = (k, i) => {
     const up = pendingSlots.has(k), u = (card.guest && localPhotos[k]) || card.data.photos[+k.split('.')[1]] || localPhotos[k] || '';
     const [fx, fy] = focusOf(u);
     return `<div class="al-t${up ? ' up' : ''}" data-k="${k}" style="background-image:url('${esc(baseUrl(u))}');background-position:${fx}% ${fy}%">
-      <i class="al-n">${i + 1}</i>${up ? '<i class="al-sp"></i>' : `<span class="al-b"><button type="button" data-al="crop" title="Căn chỉnh">✥</button><button type="button" data-al="del" title="Xoá">×</button></span>`}</div>`;
+      <i class="al-n">${i + 1}</i>${up ? '<i class="al-sp"></i>' : `<span class="al-b"><button type="button" data-al="crop" title="Căn chỉnh" aria-label="Căn chỉnh ảnh">✥</button><button type="button" data-al="replace" title="Thay ảnh" aria-label="Thay ảnh">⇄</button><button type="button" data-al="del" title="Xoá" aria-label="Xoá ảnh">×</button></span><span class="al-mv">${i ? '<button type="button" data-al="left" aria-label="Lên trước">‹</button>' : '<i></i>'}${i < n - 1 ? '<button type="button" data-al="right" aria-label="Ra sau">›</button>' : ''}</span>`}</div>`;
   };
   const draw = () => {
     const ks = albumKeys(), nsig = ks.map((k) => k + (pendingSlots.has(k) ? '~' : '') + ((card.guest && localPhotos[k]) || card.data.photos[+k.split('.')[1]] || '')).join('|');
     if (nsig === sig) return; sig = nsig;
-    $('.al-cnt', box).textContent = `${ks.length}/24 ảnh`;
+    $('.al-cnt', box).textContent = `${ks.length}/24 ảnh`; n = ks.length;
     $('.al-g', box).innerHTML = ks.map(tile).join('') + (ks.length < 24 ? '<label class="al-add">+ Thêm ảnh<br><small>chọn nhiều ảnh</small><input type="file" accept="image/*" multiple hidden class="al-in"></label>' : '');
   };
   draw();
@@ -1388,28 +1406,51 @@ function albumMount(box, ratio = 0.75) {
     e.stopPropagation();
     const k = b.closest('[data-k]').dataset.k;
     if (b.dataset.al === 'crop') photoAct(k, ratio, 'crop');
+    else if (b.dataset.al === 'replace') photoAct(k, ratio, 'replace');
+    else if (b.dataset.al === 'left' || b.dataset.al === 'right') { // ‹ › đổi chỗ với ảnh bên cạnh (dễ hơn kéo trên điện thoại)
+      if (pendingSlots.size) return toast('Chờ ảnh tải xong rồi đổi thứ tự nhé');
+      const ks = albumKeys(), j = ks.indexOf(k), to = j + (b.dataset.al === 'left' ? -1 : 1);
+      if (j < 0 || to < 0 || to >= ks.length) return;
+      [ks[j], ks[to]] = [ks[to], ks[j]]; albumReorder(ks);
+    }
     else photoAct(k, ratio, 'del'); // xoá luôn, không hỏi lại
     sig = null; setTimeout(draw, 50);
   });
   box.addEventListener('change', (e) => { if (e.target.classList.contains('al-in') && e.target.files.length) { e.stopPropagation(); const fs = Array.from(e.target.files); e.target.value = ''; addAlbumFiles(fs).then(() => { sig = null; draw(); }); } });
-  // kéo để đổi thứ tự (chuột / ngón tay): ô đang kéo đổi chỗ ngay với ô dưới tay, thả ra thì lưu thứ tự mới
+  // kéo để đổi thứ tự: chuột — nhấn rồi kéo; ngón tay — GIỮ ~0,35 giây rồi kéo (vuốt thường vẫn cuộn bảng).
+  // ô đang kéo đổi chỗ ngay với ô dưới tay, thả ra thì lưu thứ tự mới
   let drag = null;
+  const startDrag = () => {
+    if (!drag || drag.on) return;
+    if (pendingSlots.size) { toast('Chờ ảnh tải xong rồi đổi thứ tự nhé'); drag = null; return; }
+    drag.on = true; drag.t.classList.add('drag');
+    try { drag.t.setPointerCapture(drag.id); } catch (er) { /* bỏ qua */ }
+    if (navigator.vibrate) try { navigator.vibrate(15); } catch (er) { /* bỏ qua */ }
+  };
   box.addEventListener('pointerdown', (e) => {
     const t = e.target.closest('.al-t'); if (!t || t.classList.contains('up') || e.target.closest('button') || e.button > 0) return;
-    drag = { t, x: e.clientX, y: e.clientY, on: false, before: [...box.querySelectorAll('.al-t')].map((x) => x.dataset.k).join() };
-    try { t.setPointerCapture(e.pointerId); } catch (er) { /* bỏ qua */ }
+    drag = { t, id: e.pointerId, x: e.clientX, y: e.clientY, on: false, touch: e.pointerType !== 'mouse', before: [...box.querySelectorAll('.al-t')].map((x) => x.dataset.k).join() };
+    if (drag.touch) drag.hold = setTimeout(startDrag, 350);
   });
   box.addEventListener('pointermove', (e) => {
     if (!drag) return;
-    if (!drag.on) { if (Math.hypot(e.clientX - drag.x, e.clientY - drag.y) < 6) return; if (pendingSlots.size) { toast('Chờ ảnh tải xong rồi đổi thứ tự nhé'); drag = null; return; } drag.on = true; drag.t.classList.add('drag'); }
+    if (!drag.on) {
+      const far = Math.hypot(e.clientX - drag.x, e.clientY - drag.y) > (drag.touch ? 10 : 6);
+      if (!far) return;
+      if (drag.touch) { clearTimeout(drag.hold); drag = null; return; } // ngón tay di chuyển trước khi giữ đủ lâu = đang cuộn
+      startDrag(); if (!drag) return;
+    }
     const over = document.elementFromPoint(e.clientX, e.clientY), o = over && over.closest('.al-t');
     if (!o || o === drag.t || !box.contains(o)) return;
     const r = o.getBoundingClientRect(), after = e.clientX > r.left + r.width / 2;
     o.parentNode.insertBefore(drag.t, after ? o.nextSibling : o);
   });
+  // đang kéo bằng ngón tay: chặn cuộn trang
+  box.addEventListener('touchmove', (e) => { if (drag && drag.on) e.preventDefault(); }, { passive: false });
+  box.addEventListener('contextmenu', (e) => { if (e.target.closest('.al-t')) e.preventDefault(); }); // giữ lâu không bật menu ảnh
   const end = () => {
     if (!drag) return;
-    const d = drag; drag = null; d.t.classList.remove('drag');
+    const d = drag; drag = null; clearTimeout(d.hold); d.t.classList.remove('drag');
     if (!d.on) return;
     const order = [...box.querySelectorAll('.al-t')].map((x) => x.dataset.k);
     if (order.join() !== d.before) { albumReorder(order); sig = null; setTimeout(draw, 60); }
@@ -1437,6 +1478,7 @@ function trimPhotos() { const p = card.data.photos; while (p.length && !p[p.leng
 function photoSet(key, url) {
   const d = card.data;
   if (key === 'cover') { d.cover = url; return; }
+  const gq = /^gifts\.(groom|bride)\.qr$/.exec(key); if (gq) { d.gifts[gq[1]].qr = url || ''; if (url) d.show.gift = true; return; }
   const i = +key.split('.')[1];
   // ảnh nằm đúng ô được bấm: ô phía sau còn trống thì chừa '' cho các ô ở giữa; xoá ảnh để lại ô trống, ảnh khác không bị dồn
   while (d.photos.length <= i) d.photos.push('');
@@ -1626,8 +1668,8 @@ function cropModal(key, ratio = 1, opt = {}) {
     });
   }, () => { if (!done && opt.onCancel) opt.onCancel(); });
 }
-const LONG_FIELDS = /^(message|story)$|\.address$/;
-const FIELD_NAMES = { name: 'Tên gọi', fullName: 'Họ và tên đầy đủ', father: 'Tên bố', mother: 'Tên mẹ', address: 'Địa chỉ', place: 'Nơi tổ chức', inviteText: 'Lời mời', message: 'Lời nhắn', story: 'Chuyện tình yêu', time: 'Giờ', date: 'Ngày', acc: 'Số tài khoản', holder: 'Chủ tài khoản' };
+const LONG_FIELDS = /^(message|story|lead)$|\.address$/;
+const FIELD_NAMES = { lead: 'Dòng báo tin', name: 'Tên gọi', fullName: 'Họ và tên đầy đủ', father: 'Tên bố', mother: 'Tên mẹ', address: 'Địa chỉ', place: 'Nơi tổ chức', inviteText: 'Lời mời', message: 'Lời nhắn', story: 'Chuyện tình yêu', time: 'Giờ', date: 'Ngày', acc: 'Số tài khoản', holder: 'Chủ tài khoản' };
 function labelOf(key) {
   const parts = key.split('.');
   if (key === 'time') return 'Giờ cưới';
@@ -1679,8 +1721,50 @@ function quickEdit(key) {
   inp.addEventListener('keydown', (e) => { if ((e.key === 'Enter' && !long) || e.key === 'Escape') { e.preventDefault(); closeQe(); } });
   $('.qe-x', q).onclick = closeQe;
 }
+// cả lịch trình một lượt (bấm khối "Lịch trình ngày cưới" trên thiệp): tên, ngày, giờ, nơi tổ chức của mọi lễ;
+// bản đồ / địa chỉ / giờ đón khách của từng lễ mở hộp sửa lễ riêng ("Bản đồ, địa chỉ ›")
+function eventsModal(canAdd) {
+  const d = card.data;
+  const rows = d.events.map((e) => ({ ...e }));
+  const n0 = rows.length; // lễ đã có: chỉ sửa; lễ vừa thêm (canAdd): có ✕ để bỏ
+  let applyOnClose = null;
+  const row = (e, i) => `<div class="evr" data-i="${i}">
+      <div class="evr-h"><input class="evr-n" data-f="name" value="${esc(e.name || '')}" placeholder="Tên lễ (vd. Lễ Vu Quy)" maxlength="60"><input class="evr-t" type="time" data-f="time" value="${esc(e.time || '')}">${i >= n0 ? `<button type="button" class="evr-x" data-del="${i}" aria-label="Bỏ lễ này">✕</button>` : ''}</div></div>`; // chỉ sửa các lễ đang hiện: không thêm, không xoá // xem gì sửa nấy: lịch trình chỉ hiện tên lễ + giờ
+  openModal(`<style>
+    .evr{margin:0 0 8px}.evr-t{flex:none;width:112px!important}
+    .evr input{width:100%;box-sizing:border-box;height:42px;padding:0 12px;border:1px solid var(--line);border-radius:10px;background:var(--bg);color:inherit;font:inherit;font-size:15px}
+    .evr-h{display:flex;gap:8px;align-items:center}.evr-n{font-weight:700}
+    .evr-x{flex:none;width:34px;height:34px;border:0;border-radius:50%;background:none;color:var(--muted);font-size:15px;cursor:pointer}
+  </style><h2 style="margin-top:0">Lịch trình ngày cưới</h2><div id="evrs"></div>${canAdd ? '<button type="button" class="btn soft sm" id="evrAdd">+ Thêm lễ</button>' : ''}
+    <div style="display:flex;justify-content:center;margin-top:14px"><button class="btn" id="evrOk">Xong</button></div>`, (box, close) => {
+    box.parentElement.classList.add('as-sheet');
+    const list = $('#evrs', box);
+    const read = () => $$('.evr', list).forEach((r) => { const e = rows[+r.dataset.i]; $$('[data-f]', r).forEach((x) => { e[x.dataset.f] = x.value.trim(); }); });
+    const draw = () => { list.innerHTML = rows.map(row).join(''); const a = $('#evrAdd', box); if (a) a.hidden = rows.length >= 6; };
+    draw();
+    const ad = $('#evrAdd', box);
+    if (ad) ad.onclick = () => { read(); rows.push({ name: '', date: d.date || '', time: '', welcome: '', place: '', address: '', mapUrl: '', mapPin: '', main: false }); draw(); const n = $$('.evr-n', list).pop(); if (n) n.focus(); };
+    list.addEventListener('click', (ev) => { const x = ev.target.closest('[data-del]'); if (x) { read(); rows.splice(+x.dataset.del, 1); draw(); } });
+    let applied = false;
+    const apply = () => {
+      if (applied) return; applied = true;
+      read();
+      rows.forEach((e, k) => { if (k < n0) Object.assign(d.events[k], { name: e.name || d.events[k].name, time: e.time }); else if (e.name) d.events.push(e); });
+      d.events.sort((a, b) => (a.date || '9999').localeCompare(b.date || '9999') || (a.time || '99').localeCompare(b.time || '99'));
+      syncMainDate(d);
+      applyLive();
+    };
+    $('#evrOk', box).onclick = () => { apply(); close(); };
+    applyOnClose = apply;
+  }, () => { if (applyOnClose) applyOnClose(); });
+}
 // một lễ trong lịch trình: bấm tên / giờ / nơi / địa chỉ trên thiệp (hoặc dòng "+ Thêm lễ") → sửa đủ thông tin của lễ đó
 // lễ chính: chỉ một lễ; ngày giờ của lễ chính là ngày giờ cưới (trang bìa, đếm ngược, lịch)
+function mainEvent(d) {
+  return d.events.find((e) => e.main) || d.events.find((e) => /tiệc/i.test(e.name || '')) || d.events[d.events.length - 1] || null;
+}
+// ngày giờ cưới (trang bìa, khối thông tin tiệc, lịch, đếm ngược) đi theo lễ chính
+function syncMainDate(d) { const m = mainEvent(d); if (m && m.date) { d.date = m.date; if (m.time) d.time = m.time; } }
 function setMain(i) {
   const d = card.data, on = !d.events[i].main;
   d.events.forEach((e, j) => { e.main = on && j === i; });
@@ -1691,18 +1775,19 @@ function eventModal(i, focus, preset) {
   if (isNew && d.events.length >= 6) return toast('Tối đa 6 lễ', true);
   const e = isNew ? { name: preset || '', date: d.date, time: '', welcome: '', place: '', address: '', mapUrl: '', mapPin: '', main: false } : d.events[i];
   const inp = (id, label, v, o = {}) => `<label class="field"><span>${label}</span><input id="${id}" type="${o.type || 'text'}" value="${esc(v || '')}" ${o.ph ? `placeholder="${esc(o.ph)}"` : ''} ${o.max ? `maxlength="${o.max}"` : ''} ${o.attr || ''}></label>`;
-  openModal(`<h2 style="margin-top:0">${isNew ? 'Thêm lễ' : esc(e.name || `Lễ ${i + 1}`)}</h2>
-    ${inp('evName', 'Tên lễ', e.name, { ph: 'Lễ Vu Quy / Lễ Thành Hôn / Tiệc Cưới', max: 60 })}
-    <div class="chips2" style="margin:-4px 0 10px">${EV_PRESETS.map((n) => `<button type="button" data-evn="${esc(n)}">${esc(n)}</button>`).join('')}</div>
+  // xem gì sửa nấy: bấm khu địa điểm → chỉ nơi / bản đồ / địa chỉ; bấm khối giờ ngày của lễ → chỉ tên lễ, ngày, giờ
+  const venue = focus === 'map' && !isNew, when = focus === 'when' && !isNew;
+  openModal(`<h2 style="margin-top:0">${isNew ? 'Thêm lễ' : venue ? `Địa điểm · ${esc(e.name || `Lễ ${i + 1}`)}` : esc(e.name || `Lễ ${i + 1}`)}</h2>
+    <div ${venue ? 'hidden' : ''}>${inp('evName', 'Tên lễ', e.name, { ph: 'Lễ Vu Quy / Lễ Thành Hôn / Tiệc Cưới', max: 60 })}
     <div class="grid2">${inp('evDate', 'Ngày', e.date, { type: 'date' })}${inp('evTime', 'Giờ làm lễ / khai tiệc', e.time, { type: 'time' })}</div>
-    <div class="grid2">${inp('evWel', 'Giờ đón khách (không bắt buộc)', e.welcome, { type: 'time' })}<label class="check" style="align-self:end;margin-bottom:14px"><input type="checkbox" id="evMain" ${e.main ? 'checked' : ''}> ★ Lễ chính</label></div>
-    ${inp('evPlace', 'Nơi tổ chức', e.place, { ph: 'Nhà hàng Ngọc Lan — Sảnh A', max: 120 })}
+    <div class="grid2" ${when ? 'style="display:none"' : ''}>${inp('evWel', 'Giờ đón khách (không bắt buộc)', e.welcome, { type: 'time' })}<label class="check" style="align-self:end;margin-bottom:14px"><input type="checkbox" id="evMain" ${e.main ? 'checked' : ''}> ★ Lễ chính</label></div>
+    </div>
+    <div ${when ? 'hidden' : ''}>${inp('evPlace', 'Nơi tổ chức', e.place, { ph: 'Nhà hàng Ngọc Lan — Sảnh A', max: 120 })}
     ${inp('evMap', '📍 Link Google Maps (để bản đồ chỉ đúng chỗ)', e.mapUrl, { ph: 'Dán link hoặc toạ độ vào đây', attr: 'autocomplete="off"' })}
-    <p class="muted" id="evMapSt" style="font-size:13px;margin:-6px 0 12px">Mở Google Maps → tìm nhà hàng → <b>Chia sẻ</b> → <b>Sao chép đường liên kết</b> → dán vào ô trên. Hoặc giữ ngón tay lên đúng điểm trên bản đồ, chép dãy toạ độ (vd. <i>21.0285, 105.8542</i>) rồi dán vào.</p>
-    ${inp('evAddr', 'Địa chỉ (không bắt buộc)', e.address, { ph: 'Số nhà, đường, phường, tỉnh/thành', max: 200 })}
-    <div style="display:flex;gap:8px;margin-top:6px">${isNew ? '' : '<button class="btn plain" id="evDel" style="color:#c0392b">Xoá lễ</button>'}<button class="btn" id="evOk" style="flex:1">${isNew ? 'Thêm vào lịch trình' : 'Lưu'}</button></div>`, (box, close) => {
+    <p class="muted" id="evMapSt" style="font-size:13px;margin:-6px 0 12px"></p>
+    ${inp('evAddr', 'Địa chỉ (không bắt buộc)', e.address, { ph: 'Số nhà, đường, phường, tỉnh/thành', max: 200 })}</div>
+    <div style="display:flex;gap:8px;margin-top:6px;justify-content:center">${isNew || venue || when ? '' : '<button class="btn plain" id="evDel" style="color:#c0392b">Xoá lễ</button>'}<button class="btn" id="evOk" style="padding-left:28px;padding-right:28px">${isNew ? 'Thêm vào lịch trình' : 'Lưu'}</button></div>`, (box, close) => {
     const mapIn = $('#evMap', box), st = $('#evMapSt', box);
-    box.addEventListener('click', (ev) => { const c = ev.target.closest('[data-evn]'); if (c) { $('#evName', box).value = c.dataset.evn; } });
     let pin = e.mapUrl ? e.mapPin || '' : '', readUrl = e.mapUrl || '', reading = null;
     setTimeout(() => { if (focus === 'map') mapIn.focus(); else if (isNew) $('#evName', box).focus(); }, 30);
     // dán link → hỏi máy chủ đọc ra toạ độ + tên địa điểm (link rút gọn cần mở qua máy chủ)
@@ -1741,7 +1826,7 @@ function eventModal(i, focus, preset) {
       Object.assign(e, { name: v('#evName'), date: v('#evDate'), time: v('#evTime'), welcome: v('#evWel'), place: v('#evPlace'), address: v('#evAddr'), mapUrl: v('#evMap'), mapPin: v('#evMap') ? pin : '' });
       if (isNew) d.events.push(e);
       if ($('#evMain', box).checked !== !!e.main) setMain(d.events.indexOf(e));
-      else if (e.main && e.date) { d.date = e.date; if (e.time) d.time = e.time; }
+      else syncMainDate(d); // sửa ngày giờ lễ tiệc (chưa đánh dấu lễ chính) → ngày cưới trên thiệp đổi theo
       // lịch trình xếp theo ngày giờ (lễ chưa có giờ đứng sau cùng trong ngày)
       d.events.sort((a, b) => (a.date || '9999').localeCompare(b.date || '9999') || (a.time || '99').localeCompare(b.time || '99'));
       close(); applyLive();
@@ -1846,10 +1931,12 @@ window.addEventListener('message', (e) => {
   // bấm khu album trên thiệp: mở thẳng chọn nhiều ảnh (đổi thứ tự / căn / xoá ở mục Album ảnh)
   if (m.type === 'album') {
     if (m.ratio) albRatio = m.ratio;
-    pickFiles().then((fs) => { if (fs.length) addAlbumFiles(fs).then(() => { if (studio() && stOpen === 'album') rerender(); }); });
+    // album đã có ảnh → bảng Album ảnh (căn / thay / xoá từng ảnh, kéo đổi thứ tự, thêm); chưa có ảnh nào → chọn ảnh luôn
+    if (!albumKeys().length) { pickFiles().then((fs) => { if (fs.length) addAlbumFiles(fs).then(() => { if (studio() && stOpen === 'album') rerender(); }); }); return; }
+    albumModal(albRatio);
     return;
   }
-  if (m.type === 'extra') { if (studio()) { stSent = m.key; openSec(m.key); return; } if (m.key === 'dress') dressModal(); else if (m.key === 'qa') qaModal(); else quickStart('info'); return; }
+  if (m.type === 'extra') { if (studio()) { stSent = m.key; openSec(m.key); return; } if (m.key === 'dress') dressModal(); else if (m.key === 'qa') qaModal(); else if (m.key === 'gift') giftModal(); else quickStart('info'); return; }
   if (m.type === 'photo') { // ô có ảnh (kể cả ảnh tạm của khách chưa đăng nhập) → hộp Đổi / Căn / Xoá; ô trống → chọn ảnh
     const loc = card.guest && localPhotos[m.key];
     if (!loc && (m.empty || !photoGet(m.key))) livePhotoUpload(m.key, m.ratio);
@@ -1862,14 +1949,28 @@ window.addEventListener('message', (e) => {
   if (m.type === 'section') { $$('#outl [data-go]').forEach((b) => b.classList.toggle('on', +b.dataset.go === m.i)); return; }
   if (m.type !== 'text') return;
   // bấm chữ trên thiệp → LUÔN mở hộp sửa (popup), máy tính cũng như điện thoại: một lễ → hộp sửa lễ; chữ khác → hộp sửa chữ
+  if (m.key === 'events.all' || m.key === 'events.all+') { closeQe(); if (studio() && openSec('info')) return; return eventsModal(m.key === 'events.all+'); }
+  if (m.key === 'family') { closeQe(); if (studio() && openSec('info')) return; quickStart('info'); setTimeout(() => { const dt = document.querySelector('.modal-box details'); if (dt) { dt.open = true; dt.scrollIntoView({ block: 'start', behavior: 'smooth' }); } }, 120); return; }
   const ev = /^events\.(\d+)\.(\w+)$/.exec(m.key);
   closeQe();
   // máy tính: mở đúng mục bên phải, sáng ô cần sửa (chữ riêng của mẫu, không có ô nào → hộp sửa chữ)
   if (studio() && stFocus(ev && m.map ? `events.${ev[1]}.mapUrl` : m.key)) return;
-  if (ev) eventModal(+ev[1], m.map ? 'map' : '');
+  if (ev) eventModal(+ev[1], m.map || /^(place|address|mapUrl)$/.test(ev[2]) ? 'map' : 'when');
   else textModal(m.key);
 });
 // hộp sửa một ô chữ trên thiệp: gõ tới đâu thiệp đổi tới đó; Enter (ô một dòng) / Xong để đóng
+// số điện thoại cho nút gọi trên thiệp (điện thoại: mục "Liên hệ" trong danh sách mục mở hộp này)
+function phoneModal() {
+  const d = card.data;
+  openModal(`<h2 style="margin-top:0">Liên hệ (nút gọi điện)</h2>
+    <div class="grid2"><label class="field"><span>Số chú rể</span><input id="phG" type="tel" value="${esc(d.groom.phone || '')}" placeholder="0901 234 567" maxlength="20"></label>
+    <label class="field"><span>Số cô dâu</span><input id="phB" type="tel" value="${esc(d.bride.phone || '')}" placeholder="0901 234 567" maxlength="20"></label></div>
+    <button class="btn" id="phOk" style="margin-top:8px">Xong</button>`, (box, close) => {
+    const upd = () => { setP(d, 'groom.phone', $('#phG', box).value.trim()); setP(d, 'bride.phone', $('#phB', box).value.trim()); scheduleSave(700); refreshPreview(); };
+    box.addEventListener('input', upd);
+    $('#phOk', box).onclick = () => { upd(); close(); };
+  });
+}
 function textModal(key) {
   if (frozenKey(key)) return toast(card.paid ? '🔒 Tên và ngày cưới đã chốt khi kích hoạt' : '🔒 Đã qua ngày cưới, tên và ngày giữ nguyên');
   const cur = getP(card.data, key) || '', long = LONG_FIELDS.test(key);

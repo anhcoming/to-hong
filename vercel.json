@@ -56,6 +56,8 @@
     }
   ],
   "redirects": [
+    { "source": "/don-hang", "destination": "/gio-hang", "permanent": false },
+    { "source": "/video-cua-toi", "destination": "/thiep-cua-toi", "permanent": false },
     {
       "source": "/",
       "has": [
@@ -88,8 +90,8 @@
     { "source": "/", "destination": "/index.html" },
     { "source": "/dang-nhap", "destination": "/auth.html" },
     { "source": "/thiep-cua-toi", "destination": "/dashboard.html" },
-    { "source": "/video-cua-toi", "destination": "/dashboard.html" },
-    { "source": "/don-hang", "destination": "/orders.html" },
+    
+    
     { "source": "/gio-hang", "destination": "/cart.html" },
     { "source": "/admin", "destination": "/admin.html" },
     { "source": "/mau-thiep", "destination": "/templates.html" },

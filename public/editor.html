@@ -221,6 +221,9 @@ body{height:100vh;height:100dvh;display:flex;flex-direction:column;overflow:hidd
   .sheet-h{padding-top:10px}
   .sheet-h::before{content:"";position:absolute;left:50%;top:6px;translate:-50% 0;width:40px;height:4px;border-radius:4px;background:var(--line)}
   .sheet-body{padding-bottom:env(safe-area-inset-bottom)}
+  /* bảng trượt lên: bỏ khung viền lồng bên trong, nội dung rộng sát lề bảng (đỡ thụt hai lớp) */
+  .sheet .pane{padding:4px 14px 32px}
+  .sheet .pane .group.panel{padding:0;border:0;background:none;box-shadow:none;border-radius:0}
   .sheet-open .scrim{display:block;position:fixed;inset:0;background:rgba(0,0,0,.32);z-index:29}
   .grid2{grid-template-columns:1fr}
   .qe{position:fixed;left:0;right:0;bottom:0;z-index:31;margin:0;border:0;border-radius:20px 20px 0 0;padding:14px 16px calc(14px + env(safe-area-inset-bottom));box-shadow:0 -14px 40px rgba(0,0,0,.22);animation:sheetUp .2s ease-out}
@@ -236,27 +239,30 @@ body{height:100vh;height:100dvh;display:flex;flex-direction:column;overflow:hidd
   .tools button{font-size:10px}
   .tools button i{font-size:18px}
 }
-/* điện thoại: thanh trên một hàng gọn — tên + ✓ cùng dòng, nút xem trước tròn nhỏ, nút Gửi thiệp thấp hơn */
+/* điện thoại: thanh trên một hàng gọn — ← · (Chưa lưu) · 👁 Xem trước · Gửi thiệp; bỏ tên cô dâu chú rể cho rộng chỗ */
 @media (max-width:760px){
   .ebar .ttl{display:flex;align-items:center;gap:6px}
-  .ebar .ttl h1{min-width:0;font-size:15.5px}
+  .ebar .ttl h1{display:none}
   .ebar .sub{flex:none}
   .ebar .sub .dot{display:none}
   .ebar .saved.ok{display:none} /* đã lưu: không hiện ✓; chỉ hiện chữ khi "Chưa lưu" / đang tải ảnh */
   #pubArea{display:flex;align-items:center;gap:6px}
-  #pubArea .btn.ghost{width:34px;height:34px;min-height:0;padding:0;justify-content:center;border-radius:50%;background:var(--primary-soft)}
+  #pubArea .btn.ghost{height:36px;min-height:0;padding:0 14px;justify-content:center;align-items:center;border-radius:999px;background:var(--primary-soft);font-size:14px}
+  #pubArea .btn.ghost .xl{display:inline}
   #pubArea #sendBtn{height:36px;min-height:0;padding:0 16px;font-size:14px}
 }
 /* album ảnh (popup trên điện thoại + mục Album trên máy tính) */
 .al-tip{margin:0 0 12px;font-size:13.5px}.al-cnt{color:var(--ink)}
 .al-g{display:grid;grid-template-columns:repeat(auto-fill,minmax(96px,1fr));gap:10px;user-select:none}
-.al-t{position:relative;aspect-ratio:3/4;border-radius:12px;background:#eee center/cover no-repeat;border:1px solid var(--line);cursor:grab;touch-action:none;transition:transform .15s,box-shadow .15s}
+.al-t{position:relative;aspect-ratio:3/4;border-radius:12px;background:#eee center/cover no-repeat;border:1px solid var(--line);cursor:grab;touch-action:manipulation;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;transition:transform .15s,box-shadow .15s}
 .al-t.drag{opacity:.55;transform:scale(1.04);box-shadow:0 10px 26px rgba(0,0,0,.25);cursor:grabbing;z-index:2;pointer-events:none}
 .al-t.up{cursor:default}
 .al-n{position:absolute;left:6px;bottom:6px;min-width:22px;height:22px;padding:0 6px;border-radius:999px;background:rgba(0,0,0,.6);color:#fff;font:700 12px/22px system-ui;font-style:normal;text-align:center}
 .al-b{position:absolute;top:6px;right:6px;display:flex;gap:4px}
 .al-b button{width:28px;height:28px;border-radius:50%;border:0;background:rgba(0,0,0,.6);color:#fff;font-size:15px;cursor:pointer;display:grid;place-items:center}
 .al-b button:hover{background:var(--primary)}
+.al-mv{position:absolute;left:6px;right:6px;bottom:6px;display:flex;justify-content:space-between;pointer-events:none}.al-mv button{pointer-events:auto;width:30px;height:30px;border-radius:50%;border:0;background:rgba(255,255,255,.92);color:#2b2224;font-size:20px;line-height:1;font-weight:700;cursor:pointer;display:grid;place-items:center;box-shadow:0 2px 6px rgba(0,0,0,.25)}.al-mv i{width:30px}
+.al-t .al-n{z-index:2;left:50%;bottom:10px;translate:-50% 0} /* số thứ tự giữa đáy, hai bên là nút ‹ › */
 .al-sp{position:absolute;inset:0;margin:auto;width:28px;height:28px;border-radius:50%;border:3px solid rgba(255,255,255,.5);border-top-color:#fff;animation:upspin .8s linear infinite}
 .al-add{display:grid;place-content:center;text-align:center;aspect-ratio:3/4;border:2px dashed var(--line);border-radius:12px;cursor:pointer;color:var(--primary);font-weight:700;font-size:14px;background:var(--surface)}
 .al-add small{color:var(--muted);font-weight:500;font-size:12px}
@@ -349,6 +355,12 @@ body.st-find .st-g,body.st-find .st-add{display:none}
 .qs .grid2{grid-template-columns:minmax(0,1fr) minmax(0,1fr)!important;gap:10px}
 .qs .field{margin-bottom:10px;gap:4px}
 .qs .field input:not([type=checkbox]):not([type=radio]){min-height:42px;padding:8px 12px}
+/* điện thoại: mọi hộp trong trình sửa xổ từ dưới lên giống bảng Mẫu & màu (thanh kéo, bo góc trên, sát đáy) */
+@media (max-width:760px){
+  .modal{place-items:end stretch;padding:0} /* mọi hộp sửa trong trình sửa: trượt từ dưới lên, không popup giữa màn */
+  .modal .modal-box{width:100%;max-height:88vh;max-height:88dvh;border-radius:20px 20px 0 0;padding:22px 16px calc(16px + env(safe-area-inset-bottom));animation:sheetUp .22s ease-out}
+  .modal .modal-box::before{content:"";position:absolute;z-index:6;left:50%;top:7px;translate:-50% 0;width:40px;height:4px;border-radius:4px;background:var(--line)}
+}
 </style>
 </head>
 <body>
@@ -360,11 +372,8 @@ body.st-find .st-g,body.st-find .st-add{display:none}
 <div class="emain">
   <nav class="tools" id="tools" aria-label="Công cụ">
     <button data-tab="tpl" aria-label="Mẫu"><i><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3.5" y="3.5" width="17" height="17" rx="3"/><path d="M3.5 9.5h17M9.5 9.5v11"/></svg></i><span>Mẫu</span></button>
-    <button data-tab="date" aria-label="Thông tin chính" title="Tên, ngày cưới, các lễ"><i><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14.5 4.5l5 5L9 20H4v-5z"/><path d="M12.5 6.5l5 5"/></svg></i><span>Thông tin</span></button>
     <button data-tab="media" aria-label="Nhạc nền"><i><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 18V5l11-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="17" cy="16" r="3"/></svg></i><span>Nhạc</span></button>
-    <button data-tab="gift" aria-label="Mừng cưới"><i><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3.5" y="8.5" width="17" height="4" rx="1"/><path d="M5 12.5v6a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-6M12 8.5v12"/><path d="M12 8.5C10.5 5 7 4.5 7 6.8 7 8.5 12 8.5 12 8.5zM12 8.5c1.5-3.5 5-4 5-1.7 0 1.7-5 1.7-5 1.7z"/></svg></i><span>Mừng cưới</span></button>
     <button data-tab="guests" aria-label="Khách"><i><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="8.5" r="3.5"/><path d="M2.5 20c.6-3.4 3.2-5.5 6.5-5.5s5.9 2.1 6.5 5.5"/><path d="M16 5.2a3.3 3.3 0 0 1 0 6.6M18 14.8c2 .7 3.2 2.5 3.5 5.2"/></svg></i><span>Khách</span></button>
-    <button data-tab="secs" aria-label="Các mục của thiệp"><i><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6h11M9 12h11M9 18h11"/><path d="M3.5 6l1.2 1.2L7 5M3.5 12l1.2 1.2L7 11M3.5 18l1.2 1.2L7 17"/></svg></i><span>Các mục</span></button>
     <!-- bỏ tab "Thêm" (hiện/ẩn phần, đường dẫn, tạm ẩn thiệp) — code bảng vẫn còn trong editor.js nếu cần mở lại -->
   </nav>
   <aside class="sheet" id="sheet" aria-label="Bảng công cụ">

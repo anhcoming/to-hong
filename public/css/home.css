@@ -687,3 +687,8 @@ body.drag .drophint{opacity:1}
 }
 /* chân trang: icon Facebook · Messenger · TikTok (thay Zalo, 27/11) */
 .foot .fsoc{display:flex;gap:10px;margin:2px 0 8px}.foot .fsoc a{display:block!important;margin:0!important;transition:transform .15s}.foot .fsoc a:hover{transform:translateY(-2px)}.foot .fsoc svg{width:30px;height:30px;display:block}
+/* rê chuột vào thẻ báo hỷ: video mẫu phủ kín thẻ */
+.ncard .live.story{width:100%;height:100%;object-fit:cover;transform:none}
+
+/* logo chân trang giống thanh trên: ".foot a{display:block}" làm tim rơi xuống dòng chữ → giữ kiểu flex như logo trên đầu */
+.foot a.logo{display:inline-flex;align-items:center}

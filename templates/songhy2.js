@@ -315,15 +315,14 @@ module.exports = {
     gift(ctx) {
       if (!ctx.d.show.gift) return '';
       const card = (p, who) => {
-        if (!p.bin || !p.acc) return '';
-        const qr = `https://img.vietqr.io/image/${p.bin}-${encodeURIComponent(p.acc)}-qr_only.png?accountName=${encodeURIComponent(p.holder)}&addInfo=${encodeURIComponent('Mung cuoi ' + (who === 'groom' ? ctx.g : ctx.b))}`;
-        const bank = (banks.find((b) => b.bin === p.bin) || {}).name || '';
+        const qr = p.qr || (p.bin && p.acc ? `https://img.vietqr.io/image/${p.bin}-${encodeURIComponent(p.acc)}-qr_only.png?accountName=${encodeURIComponent(p.holder)}&addInfo=${encodeURIComponent('Mung cuoi ' + (who === 'groom' ? ctx.g : ctx.b))}` : '');
+        if (!qr) return '';
+        const bk = banks.find((b) => b.bin === p.bin) || {}, bank = bk.name || '', code = bk.code || '';
         return `
-        <div class="sh-gcard">
+        <div class="sh-gcard" data-gift data-who="${who === 'groom' ? 'Mừng cưới chú rể' : 'Mừng cưới cô dâu'}" data-ba="${p.acc && code ? esc(p.acc + '@' + code) : ''}" data-tn="${esc('Mung cuoi ' + (who === 'groom' ? ctx.g : ctx.b))}" data-bank="${esc(bank)}" data-acc="${esc(p.acc)}" data-holder="${esc(p.holder)}">
           <h3>${who === 'groom' ? 'Chú Rể' : 'Cô Dâu'}${p.holder ? ` - ${esc(p.holder)}` : ''}</h3>
           <div class="qr"><img loading="lazy" src="${esc(qr)}" alt="Mã QR chuyển khoản" width="176" height="176"></div>
-          <div class="inf"><p>${esc(bank)}</p><p class="acc"><button type="button" class="copy" data-copy="${esc(p.acc)}" aria-label="Sao chép số tài khoản">${esc(p.acc)}</button></p><p class="hd">${esc(p.holder)}</p></div>
-          <a class="save" href="${esc(qr)}" target="_blank" rel="noopener" download><svg viewBox="0 0 24 24" width="12" height="12" aria-hidden="true"><path d="M12 3v12m0 0l-5-5m5 5l5-5M5 21h14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>Lưu QR</a>
+          <div class="inf"><p>${esc(bank)}</p><p class="acc">${esc(p.acc)}</p><p class="hd">${esc(p.holder)}</p></div>
         </div>`;
       };
       const html = card(ctx.d.gifts.groom, 'groom') + card(ctx.d.gifts.bride, 'bride');
@@ -578,6 +577,8 @@ module.exports = {
 .tpl-songhy2 .sh-envs .front{z-index:2;rotate:-10deg;transform-origin:50% 92%;filter:drop-shadow(0 10px 18px rgba(0,0,0,.22));animation:shFloatMain 3s ease-in-out infinite}
 .tpl-songhy2 .sh-envs .back{z-index:1;transform-origin:50% 100%;transform:translateX(20%) translateY(-10%) scale(-.8,.8) rotate(-15deg);filter:drop-shadow(0 8px 14px rgba(0,0,0,.18));animation:shFloat 5.2s ease-in-out .5s infinite}
 .tpl-songhy2 .sh-envbtn:hover .front,.tpl-songhy2 .sh-envbtn:focus-visible .front{animation:shFloatMain 3s ease-in-out infinite,shWave 1.1s ease-in-out infinite;scale:1.12}
+.tpl-songhy2 .sh-envbtn:hover .back,.tpl-songhy2 .sh-envbtn:focus-visible .back{animation:shFloat 5.2s ease-in-out .5s infinite,shBackWave 1.1s ease-in-out .15s infinite;scale:1.06}
+@keyframes shBackWave{0%,100%{rotate:0deg}20%{rotate:-5deg}40%{rotate:4deg}60%{rotate:-3.5deg}80%{rotate:2deg}}
 .tpl-songhy2 .sh-envs .sh{position:absolute;left:50%;bottom:-6px;z-index:0;width:125.4px;height:11px;margin-left:-62.7px;border-radius:50%;background:rgba(0,0,0,.45);filter:blur(4px);animation:shShadow 3s ease-in-out infinite}
 .tpl-songhy2 .sh-envs>i{position:absolute;z-index:3;font-style:normal;color:var(--paper);opacity:0;animation:shSpark 2s ease-in-out infinite}
 .tpl-songhy2 .sh-envbtn .sh-envs>i:nth-child(1){top:6%;left:12%;font-size:20.9px}
@@ -625,10 +626,10 @@ module.exports = {
 .tpl-songhy2 .sh-dlg-head{position:relative;padding:24px 24px 16px;background:var(--gold);text-align:center}
 .tpl-songhy2 .sh-dlg-head h2{margin:0;font:700 20px/30px 'Times New Roman',Times,serif;letter-spacing:.02em;text-transform:uppercase;color:#fff;text-shadow:1px 1px 2px rgba(0,0,0,.2)}
 .tpl-songhy2 .sh-dlg-head .sh-x{top:12px;right:12px;background:none;color:rgba(255,255,255,.8)}
-.tpl-songhy2 .sh-gifts{display:flex;flex-direction:column;align-items:center;gap:16px;padding:16px}
+.tpl-songhy2 .sh-gifts{display:grid;grid-template-columns:1fr 1fr;align-items:start;justify-items:center;gap:12px;padding:16px 10px}
 .tpl-songhy2 .sh-gcard{display:flex;flex:1;flex-direction:column;align-items:center;max-width:180px;text-align:center}
 .tpl-songhy2 .sh-gcard h3{margin:0 0 12px;font-size:14px;line-height:20px;font-weight:500;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
-.tpl-songhy2 .sh-gcard .qr{display:flex;align-items:center;justify-content:center;width:176px;height:176px;padding:8px;border:2px solid rgba(255,232,164,.125);border-radius:12px;background:#fff;box-shadow:0 10px 15px -3px rgba(0,0,0,.1),0 4px 6px -4px rgba(0,0,0,.1)}
+.tpl-songhy2 .sh-gcard .qr{display:flex;align-items:center;justify-content:center;width:min(100%,176px);height:auto;aspect-ratio:1;cursor:zoom-in;padding:8px;border:2px solid rgba(255,232,164,.125);border-radius:12px;background:#fff;box-shadow:0 10px 15px -3px rgba(0,0,0,.1),0 4px 6px -4px rgba(0,0,0,.1)}
 .tpl-songhy2 .sh-gcard .qr img{width:100%;height:100%;object-fit:contain}
 .tpl-songhy2 .sh-gcard .inf{margin-top:12px}
 .tpl-songhy2 .sh-gcard .inf p{margin:2px 0 0;font-size:12px;line-height:16px}

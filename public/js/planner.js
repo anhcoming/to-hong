@@ -101,7 +101,7 @@ function renderHome() {
   }).join('');
   const c = S.ov.cards[0];
   const cardTxt = !c ? 'Chưa tạo thiệp' : c.paid ? 'Đã kích hoạt' : c.status === 'published' ? 'Đã phát hành · dùng thử' : 'Bản nháp';
-  const vidTxt = c && c.video && c.video.created ? (c.video.paid ? 'Đã kích hoạt' : 'Đang dùng thử') : 'Chưa làm video';
+  const vidTxt = c && c.video && c.video.created ? (c.video.paid ? 'Đã kích hoạt' : 'Bản xem thử') : 'Chưa làm video';
   const next = upcoming().slice(0, 3);
   $('#main').innerHTML = `
     ${needSetup ? `<section class="sec onb panel onb-mini">

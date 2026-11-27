@@ -489,6 +489,8 @@ module.exports = {
 .tpl-xanhla .mn-envs .front{z-index:2;rotate:-10deg;transform-origin:50% 92%;filter:drop-shadow(0 10px 18px rgba(0,0,0,.22));animation:mnFloatMain 3s ease-in-out infinite}
 .tpl-xanhla .mn-envs .back{z-index:1;transform-origin:50% 100%;transform:translateX(20%) translateY(-10%) scale(-.8,.8) rotate(-15deg);filter:drop-shadow(0 8px 14px rgba(0,0,0,.18));animation:mnFloat 5.2s ease-in-out .5s infinite}
 .tpl-xanhla .mn-envbtn:hover .front,.tpl-xanhla .mn-envbtn:focus-visible .front{animation:mnFloatMain 3s ease-in-out infinite,mnWave 1.1s ease-in-out infinite;scale:1.12}
+.tpl-xanhla .mn-envbtn:hover .back,.tpl-xanhla .mn-envbtn:focus-visible .back{animation:mnFloat 5.2s ease-in-out .5s infinite,mnXBackWave 1.1s ease-in-out .15s infinite;scale:1.06}
+@keyframes mnXBackWave{0%,100%{rotate:0deg}20%{rotate:-5deg}40%{rotate:4deg}60%{rotate:-3.5deg}80%{rotate:2deg}}
 .tpl-xanhla .mn-envs .sh{position:absolute;left:50%;bottom:-6px;z-index:0;width:125px;height:11px;margin-left:-62px;border-radius:50%;background:rgba(0,0,0,.45);filter:blur(4px);animation:mnShadow 3s ease-in-out infinite}
 .tpl-xanhla .mn-envs i{position:absolute;z-index:3;font-style:normal;color:var(--mn-green);opacity:0;animation:mnSpark 2s ease-in-out infinite}
 .tpl-xanhla .mn-envs i:nth-child(1){top:6%;left:12%;font-size:21px}

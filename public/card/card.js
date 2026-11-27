@@ -202,6 +202,52 @@
   });
   if (lb) lb.addEventListener('click', function () { lb.hidden = true; });
 
+  // ----- mừng cưới: bấm mã QR → bảng mã to, Lưu mã QR, chuyển khoản bằng app ngân hàng (link VietQR, như Zalo) -----
+  var QR_APPS = [['mb', 'MB Bank'], ['vcb', 'Vietcombank'], ['tcb', 'Techcombank'], ['bidv', 'BIDV'], ['icb', 'VietinBank'], ['vba', 'Agribank'], ['vpb', 'VPBank'], ['acb', 'ACB']];
+  function qrEsc(s) { return String(s || '').replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); }
+  function qrSave(src, name) {
+    // ảnh VietQR .png chuyển hướng sang .svg (bước chuyển không cho tải chéo) → lấy thẳng .svg, vẽ ra PNG để lưu vào thư viện ảnh
+    var url = src.split('#')[0].replace(/(img\.vietqr\.io\/[^?]*)\.png/, '$1.svg');
+    fetch(url).then(function (r) { if (!r.ok) throw 0; return r.blob(); }).then(function (b) {
+      if (!/svg/.test(b.type)) return b;
+      return new Promise(function (ok, no) {
+        var im = new Image(), u0 = URL.createObjectURL(b);
+        im.onload = function () {
+          var c = document.createElement('canvas'), n = 720, pad = 40; c.width = c.height = n + pad * 2;
+          var x = c.getContext('2d'); x.fillStyle = '#fff'; x.fillRect(0, 0, c.width, c.height); x.drawImage(im, pad, pad, n, n);
+          URL.revokeObjectURL(u0); c.toBlob(function (p) { p ? ok(p) : no(); }, 'image/png');
+        };
+        im.onerror = no; im.src = u0;
+      });
+    }).then(function (b) {
+      var u = URL.createObjectURL(b), a = document.createElement('a');
+      a.href = u; a.download = name + (/jpe?g/.test(b.type) ? '.jpg' : /webp/.test(b.type) ? '.webp' : '.png');
+      document.body.appendChild(a); a.click(); a.remove(); setTimeout(function () { URL.revokeObjectURL(u); }, 4000);
+    }).catch(function () { window.open(src, '_blank'); }); // không tải được (chặn CORS…) → mở ảnh, giữ ảnh để lưu
+  }
+  function qrView(g, src) {
+    var d = g.dataset, ios = /iP(hone|ad|od)/.test(navigator.userAgent), touch = window.matchMedia && matchMedia('(pointer:coarse)').matches;
+    var apps = d.ba && touch ? '<div class="qrv-apps"><p>Chuyển khoản bằng app ngân hàng</p><div class="qrv-g">' + QR_APPS.map(function (a) {
+      return '<a href="https://dl.vietqr.io/pay?app=' + a[0] + '&ba=' + encodeURIComponent(d.ba) + '&tn=' + encodeURIComponent(d.tn || '') + '" target="_blank" rel="noopener"><img src="https://cdn.vietqr.io/bank-app-icon/' + a[0] + (ios ? '-ios' : '-android') + '.webp" alt="" loading="lazy">' + a[1] + '</a>';
+    }).join('') + '</div></div>' : '';
+    var dlg = document.createElement('dialog');
+    dlg.className = 'qrv';
+    dlg.innerHTML = '<div class="qrv-in"><button type="button" class="qrv-x" aria-label="Đóng">✕</button><h3>' + qrEsc(d.who) + '</h3>' +
+      '<img src="' + qrEsc(src) + '" alt="Mã QR chuyển khoản">' +
+      '<p class="qrv-i">' + (d.bank ? qrEsc(d.bank) + '<br>' : '') + (d.acc ? '<b>' + qrEsc(d.acc) + '</b>' : '') + qrEsc(d.holder) + '</p>' +
+      '<button type="button" class="qrv-dl"><svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path d="M12 3v12m0 0l-5-5m5 5l5-5M5 21h14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>Lưu mã QR</button>' + apps + '</div>';
+    document.body.appendChild(dlg);
+    var close = function () { dlg.close(); dlg.remove(); };
+    dlg.querySelector('.qrv-x').onclick = close;
+    dlg.addEventListener('click', function (e) { if (e.target === dlg) close(); });
+    dlg.addEventListener('cancel', function (e) { e.preventDefault(); close(); });
+    dlg.querySelector('.qrv-dl').onclick = function () { qrSave(src, 'ma-qr-' + (d.acc || 'mung-cuoi')); };
+    dlg.showModal();
+  }
+  $$('[data-gift] img').forEach(function (im) {
+    im.addEventListener('click', function () { qrView(im.closest('[data-gift]'), im.currentSrc || im.src); });
+  });
+
   // ----- sao chép số tài khoản -----
   $$('[data-copy]').forEach(function (b) {
     b.addEventListener('click', function () {

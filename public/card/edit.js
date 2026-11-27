@@ -14,7 +14,9 @@
     // chữ sửa được: không viền cả khối (khối chữ mẫu canvas rộng hết thiệp → vạch đỏ cắt ngang ảnh);
     // rê chuột / đang chọn thì khung .ce-tx bao sát đúng dòng chữ; màn cảm ứng có gạch chân chấm mờ để biết bấm được
     '[data-ce-key]{cursor:text}',
-    '@media (hover:none){[data-ce-key]:not(.ce-map):not(.ce-ev){text-decoration:underline dotted rgba(214,69,93,.6);text-decoration-thickness:1.5px;text-underline-offset:5px}}',
+    '[data-ce-photo]:not([data-ce-album]){outline:2px dashed rgba(214,69,93,.75)!important;outline-offset:-3px}',
+    '[data-ce-album] [data-ce-photo]{outline:none!important}[data-ce-album]{outline:2px dashed rgba(214,69,93,.6)!important;outline-offset:-6px;border-radius:14px}', // album: một khung cho cả khối // luôn thấy ảnh nào sửa được (điện thoại lẫn máy tính, không cần rê chuột)
+    '[data-ce-key]:not(.ce-map):not(.ce-ev){text-decoration:underline dotted rgba(214,69,93,.6);text-decoration-thickness:1.5px;text-underline-offset:5px}', // chữ sửa được: luôn gạch chấm
     '.ce-tx{position:absolute;z-index:2147482999;pointer-events:none;border:1.5px solid #d6455d;border-radius:6px;background:rgba(214,69,93,.07);display:none}',
     '.ce-tx.sel{border-width:2px;box-shadow:0 0 0 4px rgba(214,69,93,.18)}',
     '.ce-tx b{position:absolute;left:-2px;bottom:100%;margin-bottom:3px;padding:2px 8px;border-radius:6px;background:#d6455d;color:#fff;font:600 11.5px/1.5 system-ui,sans-serif;white-space:nowrap}',
@@ -25,7 +27,7 @@
     // ảnh đã có: 2 nút bấm được ngay trên khung (Căn chỉnh / Thay ảnh); phần còn lại của khung vẫn cho bấm xuyên xuống ảnh
     '.ce-hl .ce-act{position:absolute;top:8px;left:8px;display:none;gap:6px;pointer-events:auto}',
     '.ce-hl.has .ce-act{display:flex}.ce-hl.has b{display:none}',
-    '.s-extra{cursor:pointer;outline:1.5px dashed transparent;outline-offset:-4px;border-radius:12px;transition:outline-color .15s}.s-extra:hover{outline-color:rgba(214,69,93,.6)}',
+    '.s-extra{cursor:pointer;outline:1.5px dashed transparent;outline-offset:-4px;border-radius:12px;transition:outline-color .15s}.s-extra{outline-color:rgba(214,69,93,.5)}',
     '.ce-flash{animation:ceFlash 1.5s ease-out}@keyframes ceFlash{0%,40%{box-shadow:inset 0 0 0 3px rgba(214,69,93,.75)}100%{box-shadow:inset 0 0 0 3px rgba(214,69,93,0)}}',
     '.ce-hl .ce-alb{position:absolute;top:8px;left:50%;transform:translateX(-50%);display:none;pointer-events:auto}',
     '.ce-hl.alb .ce-alb{display:flex}.ce-hl.alb b,.ce-hl.alb .ce-act{display:none}',
@@ -35,16 +37,21 @@
     '.ce-act button:hover{filter:brightness(1.08);transform:translateY(-1px)}',
     '.ce-act svg{width:14px;height:14px;flex:none}',
     '.ce-map{position:absolute;inset:-6px;z-index:6;border:2px dashed rgba(214,69,93,.55);border-radius:12px;margin:0;padding:0;background:rgba(0,0,0,0);cursor:pointer;outline:none!important}',
-    '.ce-map:hover{border-style:solid;border-color:#d6455d;background:rgba(214,69,93,.05)!important}',
-    '.ce-venue [data-ce-key]:not(.ce-map){outline:none}',
+    '.ce-venue [data-ce-key]:not(.ce-map){outline:none!important;background:none!important;text-decoration:none!important}',
     '.ce-evbox [data-ce-key]:not(.ce-map):not(.ce-ev){outline:none;background:none}',
     '.ce-evbox,.ce-evbox *{cursor:pointer}',
     // khung khối lễ: chặn mọi kiểu "button" của mẫu (vị trí, nền, viền, cỡ…) đè lên
     '.ce-ev{position:absolute!important;z-index:5!important;display:block!important;box-sizing:border-box!important;border:2px dashed rgba(214,69,93,.55)!important;border-radius:12px!important;margin:0!important;padding:0!important;min-width:0!important;max-width:none!important;min-height:0!important;background:rgba(0,0,0,0)!important;box-shadow:none!important;transform:none!important;opacity:1!important;cursor:pointer;outline:none!important}',
-    '.ce-ev:hover{border-style:solid!important;border-color:#d6455d!important;background:rgba(214,69,93,.05)!important}',
     '.ce-ev b{position:absolute;left:50%;top:-13px;translate:-50% 0;max-width:calc(100% - 16px);overflow:hidden;text-overflow:ellipsis;padding:6px 12px;border-radius:999px;background:#d6455d;color:#fff;font:600 13px/1.3 system-ui,sans-serif;white-space:nowrap;box-shadow:0 4px 12px rgba(0,0,0,.2)}',
     '.ce-ev.sm b{left:auto;right:-8px;top:-11px;translate:none;max-width:none;padding:2px 7px;font-size:12px;font-size:0}',
     '.ce-ev.sm b::before{content:"✎";font-size:13px}',
+    '.ce-phb{position:absolute;z-index:2147482000;padding:5px 11px;border:0;border-radius:999px;background:#d6455d;color:#fff;font:600 12.5px/1.2 system-ui,sans-serif;white-space:nowrap;box-shadow:0 4px 12px rgba(0,0,0,.25);cursor:pointer}',
+    '.ce-dup{outline:none!important;background:none!important;text-decoration:none!important;cursor:inherit!important}',
+    '.ce-giftc{outline:2px dashed rgba(214,69,93,.55)!important;outline-offset:4px;border-radius:10px;cursor:pointer}.ce-giftc::before{content:"✎ Sửa tài khoản";position:absolute;z-index:6;left:50%;top:-4px;translate:-50% -50%;padding:4px 10px;border-radius:999px;background:#d6455d;color:#fff;font:700 12px/1.2 system-ui,sans-serif;white-space:nowrap;pointer-events:none}.ce-giftc [data-ce-photo^="gifts."]{outline:2px dashed rgba(214,69,93,.75)!important;outline-offset:2px}.ce-giftc [data-ce-key]{text-decoration:none!important}',
+    '.ce-sched{position:relative;outline:2px dashed rgba(214,69,93,.55);outline-offset:6px;border-radius:12px;cursor:pointer}',
+    '.ce-sched [data-ce-key]:not(.ce-map){outline:none!important;background:none!important;text-decoration:none!important}',
+    '.ce-sched .ce-ev{display:none!important}',
+    '.ce-sched>.ce-schb{position:absolute;z-index:6;left:50%;top:-6px;translate:-50% -50%;padding:6px 12px;border:0;border-radius:999px;background:#d6455d;color:#fff;font:700 13px/1.2 system-ui,sans-serif;white-space:nowrap;box-shadow:0 4px 12px rgba(214,69,93,.35);cursor:pointer}',
     '.ce-mapph{display:flex;align-items:center;justify-content:center;min-height:180px;height:100%;width:100%;background:repeating-linear-gradient(45deg,rgba(0,0,0,.035) 0 12px,rgba(0,0,0,.06) 12px 24px);border-radius:12px;color:#8a6a70;font:600 14px/1.4 system-ui,sans-serif;text-align:center;padding:16px;box-sizing:border-box}',
     '.ce-map.wide{inset:14px 8px 8px}', // khu rộng hết màn hình: khung lùi vào trong, nhãn nằm trên viền không đè khối bên trên
     '.ce-venue .ce-go{position:relative;z-index:7;cursor:pointer}',
@@ -211,7 +218,14 @@
         if (other) break;
         box = p;
       }
+      // cả khu "… tổ chức tại" (tiêu đề, nơi, địa chỉ, bản đồ): khối cha chỉ có thông tin lễ, không ảnh / form / bản đồ khác → lấy cả khối
+      var up = box.parentElement;
+      if (up && up !== root && up !== document.body && !up.querySelector('[data-ce-photo],form') && !Array.prototype.some.call(up.querySelectorAll('[data-ev]'), function (x) { return x !== mp; })
+        && !Array.prototype.some.call(up.querySelectorAll('[data-ce-key]'), function (k) { return !/^events\.\d+\.(name|place|address|time|date)$/.test(k.dataset.ceKey || ''); })) box = up;
       if (box.querySelector(':scope > .ce-map')) return;
+      // lễ của khu: theo chữ "nơi tổ chức" / tên lễ hiện trong khu (bản đồ hay khớp nhầm lễ đầu khi hai lễ chung địa chỉ)
+      var pk = box.querySelector('[data-ce-key$=".place"]') || box.querySelector('[data-ce-key$=".name"]');
+      var pm = pk && /^events\.(\d+)\./.exec(pk.dataset.ceKey || ''); if (pm) i = +pm[1];
       if (getComputedStyle(box).position === 'static') box.style.position = 'relative';
       var o = document.createElement('button');
       o.type = 'button'; o.className = 'ce-map'; o.dataset.ceKey = 'events.' + i + '.address';
@@ -233,12 +247,71 @@
   // Khối = các phần tử liền nhau chỉ chứa nội dung của lễ đó (hoặc phần chung như đếm ngược, lịch), dừng khi đụng
   // nội dung khác (lễ khác, tên đôi, ảnh, khu địa điểm…). Nhiều phần tử liền nhau thì khung phủ đúng vùng của chúng.
   var evBoxes = [];
+  // khối "Lịch trình ngày cưới": phần tử nhỏ nhất chứa tên mọi lễ, không lẫn nội dung khác (tên đôi, khu bản đồ, form…)
+  // → viền cả khối + một nhãn "✎ Sửa lịch trình"; bấm đâu trong khối cũng mở bảng sửa cả lịch trình (trừ ảnh trang trí)
+  function markSchedule(root) {
+    var STOP = '.ce-venue,form,[data-ev],a[href],input,textarea,select,button:not(.ce-schb):not(.ce-ev):not(.ce-map)';
+    var foreign = function (el) {
+      if (el.matches(STOP) || el.querySelector(STOP)) return true;
+      return Array.prototype.some.call(el.querySelectorAll('[data-ce-key]'), function (k) { return !/^(events\.\d+\.(name|time|date)|time|date)$/.test(k.dataset.ceKey || ''); });
+    };
+    var count = function (el) { var o = {}; Array.prototype.forEach.call(el.querySelectorAll('[data-ce-key^="events."]'), function (k) { var m = /^events\.(\d+)\.name$/.exec(k.dataset.ceKey || ''); if (m) o[m[1]] = 1; }); return Object.keys(o).length; };
+    var nEv = 0; Array.prototype.forEach.call(document.querySelectorAll('[data-ce-key^="events."]'), function (k) { var m = /^events\.(\d+)\./.exec(k.dataset.ceKey || ''); if (m) nEv = Math.max(nEv, +m[1] + 1); });
+    // mọi khối gom đủ các lễ (lịch trình, danh sách lễ ở phần thông tin…) đều thành một cục, bấm là sửa cả lịch trình
+    var boxes = [];
+    Array.prototype.forEach.call(document.querySelectorAll('[data-ce-key^="events."]'), function (el) {
+      if (!/^events\.\d+\.name$/.test(el.dataset.ceKey || '') || el.closest('.ce-venue')) return;
+      var box = null;
+      for (var p = el.parentElement; p && p !== root && p !== document.body && !foreign(p); p = p.parentElement) box = p;
+      if (box && boxes.indexOf(box) < 0 && count(box) >= Math.max(1, Math.min(2, nEv))) boxes.push(box);
+    });
+    boxes = boxes.filter(function (b) { return !boxes.some(function (o) { return o !== b && o.contains(b); }); });
+    boxes.forEach(function (box) {
+      if (getComputedStyle(box).position === 'static') box.style.position = 'relative';
+      box.classList.add('ce-sched');
+      var b = document.createElement('button'); b.type = 'button'; b.className = 'ce-schb'; b.textContent = '✎ Sửa lịch trình';
+      box.appendChild(b);
+    });
+    return boxes[0] || null;
+  }
+  // khối "thông tin hai nhà" (bố mẹ, địa chỉ nhà trai / nhà gái): một khối, bấm đâu cũng mở bảng sửa thông tin hai nhà
+  function markFamily(root) {
+    var seed = document.querySelector('[data-ce-key="groom.father"],[data-ce-key="groom.mother"],[data-ce-key="bride.father"],[data-ce-key="bride.mother"]');
+    if (!seed) return null;
+    var FAM = /^(groom|bride)\.(father|mother|address|fullName)$/;
+    var ok = function (el) {
+      if (el.querySelector('[data-ce-photo],form,.ce-sched,.ce-venue,a[href],button')) return false;
+      return !Array.prototype.some.call(el.querySelectorAll('[data-ce-key]'), function (k) { return !FAM.test(k.dataset.ceKey || '') && !/^(groom|bride)\.name$/.test(k.dataset.ceKey || ''); });
+    };
+    var box = null;
+    for (var p = seed.parentElement; p && p !== root && p !== document.body && ok(p); p = p.parentElement) box = p;
+    if (!box) return null;
+    var keys = Array.prototype.map.call(box.querySelectorAll('[data-ce-key]'), function (k) { return k.dataset.ceKey; });
+    if (!keys.some(function (k) { return /^groom\./.test(k); }) || !keys.some(function (k) { return /^bride\./.test(k); })) return null; // phải đủ cả hai nhà
+    if (getComputedStyle(box).position === 'static') box.style.position = 'relative';
+    box.classList.add('ce-sched', 'ce-fam');
+    var b = document.createElement('button'); b.type = 'button'; b.className = 'ce-schb'; b.textContent = '✎ Sửa thông tin hai nhà';
+    box.appendChild(b);
+    return box;
+  }
+  // hộp mừng cưới: bấm phong bì / nút mở như khách xem; trong hộp, mã QR là ảnh (bấm → tải ảnh mã QR lên),
+  // phần chữ quanh mã (ngân hàng, số tài khoản, chủ tài khoản) là một khung → bấm mở bảng sửa tài khoản
+  function markGift() {
+    Array.prototype.forEach.call(document.querySelectorAll('[data-ce-photo^="gifts."]'), function (im) {
+      var a = im.parentElement;
+      while (a && a !== document.body && !(a.textContent || '').trim()) a = a.parentElement;
+      if (!a || a === document.body || a.tagName === 'MAIN' || a.querySelector('dialog')) return;
+      if (getComputedStyle(a).position === 'static') a.style.position = 'relative'; // nhãn ✎ bám theo khung (không đè vị trí của mẫu)
+      a.classList.add('ce-giftc');
+    });
+  }
   function markEvents() {
     var root = document.querySelector('main.card') || document.body;
+    markSchedule(root); markFamily(root); markGift();
     var byEv = {};
     Array.prototype.forEach.call(document.querySelectorAll('[data-ce-key^="events."]'), function (el) {
       var m = /^events\.(\d+)\.(name|time)$/.exec(el.dataset.ceKey || '');
-      if (!m || el.closest('.ce-venue')) return;
+      if (!m || el.closest('.ce-venue') || el.closest('.ce-sched')) return;
       if ((el.textContent || '').indexOf('+ Thêm lễ') >= 0) return; // dòng thêm lễ mới
       (byEv[m[1]] = byEv[m[1]] || []).push(el);
     });
@@ -329,8 +402,7 @@
   // ---------- khung đánh dấu ảnh khi rê chuột ----------
   var SV = function (d) { return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">' + d + '</svg>'; };
   var hl = document.createElement('div'); hl.className = 'ce-hl'; hl.style.display = 'none';
-  hl.innerHTML = '<b></b><span class="ce-alb"><button type="button" data-a="album">' + '✎ Sửa album ảnh' + '</button></span><span class="ce-act"><button type="button" data-a="crop">' + SV('<path d="M6 2v14a2 2 0 0 0 2 2h14"/><path d="M18 22V8a2 2 0 0 0-2-2H2"/>') + 'Căn chỉnh</button>'
-    + '<button type="button" class="lt" data-a="replace">' + SV('<path d="M3 12a9 9 0 0 1 15.5-6.2L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-15.5 6.2L3 16"/><path d="M3 21v-5h5"/>') + 'Thay ảnh</button></span>';
+  hl.innerHTML = '<b></b><span class="ce-alb"><button type="button" data-a="album">' + '✎ Sửa album ảnh' + '</button></span><span class="ce-act"><button type="button" data-a="edit">✎ Sửa ảnh</button></span>';
   document.body.appendChild(hl);
   var hlEl = null;
   function inHl(x, y) {
@@ -344,7 +416,20 @@
     if (!el) { hl.style.display = 'none'; return; }
     var r = el.getBoundingClientRect();
     hl.style.display = 'block';
-    hl.style.left = r.left + 'px'; hl.style.top = r.top + 'px'; hl.style.width = r.width + 'px'; hl.style.height = r.height + 'px';
+    // ảnh xoay nghiêng (ảnh polaroid, ảnh cài trong phong bì…): khung xoay theo đúng góc + cỡ thật của ảnh, không lấy hình chữ nhật bao ngoài
+    var ang = 0, sc = 1;
+    for (var p = el; p && p.nodeType === 1; p = p.parentElement) {
+      var tf = getComputedStyle(p).transform;
+      if (tf && tf !== 'none') { var m = /matrix\(([^)]+)\)/.exec(tf); if (m) { var v = m[1].split(',').map(parseFloat); ang += Math.atan2(v[1], v[0]); sc *= Math.sqrt(v[0] * v[0] + v[1] * v[1]); } }
+    }
+    if (Math.abs(ang) > 0.005 && el.offsetWidth) {
+      var w = el.offsetWidth * sc, h = el.offsetHeight * sc, cx = r.left + r.width / 2, cy = r.top + r.height / 2;
+      hl.style.left = (cx - w / 2) + 'px'; hl.style.top = (cy - h / 2) + 'px'; hl.style.width = w + 'px'; hl.style.height = h + 'px';
+      hl.style.transform = 'rotate(' + ang + 'rad)';
+    } else {
+      hl.style.transform = '';
+      hl.style.left = r.left + 'px'; hl.style.top = r.top + 'px'; hl.style.width = r.width + 'px'; hl.style.height = r.height + 'px';
+    }
     hl.classList.toggle('has', !el.dataset.ceEmpty && !el.dataset.ceAlbum); hl.dataset.k = el.dataset.cePhoto || '';
     hl.firstChild.textContent = '+ Tải ảnh lên';
   }
@@ -354,11 +439,12 @@
     e.preventDefault(); e.stopImmediatePropagation();
     if (b.dataset.a === 'album') { tell(albumMsg(hlEl)); return; }
     var el = hlEl || document.querySelector('[data-ce-photo="' + hl.dataset.k + '"]'); if (!el) return;
-    var r = el.getBoundingClientRect();
-    tell({ type: 'photo', key: el.dataset.cePhoto, empty: false, ratio: r.width / Math.max(1, r.height), act: b.dataset.a });
+    var r = el.getBoundingClientRect(), rw = el.offsetWidth || r.width, rh = el.offsetHeight || r.height; // ảnh xoay nghiêng: tỉ lệ theo cỡ thật
+    tell({ type: 'photo', key: el.dataset.cePhoto, empty: false, ratio: rw / Math.max(1, rh), act: b.dataset.a === 'edit' ? '' : b.dataset.a }); // "Sửa ảnh" → hộp Căn chỉnh (có Thay / Xoá)
   }, true);
   document.addEventListener('pointermove', function (e) {
-    if (e.pointerType !== 'mouse') { hl.style.display = 'none'; return; }
+    hl.style.display = 'none'; return; // 27/11: bỏ hiệu ứng rê chuột — chỗ sửa được đã luôn có dấu (viền đứt, nhãn ✎)
+    /* eslint-disable no-unreachable */
     // chuột đang trên nút "Căn chỉnh / Thay ảnh": giữ khung (góc ảnh vòm / bo tròn nằm ngoài phần ảnh thật)
     if (hlEl && hl.contains(e.target)) return;
     var alb = albumAt(e.target);
@@ -371,7 +457,7 @@
   document.addEventListener('mouseleave', function () { hl.style.display = 'none'; });
 
   // ---------- khung bao sát chữ (rê chuột / đang sửa) ----------
-  var LBL = { name: 'Tên', fullName: 'Họ tên', father: 'Tên bố', mother: 'Tên mẹ', address: 'Địa chỉ', place: 'Nơi tổ chức', inviteText: 'Lời mời', message: 'Lời nhắn', story: 'Câu chuyện', time: 'Giờ', date: 'Ngày' };
+  var LBL = { lead: 'Dòng báo tin', name: 'Tên', fullName: 'Họ tên', father: 'Tên bố', mother: 'Tên mẹ', address: 'Địa chỉ', place: 'Nơi tổ chức', inviteText: 'Lời mời', message: 'Lời nhắn', story: 'Câu chuyện', time: 'Giờ', date: 'Ngày' };
   function labelOf(key) {
     var p = key.split('.'), last = p[p.length - 1];
     var who = p[0] === 'groom' ? (last === 'name' ? 'Tên chú rể' : 'Chú rể · ') : p[0] === 'bride' ? (last === 'name' ? 'Tên cô dâu' : 'Cô dâu · ') : '';
@@ -398,8 +484,8 @@
   }
   var plain = function (el) { return el && !el.classList.contains('ce-map') && !el.classList.contains('ce-ev') && !el.closest('.ce-evbox'); };
   document.addEventListener('pointerover', function (e) {
-    if (e.pointerType !== 'mouse') return;
-    var t = e.target.closest && e.target.closest('[data-ce-key]');
+    if (e.pointerType !== 'mouse' || true) return; // bỏ khung chữ khi rê chuột (dấu gạch chấm đã luôn hiện)
+    var t = e.target.closest && e.target.closest('[data-ce-key]:not(.ce-dup)');
     if (t && plain(t) && t !== selEl) placeTx(hov, t); else hov.style.display = 'none';
   }, { passive: true });
   document.addEventListener('mouseleave', function () { hov.style.display = 'none'; });
@@ -476,6 +562,61 @@
     if (cur !== window.__ceSec) { window.__ceSec = cur; tell({ type: 'section', i: cur }); }
   }, { passive: true });
 
+  // ---------- nhãn "✎ Sửa ảnh" luôn hiện trên mỗi ảnh chính (không cần rê chuột / chạm thử mới biết sửa được) ----------
+  var phBadges = [];
+  function markPhotoBadges() {
+    Array.prototype.forEach.call(document.querySelectorAll('[data-ce-photo]'), function (el) {
+      if (el.dataset.ceAlbum || el.closest('.ce-sched,[data-ce-album]')) return; // ảnh trong album: chỉ một nhãn "Sửa album ảnh" cho cả khối
+      var b = document.createElement('button'); b.type = 'button'; b.className = 'ce-phb'; b.textContent = el.dataset.ceEmpty ? '+ Thêm ảnh' : '✎ Sửa ảnh';
+      b.addEventListener('click', function (e) {
+        e.preventDefault(); e.stopPropagation();
+        var r = el.getBoundingClientRect();
+        tell({ type: 'photo', key: el.dataset.cePhoto, empty: !!el.dataset.ceEmpty, ratio: (el.offsetWidth || r.width) / Math.max(1, el.offsetHeight || r.height) });
+      });
+      document.body.appendChild(b); phBadges.push({ b: b, el: el });
+    });
+    Array.prototype.forEach.call(document.querySelectorAll('[data-ce-album]'), function (root) {
+      var b = document.createElement('button'); b.type = 'button'; b.className = 'ce-phb'; b.textContent = '✎ Sửa album ảnh';
+      b.addEventListener('click', function (e) { e.preventDefault(); e.stopPropagation(); tell(albumMsg(root)); });
+      document.body.appendChild(b); phBadges.push({ b: b, el: root, album: true });
+    });
+    layoutBadges();
+  }
+  // góc xoay + cỡ thật của một phần tử (cộng dồn transform của các lớp cha) — ảnh polaroid nghiêng, ảnh cài phong bì…
+  function rotOf(el) {
+    var ang = 0, sc = 1;
+    for (var p = el; p && p.nodeType === 1; p = p.parentElement) {
+      var tf = getComputedStyle(p).transform;
+      if (tf && tf !== 'none') { var m = /matrix\(([^)]+)\)/.exec(tf); if (m) { var v = m[1].split(',').map(parseFloat); ang += Math.atan2(v[1], v[0]); sc *= Math.sqrt(v[0] * v[0] + v[1] * v[1]); } }
+    }
+    var r = el.getBoundingClientRect();
+    return { ang: ang, w: (el.offsetWidth || r.width) * sc, h: (el.offsetHeight || r.height) * sc, cx: r.left + r.width / 2, cy: r.top + r.height / 2 };
+  }
+  function layoutBadges() {
+    phBadges.forEach(function (x) {
+      if (!x.el.isConnected) { x.b.style.display = 'none'; return; }
+      if (x.album) { var ra = x.el.getBoundingClientRect(); x.b.style.display = ''; x.b.style.transform = 'translate(-50%,0)'; x.b.style.left = (ra.left + window.scrollX + ra.width / 2) + 'px'; x.b.style.top = (ra.top + window.scrollY + 8) + 'px'; return; }
+      var o = rotOf(x.el);
+      if (o.w < 90 || o.h < 70) { x.b.style.display = 'none'; return; } // ảnh trang trí nhỏ: bỏ nhãn
+      x.b.style.display = '';
+      // giữa mép trên của ảnh (theo khung đã xoay), nhãn xoay cùng góc ảnh
+      var dy = -o.h / 2 + 12, px = o.cx - Math.sin(o.ang) * dy, py = o.cy + Math.cos(o.ang) * dy;
+      x.b.style.left = (px + window.scrollX) + 'px'; x.b.style.top = (py + window.scrollY) + 'px';
+      x.b.style.transform = 'translate(-50%,0) rotate(' + o.ang + 'rad)'; x.b.style.transformOrigin = '50% 0';
+    });
+  }
+  window.addEventListener('resize', layoutBadges); window.addEventListener('load', layoutBadges);
+  setInterval(layoutBadges, 1500); // ảnh / chữ đổi cỡ sau khi tải, hiệu ứng hiện dần…
+  // ---------- cùng một trường lặp lại trên thiệp (tên đôi, ngày, tên bố mẹ…): chỉ chỗ đầu tiên sửa được ----------
+  // sửa ở chỗ đầu thì các chỗ sau tự đổi theo → bỏ viền / nhãn / bấm ở các chỗ sau cho đỡ rối (khối lịch trình, địa điểm giữ nguyên)
+  function markDups() {
+    var seen = {};
+    Array.prototype.forEach.call(document.querySelectorAll('[data-ce-key]'), function (el) {
+      if (el.classList.contains('ce-map') || el.classList.contains('ce-ev') || el.closest('.ce-sched,.ce-venue,.ce-evbox')) return;
+      var k = el.dataset.ceKey;
+      if (seen[k]) el.classList.add('ce-dup'); else seen[k] = 1;
+    });
+  }
   // ---------- bấm: báo cho trang sửa ----------
   function tell(msg) { try { window.parent.postMessage(Object.assign({ ce: 1 }, msg), location.origin); } catch (e) { /* không ở trong khung */ } }
   document.addEventListener('click', function (e) {
@@ -483,6 +624,12 @@
     if (go) return; // Chỉ đường → mở Google Maps
     var t = e.target.closest && e.target.closest('[data-ce-key]');
     // bấm vào bất kỳ đâu trong khối thông tin lễ (kể cả ngày tháng, đếm ngược, lịch) = bấm khung "Sửa lễ"
+    var vb = e.target.closest && e.target.closest('.ce-venue');
+    if (vb && t && !t.classList.contains('ce-map')) { var vm = vb.querySelector(':scope > .ce-map'); if (vm) t = vm; }
+    var sb = e.target.closest && e.target.closest('.ce-sched');
+    if (sb && !(t && t.classList.contains('ce-map')) && !photoAt(e.clientX, e.clientY)) { e.preventDefault(); e.stopPropagation(); tell({ type: 'text', key: sb.classList.contains('ce-fam') ? 'family' : /lịch trình/i.test((sb.textContent || '').replace('✎ Sửa lịch trình', '')) ? 'events.all+' : 'events.all', value: '' }); return; }
+    var gc = e.target.closest && e.target.closest('.ce-giftc');
+    if ((gc || (t && /^gifts\./.test(t.dataset.ceKey || ''))) && !photoAt(e.clientX, e.clientY)) { e.preventDefault(); e.stopPropagation(); tell({ type: 'extra', key: 'gift' }); return; }
     var eb = e.target.closest && e.target.closest('.ce-evbox');
     if (eb && eb._ceEv && eb._ceEv.isConnected && !(t && t.classList.contains('ce-map'))) t = eb._ceEv;
     if (t) {
@@ -584,7 +731,7 @@
   }
 
   function init() {
-    markPhotos(); markAlbums(); markText(); markMaps(); markEvents(); lockForms();
+    markPhotos(); markAlbums(); markText(); markMaps(); markEvents(); markDups(); markPhotoBadges(); lockForms();
     freezePhotos();
     window.addEventListener('load', freezePhotos); // hiệu ứng bắt đầu khi ảnh tải xong
     tell({ type: 'ready' });

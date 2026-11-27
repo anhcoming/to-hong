@@ -722,6 +722,8 @@ route('POST', '/api/cards/:id/duplicate', async (req, res, ctx) => {
 
 route('DELETE', '/api/cards/:id', async (req, res, ctx) => {
   const card = ownedCard(ctx, ctx.params.id);
+  // đã trả tiền (thiệp / màn LED / slide) thì không cho xoá: giữ link khách đã nhận và món đã mua
+  if (PART_KEYS.some((k) => partPaid(card, k))) throw httpError(400, 'Thiệp đã kích hoạt nên không xoá được');
   const keep = (x) => x.cardId !== card.id;
   db.cards = db.cards.filter((c) => c.id !== card.id);
   // khách mời thuộc đám cưới (sổ tay) nên giữ lại; chỉ xoá phản hồi gắn riêng với thiệp này
@@ -1340,13 +1342,15 @@ route('GET', '/led/:slug', async (req, res, ctx) => {
   // khung xem trước của trình sửa: chủ thiệp + ?preview=1 + mở trong khung (trình duyệt tự gửi Sec-Fetch-Dest, trang web không giả được)
   const preview = isOwner && ctx.query.get('preview') === '1' && req.headers['sec-fetch-dest'] !== 'document';
   // chưa kích hoạt: không có trình chiếu thật — chỉ xem trước trong trình sửa
-  if (st.locked && !preview) {
+  // ?xem=1: link xem thử gửi vợ/chồng duyệt (thiệp đã vào tài khoản) — luôn có chữ chìm "Xem trước tại cuoinha.com", không phải link chiếu ở tiệc
+  const review = ctx.query.get('xem') === '1' && !!card.userId;
+  if (st.locked && !preview && !review) {
     return html(res, 403, isOwner
-      ? renderNotice('Màn hình LED chưa kích hoạt', 'Bạn vẫn xem trước và sửa màn LED trong trình sửa. Kích hoạt một lần để trình chiếu ở tiệc cưới, không còn dòng "Bản dùng thử".', { href: `/sua-led/${card.id}`, text: 'Kích hoạt màn LED' })
+      ? renderNotice('Màn hình LED chưa kích hoạt', 'Bạn vẫn xem trước và sửa màn LED trong trình sửa. Kích hoạt một lần để trình chiếu ở tiệc cưới, không còn chữ "Xem trước tại cuoinha.com".', { href: `/sua-led/${card.id}`, text: 'Kích hoạt màn LED' })
       : renderNotice('Màn hình LED chưa sẵn sàng', 'Chủ thiệp chưa kích hoạt màn LED này.'));
   }
-  if (!preview && !(card.led.names && card.led.names.groom && card.led.names.bride)) { fixNames(card); if (card.led.names) save(); } // lần đầu chiếu thật: khoá tên đôi (kích hoạt lúc chưa đủ tên)
-  html(res, 200, ledLib.renderLed(card, card.led, { preview, trial: !st.paid }));
+  if (!preview && !review && !(card.led.names && card.led.names.groom && card.led.names.bride)) { fixNames(card); if (card.led.names) save(); } // lần đầu chiếu thật: khoá tên đôi (kích hoạt lúc chưa đủ tên)
+  html(res, 200, ledLib.renderLed(card, card.led, { preview, trial: !st.paid || (review && st.locked), review: review && st.locked }));
 });
 
 // mẫu album xem thử với một bộ ảnh cưới đầy đủ
@@ -1393,7 +1397,7 @@ route('GET', '/video/:slug', async (req, res, ctx) => {
   // chưa kích hoạt: không có link chiếu TV — chỉ xem trước trong trình sửa
   if (st.locked) {
     return html(res, 403, isOwner
-      ? renderNotice('Video chưa kích hoạt', 'Bạn vẫn xem trước và sửa video trong trình sửa. Kích hoạt một lần để chiếu TV bằng link và tải MP4 Full HD, không còn dòng "Bản dùng thử".', { href: `/sua-video/${card.id}`, text: 'Kích hoạt video' })
+      ? renderNotice('Video chưa kích hoạt', 'Bạn vẫn xem trước và sửa video trong trình sửa. Kích hoạt một lần để chiếu TV bằng link và tải MP4 Full HD, không còn chữ "Xem trước tại cuoinha.com".', { href: `/sua-video/${card.id}`, text: 'Kích hoạt video' })
       : renderNotice('Video chưa sẵn sàng', 'Chủ thiệp chưa kích hoạt video này.'));
   }
   const inEditor = isOwner && ctx.query.get('preview') === '1' && req.headers['sec-fetch-dest'] !== 'document'; // khung xem trước của trình sửa (mở thẳng một tab thì tính là chiếu thật)
@@ -1544,8 +1548,6 @@ const PAGES = {
   '/slide-cuoi': 'slide-landing.html',
   '/man-hinh-led-dam-cuoi': 'led-landing.html',
   '/so-tay': 'planner.html',
-  '/video-cua-toi': 'dashboard.html', // cùng trang với "Thiệp của tôi", hiện danh sách video
-  '/don-hang': 'orders.html', // đơn hàng của tôi (chờ thanh toán / đã thanh toán)
   '/gio-hang': 'cart.html', // giỏ hàng kiểu Shopee: món chưa thanh toán → Mua hàng → Thanh toán
   '/so-tay-cuoi': 'planner-landing.html',
   '/goi-y': 'suggest.html', // thả ảnh cưới → gợi ý thiệp
@@ -1586,7 +1588,7 @@ function serveFile(res, file, cache, req) {
 }
 
 // trang cũ gộp vào "Video cưới" (màn LED không còn bán riêng; khách cũ vẫn sửa & chiếu ở /sua-led, /led/…)
-const MOVED = { '/video-cuoi': '/video-dam-ngo' }; // video ảnh chuyển sang trang Slide cưới, mẫu chữ ở Video dạm ngõ
+const MOVED = { '/video-cuoi': '/video-dam-ngo', '/don-hang': '/gio-hang', '/video-cua-toi': '/thiep-cua-toi' }; // gộp: một trang "Đám cưới của tôi" // /don-hang: bỏ trang Đơn hàng, chỉ còn Giỏ hàng // video ảnh chuyển sang trang Slide cưới, mẫu chữ ở Video dạm ngõ
 
 function serveStatic(req, res, pathname) {
   if (MOVED[pathname]) { res.writeHead(301, { Location: MOVED[pathname] }); return res.end(); }

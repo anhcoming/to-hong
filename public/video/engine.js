@@ -1076,37 +1076,19 @@
       ctx.globalAlpha = 1;
       if (st) renderAlbum(t);
       else { bg(t); decor(t); particles(t); text(t); }
-      if (opts.trial) trialBadge();
+      if (opts.trial) trialTile(t); // bỏ nhãn góc "BẢN DÙNG THỬ": chữ chìm phủ khắp khung đã đủ (nhãn góc dễ cắt)
     }
-    // nhãn bản dùng thử: viên kính mờ góc dưới phải — tim hồng + "Cưới Nha" chữ viết tay + "BẢN DÙNG THỬ"; đọc rõ trên nền sáng lẫn tối
-    function trialBadge() {
-      var brand = opts.brand || 'Cưới Nha', label = 'BẢN DÙNG THỬ', hasLS = 'letterSpacing' in ctx;
+    // bản dùng thử: chữ chìm lặp chéo khắp khung, trôi chậm — thu nhỏ rồi cắt góc (bỏ nhãn) cũng không xoá được
+    function trialTile(t) {
+      var txt = 'Xem trước tại ' + (opts.site || 'cuoinha.com'), sx = 900, sy = 300, off = (t * 12) % sx;
       ctx.save();
-      ctx.textBaseline = 'middle'; ctx.textAlign = 'left';
-      ctx.font = font('script', 40); var wb = ctx.measureText(brand).width;
-      ctx.font = FONT.sans(17); if (hasLS) ctx.letterSpacing = '3px'; var wl = ctx.measureText(label).width; if (hasLS) ctx.letterSpacing = '0px';
-      var hp = 26, gap = 14, hs = 22, h = 62, w = hp + hs + gap + wb + gap + 1 + gap + wl + hp, x = W - 56 - w, y = H - 56 - h, cy = y + h / 2;
-      // nền kính mờ + viền sáng mảnh
-      ctx.shadowColor = 'rgba(0,0,0,0.28)'; ctx.shadowBlur = 24; ctx.shadowOffsetY = 6;
-      roundRect(x, y, w, h, h / 2); ctx.fillStyle = 'rgba(24,14,16,0.5)'; ctx.fill();
-      ctx.shadowColor = 'transparent';
-      ctx.lineWidth = 1.5; ctx.strokeStyle = 'rgba(255,255,255,0.22)'; ctx.stroke();
-      // tim hồng
-      var hx = x + hp + hs / 2, hy = cy + 1, s = hs / 2;
-      var g = ctx.createLinearGradient(hx - s, hy - s, hx + s, hy + s); g.addColorStop(0, '#ef7d8d'); g.addColorStop(1, '#d6455d');
-      ctx.fillStyle = g; ctx.beginPath();
-      ctx.moveTo(hx, hy + s * 0.9);
-      ctx.bezierCurveTo(hx - s * 1.5, hy - s * 0.2, hx - s * 0.6, hy - s * 1.35, hx, hy - s * 0.45);
-      ctx.bezierCurveTo(hx + s * 0.6, hy - s * 1.35, hx + s * 1.5, hy - s * 0.2, hx, hy + s * 0.9);
-      ctx.fill();
-      // "Cưới Nha" + vạch ngăn + "BẢN DÙNG THỬ"
-      var tx = x + hp + hs + gap;
-      ctx.fillStyle = '#ffffff'; ctx.font = font('script', 40); ctx.fillText(brand, tx, cy + 2);
-      tx += wb + gap; ctx.fillStyle = 'rgba(255,255,255,0.35)'; ctx.fillRect(tx, cy - 14, 1, 28);
-      tx += 1 + gap; ctx.fillStyle = 'rgba(255,255,255,0.86)'; ctx.font = FONT.sans(17); if (hasLS) ctx.letterSpacing = '3px'; ctx.fillText(label, tx, cy + 1); if (hasLS) ctx.letterSpacing = '0px';
+      ctx.globalAlpha = 0.14; ctx.fillStyle = '#ffffff'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+      ctx.font = '700 48px "Hanken Grotesk", system-ui, sans-serif'; if ('letterSpacing' in ctx) ctx.letterSpacing = '2px';
+      ctx.translate(W / 2, H / 2); ctx.rotate(-22 * Math.PI / 180);
+      var R = Math.ceil(Math.hypot(W, H) / 2) + sx;
+      for (var y = -R, row = 0; y <= R; y += sy, row++) for (var x = -R + (row % 2 ? sx / 2 : 0) + off; x <= R; x += sx) ctx.fillText(txt, x, y);
       ctx.restore();
     }
-
     function loop(now) {
       renderAt((now - t0) / 1000);
       raf = requestAnimationFrame(loop);

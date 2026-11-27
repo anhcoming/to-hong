@@ -1113,7 +1113,7 @@
         '<p class="photo-names glow" data-fit><span>' + gn + '</span> <span class="amp">&amp;</span> <span>' + bn + '</span></p></div></div>');
     }
     if (L.slides.message && L.message) {
-      out.push('<div data-k="msg" class="slide s-msg"><p class="msg" data-e="led.message">' + esc(L.message) + '</p><p class="sign glow" data-fit>' + gn + ' &amp; ' + bn + '</p></div>');
+      out.push('<div data-k="msg" class="slide s-msg"><p class="msg" data-e="led.message">' + keepWords(esc(L.message)) + '</p><p class="sign glow" data-fit>' + gn + ' &amp; ' + bn + '</p></div>');
     }
     if (!out.length) out.push('<div class="slide"><p class="names glow" data-fit>' + gn + ' <span class="amp">&amp;</span> ' + bn + '</p></div>');
     slidesEl.innerHTML = out.join('');
@@ -1339,6 +1339,10 @@
     });
   }
   // trình sửa gửi cấu hình mới để xem trước tức thì
+  // từ ghép hay gặp trong lời cảm ơn không bị tách đôi khi xuống dòng ("gia / đình")
+  function keepWords(t) {
+    return String(t).replace(/(gia đình|chung vui|quý khách|cô dâu|chú rể|chúng tôi|chúng mình|hạnh phúc|trăm năm|lễ cưới|tiệc cưới|thành hôn|cảm ơn|tham dự|hiện diện|vinh hạnh)/gi, function (w) { return w.replace(/ /g, '\u00a0'); });
+  }
   window.addEventListener('message', function (e) {
     if (e.origin !== location.origin || !e.data) return;
     if (e.data.type === 'led-config') {
@@ -1382,27 +1386,20 @@
   keepAwake();
   if (document.fonts && document.fonts.ready) document.fonts.ready.then(fitAll);
   requestAnimationFrame(frame);
-  // Bản dùng thử: dòng "Bản dùng thử" phải luôn hiện — bị xoá / ẩn / đổi chữ (công cụ của trình duyệt) thì dựng lại ngay.
+  // Bản dùng thử: lớp chữ chìm "BẢN DÙNG THỬ" phủ khắp màn phải luôn hiện — bị xoá / ẩn / làm mờ (công cụ của trình duyệt) thì dựng lại ngay.
   if (C.trial && !C.demo) {
-    var WM = 'Bản dùng thử';
     var keepWm = function () {
-      var w = stage.querySelector(':scope > .wm');
-      if (!w) { w = document.createElement('div'); w.className = 'wm'; w.setAttribute('data-b', C.brand || ''); stage.appendChild(w); }
-      if (w.textContent !== WM) w.textContent = WM;
-      // chỉ sửa khi thật sự bị ẩn (tránh tự kích hoạt lại bộ theo dõi thay đổi)
-      var cs = getComputedStyle(w), r = w.getBoundingClientRect();
-      // bị che bởi phần tử khác / chữ trong suốt / bộ lọc làm mờ đều tính là bị ẩn
-      var hit = r.width > 0 ? document.elementFromPoint(r.left + r.width / 2, r.top + r.height / 2) : null; // tâm ruy băng (nằm trong góc màn)
-      var covered = !!hit && !w.contains(hit) && !(hit.closest && hit.closest('#ctl,#back'));
-      if (w.hidden || cs.display === 'none' || cs.visibility !== 'visible' || +cs.opacity < 0.4 || r.width < 20 || r.height < 5
-        || (cs.filter && cs.filter !== 'none') || /rgba\(.*,\s*0(\.0*)?\)$|transparent/.test(cs.color) || covered
-        || r.right < 0 || r.bottom < 0 || r.left > innerWidth || r.top > innerHeight) {
+      var w = stage.querySelector(':scope > .wmt');
+      if (!w) { w = document.createElement('div'); w.className = 'wmt'; stage.appendChild(w); }
+      var cs = getComputedStyle(w);
+      if (w.hidden || cs.display === 'none' || cs.visibility !== 'visible' || +cs.opacity < 0.1 || (cs.filter && cs.filter !== 'none') || cs.backgroundImage === 'none' || w !== stage.lastElementChild) {
         w.hidden = false;
-        if (w.parentNode !== stage || w !== stage.lastElementChild) stage.appendChild(w);
-        w.style.cssText = 'display:block!important;visibility:visible!important;opacity:1!important;transform:rotate(38deg)!important;filter:none!important;color:#fff!important;background:linear-gradient(90deg,#c8364f,#ef7d8d)!important;z-index:2147483647!important;clip-path:none!important;pointer-events:auto!important;top:62px!important;right:-120px!important;left:auto!important;bottom:auto!important;width:500px!important;position:absolute!important';
+        if (w !== stage.lastElementChild) stage.appendChild(w);
+        w.style.cssText = 'display:block!important;visibility:visible!important;opacity:.16!important;filter:none!important;z-index:2147483647!important;clip-path:none!important';
+        w.style.removeProperty('background-image');
       }
-      // bản chưa kích hoạt chỉ để xem trong khung của trình sửa; bị mở thẳng ra cả trang thì phủ lớp "cần kích hoạt"
-      if (window.top === window) {
+      // bản chưa kích hoạt chỉ để xem trong khung của trình sửa / link xem thử; mở thẳng link chiếu ra cả trang thì phủ lớp "cần kích hoạt"
+      if (window.top === window && !C.review) {
         var k = stage.querySelector(':scope > .wm-lock');
         if (!k) { k = document.createElement('div'); k.className = 'wm-lock'; stage.appendChild(k); }
         var KT = 'Cần kích hoạt để trình chiếu';

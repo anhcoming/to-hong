@@ -78,7 +78,7 @@
     var link = function (href, ic, text, tag) { return '<a href="' + href + '">' + svg(ic) + '<span>' + text + '</span>' + (tag ? '<em>' + tag + '</em>' : '') + '</a>'; };
     ov.innerHTML = '<div class="cnb-sh" role="dialog" aria-modal="true" aria-label="Tài khoản"><div class="gr"></div>'
       + (u ? '<div class="who"><i' + (u.avatar ? ' class="ph">' + photo(u) : '>' + initial(u)) + '</i><div style="min-width:0"><b>' + esc(u.name || 'Tài khoản') + '</b><span>' + esc(u.email) + '</span></div></div>'
-        + link('/thiep-cua-toi', 'card', 'Thiệp &amp; màn LED của tôi') + link('/don-hang', 'bag', 'Đơn hàng của tôi') + link('/video-cua-toi', 'slide', 'Slide của tôi') + link('/so-tay', 'book', 'Sổ tay của tôi')
+        + link('/thiep-cua-toi', 'card', 'Đám cưới của tôi') + link('/so-tay', 'book', 'Sổ tay của tôi')
         : '<div class="lg"><a href="/dang-nhap?next=' + encodeURIComponent(location.pathname + location.search) + '">Đăng nhập</a></div>' + link('/so-tay-cuoi', 'book', 'Sổ tay cưới', 'Free'))
       + link('/video', 'clap', 'Video báo hỷ TikTok', 'Free')
       + '<div class="sep"></div><a href="#" data-cnb-theme role="switch" aria-checked="' + dark + '">' + svg('moon') + '<span>Nền tối</span><s class="sw' + (dark ? ' on' : '') + '"></s></a>'

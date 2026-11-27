@@ -155,7 +155,7 @@
 
     // các hàng mẫu cuộn ngang kiểu Netflix
     const card = (t, extra = '') => `<div class="ncard" data-tpl="${t.id}" data-pal="${t.palettes[0].id}">${extra}<div class="pic"><a href="/demo/${t.id}" aria-label="Xem thử ${esc(t.name)}"><img src="${cover(t.id, t.palettes[0].id)}" alt="${esc(t.name)}" loading="lazy"></a>
-      <div class="info"><b>${esc(t.name)}</b></div></div><p class="nm">${esc(t.name)}</p></div>`;
+      </div><p class="nm">${esc(t.name)}</p></div>`;
     const row = (title, list, cls = '', more = '/mau-thiep', moreText = 'Xem tất cả') => list.length ? `<section class="nrow ${cls}"><h2>${title}<a href="${more}">${moreText} ›</a></h2>
       <div class="track"><button class="arrow l" type="button" aria-label="Trước">‹</button><div class="slider">${list.join('')}</div><button class="arrow r" type="button" aria-label="Sau">›</button></div></section>` : '';
     // khối "một lớn, bốn nhỏ" cho video và màn LED: mẫu đứng đầu chiếm ô lớn bên trái, bốn mẫu còn lại xếp lưới 2×2 (không cuộn ngang, không số thứ hạng — số 1–5 chỉ còn ở hàng thiệp)
@@ -164,12 +164,12 @@
     const V = (ev.detail.video && ev.detail.video.templates) || [];
     const TOP_VIDEO = ['polaroid', 'saodem', 'phimcu', 'lichhen', 'songhy']; // 5 mẫu video nổi bật (chọn tay), cùng thứ tự với khu video bên dưới
     const topVideo = [...TOP_VIDEO.map((id) => V.find((t) => t.id === id)).filter(Boolean), ...V.filter((t) => t.photos && !TOP_VIDEO.includes(t.id))].slice(0, 5);
-    const vcard = (t, i) => `<div class="ncard" data-video="${t.id}"><div class="pic"><a href="/video/demo?template=${t.id}" aria-label="Xem thử video ${esc(t.name)}"><img src="/demo/vposter-${t.id}.jpg" alt="${esc(t.name)}" loading="lazy"></a><div class="info"><b>${esc(t.name)}</b></div></div><p class="nm">${esc(t.name)}</p></div>`;
+    const vcard = (t, i) => `<div class="ncard" data-video="${t.id}"><div class="pic"><a href="/video/demo?template=${t.id}" aria-label="Xem thử video ${esc(t.name)}"><img src="/demo/vposter-${t.id}.jpg" alt="${esc(t.name)}" loading="lazy"></a></div><p class="nm">${esc(t.name)}</p></div>`;
     // thẻ màn LED 16:9: mỗi "mẫu" là một cặp bảng màu + hiệu ứng nền; poster chụp sẵn (npm run previews -- <địa chỉ> led), rê chuột chạy màn thật
     const L = ev.detail.led || { palettes: [], effects: [] };
     // màn LED: các mẫu mới nhất (lib/led.js TEMPLATES), ảnh đại diện /demo/lposter-<màu>-<hiệu ứng>.jpg
     const topLed = (L.templates || []).slice(0, 3);
-    const lcard = (t) => { const q = `palette=${t.palette}&effect=${t.effect}`; return `<div class="ncard" data-led="${q}"><div class="pic"><a href="/led/demo?${q}" aria-label="Xem thử màn LED ${esc(t.name)}"><img src="/demo/lposter-${t.palette}-${t.effect}.jpg" alt="Màn hình LED ${esc(t.name)}" loading="lazy"></a><div class="info"><b>${esc(t.name)}</b></div></div><p class="nm">${esc(t.name)}</p></div>`; };
+    const lcard = (t) => { const q = `palette=${t.palette}&effect=${t.effect}`; return `<div class="ncard" data-led="${q}"><div class="pic"><a href="/led/demo?${q}" aria-label="Xem thử màn LED ${esc(t.name)}"><img src="/demo/lposter-${t.palette}-${t.effect}.jpg" alt="Màn hình LED ${esc(t.name)}" loading="lazy"></a></div><p class="nm">${esc(t.name)}</p></div>`; };
     const hot = T.filter((t) => t.badge === 'Hot');
     const top = [...hot, ...T.filter((t) => !hot.includes(t))].slice(0, 8); // nổi bật: mẫu Hot trước, thiếu thì lấy thêm mẫu kế tiếp
     const used = G.filter((g) => T.some((t) => t.group === g.id));
@@ -179,7 +179,7 @@
     const slide = (items) => `<div class="track"><button class="arrow l" type="button" aria-label="Trước">‹</button><div class="slider">${items.join('')}</div><button class="arrow r" type="button" aria-label="Sau">›</button></div>`;
     const FREE = '<em class="free">Miễn phí</em>';
     const BH = [['phongbi-hong', 'Phong bì hồng'], ['dienanh', 'Điện ảnh'], ['polaroid-nau', 'Polaroid'], ['toigian-xanh', 'Tối giản'], ['songhy-do', 'Song hỷ'], ['dienanh-nau', 'Điện ảnh nâu']];
-    const bhcard = ([id, n]) => `<a class="ncard bh" href="/video"><div class="pic"><img src="/demo/story/${id}.jpg" alt="Video báo hỷ ${esc(n)}" loading="lazy"></div><p class="nm">${esc(n)}</p></a>`;
+    const bhcard = ([id, n]) => `<a class="ncard bh" data-story="${id}" href="/video?mau=${id}"><div class="pic"><img src="/demo/story/${id}.jpg" alt="Video báo hỷ ${esc(n)}" loading="lazy"></div><p class="nm">${esc(n)}</p></a>`;
     rows.innerHTML =
       sec('mau-thiep', 'Thiệp cưới online', `Mỗi khách một tên riêng · ${T.length} mẫu`, '/mau-thiep', 'Xem', slide(top.map((t) => card(t))))
       + sec('bao-hy', 'Video báo hỷ TikTok' + FREE, 'Ảnh cưới thành video 20 giây', '/video', 'Xem', slide(BH.map(bhcard)))
@@ -192,7 +192,7 @@
     fit(); addEventListener('resize', fit);
     // bấm thẻ mẫu → xem trước (site.js tplView): điện thoại toàn màn, máy tính popup; trong đó có tên mẫu + nút Dùng mẫu
     rows.addEventListener('click', (e) => {
-      const c = e.target.closest('.ncard[data-tpl],.ncard[data-video],.ncard[data-led]');
+      const c = e.target.closest('.ncard[data-tpl],.ncard[data-video],.ncard[data-led],.ncard[data-story]');
       if (!c || !window.tplView || e.metaKey || e.ctrlKey) return;
       e.preventDefault();
       const name = (c.querySelector('.info b') || {}).textContent || '';
@@ -217,7 +217,7 @@
         const moved = e.screenX !== lastX || e.screenY !== lastY; // mousemove giả sau khi cuộn có toạ độ y hệt lần trước
         lastX = e.screenX; lastY = e.screenY;
         if (!moved) return;
-        const c = e.target.closest('.ncard[data-tpl],.ncard[data-video],.ncard[data-led]');
+        const c = e.target.closest('.ncard[data-tpl],.ncard[data-video],.ncard[data-led],.ncard[data-story]');
         if (!c) return;
         if (cur && cur.c !== c) stop();
         if (cur && cur.f) return; // đã nạp xong trên thẻ này
@@ -225,6 +225,14 @@
         clearTimeout(st.t);
         st.t = setTimeout(() => {
           const pic = c.querySelector('.pic'), video = !!(c.dataset.video || c.dataset.led);
+          if (c.dataset.story) { // video báo hỷ: phát luôn video mẫu dọc (đã dựng sẵn, không tiếng)
+            const v = document.createElement('video');
+            v.className = 'live story'; v.muted = true; v.loop = true; v.playsInline = true; v.autoplay = true; v.src = `/demo/story/${c.dataset.story}.mp4`;
+            pic.appendChild(v); st.f = v;
+            v.addEventListener('playing', () => { if (cur === st) v.classList.add('on'); });
+            const pp = v.play(); if (pp && pp.catch) pp.catch(() => {});
+            return;
+          }
           if (!video) return scrollImage(st, c, pic);
           const base = 1280, s = Math.max(pic.clientWidth / base, pic.clientHeight / 720); // phủ kín ô: ô lớn của khối cao hơn 16:9 vài px
           const f = document.createElement('iframe');
@@ -233,7 +241,7 @@
           f.src = c.dataset.led ? `/led/demo?preview=1&${c.dataset.led}` : `/video/demo?preview=1&template=${c.dataset.video}`;
           pic.querySelector('a').after(f); st.f = f;
           f.onload = () => { if (cur === st) setTimeout(() => f.classList.add('on'), 150); };
-        }, video(c) ? 500 : 80);
+        }, video(c) ? 500 : c.dataset.story ? 150 : 80);
       });
       const video = (c) => !!(c.dataset.video || c.dataset.led);
       // thiệp: ảnh dài chụp sẵn của cả trang (tools/previews.js → /demo/scroll-<mẫu>.jpg) trượt bằng CSS transition —
@@ -241,7 +249,7 @@
       const scrollImage = (st, c, pic) => {
         const im = new Image();
         im.className = 'scrollimg'; im.alt = ''; im.draggable = false;
-        im.src = `/demo/scroll-${c.dataset.tpl}.jpg`;
+        im.src = `/demo/scroll-${c.dataset.tpl}.jpg?v=2`;
         st.f = im;
         im.onload = () => {
           if (cur !== st) return;
@@ -286,7 +294,7 @@
       // rê chuột vào một hàng: nạp trước ảnh trượt của các thẻ đang thấy để lúc rê tới thẻ là hiện ngay
       rows.addEventListener('pointerover', (e) => {
         const r = e.target.closest('.nrow'); if (!r || r.dataset.pf) return; r.dataset.pf = '1';
-        r.querySelectorAll('.ncard[data-tpl]').forEach((c) => { const b = c.getBoundingClientRect(); if (b.right > 0 && b.left < innerWidth) new Image().src = `/demo/scroll-${c.dataset.tpl}.jpg`; });
+        r.querySelectorAll('.ncard[data-tpl]').forEach((c) => { const b = c.getBoundingClientRect(); if (b.right > 0 && b.left < innerWidth) new Image().src = `/demo/scroll-${c.dataset.tpl}.jpg?v=2`; });
       });
     }
 

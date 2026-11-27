@@ -175,7 +175,11 @@ async function call(who, method, url, body, extra = {}) {
   assert.equal((await call('anon', 'GET', '/led/tuan-lan')).status, 403, 'chưa kích hoạt: link trình chiếu khoá');
   r = await call('u', 'GET', '/led/tuan-lan?preview=1', undefined, { 'sec-fetch-dest': 'iframe' });
   assert.equal(r.status, 200);
-  assert.match(r.text, /Bản dùng thử/);
+  assert.match(r.text, /class="wmt"/, 'bản dùng thử: chữ chìm phủ khắp màn');
+  r = await call('anon', 'GET', '/led/tuan-lan?xem=1');
+  assert.equal(r.status, 200, 'link xem thử gửi vợ/chồng mở được');
+  assert.match(r.text, /class="wmt"/, 'link xem thử luôn có chữ chìm');
+  assert.match(r.text, /"review":true/, 'link xem thử không phủ lớp cần kích hoạt');
   assert.ok(!r.text.includes('Tuấn <script>'), 'tên trên màn LED phải được escape');
   assert.equal((await call('u', 'POST', `/api/cards/${id}/order`, { product: 'led', coupon: 'GIAMRIENG' })).status, 400, 'mã giảm giá chỉ cho thiệp');
   r = await call('u', 'POST', `/api/cards/${id}/order`, { product: 'led' });

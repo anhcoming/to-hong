@@ -7,6 +7,9 @@
 const fs = require('fs'), os = require('os'), path = require('path'), { spawn } = require('child_process');
 const [,, BASE = 'http://localhost:3210', ONLY] = process.argv;
 const W = 390, H = 693, DPR = 1.5, MAXH = 9000, QUALITY = 72, PORT = 9411;
+// ảnh dài (rê chuột): chỉ phần đầu trang, thu về rộng 300px — đủ nét cho thẻ ~240px mà file nhẹ. Đừng đưa qua bước nén "cạnh dài 1800px"
+// (bước đó từng bóp ảnh dài còn 82px bề ngang → rê chuột thấy mờ). SCROLL_ONLY=1: chỉ chụp lại ảnh dài, giữ nguyên ảnh bìa.
+const SCROLL_H = 3900, SCROLL_W = 300, SCROLL_ONLY = process.env.SCROLL_ONLY === '1';
 const CANDIDATES = [process.env.CHROME, 'C:/Program Files/Google/Chrome/Application/chrome.exe', 'C:/Program Files (x86)/Google/Chrome/Application/chrome.exe',
   '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome', '/usr/bin/google-chrome', '/usr/bin/chromium'].filter(Boolean);
 const CHROME = CANDIDATES.find((p) => fs.existsSync(p));
@@ -35,8 +38,8 @@ const kb = (f) => Math.round(fs.statSync(f).size / 1024) + 'KB';
     if (r.error || !r.result || r.result.exceptionDetails) { if (retry > 0) { await sleep(1500); return evaluate(expression, retry - 1); } throw new Error(JSON.stringify(r.error || r.result.exceptionDetails)); }
     return r.result.result.value;
   };
-  const shot = async (file, height) => {
-    const r = await send('Page.captureScreenshot', { format: 'jpeg', quality: QUALITY, captureBeyondViewport: true, clip: { x: 0, y: 0, width: W, height, scale: 1 } });
+  const shot = async (file, height, scale = 1) => {
+    const r = await send('Page.captureScreenshot', { format: 'jpeg', quality: QUALITY, captureBeyondViewport: true, clip: { x: 0, y: 0, width: W, height, scale } });
     fs.writeFileSync(file, Buffer.from(r.result.data, 'base64'));
   };
   await send('Page.enable'); await send('Runtime.enable');
@@ -45,6 +48,7 @@ const kb = (f) => Math.round(fs.statSync(f).size / 1024) + 'KB';
 
   for (const t of list) {
     for (const [pi, p] of t.palettes.entries()) try {
+      if (SCROLL_ONLY && pi > 0) continue;
       await send('Page.navigate', { url: `${BASE}/demo/${t.id}?palette=${p.id}&preview=1` });
       await sleep(2200);
       // mở sẵn mọi khối hiện dần; cuộn qua cả trang để ảnh nạp lười cũng nạp, rồi quay về đầu
@@ -56,14 +60,14 @@ const kb = (f) => Math.round(fs.statSync(f).size / 1024) + 'KB';
         await new Promise(r=>setTimeout(r,500));
         return Math.min(${MAXH},document.documentElement.scrollHeight);})()`);
       const cover = path.join(OUT, `cover-${t.id}-${p.id}.jpg`);
-      await shot(cover, H);
-      let note = `bìa ${kb(cover)}`;
-      if (pi === 0) { const scroll = path.join(OUT, `scroll-${t.id}.jpg`); await shot(scroll, h); note += ` · dài ${W}x${h} ${kb(scroll)}`; }
+      let note = '';
+      if (!SCROLL_ONLY) { await shot(cover, H); note = `bìa ${kb(cover)}`; }
+      if (pi === 0) { const sh = Math.min(h, SCROLL_H), scroll = path.join(OUT, `scroll-${t.id}.jpg`); await shot(scroll, sh, SCROLL_W / W / DPR); note += ` · dài ${SCROLL_W}x${Math.round(sh * SCROLL_W / W)} ${kb(scroll)}`; }
       console.log(`✓ ${t.id} / ${p.id}: ${note}`);
     } catch (err) { console.error(`✗ ${t.id} / ${p.id}: ${err.message}`); }
   }
   // poster màn LED 16:9 cho hàng "Top 5 màn hình LED" ở trang chủ: lposter-<màu>-<hiệu ứng>.jpg (chỉ chụp riêng: tham số cuối = led)
-  if (!ONLY || ONLY === 'led') {
+  if (!SCROLL_ONLY && (!ONLY || ONLY === 'led')) {
     const TOP_LED = [['do', 'sao'], ['den', 'remphale'], ['dem', 'phaohoa'], ['tim', 'hoadang'], ['hong', 'tim']]; // cùng danh sách với public/index.html
     await send('Emulation.setDeviceMetricsOverride', { width: 1280, height: 720, deviceScaleFactor: 1, mobile: false });
     for (const [p, e] of TOP_LED) try {

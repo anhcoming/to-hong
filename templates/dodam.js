@@ -441,6 +441,8 @@ module.exports = {
 .tpl-dodam .dd-envs .front{z-index:2;rotate:-10deg;transform-origin:50% 92%;filter:drop-shadow(0 10px 18px rgba(0,0,0,.22));animation:ddFloatMain 3s ease-in-out infinite}
 .tpl-dodam .dd-envs .back{z-index:1;transform-origin:50% 100%;transform:translateX(20%) translateY(-10%) scale(-.8,.8) rotate(-15deg);filter:drop-shadow(0 8px 14px rgba(0,0,0,.18));animation:ddFloat 5.2s ease-in-out .5s infinite}
 .tpl-dodam .dd-envbtn:hover .front,.tpl-dodam .dd-envbtn:focus-visible .front{animation:ddFloatMain 3s ease-in-out infinite,ddWave 1.1s ease-in-out infinite;scale:1.12}
+.tpl-dodam .dd-envbtn:hover .back,.tpl-dodam .dd-envbtn:focus-visible .back{animation:ddFloat 5.2s ease-in-out .5s infinite,ddBackWave 1.1s ease-in-out .15s infinite;scale:1.06}
+@keyframes ddBackWave{0%,100%{rotate:0deg}20%{rotate:-5deg}40%{rotate:4deg}60%{rotate:-3.5deg}80%{rotate:2deg}}
 .tpl-dodam .dd-envs .sh{position:absolute;left:50%;bottom:-6px;z-index:0;width:125px;height:11px;margin-left:-62px;border-radius:50%;background:rgba(0,0,0,.45);filter:blur(4px);animation:ddShadow 3s ease-in-out infinite}
 .tpl-dodam .dd-envs i{position:absolute;z-index:3;font-style:normal;color:#b58b2f;opacity:0;animation:ddSpark 2s ease-in-out infinite}
 .tpl-dodam .dd-envs i:nth-child(1){top:6%;left:12%;font-size:21px}

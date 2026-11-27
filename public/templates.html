@@ -129,6 +129,10 @@ main.wrap{padding-top:104px}
 @media (max-width:760px){.timbar{bottom:calc(86px + env(safe-area-inset-bottom));font-size:13px;padding:6px 6px 6px 14px}.timbar button{height:34px;padding:0 12px;font-size:12.5px}.tc .ht{width:30px;height:30px;font-size:15px;right:6px;bottom:6px}.tc .txt{right:8px}}
 /* nền tối */
 [data-theme="dark"] .flist button[aria-pressed="true"],[data-theme="dark"] .chon{background:#3a1f26}
+/* tên mẫu một hàng dưới ảnh (như trang chủ, Video cưới, Màn LED) — bỏ dải tối đè đáy ảnh, 27/11 */
+.tc .pic::after{display:none}
+.tc .nm{margin:8px 2px 0;font-size:14.5px;font-weight:700;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+@media (max-width:760px){.tc .nm{margin-top:6px;font-size:13.5px}}
 </style>
 </head>
 <body data-page="tpl">
@@ -222,8 +226,8 @@ main.wrap{padding-top:104px}
       return `<div class="tc" data-tpl="${t.id}" data-pal="${p.id}">
         <div class="pic"><a class="demo" href="/demo/${t.id}?palette=${p.id}" aria-label="Xem thử mẫu ${esc(t.name)}"><img src="${cover(t.id, p.id)}" alt="Mẫu thiệp ${esc(t.name)}" loading="lazy"></a>
         <div class="sw">${t.palettes.length > 1 ? t.palettes.map((q2) => `<button type="button" data-pal="${q2.id}" title="${esc(q2.name)}" aria-label="Bảng màu ${esc(q2.name)}" class="${q2.id === p.id ? 'on' : ''}" style="background:linear-gradient(135deg,${q2.swatch[0]} 50%,${q2.swatch[1]} 50%)"></button>`).join('') : ''}</div>
-        <div class="txt"><b>${esc(t.name)}</b></div>
         </div>
+        <p class="nm">${esc(t.name)}</p>
       </div>`;
     }).join('') : '<div class="none"><p style="font-size:40px;margin:0">🔍</p><p>Chưa có mẫu khớp bộ lọc.</p><button class="btn btn-ghost" id="clear2">Xoá bộ lọc</button></div>';
     const c2 = $('#clear2'); if (c2) c2.onclick = clear;
@@ -240,7 +244,7 @@ main.wrap{padding-top:104px}
     if (e.target.closest('.sw') || e.target.closest('.ht') || !window.tplView || e.metaKey || e.ctrlKey) return;
     const c = e.target.closest('.tc[data-tpl]'); if (!c) return;
     e.preventDefault();
-    tplView({ name: c.querySelector('.txt b').textContent, src: `/demo/${c.dataset.tpl}?palette=${c.dataset.pal}`, use: `/thiep-cua-toi?tao=${c.dataset.tpl}&mau=${c.dataset.pal}` });
+    tplView({ name: c.querySelector('.nm').textContent, src: `/demo/${c.dataset.tpl}?palette=${c.dataset.pal}`, use: `/thiep-cua-toi?tao=${c.dataset.tpl}&mau=${c.dataset.pal}` });
   });
   // ---- tim mẫu → "Chọn cùng người ấy" (/chon/:id): tim lưu trong máy (cnTim); đã có bảng chọn (cnChon) thì gửi lên luôn ----
   $('#grid').addEventListener('click', (e) => {
@@ -291,7 +295,7 @@ main.wrap{padding-top:104px}
       if (tpl && c.dataset.pal && c.dataset.pal !== tpl.palettes[0].id) return liveFrame(st, c, pic);
       const im = new Image();
       im.className = 'scrollimg'; im.alt = ''; im.draggable = false;
-      im.src = `/demo/scroll-${c.dataset.tpl}.jpg`;
+      im.src = `/demo/scroll-${c.dataset.tpl}.jpg?v=2`;
       st.f = im;
       im.onload = () => {
         if (cur !== st) return;
@@ -335,7 +339,7 @@ main.wrap{padding-top:104px}
     // lần đầu rê vào lưới: nạp trước ảnh trượt của các thẻ đang thấy
     grid.addEventListener('pointerover', () => {
       if (grid.dataset.pf) return; grid.dataset.pf = '1';
-      grid.querySelectorAll('.tc[data-tpl]').forEach((c) => { const b = c.getBoundingClientRect(); if (b.bottom > 0 && b.top < innerHeight) new Image().src = `/demo/scroll-${c.dataset.tpl}.jpg`; });
+      grid.querySelectorAll('.tc[data-tpl]').forEach((c) => { const b = c.getBoundingClientRect(); if (b.bottom > 0 && b.top < innerHeight) new Image().src = `/demo/scroll-${c.dataset.tpl}.jpg?v=2`; });
     }, { once: true });
   }
   document.addEventListener('meta', (e) => {

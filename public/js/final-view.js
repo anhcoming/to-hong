@@ -51,6 +51,9 @@ body.fv-on #scrub{display:none!important} /* video: thanh phát cũ thay bằng 
 .fv-lab b{display:block;font-size:12.5px;font-weight:600;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .fv-lab small{display:block;font-size:11px;color:var(--muted);font-variant-numeric:tabular-nums}
 .fv-lab.on b{color:var(--primary)}
+/* gọn: chỉ hiện tên cảnh đang chiếu (tên mọi cảnh xếp theo mốc thời gian hay đè lên nhau) */
+.fv-lab:not(.on){display:none}.fv-lab.on{left:0!important;max-width:100%}.fv-lab small{display:none}
+.fv-labs{height:20px}
 .fv-seg:focus-visible .bar{outline:2px solid var(--primary);outline-offset:2px}
 .fv-play .tm{flex:none;min-width:88px;text-align:right;white-space:nowrap;font-size:13px;color:var(--muted);font-variant-numeric:tabular-nums}
 .fv-play .fs{all:unset;cursor:pointer;flex:none;width:38px;height:38px;border-radius:12px;display:grid;place-items:center;background:var(--surface,#fff);box-shadow:0 0 0 1px var(--line),0 6px 14px rgba(60,30,40,.08);font-size:15px}
@@ -64,7 +67,27 @@ body.fv-on #scrub{display:none!important} /* video: thanh phát cũ thay bằng 
 @media (max-width:980px){
   body.fv-on .studio{display:flex;flex-direction:column;overflow:auto}
   .fv{order:5;border-left:0;overflow:visible;padding:4px 12px 28px;background:none}
-}`;
+}
+/* kiểu YouTube: thanh tua mảnh rộng hết hàng, chia đoạn theo cảnh, dày lên khi rê / kéo;
+   hàng dưới: ▶/❚❚ · giờ · tên cảnh đang chiếu · toàn màn hình (nút dạng icon, không nền) */
+.fvb .fv-play{grid-template-columns:auto auto minmax(0,1fr) auto!important;column-gap:6px!important;row-gap:0!important}
+.fvb .fv-segs{grid-column:1/-1!important;grid-row:1!important;padding:8px 0!important}
+.fvb .fv-play>.pp{grid-column:1!important;grid-row:2!important}
+.fvb .fv-play>.tm{grid-column:2!important;grid-row:2!important;min-width:0!important;text-align:left!important;font-size:13px!important;color:var(--ink)!important}
+.fvb .fv-labs{grid-column:3!important;grid-row:2!important;height:auto!important;display:flex;align-items:center}
+.fvb .fv-play>.fs{grid-column:4!important;grid-row:2!important}
+.fvb .fv-play .pp,.fvb .fv-play .fs{width:36px!important;height:36px!important;border-radius:50%!important;background:none!important;box-shadow:none!important;color:var(--ink)!important;font-size:15px!important}
+.fvb .fv-play .pp:hover,.fvb .fv-play .fs:hover{background:color-mix(in srgb,var(--ink) 8%,transparent)!important}
+.fvb .fv-track{height:4px;border-radius:0;background:color-mix(in srgb,var(--ink) 16%,transparent);transition:height .12s}
+.fvb .fv-track .fill{border-radius:0}
+.fvb .fv-track .tk{width:3px;margin-left:-1.5px;background:var(--bg,#fff)}
+.fvb .fv-track .knob{width:12px;height:12px;margin:-6px 0 0 -6px;transform:scale(0);transition:transform .12s}
+.fvb .fv-segs:hover .fv-track,.fvb .fv-segs:active .fv-track{height:6px}
+.fvb .fv-segs:hover .knob,.fvb .fv-segs:active .knob{transform:none}
+@media (pointer:coarse){.fvb .fv-track .knob{transform:none}}
+.fvb .fv-lab{position:static!important;max-width:100%!important}
+.fvb .fv-lab.on b{color:var(--ink)!important;font-size:13px!important;font-weight:500!important}
+.fvb .fv-lab.on b::before{content:"• ";color:var(--muted)}`;
   const mmss = (t) => `${Math.floor(t / 60)}:${String(Math.floor(t % 60)).padStart(2, '0')}`;
   const esc = (t) => String(t == null ? '' : t).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
   let o = {};

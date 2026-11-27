@@ -52,24 +52,33 @@ function renderSide() {
   else if (curPanel === 'chu') {
     // A · bảng nhập: điền vào ô → màn đổi ngay; bấm vào ô nào thì màn chuyển tới cảnh có chữ đó và đứng yên (data-sc)
     const fixed = !ADMIN && !!card.led.names; // đã kích hoạt: tên đôi cố định (quản trị viên vẫn sửa được)
-    const f = (k, label, sc, ph = '', type = 'text') => `<label class="field"><span>${label}</span><input data-d="${k}" data-sc="${sc}" type="${type}" value="${esc(getP(d, k) || '')}" placeholder="${esc(ph)}"${fixed && /\.name$/.test(k) ? ' disabled' : ''}></label>`;
-    h = tabs + `<p class="pdesc">Điền vào ô — màn bên cạnh đổi ngay, chỗ vừa đổi sáng viền hồng.</p>
+    // bố / mẹ: chỉ gõ tên, chữ "Ông" / "Bà" tự thêm (giữ kính xưng đã lưu, vd. "Cụ ông")
+    const f = (k, label, sc, ph = '', type = 'text') => {
+      let v = getP(d, k) || '', tt = '';
+      if (/\.(father|mother)$/.test(k)) { const m = /^(Cụ ông|Cụ bà|Ông|Bà)\s+(.*)$/.exec(v); tt = m ? m[1] : /father$/.test(k) ? 'Ông' : 'Bà'; if (m) v = m[2]; ph = 'Tên…'; }
+      const dis = fixed && /\.name$/.test(k) ? ' disabled' : '';
+      if (type !== 'text') return `<label class="field"><span>${label}</span><input data-d="${k}" data-sc="${sc}" type="${type}" value="${esc(v)}" placeholder="${esc(ph)}"${dis}></label>`;
+      return `<label class="field"><span>${label}</span><textarea class="ta1" rows="1" data-d="${k}" data-sc="${sc}"${tt ? ` data-tt="${tt}"` : ''} placeholder="${esc(ph)}"${dis}>${esc(v)}</textarea></label>`; // nhiều dòng: Enter để xuống dòng trên màn LED
+    };
+    h = tabs + `
       <section class="group cform">
         <p class="clab">Cỡ chữ</p>
         <div class="fsz"><b class="s">A</b><input type="range" data-fs min="60" max="140" step="5" value="${Math.round((typeof led.fs === 'number' ? led.fs : 1) * 100)}" aria-label="Cỡ chữ"><b class="l">A</b><output>${Math.round((typeof led.fs === 'number' ? led.fs : 1) * 100)}%</output></div>
-        ${(META.led.fonts || []).length ? `<label class="field"><span>Kiểu chữ</span><select data-l="font">${META.led.fonts.map((x) => `<option value="${x.id}"${(led.font || '') === x.id ? ' selected' : ''}>${esc(x.name)}</option>`).join('')}</select></label>` : ''}
-        ${(META.led.colors || []).length ? `<div class="field"><span>Màu chữ</span><div class="lcol">${META.led.colors.map((x) => `<button type="button" class="${(led.color || '') === x.id ? 'on' : ''}" data-color="${x.id}" title="${esc(x.name)}" aria-label="${esc(x.name)}">${x.id ? `<i style="background:${x.id}"></i>` : '<i class="auto">A</i>'}</button>`).join('')}</div></div>` : ''}
+        <div class="fcrow">${(META.led.fonts || []).length ? `<label class="field"><span>Kiểu chữ</span><select data-l="font">${META.led.fonts.map((x) => `<option value="${x.id}"${(led.font || '') === x.id ? ' selected' : ''}>${esc(x.name)}</option>`).join('')}</select></label>` : ''}
+        ${(META.led.colors || []).length ? (() => { const cur = META.led.colors.find((x) => (led.color || '') === x.id) || META.led.colors[0]; const sw = (x) => (x.id ? `<i style="background:${x.id}"></i>` : '<i class="auto">A</i>');
+          // màu chữ: một ô màu đang dùng, bấm vào mới xổ bảng màu
+          return `<div class="field"><span>Màu</span><details class="lcp"><summary class="lcol" aria-label="Màu chữ: ${esc(cur.name)}"><button type="button" class="on" tabindex="-1">${sw(cur)}</button></summary><div class="lcol lcpop">${META.led.colors.map((x) => `<button type="button" class="${(led.color || '') === x.id ? 'on' : ''}" data-color="${x.id}" title="${esc(x.name)}" aria-label="${esc(x.name)}">${sw(x)}</button>`).join('')}</div></details></div>`; })() : ''}</div>
         <p class="clab">Tên đôi</p>
         <div class="grid2">${f('groom.name', 'Chú rể', 'names', 'Gia Huy')}${f('bride.name', 'Cô dâu', 'names', 'Bảo Ngọc')}</div>
         ${fixed ? '<p class="muted" style="font-size:12px;margin:-4px 0 8px">🔒 Đã kích hoạt: tên đôi cố định</p>' : ''}
-        <label class="field"><span>Dòng tiêu đề</span><input data-l="kicker" data-sc="names" value="${esc(led.kicker)}" maxlength="40" placeholder="Lễ Thành Hôn / Lễ Vu Quy / Tiệc Cưới"></label>
+        <label class="field"><span>Dòng tiêu đề</span><textarea class="ta1" rows="1" data-l="kicker" data-sc="names" maxlength="40" placeholder="Lễ Thành Hôn / Lễ Vu Quy / Tiệc Cưới">${esc(led.kicker)}</textarea></label>
         <p class="clab">Ngày giờ</p>
         <div class="grid2">${f('date', 'Ngày cưới', 'date', '', 'date')}${f('time', 'Giờ', 'date', '', 'time')}</div>
-        <label class="field"><span>Dòng âm lịch</span><input data-l="lunar" data-sc="date" value="${esc(led.lunar || '')}" maxlength="80" placeholder="${esc(window.Lunar && d.date ? Lunar.lunarText(d.date) : 'Để trống: tự ghi theo ngày cưới')}"></label>
+        <label class="field"><span>Dòng âm lịch</span><textarea class="ta1" rows="1" data-l="lunar" data-sc="date" maxlength="80" placeholder="${esc(window.Lunar && d.date ? Lunar.lunarText(d.date) : 'Để trống: tự ghi theo ngày cưới')}">${esc(led.lunar || '')}</textarea></label>
         <p class="clab">Bố mẹ hai bên</p>
         <div class="grid2">${f('groom.father', 'Bố chú rể', 'parents', 'Ông …')}${f('bride.father', 'Bố cô dâu', 'parents', 'Ông …')}${f('groom.mother', 'Mẹ chú rể', 'parents', 'Bà …')}${f('bride.mother', 'Mẹ cô dâu', 'parents', 'Bà …')}</div>
         <p class="clab">Lời cảm ơn</p>
-        <label class="field"><textarea data-l="message" data-sc="msg" maxlength="200" rows="3">${esc(led.message)}</textarea></label>
+        <label class="field"><span>Lời cảm ơn</span><textarea data-l="message" data-sc="msg" maxlength="200" rows="3">${esc(led.message)}</textarea></label>
         <p class="muted" style="font-size:12px;margin:4px 0 0">Tên, ngày, bố mẹ dùng chung với thiệp. Ô nào để trống thì cảnh đó tự ẩn.</p>
       </section>`;
   }
@@ -112,17 +121,14 @@ function renderHeader() {
     return;
   }
   $('#chip').innerHTML = !s.created ? '' : s.paid ? '<span class="chip ok">● Đã kích hoạt</span>'
-    : '<span class="chip warn">Đang dùng thử</span>';
+    : ''; // bản xem thử: không ghi chữ trạng thái (thanh trên chỉ còn ← · Xem trước · Gửi video)
   // điện thoại: nhãn ngắn (lớp hide-xs / show-xs) để ba nút vừa một hàng
   // chưa kích hoạt: chỉ nút Kích hoạt; kích hoạt rồi mới hiện Chép link · Mở trình chiếu · Tải MP4
-  $('#acts').innerHTML = s.created ? `${s.paid ? `<button class="btn sm soft" id="cpLink">Chép link</button><a class="btn sm plain" id="openLed" target="_blank" href="${esc(s.url)}"><span class="hide-xs">Mở trình chiếu</span><span class="show-xs">▶ Trình chiếu</span></a>` : ''}${s.paid ? '<button class="btn sm" id="mp4Btn">⬇ Tải MP4</button>' : `<button class="btn sm" id="payBtn">Kích hoạt<span class="hide-xs"> · ${money(META.ledPrice)}</span><span class="show-xs"> ${Math.round(META.ledPrice / 1000)}k</span></button>`}`
-    : '';
-  $('#acts').style.gridTemplateColumns = s.created && s.paid ? '1fr 1fr 1fr' : '';
-  const mb = $('#mp4Btn'); if (mb) mb.onclick = mp4Dialog;
-  const pb = $('#payBtn'); if (pb) pb.onclick = () => openPayModal(CARD_ID, reload, 'led');
-  // chưa kích hoạt: link trình chiếu chưa mở được → bấm chép / mở link thì mời kích hoạt luôn
-  const cp = $('#cpLink'); if (cp) cp.onclick = () => (pb ? pb.click() : copyText(s.url, 'Đã chép link màn LED'));
-  const ol = $('#openLed'); if (ol && pb) ol.onclick = (e) => { e.preventDefault(); pb.click(); };
+  // như trình sửa thiệp: Xem trước (toàn màn hình) · Gửi video (bảng: gửi vợ/chồng xem thử, kích hoạt; đã kích hoạt: link chiếu, MP4)
+  $('#acts').innerHTML = s.created ? `<button class="btn sm soft" id="pvBtn"><svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex:none"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg><span>&nbsp;Xem trước</span></button><button class="btn sm" id="sendBtn">${s.paid ? 'Gửi video' : 'Kích hoạt'}</button>` : '';
+  $('#acts').style.gridTemplateColumns = '';
+  const pv = $('#pvBtn'); if (pv) pv.onclick = ledPreview;
+  const sb = $('#sendBtn'); if (sb) sb.onclick = () => ledSend(s);
   // đã chốt hẳn: bố cục xem chi tiết dùng chung với video (public/js/final-view.js) — thẻ đem đi chiếu / gửi kỹ thuật
   if (ledFinal() && led) { // lần gọi đầu (chưa nạp cấu hình màn LED) bỏ qua, start() gọi lại
     const names = [card.data.groom.name, card.data.bride.name].filter(Boolean).join(' & ');
@@ -142,7 +148,52 @@ function ledPlayer() {
   const NAME = { names: 'Tên đôi', date: 'Ngày cưới', countdown: 'Đếm ngược', parents: 'Bố mẹ', msg: 'Lời cảm ơn', message: 'Lời cảm ơn', photo: 'Ảnh cưới' };
   return { ...p, chapters: () => p.keys().map((k, i) => ({ name: NAME[k] || 'Cảnh ' + (i + 1), t: i * p.seconds() })) };
 }
-function ledFull() { const f = $('#frame'); if (f.requestFullscreen) f.requestFullscreen().catch(() => {}); }
+// Xem trước: màn LED to hết màn hình (lớp phủ, chạy được cả trên iPhone), ✕ để thoát
+function ledPreview() {
+  const ov = document.createElement('div');
+  ov.className = 'lpv';
+  ov.innerHTML = `<iframe src="/led/${card.slug}?preview=1&t=${Date.now()}" title="Xem trước màn LED" allow="autoplay; fullscreen"></iframe><button type="button" aria-label="Thoát xem trước">✕</button>`;
+  document.body.appendChild(ov);
+  if (ov.requestFullscreen) ov.requestFullscreen().catch(() => {}); // máy tính: toàn màn hình thật; không được thì vẫn phủ kín cửa sổ
+  const close = () => { if (document.fullscreenElement) document.exitFullscreen().catch(() => {}); ov.remove(); document.removeEventListener('keydown', esc1); document.removeEventListener('fullscreenchange', fsOut); };
+  const fsOut = () => { if (!document.fullscreenElement && ov.isConnected) close(); }; // bấm Esc thoát toàn màn hình → đóng luôn lớp xem
+  document.addEventListener('fullscreenchange', fsOut);
+  const esc1 = (e) => { if (e.key === 'Escape') close(); };
+  ov.querySelector('button').onclick = close;
+  document.addEventListener('keydown', esc1);
+}
+// Gửi video: chưa kích hoạt → gửi vợ/chồng xem thử (link có chữ chìm "Xem trước tại cuoinha.com") + kích hoạt; đã kích hoạt → link chiếu ở tiệc, tải MP4
+function ledSend(s) {
+  const trial = !s.paid, url = trial ? `${s.url}?xem=1` : s.url;
+  const mobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+  const msg = trial ? 'Đã chép link xem thử' : 'Đã chép link trình chiếu';
+  const share = () => (navigator.share ? navigator.share({ url }).catch(() => {}) : copyText(url, msg));
+  const toMess = () => { if (mobile) { location.href = 'fb-messenger://share/?link=' + encodeURIComponent(url); return; } copyText(url, msg + ' — dán vào Messenger'); window.open('https://www.messenger.com/', '_blank', 'noopener'); };
+  const toZalo = () => { if (mobile && navigator.share) return share(); copyText(url, msg + ' — dán vào Zalo'); if (!mobile) window.open('https://chat.zalo.me/', '_blank', 'noopener'); };
+  const ICO = {
+    copy: '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="12" fill="var(--primary-soft,#fde8ec)"/><g fill="none" stroke="var(--primary,#d6455d)" stroke-width="1.7" stroke-linecap="round"><path d="M10.6 13.4a3 3 0 0 0 4.2 0l2.1-2.1a3 3 0 0 0-4.2-4.2l-.9.9"/><path d="M13.4 10.6a3 3 0 0 0-4.2 0l-2.1 2.1a3 3 0 0 0 4.2 4.2l.9-.9"/></g></svg>',
+    mess: '<svg viewBox="0 0 24 24" aria-hidden="true"><defs><linearGradient id="lmsg" x1="0" y1="1" x2="1" y2="0"><stop offset="0" stop-color="#0866ff"/><stop offset=".6" stop-color="#a033ff"/><stop offset="1" stop-color="#ff5c87"/></linearGradient></defs><circle cx="12" cy="12" r="12" fill="url(#lmsg)"/><path d="M12 5.2c-3.9 0-6.9 2.8-6.9 6.6 0 2 .8 3.7 2.2 4.9v2.4l2.1-1.2c.8.2 1.7.3 2.6.3 3.9 0 6.9-2.8 6.9-6.4S15.9 5.2 12 5.2zm.7 8.6-1.8-1.9-3.4 1.9 3.7-4 1.8 1.9 3.4-1.9-3.7 4z" fill="#fff"/></svg>',
+    zalo: '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="12" fill="#0068ff"/><text x="12" y="15.2" text-anchor="middle" font-family="Arial,Helvetica,sans-serif" font-size="8.6" font-weight="700" fill="#fff">Zalo</text></svg>',
+    more: '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="12" fill="var(--bg2,#f1ebec)"/><g fill="var(--ink,#2b2224)"><circle cx="7.5" cy="12" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="16.5" cy="12" r="1.5"/></g></svg>',
+  };
+  const shareRow = `<div class="sendi"><button type="button" id="cpL" aria-label="Chép link">${ICO.copy}</button><button type="button" id="shM" aria-label="Gửi qua Messenger">${ICO.mess}</button><button type="button" id="shZ" aria-label="Gửi qua Zalo">${ICO.zalo}</button><button type="button" id="shO" aria-label="Chia sẻ qua ứng dụng khác">${ICO.more}</button></div>`;
+  const opt = (tag, title, sub, body) => `<div class="sendo${tag ? ' ' + tag : ''}"><div class="sendo-h"><b>${title}</b>${sub}</div>${body}</div>`;
+  openModal(`<h2 style="margin:-10px 0 10px;line-height:36px;text-align:center;font-size:20px">${trial ? 'Kích hoạt' : 'Gửi video'}</h2>
+    ${trial
+      ? opt('', 'Xem thử <em>Miễn phí</em>', 'Gửi vợ/chồng xem trước có ưng không', shareRow)
+        + opt('main', 'Chiếu ở tiệc cưới', '<ul class="sendo-b"><li>Link trình chiếu màn LED ở tiệc</li><li>Tải video MP4 gửi bên âm thanh ánh sáng</li><li>Bỏ chữ “Xem trước tại cuoinha.com”</li></ul>', `<div class="sendo-p"><div class="pr"><b>${money(META.ledPrice)}</b></div><button class="btn sm" id="toPay">Kích hoạt</button></div>`)
+      : opt('main', 'Link trình chiếu', 'Gửi bên kỹ thuật, mở bằng Chrome, bấm F để toàn màn hình', `<div class="sendo-l"><span>${esc(url.replace(/^https?:\/\//, ''))}</span></div>` + shareRow)
+        + opt('', 'Video MP4', 'Tải về chép vào USB / gửi bên âm thanh ánh sáng', '<div class="sendo-a"><button class="btn sm soft" id="toMp4">⬇ Tải MP4</button><a class="btn sm plain" target="_blank" rel="noopener" href="' + esc(url) + '">▶ Mở trình chiếu</a></div>')}`,
+  (box, close) => {
+    $('#cpL', box).onclick = () => copyText(url, msg);
+    $('#shM', box).onclick = toMess;
+    $('#shZ', box).onclick = toZalo;
+    $('#shO', box).onclick = share;
+    const tp = $('#toPay', box); if (tp) tp.onclick = () => { close(); openPayModal(CARD_ID, reload, 'led'); };
+    const tm = $('#toMp4', box); if (tm) tm.onclick = () => { close(); mp4Dialog(); };
+  });
+}
+function ledFull() { ledPreview(); } // nút ⛶ dưới khung: như Xem trước (iPhone / khung app không có toàn màn hình của trình duyệt)
 function fitScreen() {
   const [w, h] = led.ratio.split(':').map(Number);
   const wrap = $('#stagewrap'), box = wrap.getBoundingClientRect(), cs = getComputedStyle(wrap);
@@ -282,7 +333,7 @@ async function reload() {
   card = r.card;
   useSnap();
   renderHeader();
-  if (card.led.paid && !wasPaid) { renderSide(); reloadPreview(); } // vừa kích hoạt: khung xem trước bỏ dòng "Bản dùng thử", tên cố định
+  if (card.led.paid && !wasPaid) { renderSide(); reloadPreview(); } // vừa kích hoạt: khung xem trước bỏ chữ chìm "Xem trước tại cuoinha.com", tên cố định
 }
 
 // ---------- sự kiện ----------
@@ -330,9 +381,11 @@ function bind() {
       pushPreview();
       schedule(300);
     } else if (t.dataset.d) {
-      setP(card.data, t.dataset.d, t.value);
+      setP(card.data, t.dataset.d, t.dataset.tt ? (t.value.trim() ? t.dataset.tt + ' ' + t.value.trim() : '') : t.value);
       dataDirty = true;
       if (/^(date|time)$/.test(t.dataset.d)) needReload = true; // âm lịch, thứ do máy chủ tính lại
+      // đổi ngày cưới: ô "Dòng âm lịch" (để trống = tự tính) hiện ngay ngày âm mới
+      if (t.dataset.d === 'date') { const lu = $('[data-l="lunar"]', side); if (lu && window.Lunar && t.value) lu.placeholder = Lunar.lunarText(t.value); }
       else pushPreview();
       if (/\.name$/.test(t.dataset.d)) renderHeader();
       schedule(/^(date|time)$/.test(t.dataset.d) ? 500 : 900);
@@ -521,7 +574,7 @@ function start() {
     <p style="font-size:44px;margin:0">✨</p>
     <h2 style="font-family:var(--serif);margin:8px 0">Màn hình LED cho tiệc cưới</h2>
     <p class="muted">Trình chiếu tên cô dâu chú rể, ngày cưới (kèm âm lịch), bố mẹ hai bên và lời cảm ơn trên nền hiệu ứng trời sao, đom đóm, cánh hoa… Chỉ cần gửi link cho kỹ thuật nhà hàng.</p>
-    <p class="muted" style="font-size:14px">Tạo và xem trước miễn phí · Kích hoạt ${money(META.ledPrice)} để trình chiếu ở tiệc cưới, không có dòng "Bản dùng thử".</p>
+    <p class="muted" style="font-size:14px">Tạo và xem trước miễn phí · Kích hoạt ${money(META.ledPrice)} để trình chiếu ở tiệc cưới, không có chữ "Xem trước tại cuoinha.com".</p>
     <button class="btn lg" id="startBtn">Tạo màn LED từ thiệp này</button>
     <p style="margin:14px 0 0"><a href="/led/demo" target="_blank">Xem màn mẫu ↗</a></p>
   </div>`;
@@ -544,3 +597,12 @@ function start() {
 
 // bấm Kích hoạt mà thiếu tên / ngày cưới (pay.js): về bảng Nội dung để hiện chữ đỏ dưới ô thiếu
 window.onPayMissing = () => { if (curPanel !== 'chu') { curPanel = 'chu'; renderSide(); } };
+
+// thanh kéo: tô phần đã kéo (CSS đọc --p) — lúc kéo và mỗi khi bảng vẽ lại
+function paintRange(r) { const mn = +r.min || 0, mx = +r.max || 100; r.style.setProperty('--p', ((+r.value - mn) / Math.max(1, mx - mn)) * 100 + '%'); }
+document.addEventListener('input', (e) => { if (e.target.matches && e.target.matches('input[type=range]')) paintRange(e.target); });
+new MutationObserver(() => document.querySelectorAll('.studio input[type=range]').forEach(paintRange)).observe(document.body, { childList: true, subtree: true });
+// ô chữ nhiều dòng (textarea .ta1): tự cao theo nội dung
+function growTa(t) { t.style.height = 'auto'; t.style.height = t.scrollHeight + 2 + 'px'; }
+document.addEventListener('input', (e) => { if (e.target.classList && e.target.classList.contains('ta1')) growTa(e.target); });
+new MutationObserver(() => document.querySelectorAll('textarea.ta1').forEach((t) => { if (!t.dataset.g) { t.dataset.g = 1; growTa(t); } })).observe(document.body, { childList: true, subtree: true });

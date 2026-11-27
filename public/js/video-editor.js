@@ -950,7 +950,25 @@ function bind() {
     if (b.dataset.pv === 'rep') { const inp = $('#tlIn'); inp.dataset.s = b.dataset.s; inp.value = ''; inp.click(); }
     else vCrop(+b.dataset.s, +b.dataset.r);
   });
-  $('#fs').onclick = () => { const c = $('#cv'); (c.requestFullscreen || c.webkitRequestFullscreen || (() => {})).call(c); };
+  // ⛶ toàn màn hình: đưa khung chiếu ra lớp phủ đen kín màn (có ✕) — chạy cả iPhone / khung app (không có toàn màn hình của trình duyệt);
+  // máy tính hỗ trợ thì vào toàn màn hình thật, Esc là thoát
+  $('#fs').onclick = () => {
+    const c = $('#cv'), mark = document.createComment('cv'), ov = document.createElement('div');
+    ov.className = 'vfs';
+    ov.innerHTML = '<button type="button" aria-label="Thoát toàn màn hình">✕</button>';
+    c.parentNode.insertBefore(mark, c); ov.prepend(c); document.body.appendChild(ov);
+    if (ov.requestFullscreen) ov.requestFullscreen().catch(() => {});
+    const close = () => {
+      if (!ov.isConnected) return;
+      if (document.fullscreenElement) document.exitFullscreen().catch(() => {});
+      mark.parentNode.insertBefore(c, mark); mark.remove(); ov.remove();
+      document.removeEventListener('keydown', esc1); document.removeEventListener('fullscreenchange', fsOut);
+    };
+    const esc1 = (e) => { if (e.key === 'Escape') close(); };
+    const fsOut = () => { if (!document.fullscreenElement) close(); };
+    ov.querySelector('button').onclick = close;
+    document.addEventListener('keydown', esc1); document.addEventListener('fullscreenchange', fsOut);
+  };
   // kéo thả ảnh từ máy vào ô "Chọn ảnh hoặc kéo thả" → điền các ô trống
   side.addEventListener('dragover', (e) => { const dz = e.target.closest('.drop,.vslots'); if (dz && e.dataTransfer.types.includes('Files')) { e.preventDefault(); dz.classList.add('over'); } });
   side.addEventListener('dragleave', (e) => { const dz = e.target.closest('.drop,.vslots'); if (dz) dz.classList.remove('over'); });
@@ -1034,7 +1052,7 @@ function start() {
     <p style="font-size:44px;margin:0">🎬</p>
     <h2 style="font-family:var(--serif);margin:8px 0">Slide cưới · màn hình dạm ngõ chiếu TV</h2>
     <p class="muted">Chọn mẫu, chèn ảnh cưới và lời chào — video tự dựng chuyển cảnh, ngày âm lịch. Dùng cho dạm ngõ, ăn hỏi, vu quy, thành hôn.</p>
-    <p class="muted" style="font-size:14px">Làm và xem trước miễn phí · Kích hoạt ${money(META.videoPrice)} để chiếu TV bằng link và tải MP4 Full HD, không có dòng "Bản dùng thử".</p>
+    <p class="muted" style="font-size:14px">Làm và xem trước miễn phí · Kích hoạt ${money(META.videoPrice)} để chiếu TV bằng link và tải MP4 Full HD, không có chữ "Xem trước tại cuoinha.com".</p>
     <button class="btn lg" id="startBtn">Tạo video từ thiệp này</button>
     <p style="margin:14px 0 0"><a href="/slide-cuoi">Xem các mẫu video</a></p>
   </div>`;
