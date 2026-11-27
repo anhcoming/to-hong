@@ -396,6 +396,7 @@ html.js .rv.in{opacity:1;transform:none}
 .hb .kick{display:inline-flex;align-items:center;gap:8px;font-size:12px;font-weight:800;letter-spacing:.25em;color:var(--acc)}
 .hb .kick b{display:grid;place-items:center;width:24px;height:24px;border-radius:6px;background:var(--acc);color:#fff;font-size:11px;letter-spacing:0}
 .hb h1{margin:10px auto 4px;max-width:900px;font:900 clamp(34px,4vw,54px)/1.05 var(--sans);letter-spacing:-.03em;color:var(--ink)}
+.hb h1 .kick{display:block;margin:0 auto 8px;font:800 12px/1.4 var(--sans);letter-spacing:.22em;text-transform:uppercase;color:var(--acc)}
 .hb h1 em{display:block;font:700 1.08em/1.15 var(--script);font-style:normal;color:var(--acc);letter-spacing:0}
 .hb>.kick,.hb>h1,.hb>.stage,.hb>.hcta{animation:rise .8s cubic-bezier(.2,.8,.2,1) both}
 .hb>h1{animation-delay:.08s}.hb>.stage{animation-delay:.18s}.hb>.hcta{animation-delay:.28s}
