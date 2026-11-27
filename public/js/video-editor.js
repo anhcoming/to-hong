@@ -560,7 +560,7 @@ function renderHeader() {
   if (engOpts) engOpts.trial = !s.paid; // khung xem trước: dòng "Bản dùng thử" vẽ thẳng lên hình cho tới khi kích hoạt
   // một nút đỏ duy nhất: Kích hoạt (chưa trả) / Tải MP4 (đã trả); chép link + tải MP4 gom vào menu Chia sẻ
   const main = s.paid ? '<button class="btn sm" id="goExport">⬇ Tải MP4</button>'
-    : `<button class="btn sm" id="payBtn">Kích hoạt<span class="xl">&nbsp;· ${money(META.videoPrice)}</span></button>`;
+    : `<button class="btn sm soft" id="pvBtn"><svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex:none"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg><span>&nbsp;Xem trước</span></button><button class="btn sm" id="payBtn">Kích hoạt</button>`; // như trình sửa thiệp / màn LED: Xem trước · Kích hoạt (→ bảng Kích hoạt)
   $('#acts').innerHTML = `${s.paid ? `<a class="btn sm ghost" target="_blank" href="${esc(s.url)}" title="Mở trình chiếu toàn màn hình">▷<span class="xl">&nbsp;Trình chiếu</span></a>` : ''}
     ${s.paid ? `<span class="shr"><button class="btn sm soft" id="shrBtn" aria-haspopup="menu" aria-expanded="false">Chia sẻ ▾</button>
       <span class="shr-m" id="shrM" role="menu" hidden>
@@ -577,7 +577,8 @@ function renderHeader() {
   const goX = () => { close(); exportModal(); };
   if ($('#goExportM')) $('#goExportM').onclick = goX;
   const ge = $('#goExport'); if (ge) ge.onclick = goX;
-  const pb = $('#payBtn'); if (pb) pb.onclick = () => openPayModal(CARD_ID, reload, 'video');
+  const pb = $('#payBtn'); if (pb) pb.onclick = () => activateSheet({ url: `${s.url}?xem=1`, mainTitle: 'Chiếu TV · tải MP4', perks: ['Link chiếu TV, máy chiếu ở buổi lễ', 'Tải video MP4 Full HD', 'Bỏ chữ “Xem trước tại cuoinha.com”'], priceHtml: `<b>${money(META.videoPrice)}</b>`, onPay: () => openPayModal(CARD_ID, reload, 'video') });
+  const pv = $('#pvBtn'); if (pv) pv.onclick = () => $('#fs').click(); // xem to hết màn (lớp phủ đen, ✕ để thoát)
   // đã chốt hẳn: bố cục xem chi tiết dùng chung với màn LED (public/js/final-view.js) — thẻ đem đi chiếu / gửi người nhà
   if (vFinal()) {
     const names = [info().chu_re, info().co_dau].filter(Boolean).join(' & ');

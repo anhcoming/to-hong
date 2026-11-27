@@ -655,7 +655,7 @@ function renderHeader() {
   const sv = dirty ? '<button class="btn sm soft" id="saveBtn" title="Lưu (⌘/Ctrl+S)">Lưu</button>' : ''; // đã lưu: chỉ còn chữ "Đã lưu ✓" ở dòng dưới tên
   // luồng gửi (27/11): một nút chính "Gửi thiệp" → bảng chọn Gửi xem thử (miễn phí) / Gửi khách mời (99k → thanh toán → tab Khách).
   // Chưa phát hành thì bấm là phát hành trước rồi mở bảng chọn.
-  pa.innerHTML = pv + sv + '<button class="btn sm" id="sendBtn">Gửi thiệp</button>';
+  pa.innerHTML = pv + sv + `<button class="btn sm" id="sendBtn">${card.paid ? 'Gửi thiệp' : 'Kích hoạt'}</button>`; // chưa kích hoạt: "Kích hoạt" → bảng Kích hoạt (như màn LED, slide)
   const svb = $('#saveBtn'); if (svb) svb.onclick = () => commit();
   $('#sendBtn').onclick = () => (card.status !== 'published' ? publish() : shareModal());
 }
@@ -951,6 +951,9 @@ async function publish(force) {
 function shareModal(first) {
   const url = card.url, trial = !card.paid, k = Math.round(META.price / 1000);
   const off = FIRST_PCT ? Math.round((META.price * FIRST_PCT) / 100 / 1000) * 1000 : 0; // giá sẽ trả (khách mới được giảm đơn đầu)
+  // chưa kích hoạt: bảng Kích hoạt dùng chung (common.js — giống màn LED, slide)
+  if (trial) return activateSheet({ url, mainTitle: 'Gửi khách mời', perks: ['Mỗi khách một link có tên riêng', 'Không giới hạn khách mời', 'Bỏ dòng “Bản xem thử”', 'Đổi mẫu, sửa thiệp thoải mái sau đó'],
+    priceHtml: `<b>${money(META.price - off)}</b>${off ? `<s>${money(META.price)}</s><em>-${FIRST_PCT}% khách mới</em>` : ''}`, onPay: () => payCard() });
   const share = (msg) => (navigator.share ? navigator.share({ url }).catch(() => {}) : copyText(url, msg));
   const mobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
   // Messenger: điện thoại mở thẳng app với link; máy tính chép link rồi mở messenger.com
@@ -981,7 +984,7 @@ function shareModal(first) {
     <h2 style="margin:-10px 0 10px;line-height:36px;text-align:center;font-size:20px">${first ? '🎉 Thiệp đã có link' : 'Gửi thiệp'}</h2>
     ${trial
       ? opt('', 'Xem thử <em>Miễn phí</em>', 'Gửi vợ/chồng xem trước có ưng không', shareRow)
-        + opt('main', 'Gửi khách mời', '<ul class="sendo-b"><li>Mỗi khách một link có tên riêng</li><li>Không giới hạn khách mời</li><li>Bỏ dòng “Bản xem thử”</li><li>Đổi mẫu, sửa thiệp thoải mái sau đó</li></ul>', `<div class="sendo-p"><div class="pr"><b>${money(META.price - off)}</b>${off ? `<s>${money(META.price)}</s><em>-${FIRST_PCT}% đơn đầu</em>` : ''}</div><button class="btn sm" id="toPay">Kích hoạt</button></div>`)
+        + opt('main', 'Gửi khách mời', '<ul class="sendo-b"><li>Mỗi khách một link có tên riêng</li><li>Không giới hạn khách mời</li><li>Bỏ dòng “Bản xem thử”</li><li>Đổi mẫu, sửa thiệp thoải mái sau đó</li></ul>', `<div class="sendo-p"><div class="pr"><b>${money(META.price - off)}</b>${off ? `<s>${money(META.price)}</s><em>-${FIRST_PCT}% khách mới</em>` : ''}</div><button class="btn sm" id="toPay">Kích hoạt</button></div>`)
       : opt('main', 'Link chung', 'Gửi nhóm Zalo, Facebook', linkRow + shareRow)
         + opt('', 'Link tên từng khách', 'Mỗi khách thấy tên mình', '<div class="sendo-a"><button class="btn sm soft" id="toGuests">Danh sách khách</button></div>')}
 </div>`,

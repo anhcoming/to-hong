@@ -215,6 +215,36 @@ window.backTo = function (a, fallback) {
   };
 };
 // onClose(): gọi khi cửa sổ đóng (bấm ×, bấm ra ngoài, Esc hoặc close() từ trong)
+// Bảng "Kích hoạt" dùng chung (thiệp, màn LED, slide — bản chưa kích hoạt): xổ từ dưới lên trên điện thoại
+//  · Xem thử (miễn phí): một nút chia sẻ bên phải → bảng chia sẻ của máy (Zalo, Messenger, chép link…); máy không có thì chép link
+//  · khối kích hoạt: lợi ích + giá + nút Kích hoạt
+// o: { url, perks: [..], priceHtml, onPay, title?, mainTitle? }
+window.activateSheet = function (o) {
+  const msg = 'Đã chép link xem thử';
+  const share = () => (navigator.share ? navigator.share({ url: o.url }).catch(() => {}) : copyText(o.url, msg));
+  // biểu tượng chia sẻ quen thuộc (ba chấm nối) + chữ "Chia sẻ"
+  const SH = '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="18" cy="5" r="2.6"/><circle cx="6" cy="12" r="2.6"/><circle cx="18" cy="19" r="2.6"/><path d="m8.3 10.8 7.4-4.4M8.3 13.2l7.4 4.4"/></svg>';
+  openModal(`<style>
+    .acs-o{padding:12px 14px;border-radius:14px;border:1.5px solid var(--line);margin:0 0 10px;text-align:left}.acs-o:last-child{margin-bottom:0}
+    .acs-o.main{border-color:var(--primary);background:var(--primary-soft)}
+    .acs-h{font-size:13px;color:var(--muted);line-height:1.45}.acs-h b{display:flex;align-items:center;gap:8px;font-size:15.5px;color:var(--ink);margin-bottom:2px}
+    .acs-h em{font-style:normal;padding:1px 8px;border-radius:999px;background:var(--ok-soft,#e6f3ec);color:var(--ok,#2f8a4c);font-size:11.5px;font-weight:700}
+    .acs-try{display:flex;align-items:center;gap:10px;padding:10px 12px 10px 14px}.acs-t{flex:1;min-width:0;display:grid;gap:1px}.acs-t b{font-size:14.5px;color:var(--ink)}.acs-t small{font-size:12.5px;color:var(--muted)}
+    .acs-sh{flex:none;display:inline-flex;align-items:center;gap:6px;height:34px;padding:0 14px;border:0;border-radius:999px;background:var(--primary-soft);color:var(--primary);font:700 13.5px/1 inherit;cursor:pointer} /* nút phụ (nút chính đỏ là Kích hoạt) */
+        .acs-b{list-style:none;margin:6px 0 0;padding:0;display:grid;gap:3px;font-size:13px;color:var(--ink)}.acs-b li{display:flex;gap:7px}.acs-b li::before{content:"✓";color:var(--primary);font-weight:800}
+    .acs-p{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:12px;padding-top:12px;border-top:1px dashed rgba(214,69,93,.3)}
+    .acs-p .pr{display:flex;align-items:baseline;flex-wrap:wrap;gap:4px 8px;min-width:0}.acs-p .pr b{font-size:19px;color:var(--primary)}.acs-p .pr s{font-size:13px;color:var(--muted)}.acs-p .pr em{font-style:normal;padding:1px 6px;border-radius:4px;background:var(--primary);color:#fff;font-size:11px;font-weight:700}
+    .acs-p .btn{flex:none;padding-left:18px;padding-right:18px}
+  </style>
+  <h2 style="margin:-10px 0 10px;line-height:36px;text-align:center;font-size:20px">${o.title || 'Kích hoạt'}</h2>
+  <div class="acs-o acs-try"><div class="acs-t"><b>Xem thử miễn phí</b><small>Gửi vợ/chồng xem trước</small></div><button type="button" class="acs-sh" id="acsSh" aria-label="Chia sẻ link xem thử">${SH}Chia sẻ</button></div>
+  <div class="acs-o main"><div class="acs-h"><b>${o.mainTitle || 'Kích hoạt'}</b><ul class="acs-b">${(o.perks || []).map((x) => `<li>${x}</li>`).join('')}</ul></div>
+    <div class="acs-p"><div class="pr">${o.priceHtml || ''}</div><button class="btn sm" id="acsPay">Kích hoạt</button></div></div>`,
+  (box, close) => {
+    box.querySelector('#acsSh').onclick = share;
+    box.querySelector('#acsPay').onclick = () => { close(); o.onPay && o.onPay(); };
+  });
+};
 window.openModal = function (html, onMount, onClose) {
   const m = document.createElement('div');
   m.className = 'modal';

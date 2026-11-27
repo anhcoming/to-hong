@@ -93,6 +93,11 @@ h1,h2,h3{line-height:1.2}
 .modal-box{background:var(--surface);border-radius:20px;width:min(520px,100%);max-height:92vh;max-height:92dvh;overflow:auto;overscroll-behavior:contain;padding:24px;position:relative;box-shadow:0 30px 80px rgba(0,0,0,.25)}
 .modal-x{position:absolute;top:14px;right:14px;width:36px;height:36px;border-radius:50%;border:0;background:var(--primary-soft);color:var(--primary);cursor:pointer;font-size:20px;line-height:1}
 .modal h2{margin:0 0 4px;font-family:var(--serif);font-weight:800;letter-spacing:-.01em;padding-right:40px}
+/* hàng đầu mọi hộp / bảng trượt (tiêu đề + nút ✕): tiêu đề căn giữa thật — chừa bên trái một khoảng bằng nút ✕ —
+   cao bằng và ngang hàng nút ✕ (trước đây chữ lệch trái + thấp hơn ✕) */
+.modal-head:not(.only-x){align-items:center;padding-left:14px!important} /* lề trái = lề phải (14px) để tiêu đề đúng giữa */
+.modal-head:not(.only-x)::before{content:"";flex:none;width:36px}
+.modal-head h2{margin:0!important;line-height:1.25!important;text-align:center!important;font-size:19px!important}
 /* đầu cửa sổ dính trên cùng khi cuộn (common.js → modalHead) */
 .modal-head{position:sticky;top:-24px;z-index:5;display:flex;align-items:flex-start;gap:12px;margin:-24px -24px 4px;padding:18px 14px 10px 24px;background:var(--surface);transition:box-shadow .2s}
 .modal-head h2{flex:1;min-width:0;margin:6px 0 0!important;padding-right:0}

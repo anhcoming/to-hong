@@ -165,6 +165,8 @@ function ledPreview() {
 // Gửi video: chưa kích hoạt → gửi vợ/chồng xem thử (link có chữ chìm "Xem trước tại cuoinha.com") + kích hoạt; đã kích hoạt → link chiếu ở tiệc, tải MP4
 function ledSend(s) {
   const trial = !s.paid, url = trial ? `${s.url}?xem=1` : s.url;
+  // chưa kích hoạt: bảng Kích hoạt dùng chung (common.js — giống trình sửa thiệp, slide)
+  if (trial) return activateSheet({ url, mainTitle: 'Chiếu ở tiệc cưới', perks: ['Link trình chiếu màn LED ở tiệc', 'Tải video MP4 gửi bên âm thanh ánh sáng', 'Bỏ chữ “Xem trước tại cuoinha.com”'], priceHtml: `<b>${money(META.ledPrice)}</b>`, onPay: () => openPayModal(CARD_ID, reload, 'led') });
   const mobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
   const msg = trial ? 'Đã chép link xem thử' : 'Đã chép link trình chiếu';
   const share = () => (navigator.share ? navigator.share({ url }).catch(() => {}) : copyText(url, msg));
@@ -180,15 +182,14 @@ function ledSend(s) {
   const opt = (tag, title, sub, body) => `<div class="sendo${tag ? ' ' + tag : ''}"><div class="sendo-h"><b>${title}</b>${sub}</div>${body}</div>`;
   openModal(`<h2 style="margin:-10px 0 10px;line-height:36px;text-align:center;font-size:20px">${trial ? 'Kích hoạt' : 'Gửi video'}</h2>
     ${trial
-      ? opt('', 'Xem thử <em>Miễn phí</em>', 'Gửi vợ/chồng xem trước có ưng không', shareRow)
+      // gọn: một nút chia sẻ bên phải tiêu đề → bảng chia sẻ của máy (Zalo, Messenger, chép link…); máy không có thì chép link
+      ? opt('', 'Xem thử <em>Miễn phí</em><button type="button" class="sendsh" id="shO" aria-label="Gửi link xem thử"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 4h6v6M20 4l-9 9"/><path d="M19 14v4a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2h4"/></svg></button>', 'Gửi vợ/chồng xem trước có ưng không', '')
         + opt('main', 'Chiếu ở tiệc cưới', '<ul class="sendo-b"><li>Link trình chiếu màn LED ở tiệc</li><li>Tải video MP4 gửi bên âm thanh ánh sáng</li><li>Bỏ chữ “Xem trước tại cuoinha.com”</li></ul>', `<div class="sendo-p"><div class="pr"><b>${money(META.ledPrice)}</b></div><button class="btn sm" id="toPay">Kích hoạt</button></div>`)
       : opt('main', 'Link trình chiếu', 'Gửi bên kỹ thuật, mở bằng Chrome, bấm F để toàn màn hình', `<div class="sendo-l"><span>${esc(url.replace(/^https?:\/\//, ''))}</span></div>` + shareRow)
         + opt('', 'Video MP4', 'Tải về chép vào USB / gửi bên âm thanh ánh sáng', '<div class="sendo-a"><button class="btn sm soft" id="toMp4">⬇ Tải MP4</button><a class="btn sm plain" target="_blank" rel="noopener" href="' + esc(url) + '">▶ Mở trình chiếu</a></div>')}`,
   (box, close) => {
-    $('#cpL', box).onclick = () => copyText(url, msg);
-    $('#shM', box).onclick = toMess;
-    $('#shZ', box).onclick = toZalo;
-    $('#shO', box).onclick = share;
+    const on = (id, f) => { const b = $(id, box); if (b) b.onclick = f; };
+    on('#cpL', () => copyText(url, msg)); on('#shM', toMess); on('#shZ', toZalo); on('#shO', share);
     const tp = $('#toPay', box); if (tp) tp.onclick = () => { close(); openPayModal(CARD_ID, reload, 'led'); };
     const tm = $('#toMp4', box); if (tm) tm.onclick = () => { close(); mp4Dialog(); };
   });

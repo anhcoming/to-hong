@@ -1103,7 +1103,10 @@
       return '<div class="fam"><p class="lb">' + lb + '</p>' + (p.father ? '<p class="pp" data-e="' + w + '.father">' + esc(p.father) + '</p>' : '') +
         (p.mother ? '<p class="pp" data-e="' + w + '.mother">' + esc(p.mother) + '</p>' : '') + (p.address ? '<p class="ad" data-e="' + w + '.address">' + esc(p.address) + '</p>' : '') + '</div>';
     };
-    var fams = fam(g, 'Nhà trai', 'groom') + fam(b, 'Nhà gái', 'bride');
+    // khung xem trước của trình sửa: bố mẹ hai bên còn trống → tên mẫu (mờ) để vẫn thấy cảnh "Hân hạnh đón tiếp"; chiếu thật thì trống là ẩn cảnh
+    var smp = C.preview && !/[?&]xuat=/.test(location.search) && !g.father && !g.mother && !b.father && !b.mother;
+    var fams = smp ? fam({ father: 'Ông Nguyễn Văn Trung', mother: 'Bà Trần Thị Yến' }, 'Nhà trai', 'groom').replace('class="fam"', 'class="fam smp"') + fam({ father: 'Ông Lê Văn Tuyến', mother: 'Bà Phạm Thị Minh' }, 'Nhà gái', 'bride').replace('class="fam"', 'class="fam smp"')
+      : fam(g, 'Nhà trai', 'groom') + fam(b, 'Nhà gái', 'bride');
     if (L.slides.parents && fams) {
       out.push('<div data-k="parents" class="slide s-parents"><p class="title glow">Hân hạnh đón tiếp</p><div class="fams" data-fit>' + fams + '</div></div>');
     }
@@ -1133,7 +1136,10 @@
     });
   }
   function fitAll() {
-    var max = W - 2 * 110;
+    // bề ngang tối đa của chữ theo cỡ chữ đã chọn: Nhỏ ~70% · Vừa ~80% · To ~90% · Cực to kín màn
+    // (không thì tên dài luôn co kín bề ngang, chọn Nhỏ hay To trông như nhau — màn LED to ngoài trời thấy chữ quá lớn)
+    var fsv = typeof L.fs === 'number' ? L.fs : { nho: 0.8, vua: 0.9, lon: 1, rat_lon: 1.15 }[L.fs] || 1;
+    var max = (W - 2 * 110) * Math.max(0.6, Math.min(1, 0.7 + (fsv - 0.8) / 0.35 * 0.3));
     applySz();
     Array.prototype.forEach.call(slidesEl.querySelectorAll('[data-fit]'), function (el) {
       if (!szOf(el)) el.style.fontSize = '';

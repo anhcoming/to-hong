@@ -773,7 +773,7 @@ route('GET', '/api/cards/:id/responses', async (req, res, ctx) => {
 
 route('GET', '/api/cards/:id/rsvps.csv', async (req, res, ctx) => {
   const card = ownedCard(ctx, ctx.params.id);
-  const q = (v) => `"${String(v ?? '').replace(/"/g, '""')}"`;
+  const q = (v) => `"${(typeof v === 'string' && /^[=+\-@\t\r]/.test(v) ? "'" + v : String(v ?? '')).replace(/"/g, '""')}"`; // chữ bắt đầu = + - @ (khách gõ) → thêm ' để Excel không chạy như công thức
   const rows = [['Thời gian', 'Tên', 'Tham dự', 'Số người', 'Khách nhà', 'Nhắn gửi'].map(q).join(',')];
   db.rsvps.filter((r) => r.cardId === card.id).forEach((r) => {
     rows.push([new Date(r.createdAt).toLocaleString('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh' }), r.name, r.attending === 'yes' ? 'Có' : 'Không', r.count, r.side === 'gai' ? 'Gái' : 'Trai', r.note].map(q).join(','));
@@ -810,15 +810,33 @@ route('GET', '/api/maplink', async (req, res, ctx) => {
 // ---------------- API: tải ảnh / nhạc ----------------
 // video clip ngắn cho slide cưới (MP4 / WebM / MOV, tối đa 60MB — bản chạy thật gửi thẳng lên kho Blob, không qua máy chủ)
 const UPLOAD_TYPES = { 'image/jpeg': ['.jpg', 6e6], 'image/png': ['.png', 6e6], 'image/webp': ['.webp', 6e6], 'audio/mpeg': ['.mp3', 12e6], 'video/mp4': ['.mp4', 60e6], 'video/webm': ['.webm', 60e6], 'video/quicktime': ['.mov', 60e6] };
+// chữ ký đầu tệp theo loại (chặn đổi tên / giả Content-Type để đẩy tệp lạ lên kho công khai)
+function magicOk(type, b) {
+  const hex = b.subarray(0, 12).toString('hex'), ascii = b.subarray(0, 12).toString('latin1');
+  if (type === 'image/jpeg') return hex.startsWith('ffd8ff');
+  if (type === 'image/png') return hex.startsWith('89504e47');
+  if (type === 'image/webp') return ascii.startsWith('RIFF') && ascii.slice(8, 12) === 'WEBP';
+  if (type === 'audio/mpeg') return ascii.startsWith('ID3') || /^fff[2-b]/.test(hex);
+  if (/^video\/(mp4|quicktime)$/.test(type)) return /^(ftyp|moov|mdat|wide|free|skip)$/.test(ascii.slice(4, 8)); // MOV cũ có thể mở đầu bằng wide / mdat
+  if (type === 'video/webm') return hex.startsWith('1a45dfa3');
+  return false;
+}
+// giới hạn mỗi tài khoản: 200 tệp / giờ, 600 tệp / ngày, video 40 / ngày (kho tệp công khai tốn tiền theo dung lượng)
+function uploadQuota(userId, clip) {
+  rateLimit('up:' + userId, 200, 36e5);
+  rateLimit('upd:' + userId, 600, 864e5, true);
+  if (clip) rateLimit('upv:' + userId, 40, 864e5, true);
+}
 route('POST', '/api/upload', async (req, res, ctx) => {
   const user = needUser(ctx);
-  rateLimit('up:' + user.id, 200, 36e5);
   const type = String(req.headers['content-type'] || '').split(';')[0].trim();
   const t = UPLOAD_TYPES[type];
   if (!t) throw httpError(415, 'Chỉ nhận ảnh JPG/PNG/WEBP, nhạc MP3 hoặc video MP4/MOV');
+  uploadQuota(user.id, /^video\//.test(type));
   const buf = await readBody(req, t[1]);
   ctx.tm.mark('body');
   if (!buf.length) throw httpError(400, 'Tệp rỗng');
+  if (!magicOk(type, buf)) throw httpError(415, 'Tệp không đúng định dạng ảnh / nhạc / video'); // đọc mấy byte đầu: không tin mỗi Content-Type
   const name = `${user.id}-${rid(10)}${t[0]}`;
   let url;
   if (process.env.BLOB_READ_WRITE_TOKEN) {
@@ -844,13 +862,13 @@ route('POST', '/api/upload/blob', async (req, res, ctx) => {
   if (!process.env.BLOB_READ_WRITE_TOKEN) throw httpError(501, 'Chưa cấu hình kho lưu trữ');
   const body = await readJson(req);
   if (!body || body.type !== 'blob.generate-client-token') throw httpError(400, 'Yêu cầu không hợp lệ');
-  rateLimit('up:' + user.id, 200, 36e5);
   const { handleUpload } = require('@vercel/blob/client');
   const out = await handleUpload({
     body, request: req,
     onBeforeGenerateToken: async (pathname) => {
       if (!new RegExp(`^uploads/${user.id}-[\\w-]+\\.(webp|jpg|png|mp4|webm|mov)$`).test(pathname)) throw httpError(400, 'Tên tệp không hợp lệ');
       const clip = /\.(mp4|webm|mov)$/.test(pathname);
+      uploadQuota(user.id, clip);
       return { allowedContentTypes: clip ? CLIP_TYPES : IMG_TYPES, maximumSizeInBytes: clip ? 60e6 : 6e6, addRandomSuffix: true };
     },
   });
@@ -988,6 +1006,14 @@ route('POST', '/api/orders/:code/claim', async (req, res, ctx) => {
 // % giảm đơn đầu tiên: chưa có đơn nào trả tiền thật (SePay / quản trị / mã giảm)
 const firstOrderPct = (userId) => (config.firstOrderPercent > 0 && userId && !db.orders.some((o) => o.userId === userId && o.status === 'paid' && ['sepay', 'admin', 'coupon'].includes(o.paidVia)) ? config.firstOrderPercent : 0);
 // Kích hoạt sản phẩm của đơn — dùng chung cho quản trị viên bấm tay và SePay báo tiền về
+// Số phải trả lúc tiền về: mã giảm giá đã hết lượt (đơn khác dùng trước) / ưu đãi khách mới đã dùng ở đơn khác → về giá đầy đủ
+// (khách tạo nhiều đơn chờ cùng giữ một mã 1 lượt hay cùng hưởng 10% đơn đầu thì chỉ đơn trả trước được giảm)
+function dueNow(o) {
+  let due = o.amount;
+  if (o.coupon && o.discount) { try { discounts.check(o.coupon, o.product, o.id); } catch (e) { due += o.discount; } }
+  if (o.firstOff && !firstOrderPct(o.userId)) due += o.firstOff;
+  return due;
+}
 function markPaid(o, via) {
   o.status = 'paid';
   o.paidAt = Date.now();
@@ -1061,11 +1087,11 @@ route('POST', '/api/pay/sepay', async (req, res, ctx) => {
   } else {
     // khách chuyển thiếu rồi chuyển bù: cộng các lần chuyển trước của cùng đơn, đủ tiền thì kích hoạt
     const before = db.bankTxns.filter((x) => x.order === o.code && x.result === 'underpaid').reduce((n, x) => n + x.amount, 0);
-    const total = before + amount;
-    if (total < o.amount) {
+    const total = before + amount, due = dueNow(o);
+    if (total < due) {
       result = 'underpaid';
       o.claimedAt = o.claimedAt || Date.now();
-      o.bankNote = `Nhận ${money(total)}${before ? ` (${money(before)} + ${money(amount)})` : ''}, thiếu ${money(o.amount - total)}`;
+      o.bankNote = `Nhận ${money(total)}${before ? ` (${money(before)} + ${money(amount)})` : ''}, thiếu ${money(due - total)}${due > o.amount ? ' (ưu đãi / mã giảm giá đã dùng ở đơn khác)' : ''}`;
     } else {
       result = 'paid';
       o.bankNote = total > o.amount ? `Nhận ${money(total)}, thừa ${money(total - o.amount)}` : before ? `Nhận đủ sau nhiều lần chuyển (${money(total)})` : o.bankNote;
@@ -1398,6 +1424,8 @@ route('GET', '/video/:slug', async (req, res, ctx) => {
   if (!card || !card.video) return html(res, 404, renderNotice('Không tìm thấy video', 'Đường dẫn có thể đã bị đổi.'));
   if (card.blocked && !isOwner) return html(res, 403, BLOCKED_HTML());
   const st = videoLib.state(card.video);
+  // ?xem=1: link xem thử gửi vợ/chồng duyệt (như màn LED) — luôn có chữ chìm "Xem trước tại cuoinha.com"
+  if (st.locked && ctx.query.get('xem') === '1' && card.userId) return html(res, 200, videoLib.renderVideo(card, card.video, { trial: true }));
   // chưa kích hoạt: không có link chiếu TV — chỉ xem trước trong trình sửa
   if (st.locked) {
     return html(res, 403, isOwner
@@ -1675,7 +1703,8 @@ const server = http.createServer(async (req, res) => {
         : /timeout|ETIMEDOUT|ECONNREFUSED/i.test(m) ? 'máy chủ cơ sở dữ liệu không trả lời (sai cổng hoặc dự án đang tạm dừng)'
         : /invalid url|URI|URL/i.test(m) ? 'chuỗi POSTGRES_URL không hợp lệ (mật khẩu có ký tự đặc biệt?)'
         : 'lỗi khác, xem Logs trên Vercel';
-      return json(res, 503, { error: 'Không kết nối được cơ sở dữ liệu, vui lòng thử lại', why });
+      console.error('[db] ' + why); // gợi ý chỉ ghi vào Logs (chủ web xem trên Vercel), không trả cho người ngoài
+      return json(res, 503, { error: 'Không kết nối được cơ sở dữ liệu, vui lòng thử lại' });
     }
     // Trả lời chỉ gửi đi sau khi ghi dữ liệu xong. Ghi thất bại → trả 503 thay cho câu trả lời "thành công" đã soạn
     // (webhook thanh toán báo thành công mà chưa lưu là mất giao dịch). Muốn vậy dòng đầu (mã trạng thái + header)
@@ -1708,7 +1737,7 @@ const server = http.createServer(async (req, res) => {
         user,
         admin: adminAuth.byEmail() ? adminAuth.isAdminUser(user, user && auth.viaGoogle(req)) : adminAuth.check(req),
         guest: guestId(req),
-        ip: (req.headers['x-forwarded-for'] || '').split(',')[0].trim() || req.socket.remoteAddress,
+        ip: (process.env.VERCEL && (req.headers['x-forwarded-for'] || '').split(',')[0].trim()) || req.socket.remoteAddress, // chỉ tin X-Forwarded-For khi chạy sau Vercel (tự chạy: ai cũng giả được để lách giới hạn)
         params,
         tm,
       };
