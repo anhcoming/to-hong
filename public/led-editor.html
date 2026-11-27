@@ -201,7 +201,12 @@ body{background:var(--bg)}
 .lpv button{position:absolute;top:12px;right:12px;width:38px;height:38px;border-radius:50%;border:0;background:rgba(255,255,255,.18);color:#fff;font-size:18px;cursor:pointer;backdrop-filter:blur(4px)}
 #pvBtn{display:inline-flex;align-items:center}
 textarea.ta1{resize:none;overflow:hidden;line-height:1.4}
-.fcrow{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px;align-items:end}
+.fseg{display:grid;grid-template-columns:repeat(4,1fr);gap:5px}
+.fseg button{display:flex;align-items:center;justify-content:center;gap:4px;height:40px;padding:0 4px;border:1px solid var(--line);border-radius:10px;background:var(--card,#fff);color:var(--ink);font:600 13px/1 inherit;white-space:nowrap;cursor:pointer}
+.fseg button i{font-style:normal;font-family:Georgia,'Times New Roman',serif;font-weight:700;color:var(--muted)}
+.fseg button.on{border-color:var(--primary);background:var(--primary-soft);color:var(--primary)}.fseg button.on i{color:var(--primary)}
+.fcrow{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(0,1fr) auto;gap:8px;align-items:end} /* Kiểu chữ · Cỡ chữ · Màu một hàng */
+.fcrow select{padding-right:26px!important;text-overflow:ellipsis}
 .lcp{position:relative}.lcp>summary{list-style:none;cursor:pointer;margin:0}.lcp>summary::-webkit-details-marker{display:none}
 .lcp>summary.lcol{display:grid;place-items:center;width:52px;height:40px;margin:0;border:1px solid var(--line);border-radius:10px;background:var(--card,#fff)}
 .lcp[open]>summary.lcol{border-color:var(--primary)}

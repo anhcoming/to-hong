@@ -35,7 +35,7 @@
 
   window.openLogin = function (o) {
     o = o || {};
-    var next = o.next && o.next.charAt(0) === '/' && o.next.slice(0, 2) !== '//' ? o.next : '/thiep-cua-toi';
+    var next = o.next && /^\/(?![\/\\])[^\s\\]*$/.test(o.next) ? o.next : '/thiep-cua-toi'; // chỉ đường dẫn trong trang (chặn //, /\, tab)
     var mode = o.register ? 'register' : 'login';
     if (!document.getElementById('lgmCss')) { var st = document.createElement('style'); st.id = 'lgmCss'; st.textContent = CSS; document.head.appendChild(st); }
     var old = document.querySelector('.lgm'); if (old) old.remove();

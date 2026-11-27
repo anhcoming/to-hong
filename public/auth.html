@@ -96,7 +96,7 @@ $('#f').onsubmit = async (e) => {
   $('#sub').disabled = true;
   try {
     const r = await api('/api/auth/' + mode, { method: 'POST', body: fd, allow401: true });
-    let to = next.startsWith('/') && !next.startsWith('//') ? next : '/thiep-cua-toi';
+    let to = /^\/(?![\/\\])[^\s\\]*$/.test(next) ? next : '/thiep-cua-toi'; // chỉ đường dẫn trong trang (chặn //, /\, tab)
     // bản nháp vừa làm đã gộp vào thiệp sẵn có của tài khoản (mỗi tài khoản một thiệp) → mở thiệp đó
     if (r && r.moved) to = to.replace(/^\/(sua|sua-led|sua-video)\/([\w-]+)/, (m, p, id) => (r.moved.from.includes(id) ? `/${p}/${r.moved.to}` : m));
     location.href = to;

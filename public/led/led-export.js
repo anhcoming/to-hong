@@ -169,6 +169,17 @@
           drawText(texts[j], ease(Math.min(1, tau / FADE)), zoomAt(tau));
         }
         const tp = top(); if (tp) o.drawImage(tp, 0, 0, W, H);
+        if (st.trial) wmTile(t); // chưa kích hoạt: chữ chìm vẽ thẳng vào từng khung hình (không bỏ được bằng CSS)
+      }
+      // chữ chìm "Xem trước tại cuoinha.com" lặp chéo, trôi chậm — giống lớp .wmt trên màn
+      function wmTile(t) {
+        const sx = Math.round(900 * W / 1920), sy = Math.round(300 * W / 1920), off = (t * 12) % sx;
+        o.save(); o.globalAlpha = 0.16; o.fillStyle = '#fff'; o.textAlign = 'center'; o.textBaseline = 'middle';
+        o.font = '700 ' + Math.round(48 * W / 1920) + 'px Arial, Helvetica, sans-serif';
+        o.translate(W / 2, H / 2); o.rotate(-22 * Math.PI / 180);
+        const R = Math.ceil(Math.hypot(W, H) / 2) + sx;
+        for (let y = -R, row = 0; y <= R; y += sy, row++) for (let x = -R + (row % 2 ? sx / 2 : 0) + off; x <= R; x += sx) o.fillText('Xem trước tại cuoinha.com', x, y);
+        o.restore();
       }
 
       // ---------- mã hoá H.264 ----------

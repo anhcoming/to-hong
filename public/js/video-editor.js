@@ -672,6 +672,10 @@ async function saveCopy(blob) {
 
 async function exportMp4(loopsArg) {
   if (!card.video.paid) return openPayModal(CARD_ID, reload, 'video');
+  // hỏi lại máy chủ ngay trước khi dựng (không tin trạng thái trên trình duyệt): chưa kích hoạt thì không xuất bản sạch
+  let srvPaid = false;
+  try { const fr = await api(`/api/cards/${CARD_ID}`, { quiet: true }); srvPaid = !!(fr.card && fr.card.video && fr.card.video.paid); } catch (e) { return toast(e.message, true); }
+  if (!srvPaid) return openPayModal(CARD_ID, reload, 'video');
   clearTimeout(saveTimer);
   await save();
   const loops = loopsArg || +($('#loops') || {}).value || 1;
@@ -680,7 +684,7 @@ async function exportMp4(loopsArg) {
   try {
     const off = document.createElement('canvas');
     off.width = 1920; off.height = 1080;
-    const rec = VideoEngine.create(off, { photo: card.data.cover || card.data.photos.find(Boolean) || '', photos: realPhotos(), trial: false }); // xuất: chỉ ảnh thật, không dùng ảnh mẫu
+    const rec = VideoEngine.create(off, { photo: card.data.cover || card.data.photos.find(Boolean) || '', photos: realPhotos(), trial: !srvPaid }); // xuất: chỉ ảnh thật, không dùng ảnh mẫu
     rec.set(video, info());
     const { blob, music } = await rec.exportMp4({
       loops, music: card.data.music,

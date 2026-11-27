@@ -1586,34 +1586,28 @@ function cropModal(key, ratio = 1, opt = {}) {
   let done = false;
   let [x, y, z] = focusOf(u);
   // khung căn to: vừa tối đa bề ngang hộp (tới ~700px) và chiều cao màn hình, giữ đúng tỉ lệ ô ảnh của mẫu
-  const r = ratio || 1, maxW = Math.min(700, window.innerWidth - 64), maxH = Math.max(220, Math.min(640, window.innerHeight - 300));
+  const r = ratio || 1, maxW = Math.min(700, window.innerWidth - (window.innerWidth <= 760 ? 32 : 64)), maxH = Math.max(220, Math.min(640, window.innerHeight - 250)); // chừa chỗ cho tiêu đề + hai nút (không bị che)
   const FW = Math.round(Math.min(maxW, maxH * r)), H = Math.round(FW / r);
-  openModal(`<h2 style="margin-top:0">Căn chỉnh ảnh</h2>
-    <p class="muted" style="margin:-4px 0 12px">Kéo để chọn phần hiện ra. Phóng to / thu nhỏ bằng thanh trượt hoặc chụm, mở hai ngón${matchMedia('(pointer:coarse)').matches ? '' : ' trên bàn di chuột (lăn chuột cũng được)'}.</p>
-    <div id="cropF" style="position:relative;margin:0 auto;width:${FW}px;height:${H}px;border-radius:12px;overflow:hidden;touch-action:none;cursor:grab;background:#eee url('${esc(baseUrl(u))}') ${x}% ${y}%/cover no-repeat;box-shadow:inset 0 0 0 2px var(--primary)"></div>
-    <label style="display:flex;align-items:center;gap:10px;margin:16px auto 0;max-width:${Math.max(FW, 240)}px">
-      <span aria-hidden="true" style="font-size:13px">−</span>
-      <input type="range" id="cropZ" min="1" max="4" step="0.01" value="${z}" aria-label="Phóng to" style="flex:1;accent-color:var(--primary)">
-      <span aria-hidden="true" style="font-size:18px">+</span>
-      <b id="cropZv" style="min-width:42px;text-align:right;font-size:13px">${z.toFixed(1)}×</b>
-    </label>
-    <div style="display:flex;gap:8px;margin-top:16px"><button class="btn plain" data-c="reset" style="flex:1">Đặt lại</button><button class="btn" data-c="ok" style="flex:2">${fresh && !opt.more ? 'Xong, dùng ảnh này' : 'Xong'}</button></div>
-    ${opt.more ? '<div style="display:flex;justify-content:center;gap:18px;margin-top:12px;font-size:13.5px"><a href="#" data-c="replace">Đổi ảnh khác</a><a href="#" data-c="del" style="color:#c0392b">Xoá ảnh</a></div>' : ''}`, (box, close) => {
-    box.style.width = `min(${FW + 48}px, 100%)`; // hộp nở theo khung căn to
-    const fr = $('#cropF', box), zr = $('#cropZ', box), zv = $('#cropZv', box);
+  const touch = matchMedia('(pointer:coarse)').matches || 'ontouchstart' in window || window.innerWidth <= 760; // điện thoại: chụm 2 ngón; máy tính: lăn chuột
+  openModal(`<h2 style="margin:0 0 12px;font-size:17px">Căn chỉnh ảnh</h2>
+    <div id="cropF" style="position:relative;margin:0 auto;width:${FW}px;height:${H}px;border-radius:12px;overflow:hidden;touch-action:none;cursor:grab;background:#eee url('${esc(baseUrl(u))}') ${x}% ${y}%/cover no-repeat;box-shadow:inset 0 0 0 2px var(--primary)"><span id="cropTip" style="position:absolute;left:50%;bottom:12px;translate:-50% 0;padding:6px 12px;border-radius:999px;background:rgba(0,0,0,.55);color:#fff;font-size:12.5px;white-space:nowrap;pointer-events:none;transition:opacity .4s">${touch ? 'Kéo để di chuyển · chụm 2 ngón để phóng to' : 'Kéo để di chuyển · lăn chuột để phóng to'}</span></div>
+    <div style="display:flex;gap:8px;margin-top:16px"><button class="btn plain" data-c="replace" style="flex:1">Đổi ảnh</button><button class="btn" data-c="ok" style="flex:2">Xong</button></div>`, (box, close) => {
+    if (wide()) box.style.width = `min(${FW + 48}px, 100%)`; // máy tính: hộp nở theo khung căn; điện thoại: bảng trượt rộng hết màn
+    const fr = $('#cropF', box), tip = $('#cropTip', box);
+    // gợi ý nhỏ trên ảnh (thay đoạn chữ dài + thanh zoom): mờ đi khi bắt đầu chạm / sau vài giây
+    const hideTip = () => { tip.style.opacity = '0'; };
+    setTimeout(hideTip, 3500); fr.addEventListener('pointerdown', hideTip, { once: true });
     const img = new Image();
     let iw = 0, ih = 0;
     // ảnh hiện cỡ "cover × z", vị trí x% y% — đúng như trên thiệp (card.js)
     const paint = () => {
       fr.style.backgroundPosition = `${x}% ${y}%`;
       if (iw) { const s = Math.max(FW / iw, H / ih) * z; fr.style.backgroundSize = `${Math.ceil(iw * s)}px ${Math.ceil(ih * s)}px`; }
-      zr.value = z; zv.textContent = `${z.toFixed(1)}×`;
     };
     img.onload = () => { iw = img.naturalWidth; ih = img.naturalHeight; paint(); };
     img.src = baseUrl(u);
     const extra = () => { const s = Math.max(FW / iw, H / ih) * z; return [iw * s - FW, ih * s - H]; }; // phần ảnh thừa ra ngoài khung
     const setZ = (nz) => { z = Math.min(4, Math.max(1, nz)); paint(); };
-    zr.addEventListener('input', () => setZ(+zr.value));
     fr.addEventListener('wheel', (e) => {
       e.preventDefault();
       if (e.ctrlKey) return setZ(z * Math.exp(-e.deltaY * 0.012)); // chụm / mở hai ngón trên bàn di chuột
@@ -1659,7 +1653,10 @@ function cropModal(key, ratio = 1, opt = {}) {
       const b = e.target.closest('[data-c]'); if (!b) return;
       if (b.dataset.c === 'reset') { x = 50; y = 50; z = 1; paint(); return; }
       e.preventDefault();
-      if (b.dataset.c === 'replace' || b.dataset.c === 'del') { done = true; close(); opt.onMore(b.dataset.c); return; }
+      if (b.dataset.c === 'replace') {
+        if (opt.onMore) { done = true; close(); opt.onMore('replace'); return; }
+        close(); livePhotoUpload(key, ratio); return; // ảnh vừa chọn: bỏ ảnh này, chọn ảnh khác
+      }
       done = true;
       close();
       if (opt.onOk) return opt.onOk(x, y, z);

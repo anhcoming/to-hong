@@ -1,6 +1,6 @@
 {
   "name": "cuoi-nha",
-  "version": "1.34.0",
+  "version": "1.35.0",
   "private": true,
   "description": "Nền tảng thiệp cưới online: tạo thiệp, mời khách, xác nhận tham dự, mừng cưới qua QR",
   "main": "server.js",

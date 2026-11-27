@@ -1372,7 +1372,7 @@
 
   // khung xem trước của trình sửa: cho /led/led-export.js (nạp khi bấm Tải MP4) đọc trạng thái và tự vẽ từng khung hình
   if (C.preview) window.__ledApi = {
-    state: function () { return { W: W, H: H, K: K, L: L, slides: slides, stage: stage, canvas: canvas, ctx: ctx, vbg: vbg, gl: GLFX, slidesEl: slidesEl }; },
+    state: function () { return { W: W, H: H, K: K, L: L, slides: slides, stage: stage, canvas: canvas, ctx: ctx, vbg: vbg, gl: GLFX, slidesEl: slidesEl, trial: !!C.trial }; }, // trial: máy chủ quyết (chưa kích hoạt) → MP4 có chữ chìm
     fx: function () { return isVideo() ? FX.none : FX[L.effect] || FX.sao; },
     resetFx: resetFx,
     hold: function (on) { holding = !!on; if (on) paused = true; },

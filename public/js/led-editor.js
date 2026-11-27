@@ -63,9 +63,9 @@ function renderSide() {
     h = tabs + `
       <section class="group cform">
         <p class="clab">Cỡ chữ</p>
-        <div class="fsz"><b class="s">A</b><input type="range" data-fs min="60" max="140" step="5" value="${Math.round((typeof led.fs === 'number' ? led.fs : 1) * 100)}" aria-label="Cỡ chữ"><b class="l">A</b><output>${Math.round((typeof led.fs === 'number' ? led.fs : 1) * 100)}%</output></div>
-        <div class="fcrow">${(META.led.fonts || []).length ? `<label class="field"><span>Kiểu chữ</span><select data-l="font">${META.led.fonts.map((x) => `<option value="${x.id}"${(led.font || '') === x.id ? ' selected' : ''}>${esc(x.name)}</option>`).join('')}</select></label>` : ''}
-        ${(META.led.colors || []).length ? (() => { const cur = META.led.colors.find((x) => (led.color || '') === x.id) || META.led.colors[0]; const sw = (x) => (x.id ? `<i style="background:${x.id}"></i>` : '<i class="auto">A</i>');
+        <div class="fcrow">${(META.led.fonts || []).length ? `<label class="field"><span>Kiểu chữ</span><select data-l="font">${META.led.fonts.map((x) => `<option value="${x.id}"${(led.font || '') === x.id ? ' selected' : ''}>${esc(x.name)}</option>`).join('')}</select></label>` : ''}${(() => { const cur = typeof led.fs === 'number' ? led.fs : 1, opts = [[0.8, 'Nhỏ'], [0.9, 'Vừa'], [1, 'To'], [1.15, 'Cực to']], near = opts.reduce((a, o) => (Math.abs(o[0] - cur) < Math.abs(a[0] - cur) ? o : a))[0];
+          // cỡ chữ: 4 mức, ô chọn gọn (cùng hàng Kiểu chữ · Màu)
+          return `<label class="field"><span>Cỡ chữ</span><select data-fssel>${opts.map(([v, n]) => `<option value="${v}"${v === near ? ' selected' : ''}>${n}</option>`).join('')}</select></label>`; })()}${(META.led.colors || []).length ? (() => { const cur = META.led.colors.find((x) => (led.color || '') === x.id) || META.led.colors[0]; const sw = (x) => (x.id ? `<i style="background:${x.id}"></i>` : '<i class="auto">A</i>');
           // màu chữ: một ô màu đang dùng, bấm vào mới xổ bảng màu
           return `<div class="field"><span>Màu</span><details class="lcp"><summary class="lcol" aria-label="Màu chữ: ${esc(cur.name)}"><button type="button" class="on" tabindex="-1">${sw(cur)}</button></summary><div class="lcol lcpop">${META.led.colors.map((x) => `<button type="button" class="${(led.color || '') === x.id ? 'on' : ''}" data-color="${x.id}" title="${esc(x.name)}" aria-label="${esc(x.name)}">${sw(x)}</button>`).join('')}</div></details></div>`; })() : ''}</div>
         <p class="clab">Tên đôi</p>
@@ -297,6 +297,8 @@ function mp4Dialog() {
   });
 }
 async function exportLedMp4(loops) {
+  // chỉ màn LED đã kích hoạt mới tải MP4 — hỏi lại máy chủ (không tin trạng thái trên trình duyệt); chưa kích hoạt thì MP4 vẫn có chữ chìm (led-export.js)
+  try { const fr = await api(`/api/cards/${CARD_ID}`, { quiet: true }); if (!(fr.card && fr.card.led && fr.card.led.paid)) return openPayModal(CARD_ID, reload, 'led'); } catch (e) { return toast(e.message, true); }
   if (saveTimer) { clearTimeout(saveTimer); saveTimer = null; await save(); }
   while (saving) await new Promise((ok) => setTimeout(ok, 100));
   let closeModal, fr;
@@ -347,6 +349,8 @@ function bind() {
   side.addEventListener('click', (e) => {
     const g = e.target.closest('[data-go]'); if (g) { curPanel = g.dataset.go; return renderSide(); }
 
+    const fv = e.target.closest('[data-fsv]');
+    if (fv) { led.fs = Number(fv.dataset.fsv); renderSide(); pushPreview(); return schedule(300); }
     const cb = e.target.closest('[data-color]');
     if (cb) { led.color = cb.dataset.color; renderSide(); pushPreview(); return schedule(300); }
     const tp = e.target.closest('[data-tpl]');
@@ -366,6 +370,7 @@ function bind() {
   });
   side.addEventListener('input', (e) => {
     const t = e.target;
+    if (t.dataset.fssel !== undefined) { led.fs = Number(t.value); pushPreview(); return schedule(300); } // cỡ chữ: Nhỏ / Vừa / To / Cực to
     if (t.dataset.fs !== undefined) { // cỡ chữ toàn màn (thanh trượt A — A)
       led.fs = Number(t.value) / 100; t.parentNode.querySelector('output').textContent = t.value + '%';
       pushPreview(); return schedule(400);

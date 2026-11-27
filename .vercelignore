@@ -1,0 +1,12 @@
+# Không đưa lên web (Vercel): chỉ dùng trên máy
+# trang nháp / mock giao diện, khuôn ảnh bài Facebook (công cụ marketing mở qua máy chủ trên máy)
+public/mock-*.html
+# dữ liệu, bí mật, tài liệu nội bộ
+data/
+.env
+.env*
+*.log
+marketing/
+design/
+node_modules/
+.vercel

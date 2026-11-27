@@ -330,7 +330,7 @@ route('GET', '/api/me', async (req, res, ctx) => {
 // ---------------- đăng nhập Google / Facebook ----------------
 const GOOGLE_CB = BASE_URL + '/auth/google/callback';
 const FACEBOOK_CB = BASE_URL + '/auth/facebook/callback';
-const safeNext = (n) => (typeof n === 'string' && n.startsWith('/') && !n.startsWith('//') ? n : '/thiep-cua-toi'); // không có trang đang dở → Thiệp của tôi
+const safeNext = (n) => (typeof n === 'string' && /^\/(?![\/\\])[^\s\\]*$/.test(n) ? n : '/thiep-cua-toi'); // chỉ đường dẫn trong trang: chặn //, /\, khoảng trắng / tab (trình duyệt hiểu thành trang ngoài) // không có trang đang dở → Thiệp của tôi
 function redirect(res, to, cookiesToSet = []) {
   res.writeHead(302, { Location: to, 'Set-Cookie': cookiesToSet, 'Cache-Control': 'no-store' });
   res.end();
@@ -907,6 +907,8 @@ route('POST', '/api/cards/:id/order', async (req, res, ctx) => {
   const code = b.coupon !== undefined ? discounts.norm(b.coupon) : order.coupon || '';
   let d = null;
   if (code) {
+    // nhập mã mới: giới hạn số lần thử (chống dò mã, nhất là mã giảm 100%)
+    if (b.coupon !== undefined) rateLimit('coupon:' + ((ctx.user && ctx.user.id) || ctx.ip), 20, 36e5, true);
     try { d = discounts.check(code, product, order.id); } catch (e) { if (b.coupon !== undefined) throw e; }
   }
   if (product !== 'multi' && (d || b.coupon !== undefined || order.coupon)) {
@@ -1233,6 +1235,8 @@ route('GET', '/t/:slug/:code', showCard);
 
 // "Thấy đám cưới của mình": các trang xem mẫu (thiệp, màn LED, slide) nhận tên đôi + ngày cưới khách vừa gõ
 // (?groom= ?bride= ?date=) — chỉ để xem, không lưu gì. Không gõ thì giữ tên mẫu.
+// demo đã điền tên / ngày riêng (người xem tự gõ) → coi như bản xem thử: có chữ chìm, không đem chiếu thật miễn phí được
+const demoCustom = (ctx) => !!(ctx.query.get('groom') || ctx.query.get('bride') || ctx.query.get('date'));
 function demoNames(ctx, d) {
   const q = ctx.query, groom = str(q.get('groom'), 40), bride = str(q.get('bride'), 40);
   if (groom) Object.assign(d.groom, { name: groom, fullName: groom });
@@ -1332,7 +1336,7 @@ route('GET', '/led/:slug', async (req, res, ctx) => {
     const led = ledLib.normalize({ ...q, kicker: 'Lễ Thành Hôn', message: ledLib.defaults().message });
     await demoView(req, ctx, `led:${led.palette}-${led.effect}`);
     const card = { data: demoNames(ctx, cd.normalize(cd.sample())) };
-    return html(res, 200, ledLib.renderLed(card, led, { demo: true, preview: q.preview === '1' }));
+    return html(res, 200, ledLib.renderLed(card, led, { demo: true, preview: q.preview === '1', trial: demoCustom(ctx) }));
   }
   const card = cardBySlug(slug);
   const isOwner = canManage(ctx.user, card) || guestOwns(ctx, card) || ctx.admin;
@@ -1387,7 +1391,7 @@ route('GET', '/video/:slug', async (req, res, ctx) => {
     await demoView(req, ctx, 'video:' + (videoLib.options().templates.some((t) => t.id === q.template) ? q.template : 'chung'));
     const v = videoLib.normalize({ template: q.template, photoBg: q.photo === '1', photos, event: { kind: 'Lễ Dạm Ngõ', date: '2026-11-22', time: '09:00', place: 'Tư gia nhà gái' } });
     const useUrl = videoLib.options().templates.some((t) => t.id === q.template) ? `/tao-video?mau=${encodeURIComponent(q.template)}` : '';
-    return html(res, 200, videoLib.renderVideo(card, v, { preview: q.preview === '1', useUrl }));
+    return html(res, 200, videoLib.renderVideo(card, v, { preview: q.preview === '1', useUrl, trial: demoCustom(ctx) }));
   }
   const card = cardBySlug(slug);
   const isOwner = canManage(ctx.user, card);
@@ -1591,6 +1595,7 @@ function serveFile(res, file, cache, req) {
 const MOVED = { '/video-cuoi': '/video-dam-ngo', '/don-hang': '/gio-hang', '/video-cua-toi': '/thiep-cua-toi' }; // gộp: một trang "Đám cưới của tôi" // /don-hang: bỏ trang Đơn hàng, chỉ còn Giỏ hàng // video ảnh chuyển sang trang Slide cưới, mẫu chữ ở Video dạm ngõ
 
 function serveStatic(req, res, pathname) {
+  if (process.env.VERCEL && /^\/mock-/.test(pathname)) return json(res, 404, { error: 'Không tìm thấy' }); // trang nháp chỉ mở trên máy (xem .vercelignore)
   if (MOVED[pathname]) { res.writeHead(301, { Location: MOVED[pathname] }); return res.end(); }
   if (PAGES[pathname]) return serveFile(res, path.join(PUBLIC_DIR, PAGES[pathname]), 'no-cache');
   if (/^\/sua\/[\w-]+$/.test(pathname)) return serveFile(res, path.join(PUBLIC_DIR, 'editor.html'), 'no-cache');
@@ -1633,6 +1638,10 @@ function stopwatch() {
 const server = http.createServer(async (req, res) => {
   const tm = stopwatch();
   restoreUrl(req); // Vercel có thể gửi request thẳng vào server này, bỏ qua `handler` bên dưới
+  // chống nhúng trang vào khung của web khác (bấm lừa nút trong admin / trình sửa), không gửi đường dẫn đầy đủ sang web ngoài
+  res.setHeader('X-Frame-Options', 'SAMEORIGIN');
+  res.setHeader('Content-Security-Policy', "frame-ancestors 'self'");
+  res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
   let url, pathname;
   try { url = new URL(req.url, 'http://x'); pathname = decodeURIComponent(url.pathname); } catch { return json(res, 400, { error: 'URL lỗi' }); }
   let matched = null, params = null;
