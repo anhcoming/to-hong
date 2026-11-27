@@ -4,7 +4,13 @@
 // user = undefined (chưa biết) · null (chưa đăng nhập) · { name, email }.
 (function () {
   if (window.cnBottom) return;
-  var css = '.cnb{display:none}@media (max-width:760px){'
+  var css = '.cnb,.cn-cart{display:none}@media (max-width:760px){'
+    + 'body.has-cnb .tb-split,body.has-cnb .uav:has(.usplit){display:none!important}' // đã có nút avatar + tab Thiệp ở thanh dưới → bỏ nút "Thiệp của tôi" trên đầu cho đỡ thừa
+    + '.cn-cart{position:relative;display:grid;place-items:center;flex:none;width:40px;height:40px;margin-left:auto;border-radius:50%;color:var(--primary,#d6455d);text-decoration:none}'
+    + '.cn-cart svg{width:25px;height:25px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}'
+    + '.cn-cart b{position:absolute;top:1px;right:0;min-width:18px;height:18px;padding:0 5px;box-sizing:border-box;border-radius:999px;border:2px solid #fff;background:#d6455d;color:#fff;font-size:10.5px;font-weight:800;line-height:14px;text-align:center}'
+    + '[data-theme="dark"] .cn-cart b{border-color:#1f191b}'
+    + '.pbar{display:none!important}.hnav:not(.up){top:0!important;transform:translateX(-50%)!important}' // dải giá chạy chữ chỉ hiện trên máy tính
     + 'body.has-cnb{padding-bottom:calc(92px + env(safe-area-inset-bottom))}.totop{bottom:calc(88px + env(safe-area-inset-bottom))!important}'
     + '.cnb{position:fixed;z-index:48;left:12px;right:12px;bottom:calc(12px + env(safe-area-inset-bottom));height:62px;padding:0 6px;display:flex;align-items:center;justify-content:space-around;border-radius:999px;background:rgba(255,255,255,.94);backdrop-filter:blur(12px) saturate(1.4);-webkit-backdrop-filter:blur(12px) saturate(1.4);box-shadow:0 0 0 1px var(--line,#f0e4e6),0 12px 30px rgba(120,40,50,.16)}'
     + '[data-theme="dark"] .cnb{background:rgba(31,25,27,.94)}'
@@ -83,5 +89,31 @@
       + (u ? '<i class="av">' + initial(u) + '</i>Tôi' : '<i>' + svg('user') + '</i>Tài khoản') + '</button>';
     nav.querySelector('button').onclick = sheet;
   }
+  // Giỏ hàng (điện thoại, đã đăng nhập) bên phải logo, kiểu Shopee: số trên giỏ = món của thiệp chính chưa thanh toán
+  // (thiệp chưa kích hoạt, màn LED, slide chưa trả tiền — đúng các món màn thanh toán tick sẵn); bấm là mở màn thanh toán của thiệp đó.
+  var cartAsked = false;
+  function cart() {
+    if (!state.user || cartAsked) return;
+    var wrap = document.querySelector('.topbar .wrap, #hnav>.wrap, #nav>.wrap');
+    if (!wrap) return;
+    cartAsked = true;
+    var a = document.createElement('a');
+    a.className = 'cn-cart'; a.href = '/thiep-cua-toi'; a.setAttribute('aria-label', 'Giỏ hàng');
+    a.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 4h2.2l2.3 11.2a1.6 1.6 0 0 0 1.6 1.3h8.4a1.6 1.6 0 0 0 1.6-1.2L21 8H6.1"/><circle cx="9.5" cy="20" r="1.3"/><circle cx="17" cy="20" r="1.3"/></svg>';
+    var burger = wrap.querySelector('.burger');
+    wrap.insertBefore(a, burger || null);
+    fetch('/api/cards', { credentials: 'same-origin' }).then(function (r) { return r.ok ? r.json() : null; }).then(function (j) {
+      var cards = (j && j.cards) || [];
+      if (!cards.length) { a.href = '/mau-thiep'; return; }
+      var rank = function (c) { return c.paid ? 2 : c.status === 'published' ? 1 : 0; };
+      var main = cards.slice().sort(function (x, y) { return rank(y) - rank(x); })[0];
+      var due = function (p) { return p && !(p.paid || p.prepaid) ? 1 : 0; }; // khớp các món màn thanh toán tick sẵn (pay.js)
+      var n = (main.paid ? 0 : 1) + due(main.led) + due(main.video);
+      a.href = '/thiep-cua-toi?thiep=' + encodeURIComponent(main.id) + (n ? '&mua=1' : '');
+      if (n) { a.insertAdjacentHTML('beforeend', '<b>' + n + '</b>'); a.setAttribute('aria-label', 'Giỏ hàng: ' + n + ' món chưa thanh toán'); }
+    }).catch(function () {});
+  }
+  var draw0 = draw;
+  draw = function (a, u) { draw0(a, u); cart(); };
   window.cnBottom = { draw: draw };
 })();

@@ -72,14 +72,14 @@ const SHP_CSS = `<style>
 .shp-close{margin-left:auto;font-size:16px;color:var(--muted)}
 .shp-box{display:block;background:var(--surface,#fff);margin:8px 0;padding:12px 16px}
 @media (min-width:600px){.shp-box{margin:10px 12px;border-radius:14px}}
-.shp-box h4{margin:0 0 8px;font-size:13.5px;font-weight:700}
-.shp-wed{font-size:13.5px;line-height:1.55}.shp-wed b{display:block;font-size:15px}.shp-wed small{display:block;margin-top:4px;color:var(--muted);font-size:12.5px}
+.shp-box h4{margin:0 0 4px;font-size:14px;font-weight:700}
+.shp-box.shp-wed{display:flex;align-items:center;gap:12px;font-size:13px;line-height:1.4;color:var(--muted)}.shp-wed b{display:block;font-size:15px;color:var(--ink,#1f1a1b)}.shp-wed svg{flex:none;width:22px;height:22px;fill:none;stroke:var(--primary,#d6455d);stroke-width:1.8;stroke-linejoin:round}
 .shp-it{display:flex;gap:11px;align-items:center;width:100%;padding:10px 0;border:0;border-top:1px solid var(--line);background:none;color:inherit;font:inherit;text-align:left;cursor:pointer}
 .shp-it:first-of-type{border-top:0}.shp-it.have,.shp-it:disabled{cursor:default}
 .shp-ck{flex:none;width:21px;height:21px;border-radius:6px;border:2px solid #d9c6c9;display:grid;place-items:center;color:#fff;font-size:12px;font-weight:800;box-sizing:border-box}
 .shp-ck.on{background:var(--primary,#d6455d);border-color:var(--primary,#d6455d)}.shp-ck.dis{background:#cfc3c5;border-color:#cfc3c5}
-.shp-th{flex:none;width:54px;height:54px;border-radius:9px;background:linear-gradient(135deg,#3b2b2f,#8a5a63) center/cover}
-.shp-tx{flex:1;min-width:0}.shp-tx b{display:block;font-size:14px}.shp-tx small{display:block;margin-top:2px;color:var(--muted);font-size:12px;line-height:1.35}
+.shp-th{flex:none;width:52px;height:52px;border-radius:10px;box-shadow:0 0 0 1px rgba(0,0,0,.06);background:linear-gradient(135deg,#3b2b2f,#8a5a63) center/cover}
+.shp-tx{flex:1;min-width:0}.shp-tx b{display:block;font-size:14px}.shp-tx small{display:block;margin-top:3px;color:var(--muted);font-size:12px;line-height:1.35;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .shp-pr{flex:none;text-align:right;font-size:14px;font-weight:700;color:var(--primary,#d6455d);white-space:nowrap}.shp-pr em{font-style:normal;color:var(--muted);font-weight:600;font-size:12.5px}
 .shp-cp{display:flex;flex-wrap:wrap;align-items:center;gap:8px}.shp-cp label{flex:none;font-size:13.5px;font-weight:600}
 .shp-cp input{flex:1;min-width:0;height:38px;padding:0 12px;border:1px solid var(--line);border-radius:10px;background:var(--bg,#fff);color:inherit;font:inherit;font-size:14px;text-transform:uppercase}
@@ -87,7 +87,7 @@ const SHP_CSS = `<style>
 .shp-ln{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:6px 0;font-size:13.5px}.shp-ln>span:last-child{color:var(--muted)}
 .shp-ln .g{color:#1f8a5b!important;font-weight:600}.shp-ln.tot{border-top:1px dashed var(--line);margin-top:4px;padding-top:10px}.shp-ln.tot b:last-child{color:var(--primary,#d6455d);font-size:16px}
 .shp-tag{display:inline-block;margin-left:6px;padding:0 5px;border:1px solid var(--primary,#d6455d);border-radius:4px;color:var(--primary,#d6455d);font-size:10.5px;font-weight:700;vertical-align:1px}
-.shp-pay{display:flex;align-items:center;gap:10px;font-size:13.5px}.shp-pay i{flex:none;width:18px;height:18px;border-radius:50%;border:5px solid var(--primary,#d6455d);box-sizing:border-box}
+.shp-pay{display:flex;align-items:center;gap:12px;padding:6px 0;font-size:12.5px;color:var(--muted)}.shp-pay span{flex:1}.shp-pay b{display:block;font-size:14px;color:var(--ink,#1f1a1b)}.shp-pay svg{flex:none;width:22px;height:22px;fill:none;stroke:var(--primary,#d6455d);stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}.shp-pay i{flex:none;width:20px;height:20px;border-radius:50%;border:6px solid var(--primary,#d6455d);box-sizing:border-box}
 .shp-fine{margin:6px 16px 0;color:var(--muted);font-size:11.5px;line-height:1.55}.shp-fine a{color:inherit}
 .shp-bar{position:fixed;left:0;right:0;bottom:0;z-index:3;display:flex;align-items:center;justify-content:flex-end;gap:12px;padding:10px 12px calc(10px + env(safe-area-inset-bottom));background:var(--surface,#fff);border-top:1px solid var(--line);box-shadow:0 -6px 20px rgba(120,40,50,.06)}
 @media (min-width:600px){.shp-bar{left:50%;right:auto;width:560px;transform:translateX(-50%);border-radius:16px 16px 0 0}}
@@ -190,9 +190,9 @@ window.openPayModal = async function (cardId, onDone, product = 'card') {
   const THUMB = {
     card: cardInfo.cover ? cardInfo.cover.split('#')[0] : `/demo/cover-${cardInfo.template}-${cardInfo.palette}.jpg`,
     led: `/demo/lposter-${cardInfo.led.palette || 'bac'}-${cardInfo.led.effect || 'dembac'}.jpg`,
-    video: cardInfo.video.template ? `/demo/vposter-${cardInfo.video.template}.jpg` : '',
+    video: `/demo/vposter-${cardInfo.video.template || 'sen'}.jpg`,
   };
-  const SUB = { card: 'Mời khách không giới hạn, đổi mẫu thoải mái', led: 'Link chiếu ở tiệc + tải MP4', video: 'Cả màn hình dạm ngõ · tải MP4 Full HD' };
+  const SUB = { card: 'Mời khách không giới hạn', led: 'Link chiếu ở tiệc · tải MP4', video: 'Dạm ngõ · tải MP4 Full HD' };
   const WD = ['Chủ Nhật', 'Thứ Hai', 'Thứ Ba', 'Thứ Tư', 'Thứ Năm', 'Thứ Sáu', 'Thứ Bảy'];
   const dateText = (d) => { const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(d || ''); return m ? `${WD[new Date(+m[1], m[2] - 1, +m[3]).getDay()]} ${m[3]}/${m[2]}/${m[1]}` : ''; };
   const ITEMS = { card: 'Thiệp', led: 'màn LED', video: 'slide' };
@@ -203,20 +203,20 @@ window.openPayModal = async function (cardId, onDone, product = 'card') {
     const retail = (o.items || []).filter((k) => !HAVE[k]).reduce((n, k) => n + PRICE[k], 0);
     const disc = o.discount || 0, first = o.firstOff || 0; // tổng = cộng giá lẻ
     return `<div class="shp-hd"><button type="button" class="shp-back" data-x aria-label="Đóng">‹</button>Thanh toán</div>
-      <div class="shp-box"><h4>💍 Đám cưới</h4><div class="shp-wed"><b>${esc(cardInfo.names || 'Thiệp của bạn')}</b>${esc(dateText(cardInfo.date))}<small>🔒 Kích hoạt là chốt tên + ngày cưới, mẫu thiệp vẫn đổi thoải mái</small></div></div>
-      <div class="shp-box"><h4>🛍️ Cưới Nha</h4>
+      <div class="shp-box shp-wed"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20.5s-7.5-4.6-7.5-10.2A4.3 4.3 0 0 1 12 7.6a4.3 4.3 0 0 1 7.5 2.7c0 5.6-7.5 10.2-7.5 10.2z"/></svg><div><b>${esc(cardInfo.names || 'Thiệp của bạn')}</b><span>${esc(dateText(cardInfo.date))}</span></div></div>
+      <div class="shp-box"><h4>Món đã chọn</h4>
         ${KEYS.map((k) => { const have = HAVE[k], on = have || ticks.includes(k);
           return `<button type="button" class="shp-it${have ? ' have' : ''}" data-tick="${k}"${have || part ? ' disabled' : ''}><span class="shp-ck${on ? ' on' : ''}${have ? ' dis' : ''}">${on ? '✓' : ''}</span><i class="shp-th"${THUMB[k] ? ` style="background-image:url('${esc(THUMB[k])}')"` : ''}></i><span class="shp-tx"><b>${TITLE[k][0]}</b><small>${have ? 'Đã mua' : SUB[k]}</small></span><span class="shp-pr">${have ? '<em>Đã có</em>' : money(PRICE[k])}</span></button>`; }).join('')}
       </div>
-      ${p === 'multi' ? '' : `<form class="shp-box shp-cp" id="cp"><label>🎟️ Mã giảm giá</label><input name="c" placeholder="Nhập mã" value="${esc(o.coupon || '')}" autocomplete="off" aria-describedby="cpErr"><button class="btn sm plain">Áp dụng</button><p class="cp-err" id="cpErr" role="alert" hidden></p></form>`}
-      <div class="shp-box"><h4>🧾 Chi tiết thanh toán</h4>
+      ${p === 'multi' ? '' : `<form class="shp-box shp-cp" id="cp"><label>Mã giảm giá</label><input name="c" placeholder="Nhập mã" value="${esc(o.coupon || '')}" autocomplete="off" aria-describedby="cpErr"><button class="btn sm plain">Áp dụng</button><p class="cp-err" id="cpErr" role="alert" hidden></p></form>`}
+      <div class="shp-box"><h4>Chi tiết thanh toán</h4>
         <div class="shp-ln"><span>Tổng tiền hàng</span><span>${money(retail)}</span></div>
-        ${first ? `<div class="shp-ln"><span>🎁 Ưu đãi khách mới<span class="shp-tag">đơn đầu</span></span><span class="g">−${money(first)}</span></div>` : ''}
+        ${first ? `<div class="shp-ln"><span>Ưu đãi khách mới<span class="shp-tag">đơn đầu</span></span><span class="g">−${money(first)}</span></div>` : ''}
         ${disc ? `<div class="shp-ln"><span>Mã ${esc(o.coupon)}</span><span class="g">−${money(disc)}</span></div>` : ''}
         <div class="shp-ln tot"><b>Tổng thanh toán</b><b>${money(o.amount)}</b></div></div>
-      <div class="shp-box"><h4>💳 Phương thức thanh toán</h4><div class="shp-pay"><i></i>Chuyển khoản QR — tiền về là tự kích hoạt</div></div>
+      <div class="shp-box"><h4>Phương thức thanh toán</h4><div class="shp-pay"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><path d="M14 14h3v3h-3zM20 14v.01M14 20h.01M17 17h3v3"/></svg><span><b>Chuyển khoản QR</b>Tiền về là tự kích hoạt</span><i></i></div></div>
       <p class="shp-fine">Thanh toán là bạn đồng ý với <a href="/dieu-khoan" target="_blank" rel="noopener">Điều khoản</a> và <a href="/hoan-tien" target="_blank" rel="noopener">Chính sách hoàn tiền</a>. ${p === 'combo' ? LOCK_NOTE.combo : (o.items || [p]).includes('card') ? LOCK_NOTE.card : LOCK_NOTE[(o.items || [p])[0]] || ''}</p>
-      <div class="shp-bar"><div class="t">Tổng thanh toán<b>${money(o.amount)}</b>${first + disc ? `<small>Tiết kiệm ${money(first + disc)}</small>` : ''}</div>
+      <div class="shp-bar"><div class="t">Tổng (${(o.items || [p]).filter((k) => !HAVE[k]).length} món)<b>${money(o.amount)}</b>${first + disc ? `<small>Tiết kiệm ${money(first + disc)}</small>` : ''}</div>
         ${o.amount <= 0 && o.coupon ? '<button type="button" class="shp-go" id="cpOk">Xác nhận kích hoạt</button>' : '<button type="button" class="shp-go" id="order">Đặt hàng</button>'}</div>`;
   };
 
