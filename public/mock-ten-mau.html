@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Mock tên mẫu</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&amp;display=swap">
+<style>
+/* mock: các cách đặt tên mẫu slide / màn LED trên thẻ (trang chủ, Video cưới, Màn LED) */
+body{margin:0;background:#fffafa;font-family:'Be Vietnam Pro',system-ui,sans-serif;color:#2b2224}
+.wrap{max-width:420px;margin:0 auto;padding:16px 16px 40px}
+h1{font-size:18px;margin:4px 0}.hint{margin:0 0 18px;color:#8a7d80;font-size:13px}
+.opt{margin:0 0 26px}.opt h2{display:flex;gap:8px;align-items:center;font-size:15px;margin:0 0 4px}.opt h2 em{font-style:normal;padding:1px 8px;border-radius:999px;background:#d6455d;color:#fff;font-size:11px}
+.opt p{margin:0 0 10px;color:#8a7d80;font-size:12.5px;line-height:1.5}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.c{position:relative;display:block}
+.c .im{position:relative;aspect-ratio:16/9;border-radius:12px;overflow:hidden;background:#111 center/cover;box-shadow:0 6px 16px rgba(120,40,50,.1)}
+/* A: tên dưới ảnh */
+.a .nm{margin:7px 2px 0;font-size:13.5px;font-weight:700}
+/* B: viên nhỏ mờ góc trên trái */
+.b .nm{position:absolute;left:8px;top:8px;max-width:calc(100% - 16px);padding:4px 10px;border-radius:999px;background:rgba(20,10,12,.5);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);color:#fff;font-size:11.5px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+/* C: thanh kính mờ dưới đáy ảnh, chữ nhỏ */
+.cc .nm{position:absolute;left:0;right:0;bottom:0;padding:6px 10px;background:rgba(255,255,255,.72);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);color:#2b2224;font-size:12px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+/* D: chỉ ảnh, không tên */
+.d .nm{display:none}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Đặt tên mẫu thế nào?</h1>
+  <p class="hint">Áp cho thẻ slide, màn hình dạm ngõ, màn LED (trang chủ, Video cưới, Màn LED).</p>
+  <div id="list"></div>
+</div>
+<script>
+var IMG = ['/demo/vposter-polaroid.jpg', '/demo/vposter-saodem.jpg', '/demo/lposter-bac-dembac.jpg', '/demo/lposter-lam-saoroi.jpg'];
+var NM = ['Polaroid', 'Trời sao', 'Đêm kim tuyến bạc', 'Sao rơi'];
+var OPTS = [
+  ['a', 'A · Tên dưới ảnh', 'Đề xuất', 'Như thẻ mẫu thiệp — ảnh sạch, tên dễ đọc. Tốn thêm một dòng chữ.'],
+  ['b', 'B · Viên nhỏ góc trên', '', 'Tên trong viên tối mờ nhỏ ở góc, không che phần giữa ảnh; gọn nhất về chiều cao.'],
+  ['cc', 'C · Thanh kính mờ dưới đáy', '', 'Dải trắng mờ đè đáy ảnh, chữ nhỏ đậm — đọc rõ trên mọi nền.'],
+  ['d', 'D · Chỉ ảnh, không tên', '', 'Sạch nhất; tên chỉ hiện khi bấm mở xem mẫu.'],
+];
+document.getElementById('list').innerHTML = OPTS.map(function (o) {
+  return '<div class="opt ' + o[0] + '"><h2>' + o[1] + (o[2] ? '<em>' + o[2] + '</em>' : '') + '</h2><p>' + o[3] + '</p><div class="row">'
+    + IMG.map(function (src, i) { return '<a class="c"><div class="im" style="background-image:url(' + src + ')">' + (o[0] !== 'a' ? '<span class="nm">' + NM[i] + '</span>' : '') + '</div>' + (o[0] === 'a' ? '<p class="nm">' + NM[i] + '</p>' : '') + '</a>'; }).join('')
+    + '</div></div>';
+}).join('');
+</script>
+</body>
+</html>

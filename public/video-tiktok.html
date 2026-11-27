@@ -128,6 +128,9 @@
       + '<div class="tb"><div><h3>' + esc(t.name) + '</h3><small>♪ ' + esc(t.mname) + ' · 3–10 ảnh</small></div></div></article>';
   }).join('');
   document.querySelectorAll('.tc').forEach(function (el) { var t = TPL[+el.dataset.i]; el.onclick = function () { seeTpl(t); }; });
+  // ?mau=<id> (bấm mẫu ở trang Video): mở thẳng mẫu đó sau khi trang vẽ xong
+  var mau = new URLSearchParams(location.search).get('mau'), tm = mau && TPL.find(function (x) { return x.id === mau; });
+  if (tm) setTimeout(function () { seeTpl(tm); }, 0);
   // máy tính (có chuột): rê chuột vào mẫu thì chạy video xem trước đè lên ảnh bìa, rời ra thì dừng; điện thoại chỉ có ảnh tĩnh
   if (window.matchMedia && matchMedia('(hover:hover) and (pointer:fine)').matches) document.querySelectorAll('.tc').forEach(function (el) {
     var t = TPL[+el.dataset.i], pv = el.querySelector('.pv'), v = null;

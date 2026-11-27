@@ -36,12 +36,18 @@
 .lcard b{position:absolute;left:0;right:0;bottom:0;display:block;padding:34px 16px 12px;background:linear-gradient(rgba(0,0,0,0),rgba(0,0,0,.62));color:#fff;font-size:18px;font-weight:800;text-align:left;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-shadow:0 1px 6px rgba(0,0,0,.35)} /* tên mẫu đè lên góc dưới ảnh, như thẻ mẫu thiệp */
 @media (max-width:900px){.lp{padding:96px 0 50px}}
 @media (max-width:600px){
-  .lp{padding:86px 0 40px}.lhead h1{font-size:22px}.lhead p{display:none}
-  .lgrid{grid-template-columns:1fr;gap:14px;margin-top:18px} /* điện thoại: mỗi mẫu một hàng cho to */
+  .lp{padding:66px 0 24px}.lhead{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)} /* như trang Mẫu thiệp: ẩn tiêu đề (vẫn cho Google đọc) */
+  .lgrid{grid-template-columns:1fr;gap:10px;margin-top:0} /* điện thoại: mỗi mẫu một hàng cho to */
   .lcard{border-radius:12px}
   .lcard b{padding:30px 14px 11px;font-size:17px}
   .lcard .pic::after{display:none}
 }
+/* tên mẫu nằm dưới ảnh (như thẻ mẫu thiệp), không đè lên poster — 27/11 */
+.lcard{overflow:visible;background:none;border:0;box-shadow:none;border-radius:0}
+.lcard:hover{transform:none;box-shadow:none}.lcard:hover .pic{transform:translateY(-3px);box-shadow:0 16px 34px rgba(120,40,50,.16)}
+.lcard .pic{border-radius:14px;overflow:hidden;border:1px solid var(--line);box-shadow:0 8px 22px rgba(120,40,50,.08);transition:transform .25s,box-shadow .25s}
+.lcard b{position:static;padding:8px 2px 0;background:none;color:var(--ink);font-size:14.5px;font-weight:700;text-shadow:none}
+@media (max-width:600px){.lcard{border-radius:0}.lcard .pic{border-radius:12px}.lcard b{padding:7px 2px 0;font-size:14px}}
 </style>
 </head>
 <body data-page="led">

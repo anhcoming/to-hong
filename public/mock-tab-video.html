@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Mock tab Video</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&amp;display=swap">
+<style>
+/* mock: so sánh 3 cách gọi tab "Video" ở thanh dưới điện thoại (cùng kiểu thanh thật trong public/js/bnav.js) */
+body{margin:0;background:#f5f0f1;font-family:'Be Vietnam Pro',system-ui,sans-serif;color:#2b2224}
+.wrap{max-width:420px;margin:0 auto;padding:16px 12px 40px}
+h1{font-size:18px;margin:4px 4px 4px}.hint{margin:0 4px 16px;color:#8a7d80;font-size:13px}
+.opt{margin:0 0 18px;border-radius:16px;overflow:hidden;background:#fffafa;box-shadow:0 0 0 1px #f0e4e6}
+.opt h2{display:flex;align-items:center;gap:8px;margin:0;padding:12px 14px 4px;font-size:15px}
+.opt h2 em{font-style:normal;padding:1px 8px;border-radius:999px;background:#d6455d;color:#fff;font-size:11px}
+.opt p{margin:0;padding:0 14px 12px;color:#8a7d80;font-size:12.5px;line-height:1.5}
+.cnb{display:flex;align-items:center;justify-content:space-around;height:58px;padding:0 4px;background:#fff;box-shadow:0 -1px 0 #f0e4e6}
+.cnb>a{flex:1;min-width:0;display:flex;flex-direction:column;align-items:center;gap:2px;font-size:10.5px;font-weight:600;line-height:1.2;white-space:nowrap;color:#8a7d80;text-decoration:none}
+.cnb i{display:grid;place-items:center;width:44px;height:26px;font-style:normal}
+.cnb svg{width:21px;height:21px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.cnb .on{color:#d6455d;font-weight:800}.cnb .on svg>*{fill:currentColor}.cnb .on svg>.d{fill:none;stroke:#fff}.cnb .on svg>.w{fill:#fff;stroke:none}
+.cnb .av{width:26px;height:26px;border-radius:50%;background:linear-gradient(135deg,#f6d7dc,#e9b7c0);color:#8b1a24;font-size:11.5px;font-weight:800}
+.cnb.small>a{font-size:9.5px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Tab Video ở thanh dưới — 3 cách</h1>
+  <p class="hint">Tab đang chọn tô đặc màu hồng. Trong tab: Slide ảnh cưới · Màn hình dạm ngõ · Báo hỷ TikTok.</p>
+  <div id="list"></div>
+</div>
+<script>
+var I = {
+  home: '<path d="M4 11 12 4l8 7v8.5a1.5 1.5 0 0 1-1.5 1.5H15v-6H9v6H5.5A1.5 1.5 0 0 1 4 19.5z"/>',
+  card: '<rect x="3" y="5" width="18" height="14" rx="2.5"/><path class="d" d="M3.5 6.5 12 13l8.5-6.5"/>',
+  led: '<rect x="2.5" y="4" width="19" height="12.5" rx="2"/><path d="M8 20.5h8M12 16.5v4"/>',
+  cam: '<rect x="3" y="6" width="13" height="12" rx="2.5"/><path d="m16 10.5 5-3v9l-5-3"/>',
+  play: '<rect x="2.5" y="4.5" width="19" height="15" rx="3"/><path class="w" d="m10 9 5 3-5 3z"/>',
+  film: '<rect x="3" y="4" width="18" height="16" rx="2.5"/><path class="d" d="M7 4v16M17 4v16M3 9h4M3 15h4M17 9h4M17 15h4"/>',
+  slideplay: '<rect x="3" y="3.5" width="18" height="12" rx="2"/><path d="M12 15.5v4M8 19.5h8"/><path class="w" d="m10.5 7.5 4 2-4 2z"/>',
+};
+var svg = function (k) { return '<svg viewBox="0 0 24 24" aria-hidden="true">' + I[k] + '</svg>'; };
+var bar = function (ic, label, small) {
+  return '<nav class="cnb' + (small ? ' small' : '') + '"><a><i>' + svg('home') + '</i>Trang chủ</a><a><i>' + svg('card') + '</i>Thiệp</a><a class="on"><i>' + svg(ic) + '</i>' + label + '</a><a><i>' + svg('led') + '</i>Màn LED</a><a><i class="av">V</i>Tôi</a></nav>';
+};
+var OPTS = [
+  ['Hiện tại', '', 'cam', 'Video', 'Icon máy quay, chữ “Video” — dễ hiểu nhầm là quay phim.'],
+  ['A · Video cưới', 'Đề xuất', 'play', 'Video cưới', 'Nói rõ là video đám cưới; icon màn hình có nút ▶ (xem / chiếu) thay máy quay.'],
+  ['B · Slide', '', 'slideplay', 'Slide', 'Gọi theo món trả tiền chính (slide ảnh cưới). Báo hỷ, dạm ngõ vẫn nằm trong trang.'],
+  ['C · Slide & Video', '', 'film', 'Slide & Video', 'Ghi đủ cả hai loại; chữ dài nên phải thu nhỏ chữ cả thanh.', true],
+];
+document.getElementById('list').innerHTML = OPTS.map(function (o) {
+  return '<div class="opt"><h2>' + o[0] + (o[1] ? '<em>' + o[1] + '</em>' : '') + '</h2><p>' + o[4] + '</p>' + bar(o[2], o[3], o[5]) + '</div>';
+}).join('');
+</script>
+</body>
+</html>

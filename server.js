@@ -490,7 +490,7 @@ route('GET', '/api/cards', async (req, res, ctx) => {
   const w = Wd.ensure(user);
   // thiệp của mình + thiệp của các thành viên khác trong cùng đám cưới
   const list = db.cards.filter((c) => c.userId === user.id || c.weddingId === w.id).sort((a, b) => b.updatedAt - a.updatedAt).map(cardSummary);
-  json(res, 200, { cards: list });
+  json(res, 200, { cards: list, firstPct: firstOrderPct(user.id) }); // firstPct: ưu đãi khách mới (giỏ hàng hiện giá sau giảm)
 });
 
 route('POST', '/api/cards', async (req, res, ctx) => {
@@ -625,7 +625,7 @@ function ensureGuestCard(res, ctx, b = {}) {
 
 route('GET', '/api/cards/:id', async (req, res, ctx) => {
   const card = ownedCard(ctx, ctx.params.id, { guest: true });
-  json(res, 200, { card: cardFull(card) });
+  json(res, 200, { card: cardFull(card), firstPct: firstOrderPct(card.userId) }); // firstPct: ưu đãi khách mới (% đơn đầu) — nút Kích hoạt ghi đúng giá
 });
 
 route('PUT', '/api/cards/:id', async (req, res, ctx) => {
@@ -1546,6 +1546,7 @@ const PAGES = {
   '/so-tay': 'planner.html',
   '/video-cua-toi': 'dashboard.html', // cùng trang với "Thiệp của tôi", hiện danh sách video
   '/don-hang': 'orders.html', // đơn hàng của tôi (chờ thanh toán / đã thanh toán)
+  '/gio-hang': 'cart.html', // giỏ hàng kiểu Shopee: món chưa thanh toán → Mua hàng → Thanh toán
   '/so-tay-cuoi': 'planner-landing.html',
   '/goi-y': 'suggest.html', // thả ảnh cưới → gợi ý thiệp
   '/video': 'video-tiktok.html', // video báo hỷ đăng TikTok, miễn phí, không cần đăng nhập (dựng trên máy khách)

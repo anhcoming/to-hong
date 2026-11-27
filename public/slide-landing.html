@@ -33,6 +33,22 @@
 .flist i{font-style:normal;font-size:11.5px;line-height:1;padding:3px 7px;border-radius:999px;background:var(--bg2);color:var(--muted)}
 .flist button[aria-pressed="true"] i{background:#ffd9df;color:var(--red)}
 .vgal{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:20px}
+.vrow{grid-column:1/-1;min-width:0}
+.vrow-h{display:flex;align-items:flex-end;justify-content:space-between;gap:10px;margin:6px 0 10px}
+.vrow-h h3{display:flex;align-items:center;gap:8px;margin:0;font-size:18px}.vrow-h h3 i{font-style:normal;padding:2px 8px;border-radius:999px;background:#d6455d;color:#fff;font-size:11px;font-weight:700}
+.vrow-h p{margin:2px 0 0;color:var(--muted);font-size:13px}
+.vrow-h button{flex:none;padding:0;border:0;background:none;color:var(--red);font:600 13.5px var(--sans);cursor:pointer;white-space:nowrap}
+.vrow-s{display:grid;grid-auto-flow:column;grid-auto-columns:minmax(300px,32%);gap:14px;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none;padding-bottom:4px;margin-bottom:14px}.vrow-s::-webkit-scrollbar{display:none}
+.vrow-s>*{scroll-snap-align:start}
+.vrow-s.tall{grid-auto-columns:minmax(150px,16%)}
+.vt .tag{background:rgba(20,10,12,.55)!important;font-size:11px!important;font-weight:600!important;padding:3px 9px!important;backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px)}
+@media (max-width:600px){.vrow-s{grid-auto-columns:78%;gap:10px;margin:0 -16px 12px;padding:0 16px 4px;scroll-padding:0 16px}.vrow-s.tall{grid-auto-columns:40%}.vrow-h h3{font-size:16px}.vrow-h p{font-size:12px}.vrow .vt b{font-size:15px;padding:24px 12px 9px}}
+.bhh{grid-column:1/-1}.bhh h3{display:flex;align-items:center;gap:8px;margin:14px 0 10px;font-size:18px}.bhh h3 i,.flist i.fr{font-style:normal;padding:2px 8px;border-radius:999px;background:#d6455d;color:#fff;font-size:11px;font-weight:700}
+.bhg{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:14px}
+.bht{position:relative;display:block;aspect-ratio:9/16;border-radius:14px;overflow:hidden;background:#1a1012;text-decoration:none}
+.bht img{width:100%;height:100%;object-fit:cover;display:block}
+.bht b{position:absolute;left:0;right:0;bottom:0;padding:26px 10px 9px;background:linear-gradient(rgba(0,0,0,0),rgba(0,0,0,.62));color:#fff;font-size:14px;font-weight:700}
+@media (max-width:600px){.bhg{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.bhh h3{font-size:16px;margin:8px 0 8px}}
 .vt{all:unset;position:relative;cursor:pointer;display:block;aspect-ratio:16/9;border-radius:18px;overflow:hidden;background:#1a1012;border:1px solid var(--line);box-shadow:0 12px 30px rgba(120,40,50,.07);transition:transform .25s,box-shadow .25s}
 .vt:hover{transform:translateY(-4px);box-shadow:0 22px 44px rgba(120,40,50,.14)}
 .vt:focus-visible{outline:2px solid var(--red);outline-offset:3px}
@@ -52,10 +68,28 @@
   .flist a.fx{height:auto;padding:12px 0 11px;margin-bottom:-1px;border:0;border-radius:0;background:none;font:600 15px var(--sans);color:var(--muted)}
   .flist a.fx i{display:inline-block;font-size:10px;padding:2px 6px}
 }
+/* điện thoại (như trang Mẫu thiệp): ẩn tiêu đề (vẫn cho Google đọc), lọc thành viên nhỏ vuốt ngang, dính dưới thanh trên */
+@media (max-width:760px){
+  .slp{padding:54px 0 24px}
+  .thead{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);margin:0}
+  .flist{position:sticky;top:54px;z-index:20;margin:0 -16px 8px;padding:8px 16px;gap:6px;border:0;background:var(--bg)}
+  .flist button,.flist button:hover,.flist a.fx{height:32px;padding:0 14px;margin:0;border:1px solid var(--line);border-radius:999px;background:var(--card,#fff);font:500 13px var(--sans);color:var(--ink)}
+  .flist button[aria-pressed="true"],[data-theme="dark"] .flist button[aria-pressed="true"]{background:var(--ink);border-color:var(--ink);color:var(--card,#fff)}
+  .flist button{gap:6px}.flist i.fr{display:inline-block;padding:1px 6px;font-size:10px}
+}
 @media (max-width:600px){
-  .vgal{grid-template-columns:1fr;gap:14px} /* mỗi mẫu một hàng cho to */
+  .vgal{grid-template-columns:1fr;gap:10px} /* mỗi mẫu một hàng cho to */
   .vt{border-radius:12px}.vt b{padding:30px 14px 11px;font-size:17px}.vt .tag{top:10px;left:10px}
 }
+/* tên mẫu nằm dưới ảnh (như thẻ mẫu thiệp), không đè lên poster — 27/11 */
+.vt{aspect-ratio:auto;overflow:visible;background:none;border:0;box-shadow:none;border-radius:0}
+.vt:hover{transform:none;box-shadow:none}.vt:hover img{transform:translateY(-3px);box-shadow:0 16px 34px rgba(120,40,50,.16)}
+.vt img{aspect-ratio:16/9;height:auto;border-radius:14px;border:1px solid var(--line);box-shadow:0 8px 22px rgba(120,40,50,.08);transition:transform .25s,box-shadow .25s}
+.vt iframe{border-radius:14px}
+.vt b,.vrow .vt b{position:static;display:block;padding:8px 2px 0;background:none;color:var(--ink);font-size:14.5px;font-weight:700;text-shadow:none}
+.bht{aspect-ratio:auto;overflow:visible;background:none;border-radius:0}.bht img{aspect-ratio:9/16;height:auto;border-radius:12px}
+.bht b{position:static;display:block;padding:7px 2px 0;background:none;color:var(--ink);font-size:13.5px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+@media (max-width:600px){.vt{border-radius:0}.vt img{border-radius:12px}}
 </style>
 </head>
 <body data-page="slide">
@@ -72,7 +106,9 @@
 <script>
 (function () {
   var esc = function (s) { return String(s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); };
-  var G = [{ id: '', name: 'Tất cả' }, { id: 'le', name: 'Nền buổi lễ' }, { id: 'phim', name: 'Phim kể chuyện' }];
+  var G = [{ id: '', name: 'Tất cả' }, { id: 'phim', name: 'Slide ảnh cưới' }, { id: 'le', name: 'Màn hình dạm ngõ' }, { id: 'bh', name: 'Báo hỷ TikTok', free: true }];
+  // video báo hỷ (miễn phí, dọc 9:16): bấm mẫu → trang /video mở thẳng mẫu đó
+  var BH = [['phongbi-hong', 'Phong bì hồng'], ['dienanh', 'Điện ảnh'], ['polaroid-nau', 'Polaroid kỷ niệm'], ['toigian-xanh', 'Tối giản xanh'], ['songhy-do', 'Song hỷ đỏ'], ['phongbi-xanhla', 'Phong bì xanh lá'], ['toigian-hong', 'Tối giản hồng'], ['dienanh-nau', 'Điện ảnh hoài niệm'], ['polaroid-tim', 'Polaroid mộng mơ'], ['songhy-xanhngoc', 'Song hỷ xanh ngọc']];
   var cur = '';
   document.addEventListener('meta', function (ev) {
     // nền buổi lễ (kind 'le') đứng đầu, rồi phim kể chuyện (mẫu chèn ảnh khác)
@@ -82,16 +118,32 @@
     var fl = document.getElementById('flist'), g = document.getElementById('vgal');
     function draw() {
       fl.innerHTML = G.map(function (x) {
-        var n = all.filter(function (t) { return !x.id || grp(t) === x.id; }).length;
-        return '<button type="button" data-g="' + x.id + '" aria-pressed="' + (x.id === cur) + '"><span>' + x.name + '</span><i>' + n + '</i></button>';
-      }).join('') + '<a class="fx" href="/video">Báo hỷ TikTok <i>Free</i></a>'; // video báo hỷ miễn phí: trang riêng, cùng nhóm "Video" ở thanh dưới
-      g.innerHTML = all.filter(function (t) { return !cur || grp(t) === cur; }).map(function (t) {
+        var n = x.id === 'bh' ? BH.length : all.filter(function (t) { return !x.id || grp(t) === x.id; }).length + (x.id ? 0 : BH.length);
+        return '<button type="button" data-g="' + x.id + '" aria-pressed="' + (x.id === cur) + '"><span>' + x.name + '</span>' + (x.free ? '<i class="fr">Free</i>' : '<i>' + n + '</i>') + '</button>';
+      }).join('');
+      // thẻ một mẫu slide / dạm ngõ (ngang 16:9) và một mẫu báo hỷ (dọc 9:16)
+      var vt = function (t) {
         return '<a class="vt" data-id="' + t.id + '" href="/video/demo?template=' + t.id + '" aria-label="Xem thử mẫu ' + esc(t.name) + '">'
           + '<span class="tag">' + (t.kind === 'le' ? '2:00 · ' : '') + t.slots + ' ảnh</span>'
-          + '<img src="/demo/vposter-' + t.id + '.jpg" alt="Mẫu slide ảnh cưới ' + esc(t.name) + '" loading="lazy"><b>' + esc(t.name) + '</b></a>';
-      }).join('');
+          + '<img src="/demo/vposter-' + t.id + '.jpg" alt="Mẫu ' + esc(t.name) + '" loading="lazy"><b>' + esc(t.name) + '</b></a>';
+      };
+      var bht = function (x) { return '<a class="bht" href="/video?mau=' + x[0] + '"><img src="/demo/story/' + x[0] + '.jpg" alt="Video báo hỷ ' + esc(x[1]) + '" loading="lazy"><b>' + esc(x[1]) + '</b></a>'; };
+      var of = function (id) { return all.filter(function (t) { return grp(t) === id; }); };
+      if (!cur) {
+        // "Tất cả": từng loại một khu có tiêu đề (như trang chủ), hàng vuốt ngang + "Xem tất cả ›" chuyển sang lọc loại đó
+        var row = function (id, title, sub, cards, tall) {
+          return '<section class="vrow"><div class="vrow-h"><div><h3>' + title + '</h3></div><button type="button" data-g="' + id + '">Xem tất cả ›</button></div>'
+            + '<div class="vrow-s' + (tall ? ' tall' : '') + '">' + cards + '</div></section>';
+        };
+        g.innerHTML = row('phim', 'Slide ảnh cưới', 'Chiếu màn LED, TV ở tiệc · tải MP4', of('phim').map(vt).join(''))
+          + row('le', 'Màn hình dạm ngõ', 'Nền chiếu buổi dạm ngõ, ăn hỏi', of('le').map(vt).join(''))
+          + row('bh', 'Video báo hỷ TikTok <i>Free</i>', 'Ảnh cưới thành video 20 giây', BH.map(bht).join(''), true);
+        return;
+      }
+      g.innerHTML = cur === 'bh' ? '<div class="bhh"><div class="bhg">' + BH.map(bht).join('') + '</div></div>' : of(cur).map(vt).join('');
     }
-    fl.addEventListener('click', function (e) { var b = e.target.closest('[data-g]'); if (!b) return; cur = b.dataset.g; draw(); });
+    g.addEventListener('click', function (e) { var b = e.target.closest('.vrow-h [data-g]'); if (!b) return; cur = b.dataset.g; draw(); window.scrollTo({ top: 0, behavior: 'smooth' }); var on = fl.querySelector('[aria-pressed="true"]'); if (on && on.scrollIntoView) on.scrollIntoView({ block: 'nearest', inline: 'nearest' }); });
+    fl.addEventListener('click', function (e) { var b = e.target.closest('[data-g]'); if (!b) return; cur = b.dataset.g; draw(); var on = fl.querySelector('[aria-pressed="true"]'); if (on && on.scrollIntoView) on.scrollIntoView({ block: 'nearest', inline: 'nearest' }); }); // viên đang chọn luôn trong tầm nhìn
     // bấm mẫu: lớp xem mẫu chạy thật, xem xong mới bấm "Dùng mẫu"
     g.addEventListener('click', function (e) {
       var a = e.target.closest('.vt'); if (!a || !window.tplView || e.metaKey || e.ctrlKey) return;
@@ -121,6 +173,10 @@
     });
   });
 })();
+</script>
+<script>
+// bấm lọc khi đang cuộn sâu → về đầu danh sách mẫu (như trang Mẫu thiệp)
+document.getElementById('flist').addEventListener('click', (e) => { if (e.target.closest('button') && window.scrollY > 0) window.scrollTo({ top: 0, behavior: 'smooth' }); }, true);
 </script>
 </body>
 </html>

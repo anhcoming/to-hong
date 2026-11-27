@@ -6,7 +6,10 @@
   if (window.cnBottom) return;
   var css = '.cnb,.cn-cart{display:none}@media (max-width:760px){'
     + 'body.has-cnb .tb-split,body.has-cnb .uav:has(.usplit){display:none!important}' // đã có nút avatar + tab Thiệp ở thanh dưới → bỏ nút "Thiệp của tôi" trên đầu cho đỡ thừa
-    + '.cn-cart{flex:none;display:inline-flex;align-items:center;height:36px;margin-left:auto;padding:0 14px;border-radius:999px;background:linear-gradient(120deg,#d6455d,#ec6f86);color:#fff;font-size:13px;font-weight:700;text-decoration:none;white-space:nowrap;box-shadow:0 6px 16px rgba(214,69,93,.25)}'
+    + '.cn-cart{position:relative;flex:none;display:grid;place-items:center;width:40px;height:40px;margin-left:auto;border-radius:50%;color:var(--primary,#d6455d);text-decoration:none}'
+    + '.cn-cart svg{width:25px;height:25px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}'
+    + '.cn-cart b{position:absolute;top:1px;right:0;min-width:18px;height:18px;padding:0 5px;box-sizing:border-box;border-radius:999px;border:2px solid var(--surface,#fff);background:#d6455d;color:#fff;font-size:10.5px;font-weight:800;line-height:14px;text-align:center}'
+    + '.cn-cart-old{display:none;box-shadow:0 6px 16px rgba(214,69,93,.25)}'
     // kiểu Shopee: thanh trên + thanh dưới dính sát mép, rộng hết màn, không bo tròn / không thu thành viên nổi
     + 'body.has-cnb .topbar{padding:0;border-bottom:1px solid var(--line,#f0e4e6);background:var(--surface,#fff)}'
     + 'body.has-cnb .topbar .wrap{height:54px;border:0;border-radius:0;background:none;box-shadow:none;-webkit-backdrop-filter:none;backdrop-filter:none}'
@@ -50,7 +53,7 @@
   var I = {
     home: '<path d="M4 11 12 4l8 7v8.5a1.5 1.5 0 0 1-1.5 1.5H15v-6H9v6H5.5A1.5 1.5 0 0 1 4 19.5z"/>',
     card: '<rect x="3" y="5" width="18" height="14" rx="2.5"/><path class="d" d="M3.5 6.5 12 13l8.5-6.5"/>',
-    video: '<rect x="3" y="6" width="13" height="12" rx="2.5"/><path d="m16 10.5 5-3v9l-5-3"/>',
+    video: '<rect x="2.5" y="4.5" width="19" height="15" rx="3"/><path class="d s" d="m10 9 5 3-5 3z"/>', // màn hình có nút ▶ (xem / chiếu video cưới)
     led: '<rect x="2.5" y="4" width="19" height="12.5" rx="2"/><path d="M8 20.5h8M12 16.5v4"/><path class="d s" d="m12 7 .9 1.9 2 .3-1.5 1.4.4 2-1.8-1-1.8 1 .4-2-1.5-1.4 2-.3z"/>',
     user: '<circle cx="12" cy="8.5" r="3.8"/><path d="M4.5 20c.9-3.6 3.9-5.5 7.5-5.5s6.6 1.9 7.5 5.5"/>',
     slide: '<rect x="3" y="4" width="18" height="12" rx="2"/><path d="M12 16v4M8 20h8"/><path d="m10 8 4 2-4 2z"/>',
@@ -66,7 +69,7 @@
   // ảnh tài khoản (Google / Facebook): không gửi referrer (ảnh Google hay chặn), lỗi tải thì thay bằng icon người
   var photo = function (u) { return '<img src="' + esc(u.avatar) + '" alt="" referrerpolicy="no-referrer" onerror="var i=this.parentNode;i.className=\'\';i.innerHTML=window.cnBottom.userIcon">'; };
   var initial = function (u) { var n = String((u && (u.name || u.email)) || '?').trim(); return esc(n.split(/\s+/).pop().charAt(0).toUpperCase() || '?'); };
-  var GROUP = { home: 'home', tpl: 'tpl', cards: 'tpl', goiy: 'tpl', slide: 'video', baohy: 'video', videos: 'video', damngo: 'video', led: 'led', planner: 'me', orders: 'me' };
+  var GROUP = { home: 'home', tpl: 'tpl', cards: 'tpl', goiy: 'tpl', slide: 'video', baohy: 'video', videos: 'video', damngo: 'video', led: 'led', planner: 'me', orders: 'me', cart: 'me' };
   var nav = null, state = { active: '', user: undefined };
 
   function sheet() {
@@ -102,7 +105,7 @@
     if (!nav) { nav = document.createElement('nav'); nav.className = 'cnb'; nav.setAttribute('aria-label', 'Chức năng'); document.body.appendChild(nav); document.body.classList.add('has-cnb'); }
     var g = GROUP[state.active] || '', u = state.user;
     var item = function (key, href, ic, text) { return '<a href="' + href + '"' + (g === key ? ' class="on" aria-current="page"' : '') + '><i>' + svg(ic) + '</i>' + text + '</a>'; };
-    nav.innerHTML = item('home', '/', 'home', 'Trang chủ') + item('tpl', '/mau-thiep', 'card', 'Thiệp') + item('video', '/slide-cuoi', 'video', 'Video') + item('led', '/man-hinh-led-dam-cuoi', 'led', 'Màn LED')
+    nav.innerHTML = item('home', '/', 'home', 'Trang chủ') + item('tpl', '/mau-thiep', 'card', 'Thiệp') + item('video', '/slide-cuoi', 'video', 'Video cưới') + item('led', '/man-hinh-led-dam-cuoi', 'led', 'Màn LED')
       + '<button type="button"' + (g === 'me' ? ' class="on"' : '') + ' aria-label="Tài khoản"' + (u === undefined ? ' style="visibility:hidden"' : '') + '>'
       + (u ? (u.avatar ? '<i class="av ph">' + photo(u) + '</i>' : '<i>' + svg('user') + '</i>') + 'Tôi' : '<i>' + svg('user') + '</i>Tài khoản') + '</button>';
     nav.querySelector('button').onclick = function (e) { pop(e.currentTarget); sheet(); };
@@ -124,8 +127,15 @@
     if (!wrap) return;
     newAsked = true;
     var a = document.createElement('a');
-    a.className = 'cn-cart'; a.href = '/mau-thiep'; a.textContent = '＋ Tạo thiệp';
+    a.className = 'cn-cart'; a.href = '/gio-hang'; a.setAttribute('aria-label', 'Giỏ hàng');
+    a.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 4h2.2l2.3 11.2a1.6 1.6 0 0 0 1.6 1.3h8.4a1.6 1.6 0 0 0 1.6-1.2L21 8H6.1"/><circle cx="9.5" cy="20" r="1.3"/><circle cx="17" cy="20" r="1.3"/></svg>';
     wrap.insertBefore(a, wrap.querySelector('.burger') || null);
+    // giỏ hàng kiểu Shopee (thay "+ Tạo thiệp", 27/11): số trên giỏ = món chưa thanh toán — thiệp chưa trả, màn LED / slide đã tạo chưa trả
+    fetch('/api/cards', { credentials: 'same-origin' }).then(function (r) { return r.ok ? r.json() : null; }).then(function (j) {
+      var due = function (p) { return p && p.created && !p.paid && !p.prepaid ? 1 : 0; };
+      var n = ((j && j.cards) || []).reduce(function (s, c) { return s + (c.paid ? 0 : 1) + due(c.led) + due(c.video); }, 0);
+      if (n) { a.insertAdjacentHTML('beforeend', '<b>' + (n > 99 ? '99+' : n) + '</b>'); a.setAttribute('aria-label', 'Giỏ hàng: ' + n + ' món'); }
+    }).catch(function () {});
   }
   var draw0 = draw;
   draw = function (a, u) { draw0(a, u); cart(); };

@@ -1,6 +1,6 @@
 // Trình sửa thiệp: form bên trái, xem trước trực tiếp bên phải, tự lưu.
 const CARD_ID = location.pathname.split('/').pop();
-let card, META;
+let card, META, FIRST_PCT = 0; // FIRST_PCT: % ưu đãi đơn đầu của chủ thiệp (máy chủ tính)
 let saveTimer = null, saving = false, pending = false;
 
 const getP = (o, p) => p.split('.').reduce((a, k) => (a == null ? a : a[k]), o);
@@ -654,17 +654,17 @@ function renderHeader() {
   // nút: Xem trước (nhẹ) · Lưu (viền, chỉ khi có thay đổi) · một nút đỏ duy nhất: Phát hành / Kích hoạt (đã phát hành thì Chia sẻ thành nút chính khi đã kích hoạt)
   const pv = `<a class="btn sm ghost" href="/t/${esc(card.slug)}?preview=1" target="_blank" rel="noopener" title="Xem thiệp như khách mời">▷<span class="xl">&nbsp;Xem trước</span></a>`;
   const sv = dirty ? '<button class="btn sm soft" id="saveBtn" title="Lưu (⌘/Ctrl+S)">Lưu</button>' : ''; // đã lưu: chỉ còn chữ "Đã lưu ✓" ở dòng dưới tên
-  if (card.status !== 'published') {
-    pa.innerHTML = pv + sv + '<button class="btn sm" id="pubBtn">Gửi xem thử</button>'; // phát hành = có link xem thử (gửi vợ/chồng, người nhà)
-  } else {
-    // đã phát hành: bỏ nút "Chia sẻ" (link gửi khách ở Thiệp của tôi / tab Khách); chưa kích hoạt thì chỉ còn nút Kích hoạt
-    pa.innerHTML = pv + sv + (card.paid ? '' : `<button class="btn sm soft" id="shareBtn">Xem thử</button><button class="btn sm" id="payBtn">Gửi khách<span class="xl">&nbsp;· ${Math.round(META.price / 1000)}k</span></button>`);
-  }
+  // luồng gửi (27/11): một nút chính "Gửi thiệp" → bảng chọn Gửi xem thử (miễn phí) / Gửi khách mời (99k → thanh toán → tab Khách).
+  // Chưa phát hành thì bấm là phát hành trước rồi mở bảng chọn.
+  pa.innerHTML = pv + sv + '<button class="btn sm" id="sendBtn">Gửi thiệp</button>';
   const svb = $('#saveBtn'); if (svb) svb.onclick = () => commit();
-
-  const pb = $('#pubBtn'); if (pb) pb.onclick = publish;
-  const sb = $('#shareBtn'); if (sb) sb.onclick = () => shareModal();
-  const yb = $('#payBtn'); if (yb) yb.onclick = () => openPayModal(CARD_ID, reloadCard);
+  $('#sendBtn').onclick = () => (card.status !== 'published' ? publish() : shareModal());
+}
+// trả 99k từ trình sửa xong → mở luôn tab Khách để thêm tên + gửi link riêng từng khách (không bỏ lại ở màn "Đã kích hoạt")
+// "Kích hoạt" → giỏ hàng kiểu Shopee (thấy cả màn LED / slide chưa trả, chỉ tick sẵn thiệp) → trả xong quay lại đây, mở tab Khách
+async function payCard() {
+  if (dirty) await commit();
+  location.href = `/gio-hang?thiep=${encodeURIComponent(CARD_ID)}&mon=card&sau=${encodeURIComponent(`/sua/${CARD_ID}?tab=guests`)}`;
 }
 // Bảng "thông tin chính": tên đôi, ngày giờ, nơi tổ chức tiệc — điền một lần là thiệp có đủ nội dung để gửi.
 // Tự mở khi thiệp còn trống tên; mở lại khi bấm Phát hành mà còn thiếu.
@@ -933,26 +933,55 @@ async function publish(force) {
   } catch (e) { toast(e.message, true); }
 }
 function shareModal(first) {
-  const url = card.url;
-  // gọn: một nút chính (Chép link) + ✕; việc phụ là chữ nhỏ một hàng
-  // chưa trả tiền: link xem thử (gửi vợ/chồng, người nhà duyệt) + nút chính "Gửi khách · 99k"
-  const trial = !card.paid;
-  openModal(`<div style="text-align:center"><h2 style="margin:0 0 6px">${trial ? 'Link xem thử' : first ? '🎉 Đã phát hành' : 'Link thiệp'}</h2>
-    <p class="muted" style="margin:0 0 14px;font-size:14px">${trial ? 'Gửi vợ/chồng, người nhà xem trước. Thiệp có dòng "Bản xem thử".' : 'Gửi link này cho khách qua Zalo, Messenger'}</p>
-    <div style="display:flex;align-items:center;gap:8px;padding:10px 12px;border-radius:12px;background:var(--bg);font-size:13.5px;margin-bottom:14px"><span style="flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;text-align:left">${esc(url.replace(/^https?:\/\//, ''))}</span></div>
-    ${trial ? `<button class="btn" id="toPay">Gửi khách thật · ${Math.round(META.price / 1000)}k</button><p style="margin:10px 0 0"><a href="#" id="cpL">Chép link xem thử</a></p>` : '<button class="btn" id="cpL">Chép link</button>'}
-    <p style="margin:14px 0 0;font-size:13px"><a href="${esc(url)}" target="_blank" rel="noopener">Mở thiệp ↗</a> · <a href="#" id="toStory">Video TikTok</a> · <a href="#" id="toGuests">Link tên riêng từng khách</a></p>
-    ${trial ? '<p class="muted" style="font-size:12.5px;margin:10px 0 0">Trả một lần: thiệp sạch, link tên riêng từng khách</p>' : ''}</div>`,
+  const url = card.url, trial = !card.paid, k = Math.round(META.price / 1000);
+  const off = FIRST_PCT ? Math.round((META.price * FIRST_PCT) / 100 / 1000) * 1000 : 0; // giá sẽ trả (khách mới được giảm đơn đầu)
+  const share = (msg) => (navigator.share ? navigator.share({ url }).catch(() => {}) : copyText(url, msg));
+  const mobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+  // Messenger: điện thoại mở thẳng app với link; máy tính chép link rồi mở messenger.com
+  // Zalo: không có đường dẫn chia sẻ công khai → điện thoại dùng bảng chia sẻ của máy (có Zalo); không có thì chép link, mở Zalo Web
+  const toMess = (msg) => { if (mobile) { location.href = 'fb-messenger://share/?link=' + encodeURIComponent(url); return; } copyText(url, msg + ' — dán vào Messenger'); window.open('https://www.messenger.com/', '_blank', 'noopener'); };
+  const toZalo = (msg) => { if (mobile && navigator.share) return share(msg); copyText(url, msg + ' — dán vào Zalo'); if (!mobile) window.open('https://chat.zalo.me/', '_blank', 'noopener'); };
+  const ICO = {
+    mess: '<svg viewBox="0 0 24 24" aria-hidden="true"><defs><linearGradient id="msg" x1="0" y1="1" x2="1" y2="0"><stop offset="0" stop-color="#0866ff"/><stop offset=".6" stop-color="#a033ff"/><stop offset="1" stop-color="#ff5c87"/></linearGradient></defs><circle cx="12" cy="12" r="12" fill="url(#msg)"/><path d="M12 5.2c-3.9 0-6.9 2.8-6.9 6.6 0 2 .8 3.7 2.2 4.9v2.4l2.1-1.2c.8.2 1.7.3 2.6.3 3.9 0 6.9-2.8 6.9-6.4S15.9 5.2 12 5.2zm.7 8.6-1.8-1.9-3.4 1.9 3.7-4 1.8 1.9 3.4-1.9-3.7 4z" fill="#fff"/></svg>',
+    zalo: '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="12" fill="#0068ff"/><text x="12" y="15.2" text-anchor="middle" font-family="Arial,Helvetica,sans-serif" font-size="8.6" font-weight="700" fill="#fff">Zalo</text></svg>',
+    more: '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="12" fill="var(--bg2,#f1ebec)"/><g fill="var(--ink,#2b2224)"><circle cx="7.5" cy="12" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="16.5" cy="12" r="1.5"/></g></svg>',
+    copy: '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="12" fill="var(--primary-soft,#fde8ec)"/><g fill="none" stroke="var(--primary,#d6455d)" stroke-width="1.7" stroke-linecap="round"><path d="M10.6 13.4a3 3 0 0 0 4.2 0l2.1-2.1a3 3 0 0 0-4.2-4.2l-.9.9"/><path d="M13.4 10.6a3 3 0 0 0-4.2 0l-2.1 2.1a3 3 0 0 0 4.2 4.2l.9-.9"/></g></svg>',
+  };
+  const shareRow = '<div class="sendi"><button type="button" id="cpL" aria-label="Chép link" title="Chép link">' + ICO.copy + '</button><button type="button" id="shM" aria-label="Gửi qua Messenger" title="Messenger">' + ICO.mess + '</button><button type="button" id="shZ" aria-label="Gửi qua Zalo" title="Zalo">' + ICO.zalo + '</button><button type="button" id="shO" aria-label="Chia sẻ qua ứng dụng khác" title="Ứng dụng khác">' + ICO.more + '</button></div>';
+  const opt = (tag, title, sub, body) => `<div class="sendo${tag ? ' ' + tag : ''}"><div class="sendo-h"><b>${title}</b>${sub}</div>${body}</div>`;
+  const linkRow = `<div class="sendo-l"><span>${esc(url.replace(/^https?:\/\//, ''))}</span></div>`;
+  openModal(`<style>
+    .sendo{padding:12px 14px;border-radius:14px;border:1.5px solid var(--line);margin:0 0 10px;text-align:left}.sendo:last-child{margin-bottom:0}
+    .sendo.main{border-color:var(--primary);background:var(--primary-soft)}
+    .sendo-h{font-size:13px;color:var(--muted);line-height:1.45;margin-bottom:8px}.sendo-h b{display:flex;align-items:center;gap:8px;font-size:15.5px;color:var(--ink);margin-bottom:2px}
+    .sendo-h em{font-style:normal;padding:1px 8px;border-radius:999px;background:var(--ok-soft,#e6f3ec);color:var(--ok);font-size:11.5px;font-weight:700}
+    .sendo-h em.p{background:var(--primary);color:#fff}
+    .sendo-l{padding:9px 12px;border-radius:10px;background:var(--bg);font-size:13px;margin-bottom:10px}.sendo-l span{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+    .sendo-b{list-style:none;margin:6px 0 0;padding:0;display:grid;gap:3px;font-size:13px;color:var(--ink)}.sendo-b li{display:flex;gap:7px}.sendo-b li::before{content:"✓";color:var(--primary);font-weight:800}
+    .sendi{display:flex;gap:12px;margin-top:2px}.sendi button{display:grid;place-items:center;padding:0;border:0;background:none;cursor:pointer}.sendi svg{width:34px;height:34px;transition:transform .15s}.sendi button:active svg{transform:scale(.92)}
+    .sendo-p{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:12px;padding-top:12px;border-top:1px dashed rgba(214,69,93,.3)}.sendo-p .pr{display:flex;align-items:baseline;flex-wrap:wrap;gap:4px 8px;min-width:0}.sendo-p .pr b{font-size:19px;color:var(--primary)}.sendo-p .pr s{font-size:13px;color:var(--muted)}.sendo-p .pr em{font-style:normal;padding:1px 6px;border-radius:4px;background:var(--primary);color:#fff;font-size:11px;font-weight:700}.sendo-p .btn{flex:none;padding-left:18px;padding-right:18px}
+    .sendo-a{display:flex;flex-wrap:wrap;gap:8px}.sendo-a .btn{padding-left:16px;padding-right:16px}
+  </style><div>
+    <h2 style="margin:-10px 0 10px;line-height:36px;text-align:center;font-size:20px">${first ? '🎉 Thiệp đã có link' : 'Gửi thiệp'}</h2>
+    ${trial
+      ? opt('', 'Xem thử <em>Miễn phí</em>', 'Gửi vợ/chồng xem trước có ưng không', shareRow)
+        + opt('main', 'Gửi khách mời', '<ul class="sendo-b"><li>Mỗi khách một link có tên riêng</li><li>Không giới hạn khách mời</li><li>Bỏ dòng “Bản xem thử”</li><li>Đổi mẫu, sửa thiệp thoải mái sau đó</li></ul>', `<div class="sendo-p"><div class="pr"><b>${money(META.price - off)}</b>${off ? `<s>${money(META.price)}</s><em>-${FIRST_PCT}% đơn đầu</em>` : ''}</div><button class="btn sm" id="toPay">Kích hoạt</button></div>`)
+      : opt('main', 'Link chung', 'Gửi nhóm Zalo, Facebook', linkRow + shareRow)
+        + opt('', 'Link tên từng khách', 'Mỗi khách thấy tên mình', '<div class="sendo-a"><button class="btn sm soft" id="toGuests">Danh sách khách</button></div>')}
+</div>`,
   (box, close) => {
-    $('#cpL', box).onclick = (e) => { e.preventDefault(); copyText(url, trial ? 'Đã chép link xem thử' : 'Đã chép link thiệp'); };
-    $('#toStory', box).onclick = (e) => { e.preventDefault(); close(); storyModal(CARD_ID); };
-    $('#toGuests', box).onclick = (e) => { e.preventDefault(); close(); const t = document.querySelector('.tools [data-tab="guests"]'); if (t) t.click(); };
-    const tp = $('#toPay', box); if (tp) tp.onclick = (e) => { e.preventDefault(); close(); openPayModal(CARD_ID, reloadCard); };
+    const msg = trial ? 'Đã chép link xem thử' : 'Đã chép link thiệp';
+    $('#cpL', box).onclick = (e) => { e.preventDefault(); copyText(url, msg); };
+    $('#shM', box).onclick = (e) => { e.preventDefault(); toMess(msg); };
+    $('#shZ', box).onclick = (e) => { e.preventDefault(); toZalo(msg); };
+    $('#shO', box).onclick = (e) => { e.preventDefault(); share(msg); }; // ⋯ bảng chia sẻ của máy (Instagram, SMS, email…); máy không có thì chép link
+    const tg = $('#toGuests', box); if (tg) tg.onclick = (e) => { e.preventDefault(); close(); const t = document.querySelector('.tools [data-tab="guests"]'); if (t) t.click(); };
+    const tp = $('#toPay', box); if (tp) tp.onclick = (e) => { e.preventDefault(); close(); payCard(); };
   });
 }
 async function reloadCard() {
   const r = await api(`/api/cards/${CARD_ID}`);
-  card = r.card;
+  card = r.card; FIRST_PCT = r.firstPct || 0;
   renderHeader();
   refreshPreview();
 }
@@ -986,8 +1015,8 @@ async function loadGuests() {
       loadGuests();
     } catch (err) { toast(err.message, true); }
   };
-  const gp = $('#gPay'); if (gp) gp.onclick = (e) => { e.preventDefault(); openPayModal(CARD_ID, reloadCard); };
-  $$('[data-glock]').forEach((b) => (b.onclick = () => openPayModal(CARD_ID, reloadCard)));
+  const gp = $('#gPay'); if (gp) gp.onclick = (e) => { e.preventDefault(); payCard(); };
+  $$('[data-glock]').forEach((b) => (b.onclick = () => payCard()));
   $$('[data-gc]').forEach((b) => (b.onclick = () => copyText(`Trân trọng kính mời ${b.dataset.gn} tới dự lễ cưới của ${card.data.groom.name} & ${card.data.bride.name}. Thiệp mời: ${b.dataset.gc}`, `Đã chép lời mời cho ${b.dataset.gn}`)));
   $$('[data-gd]').forEach((b) => (b.onclick = async () => {
     if (!confirm('Xoá khách này? Link riêng của họ sẽ không còn hiện tên.')) return;
@@ -1866,7 +1895,7 @@ function textModal(key) {
   try {
     const [meta, r] = await Promise.all([fetch('/api/meta').then((x) => x.json()), api(`/api/cards/${CARD_ID}`)]);
     META = meta;
-    card = r.card;
+    card = r.card; FIRST_PCT = r.firstPct || 0;
     document.title = 'Sửa thiệp — ' + meta.brand;
   } catch (e) {
     $('#ttl').textContent = e.status === 404 ? 'Không tìm thấy thiệp' : 'Chưa tải được thiệp — tải lại trang nhé';

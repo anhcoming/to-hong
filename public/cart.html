@@ -1,0 +1,129 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<script src="/js/theme.js"></script>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Giỏ hàng — Cưới Nha</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&amp;family=Dancing+Script:wght@600;700&amp;display=swap">
+<link rel="stylesheet" href="/css/app.css">
+<style>
+/* Giỏ hàng kiểu Shopee: món chưa thanh toán (thiệp, màn LED, slide đã tạo) theo từng đám cưới → tick chọn → "Mua hàng" mở trang Thanh toán */
+.ch{margin:12px 0 12px;font-family:var(--serif);font-weight:600;font-size:28px}
+.cgrp{max-width:720px;margin:0 0 12px;border-radius:16px;background:var(--surface);box-shadow:0 0 0 1px var(--line);overflow:hidden}
+.cgrp-h{display:flex;align-items:center;gap:10px;padding:12px 14px;border-bottom:1px solid var(--line);font-weight:700;font-size:14.5px}
+.cgrp-h span{color:var(--muted);font-weight:500;font-size:12.5px}
+.cit{display:flex;align-items:center;gap:11px;width:100%;padding:12px 14px;border:0;background:none;color:inherit;font:inherit;text-align:left;cursor:pointer}
+.cit+.cit{border-top:1px solid var(--line)}
+.ck{flex:none;width:21px;height:21px;border-radius:6px;border:2px solid #d9c6c9;display:grid;place-items:center;color:#fff;font-size:12px;font-weight:800;box-sizing:border-box}
+.ck.on{background:var(--primary);border-color:var(--primary)}
+.cth{flex:none;width:58px;height:58px;border-radius:10px;background:linear-gradient(135deg,#3b2b2f,#8a5a63) center/cover;box-shadow:0 0 0 1px rgba(0,0,0,.06)}
+.ctx{flex:1;min-width:0}.ctx b{display:block;font-size:14.5px}.ctx small{display:block;margin-top:2px;color:var(--muted);font-size:12.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cpr{flex:none;font-weight:700;color:var(--primary);font-size:14.5px}
+.cbar{position:fixed;left:0;right:0;bottom:0;z-index:49;display:flex;align-items:center;gap:12px;padding:10px 12px calc(10px + env(safe-area-inset-bottom));background:var(--surface);box-shadow:0 -1px 0 var(--line)}
+.cbar{flex-wrap:wrap;row-gap:8px}
+.cv{flex-basis:100%;display:flex;align-items:center;gap:8px;padding:0 0 8px;border-bottom:1px dashed var(--line);font-size:13px;color:var(--ink)}
+.cv svg{flex:none;width:20px;height:20px;fill:none;stroke:var(--primary);stroke-width:1.7;stroke-linejoin:round}
+.cv em{font-style:normal;padding:1px 6px;border:1px solid var(--primary);border-radius:4px;color:var(--primary);font-size:11.5px;font-weight:700}
+.cv b{margin-left:auto;color:#1f8a5b;font-weight:700}
+.cbar .all{display:flex;align-items:center;gap:8px;border:0;background:none;font:inherit;font-size:13.5px;color:var(--ink);cursor:pointer;padding:0}
+.cbar .t{margin-left:auto;text-align:right;font-size:12.5px;color:var(--muted)}.cbar .t b{display:block;font-size:18px;color:var(--primary)}
+.cbar .go{flex:none;height:46px;padding:0 20px;border:0;border-radius:12px;background:var(--primary);color:#fff;font:inherit;font-size:15px;font-weight:700;cursor:pointer}
+.cbar .go:disabled{opacity:.5;cursor:default}
+.cempty{max-width:720px;padding:44px 16px;text-align:center;color:var(--muted);border-radius:16px;background:var(--surface);box-shadow:0 0 0 1px var(--line)}
+.cempty svg{width:56px;height:56px;fill:none;stroke:var(--primary);stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round;opacity:.7}
+.cempty p{margin:8px 0 16px}
+main.wrap{padding-bottom:130px}
+@media (min-width:761px){.cbar{left:50%;right:auto;width:min(720px,100% - 32px);transform:translateX(-50%);border-radius:16px 16px 0 0}}
+/* điện thoại — như giỏ hàng Shopee: không thanh logo, không thanh 5 nút; đầu trang là ‹ + "Giỏ hàng (n)", đáy là thanh Mua hàng */
+.chd{display:none}
+@media (max-width:760px){
+  body.cart-pg .topbar,body.cart-pg .cnb,body.cart-pg .cn-cart{display:none!important}
+  body.cart-pg{padding-bottom:0!important}
+  .chd{position:sticky;top:0;z-index:30;display:flex;align-items:center;gap:6px;height:54px;padding:0 12px 0 6px;background:var(--surface);box-shadow:0 1px 0 var(--line)}
+  .chd button{display:grid;place-items:center;width:40px;height:40px;border:0;border-radius:50%;background:none;color:var(--primary);font-size:28px;line-height:1;cursor:pointer}
+  .chd b{font-size:17px}
+  .ch{display:none}
+  main.wrap{padding-top:12px!important;padding-bottom:140px}
+}
+</style>
+</head>
+<body class="cart-pg">
+<div class="chd"><button type="button" id="back" aria-label="Quay lại">‹</button><b id="chdT">Giỏ hàng</b></div>
+<main class="wrap" style="padding-top:20px">
+  <h1 class="ch">Giỏ hàng</h1>
+  <div id="list"><div class="muted">Đang tải…</div></div>
+</main>
+<div class="cbar" id="bar" hidden><div class="cv" id="cv" hidden></div><button type="button" class="all" id="all"><span class="ck"></span>Tất cả</button><div class="t">Tổng thanh toán<b id="sum">0đ</b></div><button type="button" class="go" id="go" disabled>Mua hàng</button></div>
+<script src="/js/common.js"></script>
+<script src="/js/pay.js"></script>
+<script>
+(async () => {
+  const { meta, user } = await renderTopbar('cart');
+  if (!user) return (location.href = '/dang-nhap?next=' + encodeURIComponent(location.pathname));
+  const el = document.getElementById('list'), bar = document.getElementById('bar');
+  const PRICE = { card: meta.price, led: meta.ledPrice, video: meta.videoPrice };
+  const NAME = { card: 'Thiệp cưới online', led: 'Màn hình LED', video: 'Slide ảnh cưới' };
+  const SUB = { card: 'Mời khách không giới hạn', led: 'Link chiếu ở tiệc · tải MP4', video: 'Dạm ngõ · tải MP4 Full HD' };
+  const dateVN = (d) => (d ? d.split('-').reverse().join('/') : '');
+  let groups = [], pick = { id: '', items: [] }, firstPct = 0; // một lần mua cho một đám cưới (mỗi thiệp một đơn)
+  // mở từ nút "Kích hoạt" (trình sửa…): ?thiep=<id>&mon=card → chỉ tick sẵn món đó; ?sau=<đường dẫn> → trả xong quay về đó
+  const Q = new URLSearchParams(location.search), AFTER = /^\/[^/]/.test(Q.get('sau') || '') ? Q.get('sau') : '';
+  let want = Q.get('thiep') ? { id: Q.get('thiep'), items: (Q.get('mon') || '').split(',').filter(Boolean) } : null;
+
+  const load = async () => {
+    let cards = [];
+    try { const r = await api('/api/cards'); cards = r.cards; firstPct = r.firstPct || 0; } catch (e) { el.innerHTML = `<div class="cempty"><p>${esc(e.message)}</p></div>`; return; }
+    const due = (p) => p && p.created && !p.paid && !p.prepaid;
+    groups = cards.map((c) => ({ c, items: [!c.paid && 'card', due(c.led) && 'led', due(c.video) && 'video'].filter(Boolean) })).filter((g) => g.items.length);
+    const wg = want && groups.find((g) => g.c.id === want.id);
+    if (wg) { pick = { id: wg.c.id, items: want.items.length ? wg.items.filter((k) => want.items.includes(k)) : wg.items.slice() }; want = null; }
+    else if (!groups.some((g) => g.c.id === pick.id)) pick = groups.length ? { id: groups[0].c.id, items: groups[0].items.slice() } : { id: '', items: [] };
+    else pick.items = pick.items.filter((k) => groups.find((g) => g.c.id === pick.id).items.includes(k));
+    draw();
+  };
+  const thumb = (c, k) => k === 'card' ? (c.cover ? c.cover.split('#')[0] : `/demo/cover-${c.template}-${c.palette}.jpg`)
+    : k === 'led' ? `/demo/lposter-${c.led.palette || 'bac'}-${c.led.effect || 'dembac'}.jpg` : `/demo/vposter-${c.video.template || 'sen'}.jpg`;
+  const draw = () => {
+    const n = groups.reduce((s, g) => s + g.items.length, 0);
+    document.querySelector('.ch').textContent = document.getElementById('chdT').textContent = n ? `Giỏ hàng (${n})` : 'Giỏ hàng';
+    if (!n) {
+      bar.hidden = true;
+      el.innerHTML = `<div class="cempty"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 4h2.2l2.3 11.2a1.6 1.6 0 0 0 1.6 1.3h8.4a1.6 1.6 0 0 0 1.6-1.2L21 8H6.1"/><circle cx="9.5" cy="20" r="1.3"/><circle cx="17" cy="20" r="1.3"/></svg>
+        <p>Giỏ hàng trống — thiệp, màn LED, slide bạn làm mà chưa thanh toán sẽ nằm ở đây</p><a class="btn sm" href="/mau-thiep">Chọn mẫu thiệp</a></div>`;
+      return;
+    }
+    el.innerHTML = groups.map((g) => `<div class="cgrp"><div class="cgrp-h">${esc(g.c.names || g.c.title)}${g.c.date ? `<span>· ${dateVN(g.c.date)}</span>` : ''}</div>
+      ${g.items.map((k) => { const on = pick.id === g.c.id && pick.items.includes(k);
+        return `<button type="button" class="cit" data-c="${g.c.id}" data-k="${k}"><span class="ck${on ? ' on' : ''}">${on ? '✓' : ''}</span><i class="cth" style="background-image:url('${esc(thumb(g.c, k))}')"></i><span class="ctx"><b>${NAME[k]}</b><small>${SUB[k]}</small></span><span class="cpr">${money(PRICE[k])}</span></button>`; }).join('')}</div>`).join('');
+    const g = groups.find((x) => x.c.id === pick.id), sum = pick.items.reduce((s, k) => s + PRICE[k], 0), full = g && pick.items.length === g.items.length;
+    bar.hidden = false;
+    document.querySelector('#all .ck').className = 'ck' + (full ? ' on' : ''); document.querySelector('#all .ck').textContent = full ? '✓' : '';
+    // ưu đãi khách mới (cùng cách làm tròn với máy chủ): hiện ngay ở giỏ để khách thấy được giảm; mã giảm giá khác nhập ở bước Thanh toán
+    const off = firstPct && sum ? Math.round((sum * firstPct) / 100 / 1000) * 1000 : 0, cv = document.getElementById('cv');
+    cv.hidden = !firstPct;
+    if (firstPct) cv.innerHTML = `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 8.5V6.5A1.5 1.5 0 0 1 4.5 5h15A1.5 1.5 0 0 1 21 6.5v2a2.5 2.5 0 0 0 0 5v2A1.5 1.5 0 0 1 19.5 17h-15A1.5 1.5 0 0 1 3 15.5v-2a2.5 2.5 0 0 0 0-5z"/><path d="M9.5 5v12" stroke-dasharray="2 2"/></svg>Ưu đãi khách mới <em>-${firstPct}% đơn đầu</em>${off ? `<b>-${money(off)}</b>` : ''}`;
+    document.getElementById('sum').textContent = money(sum - off);
+    const go = document.getElementById('go'); go.disabled = !pick.items.length; go.textContent = `Mua hàng (${pick.items.length})`;
+  };
+  el.addEventListener('click', (e) => {
+    const b = e.target.closest('.cit'); if (!b) return;
+    const id = b.dataset.c, k = b.dataset.k;
+    if (pick.id !== id) pick = { id, items: [] }; // chọn món của đám cưới khác → bỏ chọn bên kia
+    pick.items = pick.items.includes(k) ? pick.items.filter((x) => x !== k) : pick.items.concat(k);
+    draw();
+  });
+  document.getElementById('all').onclick = () => {
+    const g = groups.find((x) => x.c.id === pick.id) || groups[0]; if (!g) return;
+    pick = { id: g.c.id, items: pick.id === g.c.id && pick.items.length === g.items.length ? [] : g.items.slice() };
+    draw();
+  };
+  document.getElementById('go').onclick = () => { if (pick.items.length) openPayModal(pick.id, AFTER ? () => { location.href = AFTER; } : load, pick.items); };
+  // ‹ quay lại trang trước trong web (như Shopee); mở thẳng link thì về Trang chủ
+  document.getElementById('back').onclick = () => { if (document.referrer && new URL(document.referrer).origin === location.origin && history.length > 1) history.back(); else location.href = '/'; };
+  load();
+})();
+</script>
+</body>
+</html>

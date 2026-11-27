@@ -109,6 +109,13 @@ main.wrap{padding-top:104px}
   .flist{margin:0 -12px;padding:0 12px;gap:0 18px}
   .flist button,.flist button:hover{padding:8px 0 8px;font-size:14px}
   .grid{gap:8px;padding-bottom:24px}
+  /* gọn như Shopee: ẩn tiêu đề (vẫn còn cho Google đọc), hàng lọc thành viên nhỏ vuốt ngang, dính dưới thanh trên khi cuộn */
+  .thead{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);margin:0}
+  main.wrap{padding-top:54px}
+  .side{position:sticky;top:54px;z-index:20;margin:0 -12px 8px;padding:8px 0;border:0;background:var(--bg)}
+  .flist{margin:0;padding:0 12px;gap:6px;width:100%}
+  .flist button,.flist button:hover{height:32px;padding:0 14px;margin:0;border:1px solid var(--line);border-radius:999px;background:var(--surface,#fff);font:500 13px var(--sans);color:var(--ink)}
+  .flist button[aria-pressed="true"],[data-theme="dark"] .flist button[aria-pressed="true"]{background:var(--ink);border-color:var(--ink);color:var(--surface,#fff)}
   .tc img{aspect-ratio:3/4}
   .tc .pic{box-shadow:0 4px 12px rgba(120,40,50,.1)}
 }
@@ -336,6 +343,9 @@ main.wrap{padding-top:104px}
     render();
   });
 })();
+
+// bấm lọc khi đang cuộn sâu → về đầu lưới mẫu (không đứng lại ở cuối trang)
+document.getElementById('side').addEventListener('click', (e) => { if (e.target.closest('.flist button') && window.scrollY > 0) window.scrollTo({ top: 0, behavior: 'smooth' }); }, true); // bắt ở pha capture: bộ lọc vẽ lại nút ngay khi bấm
 </script>
 </body>
 </html>

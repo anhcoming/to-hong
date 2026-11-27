@@ -232,8 +232,20 @@ body{height:100vh;height:100dvh;display:flex;flex-direction:column;overflow:hidd
   .ebar .xl{display:none}.ebar .xs{display:inline}
   .saved.ok{font-size:0}
   .saved.ok::after{content:"✓";font-size:15px;font-weight:700;color:#2e9d5b}
+
   .tools button{font-size:10px}
   .tools button i{font-size:18px}
+}
+/* điện thoại: thanh trên một hàng gọn — tên + ✓ cùng dòng, nút xem trước tròn nhỏ, nút Gửi thiệp thấp hơn */
+@media (max-width:760px){
+  .ebar .ttl{display:flex;align-items:center;gap:6px}
+  .ebar .ttl h1{min-width:0;font-size:15.5px}
+  .ebar .sub{flex:none}
+  .ebar .sub .dot{display:none}
+  .ebar .saved.ok{display:none} /* đã lưu: không hiện ✓; chỉ hiện chữ khi "Chưa lưu" / đang tải ảnh */
+  #pubArea{display:flex;align-items:center;gap:6px}
+  #pubArea .btn.ghost{width:34px;height:34px;min-height:0;padding:0;justify-content:center;border-radius:50%;background:var(--primary-soft)}
+  #pubArea #sendBtn{height:36px;min-height:0;padding:0 16px;font-size:14px}
 }
 /* album ảnh (popup trên điện thoại + mục Album trên máy tính) */
 .al-tip{margin:0 0 12px;font-size:13.5px}.al-cnt{color:var(--ink)}
@@ -301,7 +313,7 @@ body.studio .st-q:focus-within{border-color:var(--primary);box-shadow:0 0 0 3px 
 body.studio .ebar{background:rgba(255,250,250,.86);backdrop-filter:blur(14px) saturate(1.5);-webkit-backdrop-filter:blur(14px) saturate(1.5);padding-left:max(16px,calc(50% - 540px));padding-right:max(16px,calc(50% - 540px))}
 [data-theme="dark"] body.studio .ebar{background:rgba(26,20,22,.86)}
 body.studio .ebar .ttl{flex:0 1 300px}
-body.studio #pubBtn,body.studio #payBtn{background:var(--grad);border:0;box-shadow:0 8px 20px rgba(214,69,93,.28);border-radius:999px}
+body.studio #sendBtn{background:var(--grad);border:0;box-shadow:0 8px 20px rgba(214,69,93,.28);border-radius:999px}
 @media (max-width:1100px){body.studio .st-q{display:none}}
 body.studio .emain{background:radial-gradient(900px 520px at 22% -10%,#ffe9ed 0,transparent 62%),radial-gradient(700px 500px at 100% 100%,#fff3e6 0,transparent 60%),var(--bg);justify-content:center;gap:32px;padding:0 16px}
 [data-theme="dark"] body.studio .emain{background:var(--bg)}
@@ -362,7 +374,7 @@ body.st-find .st-g,body.st-find .st-add{display:none}
   <div class="scrim" id="scrim"></div>
   <aside class="tside" id="tside" hidden aria-label="Mẫu thiệp"></aside>
   <main class="stage" id="prev">
-    <div class="phone wait" id="phone"><div class="smp-note" id="smpNote" hidden><span>✨ Ảnh &amp; chữ mẫu chỉ để xem thử — khách chỉ thấy phần bạn điền</span><button type="button" aria-label="Ẩn">×</button></div><iframe id="frame" title="Thiệp — bấm ảnh hoặc chữ để sửa"></iframe><div class="pv-wait" aria-hidden="true"><i></i><span>Đang dựng thiệp…</span></div></div>
+    <div class="phone wait" id="phone"><iframe id="frame" title="Thiệp — bấm ảnh hoặc chữ để sửa"></iframe><div class="pv-wait" aria-hidden="true"><i></i><span>Đang dựng thiệp…</span></div></div>
   </main>
   <aside class="outl" id="outl" hidden aria-label="Các phần của thiệp"></aside>
 </div>

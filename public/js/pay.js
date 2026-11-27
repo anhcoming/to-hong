@@ -66,6 +66,7 @@ const PAY_CSS = `<style>
 const SHP_CSS = `<style>
 .shp{position:fixed;inset:0;z-index:1990;overflow:auto;background:#f5f0f1;color:var(--ink,#1f1a1b);animation:payIn .2s ease;-webkit-overflow-scrolling:touch}
 [data-theme="dark"] .shp{background:#171214}
+.shp-auto{margin:14px 16px 0;text-align:center;color:var(--muted);font-size:13px;line-height:1.6}.shp-auto button{margin-top:2px;padding:0;border:0;background:none;color:var(--primary,#d6455d);font:inherit;font-size:13px;text-decoration:underline;cursor:pointer}
 .shp-in{max-width:560px;margin:0 auto;padding-bottom:calc(96px + env(safe-area-inset-bottom))}
 .shp-hd{position:sticky;top:0;z-index:2;display:flex;align-items:center;gap:8px;min-height:54px;padding:6px 10px calc(6px) 6px;padding-top:calc(6px + env(safe-area-inset-top));background:var(--surface,#fff);border-bottom:1px solid var(--line);font-weight:700;font-size:17px}
 .shp-back,.shp-close{display:grid;place-items:center;width:40px;height:40px;border:0;border-radius:50%;background:none;color:var(--primary,#d6455d);font-size:26px;line-height:1;cursor:pointer}
@@ -80,6 +81,8 @@ const SHP_CSS = `<style>
 .shp-ck.on{background:var(--primary,#d6455d);border-color:var(--primary,#d6455d)}.shp-ck.dis{background:#cfc3c5;border-color:#cfc3c5}
 .shp-th{flex:none;width:52px;height:52px;border-radius:10px;box-shadow:0 0 0 1px rgba(0,0,0,.06);background:linear-gradient(135deg,#3b2b2f,#8a5a63) center/cover}
 .shp-tx{flex:1;min-width:0}.shp-tx b{display:block;font-size:14px}.shp-tx small{display:block;margin-top:3px;color:var(--muted);font-size:12px;line-height:1.35;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.shp-add{flex:none;padding:5px 11px;border-radius:999px;border:1.5px solid var(--primary,#d6455d);color:var(--primary,#d6455d);font-size:12.5px;font-weight:700;white-space:nowrap}
+.shp-more .shp-th{width:44px;height:44px}.shp-more .shp-tx b{font-size:13.5px}
 .shp-pr{flex:none;text-align:right;font-size:14px;font-weight:700;color:var(--primary,#d6455d);white-space:nowrap}.shp-pr em{font-style:normal;color:var(--muted);font-weight:600;font-size:12.5px}
 .shp-cp{display:flex;flex-wrap:wrap;align-items:center;gap:8px}.shp-cp label{flex:none;font-size:13.5px;font-weight:600}
 .shp-cp input{flex:1;min-width:0;height:38px;padding:0 12px;border:1px solid var(--line);border-radius:10px;background:var(--bg,#fff);color:inherit;font:inherit;font-size:14px;text-transform:uppercase}
@@ -94,7 +97,6 @@ const SHP_CSS = `<style>
 .shp-bar .t{text-align:right;font-size:12.5px;color:var(--muted)}.shp-bar .t b{display:block;font-size:20px;color:var(--primary,#d6455d)}.shp-bar .t small{color:#1f8a5b;font-weight:600}
 .shp-go{flex:none;height:48px;padding:0 26px;border:0;border-radius:12px;background:var(--primary,#d6455d);color:#fff;font:inherit;font-size:15px;font-weight:700;cursor:pointer}
 .shp-go.soft{flex:1;background:var(--primary-soft,#fbe5e9);color:var(--primary,#d6455d)}.shp-go:disabled{opacity:.6}
-.shp-st{display:flex;justify-content:space-between;padding:12px 16px;background:var(--surface,#fff);font-size:12px;color:var(--muted)}.shp-st b{color:var(--primary,#d6455d)}
 .shp-amt{margin-top:8px;font-family:var(--serif);font-size:28px;font-weight:700;color:var(--primary,#d6455d)}
 </style>`;
 
@@ -126,8 +128,8 @@ window.openPayModal = async function (cardId, onDone, product = 'card') {
   const part = Object.values(orders).find((x) => x.received);
   const data = { get order() { return orders[sel]; }, set order(o) { orders[o.product] = o; } };
   // Màn thanh toán kiểu Shopee (public/mock-thanh-toan-shopee.html): trang phủ toàn màn hình, 2 bước
-  //   'cart' — Thanh toán: đám cưới · các món có ô tick · mã giảm giá · chi tiết thanh toán · phương thức · thanh dưới "Tổng + Đặt hàng"
-  //   'qr'   — Chờ thanh toán: mã QR (hết hạn 5 phút) · ngân hàng · đơn gồm · "Tôi đã chuyển khoản" → màn chờ
+  //   'cart' — Thanh toán: đám cưới · các món có ô tick · mã giảm giá · chi tiết thanh toán · phương thức · thanh dưới "Tổng + Thanh toán"
+  //   'qr'   — Chờ thanh toán: mã QR (hết hạn 5 phút) · ngân hàng · đơn gồm · dòng nhỏ "Đã chuyển mà chưa thấy kích hoạt?" → màn chờ
   let timer = null, tick = null, ov = null, root = null;
   const QR_LIFE = 5 * 60e3; // mã QR hiệu lực 5 phút (đủ để mở app ngân hàng, đăng nhập, xác thực) — hết thì bấm tạo mã mới
   let qrUntil = Date.now() + QR_LIFE, qrTick = null;
@@ -205,25 +207,21 @@ window.openPayModal = async function (cardId, onDone, product = 'card') {
     const retail = (o.items || []).filter((k) => !HAVE[k]).reduce((n, k) => n + PRICE[k], 0);
     const disc = o.discount || 0, first = o.firstOff || 0; // tổng = cộng giá lẻ
     return `<div class="shp-hd"><button type="button" class="shp-back" data-x aria-label="Đóng">‹</button>Thanh toán</div>
-      <div class="shp-box shp-wed"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20.5s-7.5-4.6-7.5-10.2A4.3 4.3 0 0 1 12 7.6a4.3 4.3 0 0 1 7.5 2.7c0 5.6-7.5 10.2-7.5 10.2z"/></svg><div><b>${esc(cardInfo.names || 'Thiệp của bạn')}</b><span>${esc(dateText(cardInfo.date))}</span></div></div>
-      <div class="shp-box"><h4>Món đã chọn</h4>
-        ${KEYS.map((k) => { const have = HAVE[k], on = have || ticks.includes(k);
-          return `<button type="button" class="shp-it${have ? ' have' : ''}" data-tick="${k}"${have || part ? ' disabled' : ''}><span class="shp-ck${on ? ' on' : ''}${have ? ' dis' : ''}">${on ? '✓' : ''}</span><i class="shp-th"${THUMB[k] ? ` style="background-image:url('${esc(THUMB[k])}')"` : ''}></i><span class="shp-tx"><b>${TITLE[k][0]}</b><small>${have ? 'Đã mua' : SUB[k]}</small></span><span class="shp-pr">${have ? '<em>Đã có</em>' : money(PRICE[k])}</span></button>`; }).join('')}
+      <div class="shp-box"><h4>Sản phẩm</h4>
+        ${KEYS.filter((k) => ticks.includes(k) && !HAVE[k]).map((k) => `<div class="shp-it"><i class="shp-th"${THUMB[k] ? ` style="background-image:url('${esc(THUMB[k])}')"` : ''}></i><span class="shp-tx"><b>${TITLE[k][0]}</b><small>${esc([cardInfo.names, (cardInfo.date || '').split('-').reverse().join('/')].filter(Boolean).join(' · ') || SUB[k])}</small></span><span class="shp-pr">${money(PRICE[k])}</span></div>`).join('')}
       </div>
       ${p === 'multi' ? '' : `<form class="shp-box shp-cp" id="cp"><label>Mã giảm giá</label><input name="c" placeholder="Nhập mã" value="${esc(o.coupon || '')}" autocomplete="off" aria-describedby="cpErr"><button class="btn sm plain">Áp dụng</button><p class="cp-err" id="cpErr" role="alert" hidden></p></form>`}
       <div class="shp-box"><h4>Chi tiết thanh toán</h4>
         <div class="shp-ln"><span>Tổng tiền hàng</span><span>${money(retail)}</span></div>
-        ${first ? `<div class="shp-ln"><span>Ưu đãi khách mới<span class="shp-tag">đơn đầu</span></span><span class="g">−${money(first)}</span></div>` : ''}
+        ${first ? `<div class="shp-ln"><span>Ưu đãi khách mới<span class="shp-tag">giảm ${M.firstOrderPercent || 10}% đơn đầu</span></span><span class="g">−${money(first)}</span></div>` : ''}
         ${disc ? `<div class="shp-ln"><span>Mã ${esc(o.coupon)}</span><span class="g">−${money(disc)}</span></div>` : ''}
         <div class="shp-ln tot"><b>Tổng thanh toán</b><b>${money(o.amount)}</b></div></div>
-      <div class="shp-box"><h4>Phương thức thanh toán</h4><div class="shp-pay"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><path d="M14 14h3v3h-3zM20 14v.01M14 20h.01M17 17h3v3"/></svg><span><b>Chuyển khoản QR</b>Tiền về là tự kích hoạt</span><i></i></div></div>
-      <p class="shp-fine">Thanh toán là bạn đồng ý với <a href="/dieu-khoan" target="_blank" rel="noopener">Điều khoản</a> và <a href="/hoan-tien" target="_blank" rel="noopener">Chính sách hoàn tiền</a>. ${p === 'combo' ? LOCK_NOTE.combo : (o.items || [p]).includes('card') ? LOCK_NOTE.card : LOCK_NOTE[(o.items || [p])[0]] || ''}</p>
-      <div class="shp-bar"><div class="t">Tổng (${(o.items || [p]).filter((k) => !HAVE[k]).length} món)<b>${money(o.amount)}</b>${first + disc ? `<small>Tiết kiệm ${money(first + disc)}</small>` : ''}</div>
-        ${o.amount <= 0 && o.coupon ? '<button type="button" class="shp-go" id="cpOk">Xác nhận kích hoạt</button>' : '<button type="button" class="shp-go" id="order">Đặt hàng</button>'}</div>`;
+      <p class="shp-fine">Chuyển khoản qua mã QR, tiền về là tự kích hoạt. Thanh toán là bạn đồng ý với <a href="/dieu-khoan" target="_blank" rel="noopener">Điều khoản</a> và <a href="/hoan-tien" target="_blank" rel="noopener">Chính sách hoàn tiền</a>. ${p === 'combo' ? LOCK_NOTE.combo : (o.items || [p]).includes('card') ? LOCK_NOTE.card : LOCK_NOTE[(o.items || [p])[0]] || ''}</p>
+      <div class="shp-bar"><div class="t">Tổng (${(o.items || [p]).filter((k) => !HAVE[k]).length} món)<b>${money(o.amount)}</b></div>
+        ${o.amount <= 0 && o.coupon ? '<button type="button" class="shp-go" id="cpOk">Xác nhận kích hoạt</button>' : '<button type="button" class="shp-go" id="order">Thanh toán</button>'}</div>`;
   };
 
   const qrView = (o) => `<div class="shp-hd">${part ? '<button type="button" class="shp-back" data-x aria-label="Đóng">‹</button>' : '<button type="button" class="shp-back" id="toCart" aria-label="Quay lại">‹</button>'}Chờ thanh toán<button type="button" class="shp-close" data-x aria-label="Đóng">✕</button></div>
-      <div class="shp-st"><span>Đặt hàng ✓</span><span><b>Thanh toán</b></span><span>Kích hoạt</span></div>
       ${o.received ? `<div class="pay-short" role="alert" style="margin:8px 12px 0"><b>Đã nhận ${money(o.received)} · còn thiếu ${money(o.due)}</b><span>Quét mã bên dưới để chuyển nốt ${money(o.due)}, giữ nguyên nội dung <b>${esc(o.code)}</b>. Đủ tiền là tự kích hoạt.</span></div>` : ''}
       <div class="shp-box" style="text-align:center">
         <div class="muted" style="font-size:13px">Quét mã bằng app ngân hàng</div>
@@ -241,7 +239,7 @@ window.openPayModal = async function (cardId, onDone, product = 'card') {
           <div><span>Nội dung</span><b class="code">${esc(o.code)}</b></div>
           <div><span>Đơn gồm</span><b>${esc(itemsText(o))}</b></div>
       </div></div>
-      <div class="shp-bar"><button type="button" class="shp-go soft" id="claimBtn">Tôi đã chuyển khoản</button></div>`;
+      <p class="shp-auto">Tiền về là tự kích hoạt, không cần bấm gì thêm.<br><button type="button" id="claimBtn">Đã chuyển mà chưa thấy kích hoạt?</button></p>`; // bỏ nút to "Tôi đã chuyển khoản" ở đáy: hệ thống tự nhận tiền, chỉ để một dòng nhỏ khi cần báo
 
   const render = () => {
     const o = data.order;

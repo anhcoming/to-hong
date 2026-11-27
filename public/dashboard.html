@@ -416,7 +416,7 @@ async function act(a, id, c) {
     if (a === 'story') storyModal(id);
     if (a === 'vshare') copyText(c.video.url, 'Đã chép link — mở trên Smart TV hoặc máy tính nối TV');
     if (a === 'vpay') openPayModal(id, load, 'video');
-    if (a === 'pay') openPayModal(id, load);
+    if (a === 'pay') location.href = `/gio-hang?thiep=${encodeURIComponent(id)}&mon=card&sau=${encodeURIComponent('/thiep-cua-toi?thiep=' + id)}`; // giỏ hàng kiểu Shopee, chỉ tick sẵn thiệp
     if (a === 'del') {
       if (!confirm(`Xoá thiệp "${c.names || c.title}"? Danh sách khách, xác nhận và lời chúc của thiệp này cũng bị xoá và không khôi phục được.`)) return;
       await api(`/api/cards/${id}`, { method: 'DELETE' });
