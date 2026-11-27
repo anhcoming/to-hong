@@ -521,7 +521,7 @@ for (const [path, to, keep] of [['/tao-led', 'sua-led', ['palette', 'effect']], 
     const user = ctx.user, w = Wd.ensure(user);
     const card = db.cards.filter((c) => c.userId === user.id || c.weddingId === w.id).sort((a, b) => b.updatedAt - a.updatedAt)[0]
       || newCard(user, { template: 'dodam' });
-    fillNames(card, nameQ(ctx)); // tên đôi + ngày khách gõ lúc xem mẫu → điền vào ô còn trống
+    fillNames(card, nameQ(ctx)); // tên đôi + ngày khách gõ lúc xem mẫu → ghi vào thiệp (thay tên cũ nếu chưa chốt)
     if (to === 'sua-led') q.set('tao', '1'); // trình sửa LED tự bật màn LED, khỏi bấm thêm nút "Tạo màn LED từ thiệp này"
     redirect(res, `/${to}/${card.id}?${q}`);
   });
@@ -536,14 +536,17 @@ function setTemplate(card, tpl, palette) {
   Object.assign(card, { template: tpl, palette: templates[tpl].palettes.find((p) => p.id === palette)?.id || templates[tpl].palettes[0].id, updatedAt: Date.now() });
   delete card.ledOnly;
 }
-// tên đôi + ngày cưới khách gõ lúc xem mẫu (b.groom / b.bride / b.date) → điền vào thiệp chỉ ở ô còn trống, không đè tên đã có / đã chốt
+// tên đôi + ngày cưới khách vừa gõ lúc xem mẫu (b.groom / b.bride / b.date) → ghi vào thiệp, thay tên cũ / tên lấy từ hồ sơ cưới
+// (khách cố ý gõ tên này để dùng). Thiệp đã chốt (kích hoạt / qua ngày cưới) giữ nguyên. Đổi xong cập nhật luôn hồ sơ cưới.
 function fillNames(card, b) {
   if (!card || !card.data || Wd.namesFrozen(card)) return;
   const d = card.data, g = str(b.groom, 40), br = str(b.bride, 40);
   const date = /^\d{4}-\d{2}-\d{2}$/.test(b.date || '') ? b.date : '';
-  if (g && !d.groom.name) d.groom.name = g;
-  if (br && !d.bride.name) d.bride.name = br;
-  if (date && !d.date) { d.date = date; (d.events || []).forEach((e) => { if (!e.date) e.date = date; }); }
+  let changed = false;
+  if (g && d.groom.name !== g) { d.groom.name = g; changed = true; }
+  if (br && d.bride.name !== br) { d.bride.name = br; changed = true; }
+  if (date && d.date !== date) { const old = d.date; d.date = date; (d.events || []).forEach((e) => { if (!e.date || e.date === old) e.date = date; }); changed = true; }
+  if (changed) { card.updatedAt = Date.now(); if (card.weddingId && card.userId) Wd.syncFromCard(card); }
 }
 function newCard(user, b = {}) {
   const tpl = templates[b.template] ? b.template : DEFAULT_TEMPLATE;

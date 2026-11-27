@@ -90,6 +90,15 @@ async function guestLed(who) {
   assert.equal(r.json.card.template, 'dodam', 'mẫu thiệp giữ nguyên');
   void bLogin;
 
+  // 3. đã đăng nhập, thiệp có tên sẵn: xem mẫu LED gõ tên khác → Dùng mẫu ra đúng tên vừa gõ (trước đây giữ tên cũ)
+  r = await call('b', 'GET', '/tao-led?palette=lam&effect=saoroi&groom=' + encodeURIComponent('Quốc Bảo') + '&bride=' + encodeURIComponent('Mai Anh') + '&date=2027-05-01');
+  assert.equal(r.location.split('?')[0], `/sua-led/${own.id}`);
+  r = await call('b', 'GET', `/api/cards/${own.id}`);
+  assert.deepEqual([r.json.card.data.groom.name, r.json.card.data.bride.name, r.json.card.data.date], ['Quốc Bảo', 'Mai Anh', '2027-05-01'], 'tên gõ lúc xem mẫu thay tên cũ');
+  // thiệp mới tạo sau đó lấy tên mới từ hồ sơ cưới, không quay về tên cũ
+  r = await call('b', 'POST', '/api/cards', { template: 'songhy', groom: 'Quốc Bảo', bride: 'Mai Anh' });
+  assert.equal(r.json.card.data.groom.name, 'Quốc Bảo');
+
   console.log('led-guest: OK');
   process.exit(0);
 })().catch((e) => { console.error(e); process.exit(1); });
