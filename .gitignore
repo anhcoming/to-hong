@@ -7,3 +7,6 @@ data/
 
 # video quảng cáo, tài liệu marketing — chỉ lưu trên máy
 marketing/
+
+# tệp hệ thống macOS
+.DS_Store
