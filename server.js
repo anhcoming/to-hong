@@ -222,7 +222,7 @@ function cardSummary(card) {
     date: card.data.date,
     cover: card.data.cover || card.data.photos.find(Boolean) || '',
     ...cardState(card),
-    namesFrozen: Wd.namesFrozen(card), // đã kích hoạt / đã qua ngày cưới: tên đôi + ngày cưới cố định
+    namesFrozen: Wd.namesFrozen(card), // đã kích hoạt: tên đôi + ngày cưới cố định
     led: { ...ledLib.state(card.led), prepaid: prepaid(card, 'led'), url: `${BASE_URL}/led/${card.slug}`, palette: card.led ? card.led.palette : null, effect: card.led ? card.led.effect : null },
     video: { ...videoLib.state(card.video), prepaid: prepaid(card, 'video'), url: `${BASE_URL}/video/${card.slug}`, template: card.video ? card.video.template : null, kind: card.video ? card.video.event.kind : null },
   };
@@ -658,7 +658,7 @@ route('PUT', '/api/cards/:id', async (req, res, ctx) => {
     card.oldSlugs = [...(card.oldSlugs || []).filter((x) => x !== s), card.slug].slice(-5); // link đã gửi vẫn mở được
     card.slug = s;
   }
-  if (b.data) { fixNames(card, false); card.data = Wd.keepFrozen(card, cd.normalize(b.data)); Wd.syncFromCard(card); } // đã qua ngày cưới: tên đôi + ngày cưới giữ nguyên // màn LED kích hoạt từ trước: cố định tên trước khi đổi
+  if (b.data) { fixNames(card, false); card.data = Wd.keepFrozen(card, cd.normalize(b.data)); Wd.syncFromCard(card); } // đã kích hoạt: tên đôi + ngày cưới giữ nguyên // màn LED kích hoạt từ trước: cố định tên trước khi đổi
   if (b.data && b.slug === undefined && card.userId) autoSlug(card); // thiệp nháp của khách chưa đăng nhập: giữ nguyên
   if (b.led) { card.led = ledLib.normalize(b.led, card.led, { admin: ctx.admin }); unlockPrepaid(card, 'led'); }
   // quản trị viên sửa giúp màn LED đã chốt: sửa bản chụp lúc chốt (tên, ngày, lời cảm ơn…), thiệp của khách giữ nguyên
